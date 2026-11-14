@@ -3,6 +3,9 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 87 · 14/11/2026
+- **Suoni accesi o spenti:** in Opzioni › Aspetto c'è «Suoni» (acceso di predefinito), e nella fotocamera, in alto a destra, il pulsante 🔊/🔇 li accende e spegne al volo. Spenti, niente bip della scansione né «fatto» del prezzo; la vibrazione resta. La scelta resta anche alle aperture successive.
+
 ## Versione 86 · 14/11/2026
 - **Backup più chiaro:** i pulsanti ora dicono cosa fanno: «Fai il backup e mandalo su Drive, email…» e «Fai il backup sul telefono (Download)». Sotto, una riga spiega che il primo è il più sicuro (resta anche se perdi il telefono).
 

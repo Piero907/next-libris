@@ -1456,3 +1456,7 @@ body.selecting .don-row,body.selecting .don-ask,body.scanning .don-row{display:n
 /* maniglia in cima alle finestre dal basso: si possono trascinare giu' per chiuderle */
 .sheet-in{position:relative}
 .sheet-in::before{content:"";position:absolute;top:7px;left:50%;width:40px;height:4px;margin-left:-20px;border-radius:2px;background:var(--line);pointer-events:none}
+/* fotocamera: suoni accesi/spenti accanto alla torcia */
+.scan-tr{display:flex;gap:8px;align-items:center}
+.scan-top .scan-snd{min-width:46px;padding:8px 10px;font-size:18px;line-height:1}
+.scan-top .scan-snd[aria-pressed="false"]{background:#000b;border-color:#fff8}

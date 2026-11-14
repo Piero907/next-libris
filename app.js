@@ -80,7 +80,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 86, date: '2026-11-14', note: 'Backup: pulsanti più chiari' };
+var APP_VERSION = { v: 87, date: '2026-11-14', note: 'Suoni: accesi o spenti (Opzioni e fotocamera)' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -265,6 +265,7 @@ function loadAll() {
     settings.goal = Math.max(0, Math.min(999, parseInt(s.goal, 10) || 0));          // obiettivo di lettura
     settings.newsAuto = s.newsAuto !== false;                                       // novita' degli autori: controllo automatico
     settings.selTip = s.selTip ? 1 : 0;
+    settings.sound = s.sound !== false;                                             // suoni: bip della scansione e «fatto» (accesi di predefinito)
     settings.quoteOcrAuto = s.quoteOcrAuto === true;                                // citazioni: leggi subito il testo delle foto
     settings.donUntil = Number(s.donUntil) || 0;                                    // donazioni: richieste in pausa fino a
     settings.donNever = s.donNever === true;                                        // promemoria ogni 50 libri spento
@@ -302,16 +303,19 @@ function notice(msg, label, fn, onClose, kind) {
   $('#notice').hidden = false;
 }
 function beep(ok) {
+  if (settings.sound === false) return;
   try {
     beep.ctx = beep.ctx || new (window.AudioContext || window.webkitAudioContext)();
     var o = beep.ctx.createOscillator(), g = beep.ctx.createGain();
     o.frequency.value = ok ? 880 : 320; g.gain.value = 0.08;
     o.connect(g); g.connect(beep.ctx.destination);
     o.start(); o.stop(beep.ctx.currentTime + 0.09);
+    beep.n = (beep.n || 0) + 1;
   } catch (e) {}
 }
 // suono di «fatto» (prezzo salvato): due note che salgono, piu' morbide del bip della scansione
 function chime() {
+  if (settings.sound === false) return;
   try {
     beep.ctx = beep.ctx || new (window.AudioContext || window.webkitAudioContext)();
     var ctx = beep.ctx, t0 = ctx.currentTime + 0.01;
@@ -323,6 +327,16 @@ function chime() {
     });
     chime.n = (chime.n || 0) + 1;
   } catch (e) {}
+}
+function paintSound() {
+  var on = settings.sound !== false, b = $('#scanSound');
+  if (b) { b.textContent = on ? '🔊' : '🔇'; b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.setAttribute('aria-label', on ? 'Suoni accesi: tocca per spegnerli' : 'Suoni spenti: tocca per accenderli'); }
+  var o = $('#optSound'); if (o) o.checked = on;
+}
+function setSound(on, say) {
+  settings.sound = !!on; saveSettings(); paintSound();
+  if (say) { if (scanning) scanMsg(on ? 'Suoni accesi.' : 'Suoni spenti.'); else toast(on ? 'Suoni accesi.' : 'Suoni spenti.'); }
+  if (on) beep(true);                              // si sente subito che sono tornati
 }
 function vibrate(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
 
@@ -5755,6 +5769,9 @@ $('#optName').value = settings.name || '';
 renderOwner();
 $('#optPrice').checked = settings.price;
 $('#optQuoteOcr').checked = !!settings.quoteOcrAuto;
+paintSound();
+$('#optSound').addEventListener('change', function (e) { setSound(e.target.checked, true); });
+$('#scanSound').addEventListener('click', function () { setSound(settings.sound === false, true); });
 $('#optExtra').checked = settings.extra;
 $('#optOpenAll').checked = settings.openAll;
 (function () {                                   // ?vista=elenco / ?vista=copertine nell'indirizzo: quella vista per questa apertura (comodo per i link e per le prove)
@@ -5798,6 +5815,6 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   navigator.serviceWorker.register('sw.js').catch(function () {});
 }
 window.__ped = { st: function () { return ped; }, handles: function (o) { return pedHandles(o); }, stickers: function () { return pedStickers(); } };
-window.__app = { snapInfo: function () { return { lum: snap.lum, dark: !!snap.dark, taps: snap.taps || 0, msg: $('#snapMsg').textContent }; }, flow: function () { return flow.id; }, chimes: function () { return chime.n || 0; }, openManual: openManual, processPhoto: processPhoto, donAway: function (ms) { donHiddenAt = Date.now() - ms; }, donPaint: donPaint, donBack: donBack, openDon: openDon, buildBackup: buildBackup, readPrice: function (c, r) { return readPrice(c, r); }, filtersAll: function () { return { frFlt: frFlt, autFlt: autFlt, edFlt: edFlt, genFlt: genFlt, shFlt: shFlt, q: q }; }, openDrawer: openDrawer, closeDrawer: closeDrawer, openOptions: function (s) { openOptions(s || 'search'); }, closeOptions: function () { closeOptions(); }, filters: function () { return { flt: flt, readFlt: readFlt, shFlt: shFlt, genFlt: genFlt, sortBy: sortBy }; }, state: state, S: S, openState: function () { return openState; }, addIsbn: addIsbn, addPhotos: addPhotos, settings: settings, setTab: setTab, onScanned: onScanned, startScan: startScan,
+window.__app = { sounds: function () { return { beep: beep.n || 0, chime: chime.n || 0 }; }, snapInfo: function () { return { lum: snap.lum, dark: !!snap.dark, taps: snap.taps || 0, msg: $('#snapMsg').textContent }; }, flow: function () { return flow.id; }, chimes: function () { return chime.n || 0; }, openManual: openManual, processPhoto: processPhoto, donAway: function (ms) { donHiddenAt = Date.now() - ms; }, donPaint: donPaint, donBack: donBack, openDon: openDon, buildBackup: buildBackup, readPrice: function (c, r) { return readPrice(c, r); }, filtersAll: function () { return { frFlt: frFlt, autFlt: autFlt, edFlt: edFlt, genFlt: genFlt, shFlt: shFlt, q: q }; }, openDrawer: openDrawer, closeDrawer: closeDrawer, openOptions: function (s) { openOptions(s || 'search'); }, closeOptions: function () { closeOptions(); }, filters: function () { return { flt: flt, readFlt: readFlt, shFlt: shFlt, genFlt: genFlt, sortBy: sortBy }; }, state: state, S: S, openState: function () { return openState; }, addIsbn: addIsbn, addPhotos: addPhotos, settings: settings, setTab: setTab, onScanned: onScanned, startScan: startScan,
   get scanning() { return scanning; }, setScanMode: function (m) { scanMode = m; }, setScanKind: setScanKind, get scanKind() { return scanKind; } };
 })();

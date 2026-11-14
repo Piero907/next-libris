@@ -194,6 +194,9 @@ COME SI USA
   * Prezzo di copertina = quello stampato sul libro, non quanto l'hai pagato.
   * Quando salvi il prezzo suona un "fatto" (due note che salgono),
     diverso dal bip della scansione.
+  * Suoni: si spengono e accendono in Opzioni > Aspetto ("Suoni") oppure
+    al volo dalla fotocamera, con il pulsante 🔊/🔇 in alto a destra. La
+    vibrazione resta comunque.
 - Esporta: "Scarica Excel (.xlsx)" crea un vero file Excel (intestazione
   in grassetto, filtri, costo in euro, ISBN come testo). Ci sono anche
   "Copia per Excel o Fogli Google" e "Scarica CSV". Si esporta la scheda

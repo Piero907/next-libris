@@ -125,7 +125,10 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
   <div class="scan-top">
     <button class="btn" id="scanClose" aria-label="Chiudi la fotocamera">× Chiudi</button>
     <span class="scan-count" id="scanCount">0 aggiunti</span>
-    <button class="btn" id="scanTorch" hidden>Torcia</button>
+    <span class="scan-tr">
+      <button class="btn scan-snd" type="button" id="scanSound" aria-pressed="true" aria-label="Suoni accesi: tocca per spegnerli">🔊</button>
+      <button class="btn" id="scanTorch" hidden>Torcia</button>
+    </span>
   </div>
   <div class="scan-mid"><div class="scan-guide" id="scanGuide"></div></div>
   <div class="scan-res" id="scanRes" hidden aria-live="polite"></div>
@@ -488,6 +491,10 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         </div>
         <p class="hint">Chiaro è il predefinito. Automatico segue il tema del telefono (chiaro di giorno, scuro di sera se l'hai impostato così).</p>
       </fieldset>
+      <label class="check">
+        <input type="checkbox" id="optSound">
+        <span>Suoni<small>Il bip quando legge un codice e il «fatto» quando salvi il prezzo. Si accendono e spengono anche dalla fotocamera, con 🔊 in alto. La vibrazione resta.</small></span>
+      </label>
       <fieldset class="choice">
         <legend>All'apertura mostra</legend>
         <div class="seg seg-view">
@@ -678,7 +685,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       </div>
       <h3>Impostazioni</h3>
       <div class="dlist dmenu">
-        <button type="button" class="dopt" data-sec="look"><span><b>Aspetto</b><small>Tema chiaro o scuro, colori, caratteri</small></span><span class="n" aria-hidden="true">›</span></button>
+        <button type="button" class="dopt" data-sec="look"><span><b>Aspetto</b><small>Tema chiaro o scuro, colori, caratteri, suoni</small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt" data-sec="search"><span><b>Ricerca dei libri</b><small>Chiave Google, catalogo SBN, richieste di oggi</small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt" data-sec="cards"><span><b>Schede e prezzo</b><small>Campi in più, schede aperte, prezzo</small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt don-menu" id="donMenu"><span class="don-cup" aria-hidden="true">☕</span><span><b>Sostieni Next Libris</b><small>Niente pubblicità, niente abbonamenti. Se ti piace, offrimi un caffè!</small></span><span class="n" aria-hidden="true">♥</span></button>
