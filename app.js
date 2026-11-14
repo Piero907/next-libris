@@ -80,10 +80,10 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 83, date: '2026-11-14', note: 'Foto: una finestra con l\'avanzamento; poca luce; pagine mancanti' };
+var APP_VERSION = { v: 84, date: '2026-11-14', note: 'Menu laterale rifatto, filtri riorganizzati, Sostieni al centro' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
-var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'list', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
+var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
 var PALS = { inchiostro: ['#EDF0F5', '#10141D'], bordeaux: ['#F2EFEE', '#161112'], bosco: ['#EEF1EE', '#0F1513'] };
 var FONTS_T = ['literata', 'garamond', 'playfair', 'lora', 'merriweather', 'montserrat', 'roboto'], FONTS_B = ['plex', 'roboto', 'lato', 'atkinson', 'lora'];
 var openState = {};
@@ -243,7 +243,8 @@ function loadAll() {
     var s = JSON.parse(ls.get(LS_SET) || '{}');
     settings.gbKey = L.str(s.gbKey); settings.price = s.price !== false; settings.extra = s.extra !== false;
     settings.lastBackup = Number(s.lastBackup) || 0; settings.snooze = Number(s.snooze) || 0;
-    settings.view = s.view === 'grid' ? 'grid' : 'list';
+    settings.viewDef = s.viewDef === 'list' ? 'list' : 'grid';                       // vista all'apertura: copertine (predefinita) o elenco
+    settings.view = settings.viewDef;                                               // il pulsante sopra i libri la cambia fino alla prossima apertura
     settings.openAll = s.openAll === true;
     settings.sbnUrl = /^https:\/\//.test(L.str(s.sbnUrl)) ? L.str(s.sbnUrl) : '';
     settings.loanSnooze = Number(s.loanSnooze) || 0;
@@ -3409,6 +3410,7 @@ function openManual(id, withPrice) {
   var b = get(id), s = S[id] || {};
   if (!b) return;
   manId = id;
+  if (flow.id === id) { flow.id = null; hideFlow(); withPrice = true; }      // aperta dalla riga mentre c'era la finestra dell'avanzamento
   manPrice = !!(withPrice && settings.price && b.c == null);
   $('#manP').value = s.price != null ? L.fmtNum(s.price) : '';
   document.querySelectorAll('#manForm .man-p').forEach(function (x) { x.hidden = !manPrice; });
@@ -3962,6 +3964,7 @@ function facets(field) {
 }
 function facetName(field, k) { if (k === NONE) return field === 'sh' ? 'senza scaffale' : 'senza genere'; var f = facets(field).find(function (x) { return x.k === k; }); return f ? f.name : ''; }
 var frFlt = '';                 // filtro «ricevuti da»
+var drawerMore = {};            // scaffali / generi: elenco completo aperto con «Altri…»
 function activeCount() { return (flt ? 1 : 0) + (frFlt ? 1 : 0) + (readFlt && tab === 'lib' ? 1 : 0) + (shFlt ? 1 : 0) + (genFlt ? 1 : 0) + (autFlt ? 1 : 0) + (edFlt ? 1 : 0); }
 function authorsOf(b) { return String(b.a || '').split(/\s*[,;]\s*/).map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 1; }); }
 function clearFilters() {
@@ -3985,7 +3988,7 @@ function updateActiveFilters() {
   bd.hidden = !n; bd.textContent = n;
   $('#btnFilters').setAttribute('aria-pressed', n ? 'true' : 'false');
   $('#edgeTab').classList.toggle('on', !!n);
-  $('#edgeTab').setAttribute('aria-label', 'Apri i filtri' + (n ? ' (' + n + (n === 1 ? ' attivo)' : ' attivi)') : ''));
+  $('#edgeTab').setAttribute('aria-label', 'Apri il menu' + (n ? ' (' + n + (n === 1 ? ' attivo)' : ' attivi)') : ''));
   $('#btnFilters').setAttribute('aria-label', 'Filtri e ordine' + (n ? ' (' + n + (n === 1 ? ' filtro attivo)' : ' filtri attivi)') : ''));
 }
 $('#activeFlt').addEventListener('click', function (e) {
@@ -3998,23 +4001,22 @@ $('#activeFlt').addEventListener('click', function (e) {
 });
 function renderDrawer() {
   var books = tabBooks(), lib = tab === 'lib', o = '';
-  function opt(group, val, label, n, cur) {
-    return '<button type="button" class="dopt" data-g="' + group + '" data-v="' + esc(val) + '" aria-pressed="' + (cur === val ? 'true' : 'false') + '"><span>' + esc(label) + '</span>' + (n != null ? '<span class="n">' + n + '</span>' : '') + '</button>';
+  /* filtri come «pillole» raggruppate per tema; il numero accanto dice quanti libri ci sono */
+  function pill(group, val, label, n, cur, extra) {
+    return '<button type="button" class="dpill' + (extra || '') + '" data-g="' + group + '" data-v="' + esc(val) + '" aria-pressed="' + (cur === val ? 'true' : 'false') + '">' + esc(label) + (n != null ? '<span class="n">' + n + '</span>' : '') + '</button>';
   }
   var cnt = { fav: 0, loan: 0, gone: 0, guess: 0, dup: 0, qs: 0 }, dm = L.analyzeDups(state.books), frs = {};
   books.forEach(function (b) { if (b.qs && b.qs.length) cnt.qs++; if (b.fav) cnt.fav++; if (b.fr) frs[b.fr] = (frs[b.fr] || 0) + 1; if (b.p) cnt.loan++; if (b.xs) cnt.gone++; if (b.g.length) cnt.guess++; if (dm[b.id]) cnt.dup++; });
-  o += '<h3>Mostra</h3><div class="dlist">' + opt('flt', '', lib ? 'Tutti i libri' : 'Tutti i desideri', books.length, flt);
-  (lib ? ['fav', 'qs', 'loan', 'gone', 'guess', 'dup'] : ['qs', 'guess', 'dup']).forEach(function (k) {
-    if (cnt[k] || flt === k || k === 'loan' || k === 'fav') o += opt('flt', k, FLT_TXT[k], cnt[k], flt);
+  o += '<h3>' + (lib ? 'Libri' : 'Desideri') + '</h3><div class="dpills">' + pill('flt', '', lib ? 'Tutti' : 'Tutti', books.length, ['guess', 'dup'].indexOf(flt) >= 0 ? null : flt);
+  (lib ? ['fav', 'loan', 'qs', 'gone'] : ['qs']).forEach(function (k) {
+    if (cnt[k] || flt === k || k === 'loan' || k === 'fav') o += pill('flt', k, FLT_TXT[k], cnt[k], flt);
   });
   o += '</div>';
-  var nq = allQuotes().length;
-  if (nq) o += '<h3>Citazioni</h3><div class="dlist"><button type="button" class="dopt dq-all" data-g="quotes" data-v=""><span>Leggi tutte le citazioni</span><span class="n">' + nq + '</span></button></div>';
   if (lib) {
     var rc = { da: 0, in: 0, ok: 0, no: 0 };
     books.forEach(function (b) { rc[b.rs || 'no']++; });
-    o += '<h3>Lettura</h3><div class="dlist">' + opt('read', '', 'Tutti', null, readFlt);
-    ['da', 'in', 'ok', 'no'].forEach(function (k) { if (rc[k] || readFlt === k || k !== 'no') o += opt('read', k, READ_TXT[k], rc[k], readFlt); });
+    o += '<h3>Lettura</h3><div class="dpills">' + pill('read', '', 'Tutti', null, readFlt);
+    ['da', 'in', 'ok', 'no'].forEach(function (k) { if (rc[k] || readFlt === k || k !== 'no') o += pill('read', k, READ_TXT[k], rc[k], readFlt); });
     o += '</div>';
   }
   [['sh', 'Scaffale', 'Senza scaffale', shFlt], ['gen', 'Genere', 'Senza genere', genFlt]].forEach(function (f) {
@@ -4022,14 +4024,20 @@ function renderDrawer() {
     if (!named.length && !f[3]) return;
     named.sort(f[0] === 'sh' ? function (x, y) { return coll.compare(x.name, y.name); } : function (x, y) { return y.n - x.n || coll.compare(x.name, y.name); });
     var none = list.find(function (x) { return x.k === NONE; });
-    o += '<h3>' + f[1] + '</h3><div class="dpills">' + named.concat(none ? [none] : []).map(function (x) {
-      return '<button type="button" class="dpill' + (x.k === NONE ? ' none-sh' : '') + '" data-g="' + f[0] + '" data-v="' + esc(x.k) + '" aria-pressed="' + (f[3] === x.k ? 'true' : 'false') + '">' + esc(x.k === NONE ? f[2] : x.name) + '<span class="n">' + x.n + '</span></button>';
-    }).join('') + '</div>';
+    var all = named.concat(none ? [none] : []), MAXP = 8, open = drawerMore[f[0]] || all.length <= MAXP + 2;
+    var shown = open ? all : all.slice(0, MAXP);
+    if (!open && f[3] && !shown.some(function (x) { return x.k === f[3]; })) { var cur = all.find(function (x) { return x.k === f[3]; }); if (cur) shown = shown.concat([cur]); }   // quello scelto resta visibile
+    o += '<h3>' + f[1] + '</h3><div class="dpills">' + shown.map(function (x) {
+      return pill(f[0], x.k, x.k === NONE ? f[2] : x.name, x.n, f[3], x.k === NONE ? ' none-sh' : '');
+    }).join('') + (open ? '' : '<button type="button" class="dpill more" data-g="more" data-v="' + f[0] + '">Altri ' + (all.length - shown.length) + '…</button>') + '</div>';
   });
   var frNames = Object.keys(frs).sort(coll.compare);
   if (frNames.length || frFlt) o += '<h3>Ricevuti da</h3><div class="dpills">' + frNames.map(function (n) {
     return '<button type="button" class="dpill" data-g="fr" data-v="' + esc(n) + '" aria-pressed="' + (frFlt === n ? 'true' : 'false') + '">' + esc(n) + '<span class="n">' + frs[n] + '</span></button>';
   }).join('') + '</div>';
+  /* da sistemare: tenuti a parte, in fondo, perche' non servono a sfogliare ma a mettere ordine */
+  var fix = ['guess', 'dup'].filter(function (k) { return cnt[k] || flt === k; });
+  if (fix.length) o += '<h3>Da sistemare</h3><div class="dpills">' + fix.map(function (k) { return pill('flt', k, FLT_TXT[k], cnt[k], flt, ' fix'); }).join('') + '</div>';
   var pre = '';
   if (autFlt) pre += '<p class="dq"><span>Autore: ' + esc(autName) + '</span><button type="button" class="ico" data-g="aut" data-v="" aria-label="Togli il filtro autore">×</button></p>';
   if (edFlt) pre += '<p class="dq"><span>Casa editrice: ' + esc(facetName('e', edFlt)) + '</span><button type="button" class="ico" data-g="ed" data-v="" aria-label="Togli il filtro casa editrice">×</button></p>';
@@ -4038,6 +4046,7 @@ function renderDrawer() {
   $('#drawerFlt').innerHTML = o;
   body.scrollTop = st;
   $('#sort').value = sortBy;
+  paintMenuHome();
   $('#drawerHint').hidden = !!settings.swiped;
   updateDrawerFoot();
 }
@@ -4053,6 +4062,7 @@ $('#drawerFlt').addEventListener('click', function (e) {
   if (!x) return;
   var g = x.dataset.g, v = x.dataset.v;
   if (g === 'quotes') { closeDrawer(); openAllQuotes(); return; }
+  if (g === 'more') { drawerMore[v] = true; renderDrawer(); return; }
   if (g === 'flt') flt = flt === v ? '' : v;
   else if (g === 'read') readFlt = readFlt === v ? '' : v;
   else if (g === 'sh') shFlt = shFlt === v ? '' : v;
@@ -4082,16 +4092,30 @@ function releaseDrawerStyles() {
   drawerEl.style.transition = ''; scrimEl.style.transition = '';
   drawerEl.style.transform = ''; scrimEl.style.opacity = '';
 }
-var drawerTab = 'flt';
+var drawerTab = 'opt', drawerSub = false;      // 'opt' = pagina principale del menu, 'flt' = filtri e ordine
 function setDrawerTab(t) {
-  drawerTab = t === 'opt' ? 'opt' : 'flt';
-  $('#dtFlt').setAttribute('aria-selected', drawerTab === 'flt' ? 'true' : 'false');
-  $('#dtOpt').setAttribute('aria-selected', drawerTab === 'opt' ? 'true' : 'false');
+  drawerTab = t === 'flt' ? 'flt' : 'opt';
+  $('#drawerH').textContent = drawerTab === 'flt' ? 'Filtri e ordine' : 'Menu';
+  $('#drawerBack').hidden = drawerTab !== 'flt';
   $('#drawerFilters').hidden = drawerTab !== 'flt';
   $('#drawerOpts').hidden = drawerTab !== 'opt';
   $('#drawerFoot').hidden = drawerTab !== 'flt';
-  if (drawerTab === 'opt') { $('#optBackupHint').textContent = backupHint(); renderVersion(); checkVersion(); }
+  if (drawerTab === 'opt') { $('#optBackupHint').textContent = backupHint(); renderVersion(); checkVersion(); paintMenuHome(); }
   $('#drawerBody').scrollTop = 0;
+}
+var SORT_TXT = { recent: 'dai più recenti', titolo: 'per titolo', autore: 'per autore', editore: 'per casa editrice', anno: 'per anno', scaffale: 'per scaffale', voto: 'per voto', letti: 'letti di recente' };
+function paintMenuHome() {                        // la pagina principale riassume filtri e ordine, senza mostrarli
+  var n = activeCount(), lib = tab === 'lib';
+  var what = n ? (n === 1 ? '1 filtro attivo' : n + ' filtri attivi') : (lib ? 'Tutti i libri' : 'Tutti i desideri');
+  $('#goFltTxt').textContent = what + (q ? ', con ricerca' : '') + ', ' + (SORT_TXT[sortBy] || 'dai più recenti');
+  $('#goFltN').hidden = !n; $('#goFltN').textContent = n;
+  $('#goFilters').classList.toggle('on', !!(n || q));
+  var nq = allQuotes().length;
+  $('#goQuotes').hidden = !nq; $('#goQTxt').textContent = nq === 1 ? '1 citazione salvata' : nq + ' citazioni salvate';
+}
+function goFilters() {
+  setDrawerTab('flt'); renderDrawer();
+  if (!drawerSub) { try { history.pushState({ drawer: 1, sub: 1 }, ''); drawerSub = true; } catch (e) {} }   // Indietro torna al menu
 }
 function backupHint() {
   var last = settings.lastBackup;
@@ -4099,7 +4123,7 @@ function backupHint() {
 }
 function openDrawer(t, reuse) {
   if (t === 'opt' || t === 'flt') setDrawerTab(t);
-  else if (!drawerOpen) setDrawerTab('flt');
+  else if (!drawerOpen) setDrawerTab('opt');          // dal bordo o dalla linguetta: il menu, non direttamente i filtri
   if (reuse) { try { history.replaceState({ drawer: 1 }, ''); drawerPushed = true; } catch (e) {} }
   if (!drawerOpen) { renderDrawer(); drawerReturn = document.activeElement; }
   showDrawerEls();
@@ -4123,14 +4147,18 @@ function closeDrawer(fromPop) {
   $('#btnFilters').setAttribute('aria-expanded', 'false');
   clearTimeout(drawerTimer);
   drawerTimer = setTimeout(function () { if (!drawerOpen) { drawerEl.hidden = true; scrimEl.hidden = true; drawerEl.setAttribute('inert', ''); } }, 280);
-  if (drawerPushed && !fromPop) { drawerPushed = false; try { history.back(); } catch (e) {} }
+  if (drawerPushed && !fromPop) { drawerPushed = false; try { if (drawerSub) history.go(-2); else history.back(); } catch (e) {} }
+  drawerSub = false;
   if (was && drawerReturn && drawerReturn.focus && drawerEl.contains(document.activeElement)) { try { drawerReturn.focus({ preventScroll: true }); } catch (e) {} }
 }
 $('#btnFilters').addEventListener('click', function () { drawerOpen ? closeDrawer() : openDrawer('flt'); });
-$('#edgeTab').addEventListener('click', function () { openDrawer('flt'); });
+$('#edgeTab').addEventListener('click', function () { openDrawer('opt'); });
 $('#btnOpts').addEventListener('click', function () { openDrawer('opt'); });
-$('#dtFlt').addEventListener('click', function () { setDrawerTab('flt'); renderDrawer(); });
-$('#dtOpt').addEventListener('click', function () { setDrawerTab('opt'); });
+$('#goFilters').addEventListener('click', goFilters);
+$('#drawerBack').addEventListener('click', function () { if (drawerSub) history.back(); else setDrawerTab('opt'); });
+$('#goQuotes').addEventListener('click', function () { closeDrawer(); openAllQuotes(); });
+$('#goStats').addEventListener('click', function () { closeDrawer(); openStats(); });
+window.addEventListener('popstate', function (e) { if (drawerOpen && drawerSub && e.state && e.state.drawer && !e.state.sub) { drawerSub = false; setDrawerTab('opt'); } });
 $('#drawerOpts').addEventListener('click', function (e) {
   var x = e.target.closest('[data-sec]');
   if (!x) return;
@@ -4150,7 +4178,7 @@ function applyLook(rerender) {
   var dark = settings.theme === 'dark' || (settings.theme === 'auto' && darkMQ && darkMQ.matches);
   var m = document.querySelector('meta[name="theme-color"]');
   if (m && !root.hasAttribute('data-splash')) m.setAttribute('content', PALS[settings.pal][dark ? 1 : 0]);   // durante l'apertura la barra resta verde
-  ['theme', 'pal', 'ft', 'fb'].forEach(function (k) {
+  ['theme', 'pal', 'ft', 'fb', 'viewDef'].forEach(function (k) {
     Array.prototype.forEach.call(document.querySelectorAll('input[name="' + k + '"]'), function (r) { r.checked = r.value === settings[k]; });
   });
   $('#icoLoan').innerHTML = icon('loan');
@@ -4163,6 +4191,7 @@ document.addEventListener('change', function (e) {
   else if (t.name === 'pal' && PALS[t.value]) { settings.pal = t.value; saveSettings(); applyLook(false); }
   else if (t.name === 'ft' && FONTS_T.indexOf(t.value) >= 0) { settings.ft = t.value; saveSettings(); applyLook(false); }
   else if (t.name === 'fb' && FONTS_B.indexOf(t.value) >= 0) { settings.fb = t.value; saveSettings(); applyLook(false); }
+  else if (t.name === 'viewDef') { settings.viewDef = t.value === 'list' ? 'list' : 'grid'; setView(settings.viewDef); collapseCards(); renderList(); toast(settings.viewDef === 'grid' ? 'All\'apertura: copertine.' : 'All\'apertura: elenco.'); }
 });
 $('#lookReset').addEventListener('click', function () {
   var before = { theme: settings.theme, pal: settings.pal, ft: settings.ft, fb: settings.fb };
@@ -5677,6 +5706,10 @@ $('#optPrice').checked = settings.price;
 $('#optQuoteOcr').checked = !!settings.quoteOcrAuto;
 $('#optExtra').checked = settings.extra;
 $('#optOpenAll').checked = settings.openAll;
+(function () {                                   // ?vista=elenco / ?vista=copertine nell'indirizzo: quella vista per questa apertura (comodo per i link e per le prove)
+  var m = /[?&]vista=(elenco|copertine)\b/.exec(location.search);
+  if (m) settings.view = m[1] === 'elenco' ? 'list' : 'grid';
+})();
 setView(settings.view);
 loadQuota();
 applyLook(false);

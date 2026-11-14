@@ -1425,3 +1425,31 @@ body.selecting .don-row,body.selecting .don-ask,body.scanning .don-row{display:n
 .snap-msg.dark{color:#ffd54a;font-weight:600}
 .snap-torch.hint{background:#ffd54a;color:#111;border-color:#ffd54a}
 @media (prefers-reduced-motion: reduce){.rec-bar span{transition:none}.snap-focus{animation:none}}
+
+/* ---- menu laterale: piu' largo (due terzi dello schermo), pagina principale e filtri come pagina a parte ---- */
+.drawer{width:min(67vw,440px)}
+.drawer-head{justify-content:flex-start;gap:6px;padding:14px 8px 4px 12px}
+.drawer-head h2{flex:1 1 auto;margin:0;font-size:22px;line-height:1.2}
+.drawer-head .dback{font-size:30px;margin-left:-6px}
+.dmain{margin-top:6px}
+.dmenu .dgo{gap:10px}
+.dmenu .dgo.on{background:var(--accent-soft)}
+.dmenu .dgo.on b{color:var(--accent)}
+.dbadge{flex:0 0 auto;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:var(--accent);color:var(--accent-ink);font:700 12.5px/22px var(--font-body);text-align:center}
+.dbadge[hidden]{display:none}
+.dmenu .dopt > span:first-child{flex:1 1 auto;min-width:0}
+/* «Sostieni»: in mezzo alle impostazioni, con uno sfondo suo ma nella stessa palette */
+.dmenu .don-menu{margin:8px 0;padding:12px 10px;gap:12px;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 28%,transparent);border-radius:14px}
+.dmenu .don-menu:hover{background:var(--accent-soft)}
+.dmenu .don-menu b{color:var(--accent)}
+.dmenu .don-menu small{color:var(--ink);opacity:.78}
+.don-cup{flex:0 0 auto;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--surface);font-size:20px;line-height:1}
+.dmenu .don-menu > span:nth-child(2){flex:1 1 auto;min-width:0}
+/* filtri: pillole raggruppate, «Altri…» per gli elenchi lunghi, «Da sistemare» in fondo e piu' discreto */
+#drawerFilters .dpills{gap:7px}
+.dpill.more{border-style:dashed;color:var(--accent);background:transparent}
+.dpill.fix:not([aria-pressed="true"]){background:var(--surface2)}
+#drawerFilters h3:first-child{margin-top:8px}
+/* etichetta sulle copertine («Prestato», «Da verificare»): testo centrato nel riquadro (prima ereditava l'altezza di riga di .badge) */
+.cover .badge{display:inline-flex;align-items:center;justify-content:center;height:auto;min-height:22px;padding:2px 9px;line-height:1.15;min-width:0}
+.dmenu .don-menu > .don-cup{flex:0 0 38px}

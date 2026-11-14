@@ -488,6 +488,13 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         </div>
         <p class="hint">Chiaro è il predefinito. Automatico segue il tema del telefono (chiaro di giorno, scuro di sera se l'hai impostato così).</p>
       </fieldset>
+      <fieldset class="choice">
+        <legend>All'apertura mostra</legend>
+        <div class="seg seg-view">
+          <label><input type="radio" name="viewDef" value="grid"><span>Copertine</span></label><label><input type="radio" name="viewDef" value="list"><span>Elenco</span></label>
+        </div>
+        <p class="hint">Copertine è il predefinito. Il pulsante «Elenco» / «Copertine» sopra i libri cambia la vista solo fino alla prossima apertura.</p>
+      </fieldset>
       <div id="lookNew">
         <fieldset class="choice">
           <legend>Colori</legend>
@@ -658,23 +665,27 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
 <div class="drawer-scrim" id="drawerScrim" hidden></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerH" hidden inert>
   <div class="drawer-head">
-    <h2 id="drawerH" class="sr">Menu</h2>
-    <div class="dtabs" role="tablist" aria-label="Menu">
-      <button role="tab" id="dtFlt" aria-selected="true" aria-controls="drawerFilters">Filtri</button><button role="tab" id="dtOpt" aria-selected="false" aria-controls="drawerOpts">Opzioni</button>
-    </div>
+    <button type="button" class="ico dback" id="drawerBack" aria-label="Torna al menu" hidden>‹</button>
+    <h2 id="drawerH">Menu</h2>
     <button class="ico" id="drawerX" aria-label="Chiudi il menu">×</button>
   </div>
   <div class="drawer-body" id="drawerBody">
-    <div id="drawerOpts" role="tabpanel" aria-labelledby="dtOpt" hidden>
+    <div id="drawerOpts" hidden>
+      <div class="dlist dmenu dmain">
+        <button type="button" class="dopt dgo" id="goFilters"><span><b>Filtri e ordine</b><small id="goFltTxt">Tutti i libri, dai più recenti</small></span><span class="dbadge" id="goFltN" hidden></span><span class="n" aria-hidden="true">›</span></button>
+        <button type="button" class="dopt dgo dq-all" id="goQuotes" hidden><span><b>Tutte le citazioni</b><small id="goQTxt"></small></span><span class="n" aria-hidden="true">›</span></button>
+        <button type="button" class="dopt dgo" id="goStats"><span><b>Statistiche</b><small>Libri, valore, pagine e letture</small></span><span class="n" aria-hidden="true">›</span></button>
+      </div>
+      <h3>Impostazioni</h3>
       <div class="dlist dmenu">
         <button type="button" class="dopt" data-sec="look"><span><b>Aspetto</b><small>Tema chiaro o scuro, colori, caratteri</small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt" data-sec="search"><span><b>Ricerca dei libri</b><small>Chiave Google, catalogo SBN, richieste di oggi</small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt" data-sec="cards"><span><b>Schede e prezzo</b><small>Campi in più, schede aperte, prezzo</small></span><span class="n" aria-hidden="true">›</span></button>
+        <button type="button" class="dopt don-menu" id="donMenu"><span class="don-cup" aria-hidden="true">☕</span><span><b>Sostieni Next Libris</b><small>Niente pubblicità, niente abbonamenti. Se ti piace, offrimi un caffè!</small></span><span class="n" aria-hidden="true">♥</span></button>
         <button type="button" class="dopt" data-sec="fix"><span><b>Sistema l'elenco</b><small>Doppioni, case editrici, copertine</small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt" data-sec="export"><span><b>Backup ed esportazione</b><small>Backup, Excel, PDF</small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt" data-sec="share"><span><b>Condivisione</b><small>Il tuo nome; link e QR code dell'app</small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt" data-sec="app"><span><b>App</b><small>Installazione e versione</small></span><span class="n" aria-hidden="true">›</span></button>
-        <button type="button" class="dopt don-menu" id="donMenu"><span><b>Sostieni Next Libris</b><small>È gratis: se ti è utile, una donazione con PayPal</small></span><span class="n" aria-hidden="true">♥</span></button>
       </div>
       <p class="dhint" id="optBackupHint"></p>
       <div class="ver" id="verBox">
@@ -685,7 +696,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         <button type="button" class="link" id="verLog">Novità delle versioni</button>
       </div>
     </div>
-    <div id="drawerFilters" role="tabpanel" aria-labelledby="dtFlt">
+    <div id="drawerFilters" hidden>
     <p class="dq" id="drawerQ" hidden><span id="drawerQTxt"></span><button type="button" class="ico" id="drawerQX" aria-label="Cancella la ricerca">×</button></p>
     <h3 id="hSort">Ordina per</h3>
     <select id="sort" class="dsel" aria-labelledby="hSort">

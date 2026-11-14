@@ -225,10 +225,11 @@ solo la prima volta che lo usi o lo vedi nell'elenco.
 
 OPZIONI
 -------
-Le Opzioni stanno nel menu laterale, scheda "Opzioni". Ci arrivi toccando
-l'ingranaggio in alto a destra (si apre direttamente li'), oppure aprendo
-il menu (linguetta ">" a sinistra, trascinamento o "Filtri") e toccando
-"Opzioni" in alto. Sono divise in:
+Il menu laterale si apre dall'ingranaggio in alto a destra, dalla
+linguetta ">" a sinistra o trascinando dal bordo sinistro. Occupa due terzi
+dello schermo. In cima: "Filtri e ordine" (con il riassunto dei filtri
+attivi), "Tutte le citazioni", "Statistiche"; sotto, le Impostazioni, con
+in mezzo il riquadro "Sostieni Next Libris". Le Impostazioni sono divise in:
 - Ricerca dei libri: chiave Google, catalogo SBN, richieste di oggi,
   "Prova la ricerca ISBN";
 - Schede e prezzo: schede sempre aperte, campi in piu', chiedi il prezzo;
@@ -242,27 +243,24 @@ il menu (linguetta ">" a sinistra, trascinamento o "Filtri") e toccando
 Ogni voce apre la sua pagina; "<" torna al menu, la x o il tasto Indietro
 del telefono la chiudono.
 
-FILTRI E ORDINE (pannello laterale a sinistra)
-----------------------------------------------
-Si apre in tre modi:
-- toccando la linguetta con la freccetta ">" sul bordo sinistro, a meta'
-  schermo: resta sempre li' mentre scorri l'elenco (diventa verde quando
-  ci sono filtri attivi);
-- trascinando il pollice dal bordo sinistro verso destra (il pannello segue
-  il dito). Se Android usa la navigazione a gesti, il bordo sinistro e' il
-  gesto "Indietro" del telefono e l'app non lo riceve: in quel caso parti
-  un dito piu' all'interno (va bene ovunque nella meta' sinistra dello
-  schermo). In alternativa, nelle impostazioni di Android si puo' ridurre
-  la sensibilita' del gesto Indietro;
-- toccando "Filtri" accanto alla ricerca.
-Il pannello occupa meno di meta' schermo, cosi' l'elenco resta visibile
-accanto e cambia subito. Dentro trovi: Ordina per; Mostra (tutti, in
-prestito, venduti e regalati, da verificare, copie e doppioni);
-Lettura (da leggere, in lettura, letti, non indicato); Scaffale; Genere.
-Ogni voce ha il numero dei libri. I filtri si sommano (es. "Da leggere" +
-scaffale "Studio"); "Mostra N libri" chiude il pannello, "Azzera" toglie
-tutti i filtri e svuota anche la ricerca (se c'e' una ricerca, il pannello
-la mostra in alto, con la x per cancellarla).
+FILTRI E ORDINE (pagina del menu laterale)
+------------------------------------------
+Si apre in due modi:
+- toccando "Filtri" accanto alla ricerca: si apre direttamente;
+- dal menu laterale (linguetta ">" a sinistra, che diventa verde quando ci
+  sono filtri attivi, o trascinando il pollice dal bordo sinistro verso
+  destra): tocca "Filtri e ordine". "<" o Indietro tornano al menu.
+  Se Android usa la navigazione a gesti, il bordo sinistro e' il gesto
+  "Indietro" del telefono e l'app non lo riceve: in quel caso parti un dito
+  piu' all'interno (va bene ovunque nella meta' sinistra dello schermo).
+Dentro trovi: Ordina per; Libri (tutti, preferiti, in prestito, con
+citazioni, venduti e regalati); Lettura (da leggere, in lettura, letti,
+non indicato); Scaffale; Genere; Ricevuti da; in fondo "Da sistemare"
+(da verificare, copie e doppioni). Sono "pillole" con il numero dei libri;
+scaffali e generi lunghi mostrano i primi 8 e "Altri...". I filtri si
+sommano (es. "Da leggere" + scaffale "Studio"); "Mostra N libri" chiude
+il menu, "Azzera" toglie tutti i filtri e svuota anche la ricerca (se c'e'
+una ricerca, compare in alto, con la x per cancellarla).
 Per chiuderlo: trascina verso sinistra, tocca fuori, la X o il gesto
 Indietro del telefono. Con il pannello chiuso, i filtri attivi restano
 visibili sotto la ricerca: tocca la x di uno per toglierlo. Il numerino
@@ -414,7 +412,11 @@ COPERTINE E STATISTICHE
 -----------------------
 "Copertine" mostra la libreria come una parete di copertine (quelle che
 mancano sono rettangoli colorati con il titolo); tocca un libro per aprirne
-la scheda. "Statistiche" mostra numero di libri, valore di copertina,
+la scheda. L'app si apre con le Copertine; in Opzioni > Aspetto ("All'apertura
+mostra") puoi scegliere l'Elenco. Il pulsante "Elenco"/"Copertine" sopra i
+libri cambia la vista solo fino alla prossima apertura (anche l'indirizzo
+dell'app con ?vista=elenco o ?vista=copertine sceglie la vista per
+quell'apertura). "Statistiche" mostra numero di libri, valore di copertina,
 prezzo medio, pagine, prestiti, e le classifiche di autori, case editrici,
 generi, scaffali e decenni: tocca un nome per vedere quei libri.
 
@@ -543,7 +545,7 @@ Nella scheda aperta, riquadro "Citazioni e appunti": "+ Aggiungi".
   "Inviato con Next Libris" con il link all'app.
 - Puoi indicare la pagina. Tocca una citazione per cambiarla o
   eliminarla. Sono salvate nel libro e nel backup.
-- Tutte insieme: menu laterale (Filtri) > "Leggi tutte le citazioni":
+- Tutte insieme: menu laterale > "Tutte le citazioni":
   elenco per libro, con ricerca e "Condividi" per ognuna; tocca il
   titolo per aprire il libro. Sempre nel menu, "Con citazioni" mostra
   solo i libri che ne hanno.

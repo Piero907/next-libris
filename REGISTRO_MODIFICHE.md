@@ -3,6 +3,16 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 84 · 14/11/2026
+- **Menu laterale rifatto:** più largo (due terzi dello schermo) e, aprendolo dal bordo o dalla linguetta, mostra il **menu** e non più direttamente i filtri.
+  - In cima: «Filtri e ordine» (con il riassunto, es. «1 filtro attivo, dai più recenti», e il numero dei filtri attivi), «Tutte le citazioni», «Statistiche».
+  - Sotto, «Impostazioni»: Aspetto, Ricerca dei libri, Schede e prezzo, Sistema l'elenco, Backup, Condivisione, App.
+  - «Filtri e ordine» si apre come pagina a parte, con ‹ e Indietro per tornare al menu. Il pulsante «Filtri» della schermata principale la apre direttamente.
+- **Filtri riorganizzati:** pillole raggruppate per tema (Libri, Lettura, Scaffale, Genere, Ricevuti da); gli elenchi lunghi mostrano i primi 8 e «Altri…»; «Da verificare» e «Copie e doppioni» stanno a parte in fondo, in «Da sistemare». In basso resta «Mostra N libri».
+- **Sostieni Next Libris** è in mezzo alle impostazioni, in un riquadro con lo sfondo verde chiaro della palette e una tazzina: «Niente pubblicità, niente abbonamenti. Se ti piace, offrimi un caffè!».
+- **«Prestato»** sulle copertine: la scritta è centrata nel riquadro celeste.
+- **Vista all'apertura:** in Opzioni › Aspetto si sceglie se l'app si apre con le **Copertine** (ora la predefinita) o con l'**Elenco**. Il pulsante sopra i libri cambia la vista solo fino alla prossima apertura.
+
 ## Versione 83 · 14/11/2026
 - **Foto di un libro, una finestra sola:** dopo lo scatto non compare più «Libro aggiunto» con il solo prezzo. Si apre «Riconosco il libro» con la foto, la barra e la percentuale dell'avanzamento; poi si passa da soli al passo giusto:
   - libro riconosciuto (o codice a barre letto) → «Libro aggiunto» con titolo, autore e prezzo facoltativo;
