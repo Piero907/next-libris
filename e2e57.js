@@ -1,5 +1,5 @@
 const CFG = require("./_config");
-// finestre dal basso: si chiudono trascinandole verso il basso (non se il contenuto e' scorso, non partendo da un campo; un trascinamento corto le lascia aperte)
+// backup: pulsanti chiari; finestre dal basso: si chiudono trascinandole verso il basso (non se il contenuto e' scorso, non partendo da un campo; un trascinamento corto le lascia aperte)
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -46,6 +46,12 @@ const books = Array.from({ length: 6 }, (_, i) => ({ id: 'd' + i, t: 'Libro ' + 
   await page.waitForFunction(() => document.querySelectorAll('#logBody .log-v').length > 5, { timeout: 8000 });
   await drag('#logSheet .sheet-in h2', 300); assert(!(await vis('#logSheet')), 'registro chiuso trascinando');
   assert(await page.evaluate(() => document.body.classList.contains('drawer-open')), 'il menu sotto resta aperto');
+  // 6) Esporta: i pulsanti del backup dicono cosa fanno
+  await page.evaluate(() => window.__app.closeDrawer()); await wait(350);
+  await page.evaluate(() => document.querySelector('#btnExport').click()); await wait(300);
+  assert.strictEqual(await page.$eval('#btnShareBackup', e => e.textContent), 'Fai il backup e mandalo su Drive, email…');
+  assert.strictEqual(await page.$eval('#btnBackup', e => e.textContent), 'Fai il backup sul telefono (Download)');
+  assert(/più sicuro/.test(await page.$eval('#exportSheet', e => e.textContent)));
   assert.deepStrictEqual(errors, []);
   console.log('e2e57 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });
