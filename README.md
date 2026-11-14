@@ -49,7 +49,7 @@ APP_DIR=/percorso/copia node esegui.js
 ## Flusso di lavoro per ogni nuova versione
 
 1. Modificare i file dell'app (`app.js`, `index.html`, `style.css`, `lib.js`, `sw.js`…) in una copia di lavoro.
-2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8173) e una riga di commento iniziale che dica cosa prova.
+2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8174) e una riga di commento iniziale che dica cosa prova.
 3. Aggiornare `REGISTRO_MODIFICHE.md` (nuova voce `## Versione N · gg/mm/aaaa` in cima) e, se serve, `LEGGIMI.txt`.
 4. Alzare la versione: `python3 nuova_versione.py N "breve nota"`. Cambia insieme `APP_VERSION` in `app.js`, `version.json` e il nome della cache in `sw.js` (`catalogo-libri-vN`).
 5. Far girare **tutte** le prove (`node esegui.js`). Se un cambiamento voluto rompe una prova vecchia, si aggiorna la prova e lo si dice.
@@ -135,8 +135,9 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e51.js | 8170 | novità delle versioni dentro l'app, anche senza rete |
 | e2e52.js | 8171 | donazioni: riga dopo 5 accessi, promemoria ogni 50 libri, PayPal, soglia di 20 s |
 | e2e53.js | 8173 | foto della copertina non trovata: titolo e autore a mano; volume accanto al titolo; suono del prezzo |
+| e2e54.js | 8174 | tastiera: «Fatto» (non «Succ.») nei campi della scheda e delle finestre; Invio chiude la tastiera |
 
-Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8174** e poi a salire.
+Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8175** e poi a salire.
 
 ## Materiali (`img/`)
 
