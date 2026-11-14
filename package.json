@@ -1,0 +1,12 @@
+{
+  "name": "next-libris-prove",
+  "private": true,
+  "description": "Prove automatiche di Next Libris (non fanno parte dell'app)",
+  "scripts": {
+    "test": "node esegui.js",
+    "unita": "node esegui.js --solo-unita"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.17.0"
+  }
+}
