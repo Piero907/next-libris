@@ -80,7 +80,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 82, date: '2026-11-14', note: 'Tastiera: «Fatto» nei campi della scheda' };
+var APP_VERSION = { v: 83, date: '2026-11-14', note: 'Foto: una finestra con l\'avanzamento; poca luce; pagine mancanti' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'list', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -538,7 +538,8 @@ function thumbOf(canvas) {
   return t.toDataURL('image/jpeg', 0.7);
 }
 var ocrP = null;
-function getOcr(onMsg) {
+var ocrMsg = null;                                // chi sta leggendo riceve l'avanzamento (caricamento e lettura)
+function getOcr() {
   if (ocrP) return ocrP;
   ocrP = (async function () {
     if (!window.Tesseract) throw { code: 'ocr' };
@@ -547,7 +548,7 @@ function getOcr(onMsg) {
       workerPath: abs('vendor/worker.min.js'),
       corePath: abs('vendor/core'),
       langPath: abs('vendor/lang'),
-      logger: function (m) { if (onMsg && m && m.status === 'recognizing text') onMsg(Math.round((m.progress || 0) * 100)); }
+      logger: function (m) { if (ocrMsg && m) { try { ocrMsg(m); } catch (e) {} } }
     });
     await w.setParameters({ tessedit_pageseg_mode: String(window.Tesseract.PSM.SPARSE_TEXT), preserve_interword_spaces: '1' });
     return w;
@@ -708,25 +709,32 @@ async function processPhoto(id, file) {
   var s = S[id];
   function stop() { return !get(id) || !S[id] || S[id].manual; }    // eliminato, o scritto a mano nel frattempo
   if (s.manual) return;
-  s.st = 'reading'; s.msg = 'Leggo la foto…';
+  s.st = 'reading'; s.msg = 'Leggo la foto…'; s.pct = 5;
   refreshRow(id);
   try {
     var canvas = await loadCanvas(file, 2000);
+    s.pct = 15;
     if (stop()) return;
     s.thumb = thumbOf(canvas);
     try { s.big = scaled(canvas, 1200).toDataURL('image/jpeg', 0.85); } catch (e) { s.big = ''; }
     s.file = null;
     syncThumbs(); refreshRow(id);
+    s.msg = 'Cerco il codice a barre…'; setStatusText(id, s.msg);
     var code = await decodeCanvasBarcode(canvas);
     if (stop()) return;
-    if (code) { await fromIsbn(id, code); return; }
-
-    s.msg = 'Preparo il riconoscimento del testo (solo la prima volta)…'; setStatusText(id, s.msg);
-    var worker = await getOcr(function (p) { setStatusText(id, 'Leggo il testo… ' + p + '%'); });
-    setStatusText(id, 'Leggo il testo…');
-    var res = await worker.recognize(canvas);
+    if (code) { s.pct = 100; await fromIsbn(id, code); return; }
+    s.pct = 25;
+    s.msg = ocrP ? 'Leggo il testo della copertina…' : 'Preparo la lettura del testo (solo la prima volta)…'; setStatusText(id, s.msg);
+    ocrMsg = function (m) {
+      var p = typeof m.progress === 'number' ? m.progress : 0;
+      if (m.status === 'recognizing text') { s.pct = 40 + Math.round(40 * p); s.msg = 'Leggo il testo della copertina… ' + Math.round(p * 100) + '%'; setStatusText(id, s.msg); }
+      else s.pct = Math.max(s.pct, 25 + Math.round(15 * p));                 // caricamento del lettore (solo la prima volta)
+    };
+    var worker, res;
+    try { worker = await getOcr(); s.pct = Math.max(s.pct, 40); res = await worker.recognize(canvas); } finally { ocrMsg = null; }
     var data = res.data || {};
     if (stop()) return;
+    s.pct = 82;
     var lines = L.ocrLines(data);
     var price = L.extractPrice(data.text || '');
     var written = L.extractIsbns(data.text || '');
@@ -734,6 +742,7 @@ async function processPhoto(id, file) {
     if (written.length) { await fromIsbn(id, written[0], price); return; }
     var qs = L.buildQueries(lines);
     s.lines = lines; s.price = price;
+    s.msg = 'Cerco il libro nelle banche dati…'; s.pct = 88;
     if (!qs.length) { s.st = 'error'; s.err = 'Non riesco a leggere il testo della copertina.'; s.retry = null; refreshRow(id); autoManual(id); return; }
     s.st = 'search'; refreshRow(id);
     var out = await Promise.allSettled(qs.map(function (qq) { return L.searchText(qq, lookupOpts()); }));
@@ -772,8 +781,45 @@ function addPhotos(files, ask) {
     last = id;
   });
   renderList(); updateSummary();
-  if (ask && settings.price && list.length === 1) askPrice(last);
+  if (ask && list.length === 1) startFlow(last);
 }
+/* ---- Foto di un libro: una sola finestra con l'avanzamento, poi da sola il passo giusto:
+   trovato -> prezzo; piu' edizioni -> scelta (poi prezzo); non trovato o illeggibile -> titolo, autore e prezzo a mano ---- */
+var flow = { id: null, t: 0 };
+function startFlow(id) {
+  flow.id = id;
+  $('#recImg').style.backgroundImage = ''; $('#recImg').hidden = true;
+  $('#recSheet').hidden = false;
+  clearInterval(flow.t); flow.t = setInterval(flowTick, 200);
+  flowTick();
+}
+function hideFlow() { clearInterval(flow.t); flow.t = 0; $('#recSheet').hidden = true; }
+function flowPaint(s) {
+  var pct = Math.max(0, Math.min(100, Math.round(s.pct || 0)));
+  var msg = s.st === 'queued' ? 'Preparo la foto…' : s.st === 'search' ? 'Cerco il libro nelle banche dati…' : (s.msg || 'Leggo la foto…');
+  msg = msg.replace(/ \d+%$/, '');
+  if ($('#recMsg').textContent !== msg) $('#recMsg').textContent = msg;
+  $('#recFill').style.width = pct + '%'; $('#recPct').textContent = pct + '%'; $('#recBar').setAttribute('aria-valuenow', pct);
+  if (s.thumb && $('#recImg').hidden) { $('#recImg').style.backgroundImage = 'url("' + s.thumb + '")'; $('#recImg').hidden = false; }
+}
+function flowTick() {
+  var id = flow.id, b = id && get(id), s = id && S[id];
+  if (!id || $('#recSheet').hidden) { hideFlow(); return; }
+  if (!b) { hideFlow(); flow.id = null; return; }                 // eliminato, o era gia' in elenco (lo dice il messaggio)
+  var st = s && s.st;
+  if (st === 'queued' || st === 'reading' || st === 'search') { flowPaint(s); return; }
+  hideFlow();
+  if (st === 'choose') { openPick(id); return; }                   // flow.id resta: dopo la scelta chiede il prezzo
+  flow.id = null;
+  if (st === 'nf' || st === 'error' || st === 'wait') { openManual(id, true); return; }
+  if (settings.price && b.c == null) askPrice(id);                 // trovato (o codice a barre letto): il prezzo, facoltativo
+  else if (b.t) toast('Aggiunto: ' + b.t + '.');
+}
+function flowAfterPick(id) { if (flow.id !== id) return; flow.id = null; if (settings.price && get(id) && get(id).c == null) askPrice(id); }
+function flowLater() { var id = flow.id; flow.id = null; hideFlow(); if (id && S[id]) S[id].later = true; }
+$('#recMan').addEventListener('click', function () { var id = flow.id; flow.id = null; hideFlow(); if (id) openManual(id, true); });
+$('#recBg').addEventListener('click', flowLater);
+$('#recSheet').addEventListener('click', function (e) { if (e.target === e.currentTarget) flowLater(); });
 /* Seconda foto, facoltativa: il prezzo. La chiedo subito, senza aspettare che il libro sia riconosciuto. */
 var askId = null;
 var askTick = null;
@@ -1665,12 +1711,15 @@ function snapPhoto(title, fallbackInput) {
       try { history.pushState({ snap: 1 }, ''); snap.pushed = true; } catch (e) {}       // solo a fotocamera aperta: Indietro la chiude
       var v = $('#snapVideo'); v.srcObject = snap.stream; try { await v.play(); } catch (e) {}
       snap.track = snap.stream.getVideoTracks()[0];
+      var caps = {};
       try {
-        var caps = snap.track.getCapabilities ? snap.track.getCapabilities() : {};
+        caps = snap.track.getCapabilities ? snap.track.getCapabilities() : {};
         $('#snapTorch').hidden = !caps.torch;
         if (caps.focusMode && caps.focusMode.indexOf('continuous') >= 0) snap.track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(function () {});
       } catch (e) {}
-      $('#snapMsg').textContent = '';
+      snap.caps = caps || {};
+      $('#snapMsg').textContent = 'Tocca il libro sullo schermo per mettere a fuoco.';
+      clearInterval(snap.lt); snap.lt = setInterval(snapLight, 700);
     } catch (e) {                                  // fotocamera non disponibile o negata: uso quella del telefono
       snap.done = null; stopSnapStream();
       $('#snap').hidden = true; document.body.classList.remove('snapping');
@@ -1678,7 +1727,55 @@ function snapPhoto(title, fallbackInput) {
     }
   });
 }
-function stopSnapStream() { if (snap.stream) snap.stream.getTracks().forEach(function (t) { t.stop(); }); snap.stream = null; snap.track = null; snap.torch = false; $('#snapTorch').setAttribute('aria-pressed', 'false'); }
+function stopSnapStream() {
+  if (snap.stream) snap.stream.getTracks().forEach(function (t) { t.stop(); });
+  snap.stream = null; snap.track = null; snap.torch = false; snap.dark = false;
+  clearInterval(snap.lt); clearTimeout(snap.ft);
+  $('#snapTorch').setAttribute('aria-pressed', 'false'); $('#snapTorch').classList.remove('hint'); $('#snapMsg').classList.remove('dark'); $('#snapFocus').hidden = true;
+}
+/* poca luce: la messa a fuoco fatica e la foto viene mossa. Misuro la luminosita' dell'inquadratura e lo dico,
+   suggerendo «Luce» se il telefono ce l'ha (con isteresi, per non far lampeggiare l'avviso) */
+function snapLight() {
+  var v = $('#snapVideo');
+  if (!snap.track || !v.videoWidth) return;
+  try {
+    var c = snap.lc || (snap.lc = document.createElement('canvas')); c.width = 32; c.height = 24;
+    var x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(v, 0, 0, 32, 24);
+    var d = x.getImageData(0, 0, 32, 24).data, sum = 0;
+    for (var i = 0; i < d.length; i += 4) sum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    var lum = sum / (d.length / 4);
+    snap.lum = Math.round(lum);
+    var dark = snap.torch ? false : snap.dark ? lum < 72 : lum < 55;
+    if (dark === snap.dark) return;
+    snap.dark = dark;
+    var m = $('#snapMsg'), torch = !!(snap.caps && snap.caps.torch);
+    m.classList.toggle('dark', dark);
+    m.textContent = dark ? (torch ? 'Poca luce: accendi «Luce», la foto viene più nitida.' : 'Poca luce: avvicinati a una lampada, la foto verrebbe sfocata.') : 'Tocca il libro sullo schermo per mettere a fuoco.';
+    $('#snapTorch').classList.toggle('hint', dark && torch);
+  } catch (e) {}
+}
+/* tocco sull'inquadratura: mette a fuoco li' (dove il telefono lo permette), poi torna alla messa a fuoco continua */
+function snapFocusAt(e) {
+  var v = $('#snapVideo');
+  if (!snap.track || !v.videoWidth) return;
+  var r = v.getBoundingClientRect(), sc = Math.min(r.width / v.videoWidth, r.height / v.videoHeight);
+  var w = v.videoWidth * sc, h = v.videoHeight * sc, ox = r.left + (r.width - w) / 2, oy = r.top + (r.height - h) / 2;
+  var px = (e.clientX - ox) / w, py = (e.clientY - oy) / h;
+  if (px < 0 || px > 1 || py < 0 || py > 1) return;
+  var f = $('#snapFocus'); f.hidden = false; f.style.left = e.clientX + 'px'; f.style.top = e.clientY + 'px';
+  f.style.animation = 'none'; void f.offsetWidth; f.style.animation = '';
+  var caps = snap.caps || {}, fm = caps.focusMode || [], adv = {};
+  if (caps.pointsOfInterest) adv.pointsOfInterest = [{ x: px, y: py }];
+  if (fm.indexOf('single-shot') >= 0) adv.focusMode = 'single-shot';
+  else if (fm.indexOf('continuous') >= 0) adv.focusMode = 'continuous';
+  snap.taps = (snap.taps || 0) + 1;
+  if (!Object.keys(adv).length) return;
+  var tr = snap.track;
+  tr.applyConstraints({ advanced: [adv] }).catch(function () {});
+  clearTimeout(snap.ft);
+  snap.ft = setTimeout(function () { if (snap.track === tr && fm.indexOf('continuous') >= 0) tr.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(function () {}); }, 3500);
+}
+$('#snapVideo').addEventListener('click', snapFocusAt);
 function closeSnap(result, fromPop) {
   if ($('#snap').hidden) return;
   stopSnapStream();
@@ -1714,6 +1811,7 @@ $('#snapTorch').addEventListener('click', function () {
   snap.torch = !snap.torch;
   snap.track.applyConstraints({ advanced: [{ torch: snap.torch }] }).catch(function () {});
   $('#snapTorch').setAttribute('aria-pressed', snap.torch ? 'true' : 'false');
+  snap.dark = null; snapLight();                    // ridisegna subito l'avviso
 });
 window.addEventListener('popstate', function () { if (!$('#snap').hidden) { snap.pushed = false; closeSnap(null, true); } });
 /* ---- editor della foto: evidenziatore, penna, gomma, emoticon e adesivi; tutto in coordinate dell'immagine.
@@ -3306,10 +3404,15 @@ function closePick() { $('#pickSheet').hidden = true; pickId = null; }
 
 /* ---- Titolo e autore a mano: quando la foto della copertina non trova il libro (o mentre cerca ancora) ---- */
 var manId = null;
-function openManual(id) {
+var manPrice = false;
+function openManual(id, withPrice) {
   var b = get(id), s = S[id] || {};
   if (!b) return;
   manId = id;
+  manPrice = !!(withPrice && settings.price && b.c == null);
+  $('#manP').value = s.price != null ? L.fmtNum(s.price) : '';
+  document.querySelectorAll('#manForm .man-p').forEach(function (x) { x.hidden = !manPrice; });
+  $('#manA').setAttribute('enterkeyhint', manPrice ? 'next' : 'done');
   var ta = (s.lines || []).length ? L.splitTitleAuthor(s.lines) : {};    // il testo letto dalla foto come punto di partenza
   $('#manT').value = b.t || (ta.t ? niceCase(ta.t, false) : '');
   $('#manA').value = b.a || (ta.a ? niceCase(ta.a, true) : '');
@@ -3321,14 +3424,14 @@ function openManual(id) {
     : st === 'choose' ? 'Nessuna delle edizioni trovate va bene? Scrivilo tu' + (src ? ': la foto diventa la copertina.' : '.')
     : st === 'error' || st === 'wait' ? 'Scrivilo tu' + (src ? ': la foto diventa la copertina.' : '.')
     : 'Lo scrivi tu: smetto di cercarlo.';
-  $('#manErr').hidden = true;
+  $('#manErr').hidden = true; $('#manErr').textContent = 'Scrivi almeno il titolo.';
   $('#manSheet').hidden = false;
   setTimeout(function () { try { var i = $('#manT').value ? $('#manA') : $('#manT'); i.focus(); } catch (e) {} }, 60);
 }
 function closeManual() { $('#manSheet').hidden = true; manId = null; try { document.activeElement.blur(); } catch (e) {} }
 function autoManual(id) {                          // si apre da sola se e' l'unica foto in lavorazione e non c'e' altro aperto
   var b = get(id);
-  if (!b || b.t || b.i || scanning || !$('#manSheet').hidden || document.querySelector('.sheet:not([hidden]), .lightbox:not([hidden])')) return;
+  if (!b || b.t || b.i || (S[id] && S[id].later) || flow.id === id || scanning || !$('#manSheet').hidden || document.querySelector('.sheet:not([hidden]), .lightbox:not([hidden])')) return;
   var others = state.books.some(function (x) { var t = S[x.id] && S[x.id].st; return x.id !== id && (t === 'queued' || t === 'reading' || t === 'search' || t === 'nf'); });
   if (!others) openManual(id);
 }
@@ -3336,13 +3439,20 @@ $('#manForm').addEventListener('submit', function (e) {
   e.preventDefault();
   var id = manId, b = get(id), s = S[id] || {};
   var t = $('#manT').value.trim().replace(/\s+/g, ' '), a = $('#manA').value.trim().replace(/\s+/g, ' ');
-  if (!t) { $('#manErr').hidden = false; $('#manT').focus(); return; }
+  if (!t) { $('#manErr').textContent = 'Scrivi almeno il titolo.'; $('#manErr').hidden = false; $('#manT').focus(); return; }
+  var price = null, pv = manPrice ? $('#manP').value.trim() : '';
+  if (pv) {
+    price = L.parseNum(pv);
+    if (!(price > 0 && price < 1000)) { $('#manErr').textContent = 'Scrivi un prezzo, per esempio 14,50, oppure lascialo vuoto.'; $('#manErr').hidden = false; $('#manP').focus(); return; }
+    price = Math.round(price * 100) / 100;
+  }
   closeManual();
   if (!b) return;
   b.t = t; b.a = a;
   b.g = b.g.filter(function (k) { return k !== 't' && k !== 'a'; });
   if (s.big && !b.img && !coverURL[id]) saveCoverData(id, s.big);          // la foto scattata diventa la copertina
-  if (s.price != null && b.c == null) b.c = s.price;
+  if (price != null) b.c = price;
+  else if (s.price != null && b.c == null) b.c = s.price;
   b.nf = false;
   if (S[id]) { S[id].manual = true; ['st', 'cands', 'lines', 'price', 'err', 'retry', 'msg'].forEach(function (k) { delete S[id][k]; }); }
   touch(); refreshRow(id); updateSummary();
@@ -3353,6 +3463,7 @@ $('#manForm').addEventListener('submit', function (e) {
 $('#manCancel').addEventListener('click', closeManual);
 $('#manSheet').addEventListener('click', function (e) { if (e.target === e.currentTarget) closeManual(); });
 $('#manT').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('#manA').focus(); } });
+$('#manA').addEventListener('keydown', function (e) { if (e.key === 'Enter' && manPrice) { e.preventDefault(); $('#manP').focus(); } });
 
 /* ---------- export e backup ---------- */
 function exportBooks() {
@@ -4850,7 +4961,7 @@ function openStats() {
   var tiles = tile(nf.format(st.n), tab === 'wish' ? 'da comprare' : 'libri') +
     tile(eur(st.total), 'valore di copertina', st.noPrice ? 'senza prezzo: ' + st.noPrice : '') +
     (st.priced ? tile(eur(st.avg), 'prezzo medio') : '') +
-    (st.paged ? tile(nf.format(st.pages), 'pagine', st.paged < st.n ? 'su ' + st.paged + ' libri' : '') : '') +
+    (st.paged ? tile(nf.format(st.pages), 'pagine', st.paged < st.n ? 'su ' + st.paged + (st.paged === 1 ? ' libro' : ' libri') + ' · senza pagine: ' + (st.n - st.paged) : '') : '') +
     (tab === 'lib' ? tile(String(st.loans.length), 'in prestito') : '') +
     (st.gone ? tile(String(st.gone), 'non più in libreria', [st.goneBy.v ? st.goneBy.v + (st.goneBy.v === 1 ? ' venduto' : ' venduti') : '', st.goneBy.r ? st.goneBy.r + (st.goneBy.r === 1 ? ' regalato' : ' regalati') : '', st.goneBy.s ? st.goneBy.s + (st.goneBy.s === 1 ? ' smarrito' : ' smarriti') : ''].filter(Boolean).join(' · ')) : '') +
     (tab === 'lib' && (st.read || st.reading || st.toRead) ? tile(String(st.read), 'letti', [st.reading ? st.reading + ' in lettura' : '', st.toRead ? st.toRead + ' da leggere' : ''].filter(Boolean).join(' · ')) : '') +
@@ -5125,16 +5236,16 @@ $('#scanTorch').addEventListener('click', toggleTorch);
 window.addEventListener('popstate', function () { if (scanning) { pushed = false; stopScan(true); } });
 $('#isbnCancel').addEventListener('click', function () { $('#isbnSheet').hidden = true; });
 $('#isbnGo').addEventListener('click', submitIsbn);
-$('#pickClose').addEventListener('click', closePick);
-$('#pickText').addEventListener('click', function () { var id = pickId; closePick(); if (id) applyOcrText(id); });
-$('#pickMan').addEventListener('click', function () { var id = pickId; closePick(); if (id) openManual(id); });
+$('#pickClose').addEventListener('click', function () { if (flow.id === pickId) flow.id = null; closePick(); });
+$('#pickText').addEventListener('click', function () { var id = pickId; closePick(); if (id) { applyOcrText(id); flowAfterPick(id); } });
+$('#pickMan').addEventListener('click', function () { var id = pickId, inFlow = flow.id === id; closePick(); if (id) { if (inFlow) flow.id = null; openManual(id, inFlow); } });
 $('#pickList').addEventListener('click', function (e) {
   var b = e.target.closest('.cand');
   if (!b || pickId == null) return;
   var s = S[pickId], c = s && s.cands && s.cands[+b.dataset.i];
   var id = pickId;
   closePick();
-  if (c) applyCandidate(id, c);
+  if (c) { applyCandidate(id, c); flowAfterPick(id); }
 });
 $('#copyClose').addEventListener('click', function () { $('#copySheet').hidden = true; });
 document.addEventListener('keydown', function (e) {
@@ -5159,6 +5270,7 @@ document.addEventListener('keydown', function (e) {
   if (selOn) { endSel(false); return; }
   if (!$('#donSheet').hidden) { closeDon(); return; }
   if (!$('#manSheet').hidden) { closeManual(); return; }
+  if (!$('#recSheet').hidden) { flowLater(); return; }
   if (!$('#allqSheet').hidden) { closeAllQuotes(); return; }
   if (!$('#newsSheet').hidden) { $('#newsSheet').hidden = true; return; }
   if (!$('#priceAsk').hidden) closePriceAsk();
@@ -5602,6 +5714,6 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
   navigator.serviceWorker.register('sw.js').catch(function () {});
 }
 window.__ped = { st: function () { return ped; }, handles: function (o) { return pedHandles(o); }, stickers: function () { return pedStickers(); } };
-window.__app = { chimes: function () { return chime.n || 0; }, openManual: openManual, processPhoto: processPhoto, donAway: function (ms) { donHiddenAt = Date.now() - ms; }, donPaint: donPaint, donBack: donBack, openDon: openDon, buildBackup: buildBackup, readPrice: function (c, r) { return readPrice(c, r); }, filtersAll: function () { return { frFlt: frFlt, autFlt: autFlt, edFlt: edFlt, genFlt: genFlt, shFlt: shFlt, q: q }; }, openDrawer: openDrawer, closeDrawer: closeDrawer, openOptions: function (s) { openOptions(s || 'search'); }, closeOptions: function () { closeOptions(); }, filters: function () { return { flt: flt, readFlt: readFlt, shFlt: shFlt, genFlt: genFlt, sortBy: sortBy }; }, state: state, S: S, openState: function () { return openState; }, addIsbn: addIsbn, addPhotos: addPhotos, settings: settings, setTab: setTab, onScanned: onScanned, startScan: startScan,
+window.__app = { snapInfo: function () { return { lum: snap.lum, dark: !!snap.dark, taps: snap.taps || 0, msg: $('#snapMsg').textContent }; }, flow: function () { return flow.id; }, chimes: function () { return chime.n || 0; }, openManual: openManual, processPhoto: processPhoto, donAway: function (ms) { donHiddenAt = Date.now() - ms; }, donPaint: donPaint, donBack: donBack, openDon: openDon, buildBackup: buildBackup, readPrice: function (c, r) { return readPrice(c, r); }, filtersAll: function () { return { frFlt: frFlt, autFlt: autFlt, edFlt: edFlt, genFlt: genFlt, shFlt: shFlt, q: q }; }, openDrawer: openDrawer, closeDrawer: closeDrawer, openOptions: function (s) { openOptions(s || 'search'); }, closeOptions: function () { closeOptions(); }, filters: function () { return { flt: flt, readFlt: readFlt, shFlt: shFlt, genFlt: genFlt, sortBy: sortBy }; }, state: state, S: S, openState: function () { return openState; }, addIsbn: addIsbn, addPhotos: addPhotos, settings: settings, setTab: setTab, onScanned: onScanned, startScan: startScan,
   get scanning() { return scanning; }, setScanMode: function (m) { scanMode = m; }, setScanKind: setScanKind, get scanKind() { return scanKind; } };
 })();

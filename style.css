@@ -1405,3 +1405,23 @@ body.selecting .don-row,body.selecting .don-ask,body.scanning .don-row{display:n
 .man-form input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
 .status .btn.man{white-space:nowrap}
 .status.nf{color:var(--ink)}
+
+/* ---- foto della copertina: una sola finestra con l'avanzamento, poi il passo giusto ---- */
+.rec-in{grid-template-columns:minmax(0,1fr)}
+.rec-top{display:flex;gap:14px;align-items:center}
+.rec-txt{flex:1;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center}
+.rec-txt .msg{grid-column:1 / -1;margin:0}
+.rec-bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.rec-bar span{display:block;height:100%;width:0;border-radius:99px;background:var(--accent);transition:width .35s ease}
+.rec-pct{font-variant-numeric:tabular-nums;font-size:15px;min-width:3.2em;text-align:right}
+.man-pw{position:relative;display:block}
+.man-pw input{width:100%;box-sizing:border-box;padding-right:34px}
+.man-pw .eur{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600}
+.man-form .man-p[hidden]{display:none}
+/* fotocamera: punto di messa a fuoco e avviso di poca luce */
+.snap{position:fixed}
+.snap-focus{position:absolute;width:74px;height:74px;margin:-37px 0 0 -37px;border:2px solid #ffd54a;border-radius:50%;pointer-events:none;z-index:2;animation:snapf .9s ease-out forwards}
+@keyframes snapf{0%{transform:scale(1.35);opacity:0}25%{transform:scale(1);opacity:1}80%{opacity:1}100%{opacity:0}}
+.snap-msg.dark{color:#ffd54a;font-weight:600}
+.snap-torch.hint{background:#ffd54a;color:#111;border-color:#ffd54a}
+@media (prefers-reduced-motion: reduce){.rec-bar span{transition:none}.snap-focus{animation:none}}

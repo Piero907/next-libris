@@ -164,6 +164,13 @@ COME SI USA
   telefono, cerca il libro e, se e' certa, lo compila da sola; se ci sono
   piu' possibilita' ti fa scegliere. I dati ricavati dalla copertina hanno
   l'etichetta "Da verificare".
+  * Con una foto sola si apre "Riconosco il libro" con la percentuale
+    dell'avanzamento, poi da sola il passo giusto: riconosciuto -> prezzo
+    (facoltativo); piu' edizioni -> scelta e poi prezzo; non trovato ->
+    "Scrivi titolo e autore" con anche il prezzo. "Scrivi a mano" ferma la
+    ricerca, "Continua dopo" la lascia andare nell'elenco.
+  * Fotocamera: con poca luce compare un avviso (e "Luce" si illumina, se
+    il telefono ce l'ha); tocca il libro sullo schermo per mettere a fuoco.
   * Se il libro non si trova online (o il testo non si legge) si apre
     subito "Scrivi titolo e autore", gia' riempita con il testo letto:
     correggi e Salva, la foto diventa la copertina. Nella riga restano

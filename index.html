@@ -178,6 +178,25 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
   </div>
 </div>
 
+<div class="sheet" id="recSheet" hidden>
+  <div class="sheet-in rec-in" role="dialog" aria-modal="true" aria-labelledby="recH">
+    <h2 id="recH">Riconosco il libro</h2>
+    <div class="rec-top">
+      <span class="man-img" id="recImg" aria-hidden="true"></span>
+      <div class="rec-txt">
+        <p class="msg" id="recMsg" aria-live="polite">Leggo la foto…</p>
+        <div class="rec-bar" id="recBar" role="progressbar" aria-label="Avanzamento" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="recFill"></span></div>
+        <b class="rec-pct" id="recPct">0%</b>
+      </div>
+    </div>
+    <p class="hint">Dalla copertina il riconoscimento sbaglia spesso, soprattutto con poca luce: il codice a barre sul retro è più preciso. Puoi anche scrivere tu titolo e autore.</p>
+    <div class="row-btns">
+      <button class="btn" type="button" id="recMan">Scrivi a mano</button>
+      <button class="btn" type="button" id="recBg">Continua dopo</button>
+    </div>
+  </div>
+</div>
+
 <div class="sheet" id="manSheet" hidden>
   <div class="sheet-in man-in" role="dialog" aria-modal="true" aria-labelledby="manH">
     <h2 id="manH">Scrivi titolo e autore</h2>
@@ -187,6 +206,8 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       <input id="manT" type="text" enterkeyhint="next" spellcheck="false" placeholder="Il nome della rosa">
       <label for="manA">Autore <span class="opt">(facoltativo)</span></label>
       <input id="manA" type="text" enterkeyhint="done" spellcheck="false" placeholder="Umberto Eco">
+      <label for="manP" class="man-p">Prezzo di copertina <span class="opt">(facoltativo)</span></label>
+      <span class="man-p man-pw"><input id="manP" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" placeholder="es. 14,50"><span class="eur" aria-hidden="true">€</span></span>
     </form>
     <p class="msg bad" id="manErr" hidden>Scrivi almeno il titolo.</p>
     <div class="row-btns">
@@ -773,6 +794,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
 <div class="snap" id="snap" hidden role="dialog" aria-modal="true" aria-labelledby="snapH">
   <div class="snap-top"><button type="button" class="btn snap-x" id="snapClose">× Chiudi</button><b id="snapH">Foto</b></div>
   <video id="snapVideo" playsinline muted autoplay></video>
+  <span class="snap-focus" id="snapFocus" hidden aria-hidden="true"></span>
   <p class="snap-msg" id="snapMsg" aria-live="polite"></p>
   <div class="snap-bar">
     <button type="button" class="btn snap-gal" id="snapGal">Galleria</button>

@@ -3,6 +3,15 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 83 · 14/11/2026
+- **Foto di un libro, una finestra sola:** dopo lo scatto non compare più «Libro aggiunto» con il solo prezzo. Si apre «Riconosco il libro» con la foto, la barra e la percentuale dell'avanzamento; poi si passa da soli al passo giusto:
+  - libro riconosciuto (o codice a barre letto) → «Libro aggiunto» con titolo, autore e prezzo facoltativo;
+  - più edizioni possibili → la scelta, poi il prezzo;
+  - non trovato o testo illeggibile → «Scrivi titolo e autore», ora anche con il prezzo (facoltativo), tutto in una volta.
+  - «Scrivi a mano» c'è da subito e ferma la ricerca; «Continua dopo» chiude la finestra e lascia il libro in lavorazione nell'elenco.
+- **Fotocamera con poca luce:** l'app misura la luce dell'inquadratura e avvisa («Poca luce: accendi «Luce»…» o «avvicinati a una lampada»), evidenziando il pulsante «Luce» se il telefono ce l'ha. Toccando il libro sullo schermo si mette a fuoco lì (cerchio giallo), dove il telefono lo permette.
+- **Statistiche:** nel riquadro delle pagine c'è anche quanti libri non hanno le pagine («su 49 libri · senza pagine: 6»).
+
 ## Versione 82 · 14/11/2026
 - Nella scheda aperta la tastiera mostra «Fatto» (non più «Succ.») su Costo e su tutti gli altri campi: Invio chiude la tastiera, come già faceva. Lo stesso nei campi singoli delle finestre (prestito, numerazione, pagina della citazione, nome, obiettivo di lettura).
 
