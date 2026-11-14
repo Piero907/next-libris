@@ -80,7 +80,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 87, date: '2026-11-14', note: 'Suoni: accesi o spenti (Opzioni e fotocamera)' };
+var APP_VERSION = { v: 88, date: '2026-11-14', note: 'Backup che non partiva, nome del file, torcia e flash' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -982,6 +982,7 @@ function setScanKind(k) {
   sc.classList.toggle('k-text', k === 'text'); sc.classList.toggle('k-cover', k === 'cover');
   Array.prototype.forEach.call($('#scanKinds').querySelectorAll('[data-k]'), function (b) { b.setAttribute('aria-checked', b.dataset.k === k ? 'true' : 'false'); });
   $('#scanShootBox').hidden = k !== 'cover';
+  paintScanLight();
   clearTimeout(textTimer);
   $('#scanGuide').classList.remove('reading');
   scanMsg(kindMsg());
@@ -1038,7 +1039,15 @@ function coverCanvas() {
 }
 async function shootCover() {
   if (!scanning || shootBusy || scanMode === 'check') return;
+  var flashed = false;
+  if (scanLight.flash && !torchOn) {                // flash: luce accesa, attesa che l'immagine si schiarisca, scatto, luce spenta
+    shootBusy = true; $('#scanShoot').disabled = true;
+    flashed = await setTorch(true);
+    if (flashed) await new Promise(function (r) { setTimeout(r, 650); });
+    shootBusy = false; $('#scanShoot').disabled = false;
+  }
   var c = coverCanvas();
+  if (flashed) setTorch(false);
   if (!c) return;
   shootBusy = true; $('#scanShoot').disabled = true;
   var sc = $('#scan');
@@ -1070,7 +1079,8 @@ async function startScan(mode) {
     return;
   }
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false });
+    try { stream = await rearStream({ width: { ideal: 1920 }, height: { ideal: 1080 } }); }      // la posteriore vera: e' quella che ha la luce
+    catch (x) { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }, audio: false }); }
   } catch (e) {
     notice('Non posso usare la fotocamera. Consenti l\'accesso nelle impostazioni del sito, oppure usa Foto o Digita.');
     return;
@@ -1081,9 +1091,10 @@ async function startScan(mode) {
   var track = stream.getVideoTracks()[0];
   try {
     var caps = track.getCapabilities ? track.getCapabilities() : {};
-    $('#scanTorch').hidden = !caps.torch;
     if (caps.focusMode && caps.focusMode.indexOf('continuous') >= 0) track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(function () {});
   } catch (e) {}
+  scanLight.can = false; torchOn = false; paintScanLight();
+  scanLightCaps(track); setTimeout(function () { if (scanning && stream) scanLightCaps(stream.getVideoTracks()[0]); }, 700);   // su alcuni telefoni la luce risulta solo dopo un attimo
   scanCtx = { count: 0, added: 0, last: '', lastAt: 0 };
   setScanCount(scanMode === 'check' ? 'Ce l\'ho già?' : '0 aggiunti');
   $('#scanRes').hidden = true; $('#scanRes').innerHTML = ''; resCode = ''; resKind = '';
@@ -1263,11 +1274,38 @@ $('#scanRes').addEventListener('click', function (e) {
     if (wb) { moveToLib(wb.id, true); scanCtx.added++; showRes(code, 'done', wb, 'Spostato in Libreria'); }
   }
 });
+/* luce nella fotocamera della scansione: «Torcia» resta accesa; «Flash» (solo per la foto della copertina) si accende
+   un attimo quando scatti, come «Luce» nella fotocamera delle foto. */
+var scanLight = { can: false, flash: false };
+async function scanLightCaps(track) {
+  var can = false;
+  try { var c = track && track.getCapabilities ? track.getCapabilities() : {}; can = !!c.torch; } catch (e) {}
+  if (!can && track && window.ImageCapture) {
+    try { var pc = await new ImageCapture(track).getPhotoCapabilities(); can = !!(pc && pc.fillLightMode && (pc.fillLightMode.indexOf('flash') >= 0 || pc.fillLightMode.indexOf('torch') >= 0)); } catch (e) {}
+  }
+  if (can) scanLight.can = true;
+  paintScanLight();
+}
+function paintScanLight() {
+  var t = $('#scanTorch'), f = $('#scanFlash');
+  t.hidden = !scanLight.can; f.hidden = !scanLight.can || scanKind !== 'cover';
+  t.setAttribute('aria-pressed', torchOn ? 'true' : 'false'); t.setAttribute('aria-label', torchOn ? 'Torcia: accesa' : 'Torcia: spenta');
+  f.setAttribute('aria-pressed', scanLight.flash ? 'true' : 'false'); f.setAttribute('aria-label', scanLight.flash ? 'Flash per la foto della copertina: acceso' : 'Flash per la foto della copertina: spento');
+}
+async function setTorch(on) {
+  var tr = stream && stream.getVideoTracks()[0];
+  if (!tr) return false;
+  try { await tr.applyConstraints({ advanced: [{ torch: !!on }] }); return true; } catch (e) { return false; }
+}
 async function toggleTorch() {
-  try {
-    torchOn = !torchOn;
-    await stream.getVideoTracks()[0].applyConstraints({ advanced: [{ torch: torchOn }] });
-  } catch (e) { torchOn = false; }
+  var want = !torchOn, ok = await setTorch(want);
+  torchOn = ok ? want : false;
+  paintScanLight();
+  if (!ok && want) scanMsg('Questo telefono non lascia accendere la torcia da qui: prova la fotocamera di Foto, con «Luce».');
+}
+function toggleScanFlash() {
+  scanLight.flash = !scanLight.flash; paintScanLight();
+  scanMsg(scanLight.flash ? 'Flash acceso: la luce si accende un attimo quando scatti la copertina.' : 'Flash spento.');
 }
 
 /* ---------- vista ---------- */
@@ -1690,9 +1728,9 @@ $('#bulkSheet').addEventListener('click', function (e) {
 });
 /* ---- fotocamera dentro l'app: sempre quella posteriore (l'app Fotocamera del telefono a volte riparte da quella frontale) ---- */
 var snap = { stream: null, done: null, pushed: false, track: null, torch: false };
-async function rearStream() {
+async function rearStream(res) {
   var md = navigator.mediaDevices;
-  var hi = { width: { ideal: 3264 }, height: { ideal: 2448 } };
+  var hi = res || { width: { ideal: 3264 }, height: { ideal: 2448 } };
   try { return await md.getUserMedia({ video: Object.assign({ facingMode: { exact: 'environment' } }, hi), audio: false }); }
   catch (e) {
     var st = await md.getUserMedia({ video: Object.assign({ facingMode: { ideal: 'environment' } }, hi), audio: false });
@@ -3526,6 +3564,11 @@ function saveXLSX() {
 }
 /* ---------- backup ---------- */
 var backupReady = null;
+/* «Libreria di Piero - Next Libris - 2026-11-14»: si riconosce a colpo d'occhio tra i file */
+function backupName() {
+  var who = String(settings.name || '').replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, ' ').trim().slice(0, 30);
+  return (who ? 'Libreria di ' + who : 'La mia libreria') + ' - Next Libris - ' + today();
+}
 function coverIds() { return Object.keys(coverURL).filter(function (id) { return !!get(id); }).concat(quotePhKeys().filter(function (k) { return !!qphURL[k]; })); }
 /* Senza foto tue il backup e' pronto subito; con le foto va preparato prima (si leggono dal telefono), cosi' la condivisione parte al tocco. */
 /* nel backup vanno anche worker SBN e chiave Google (in uso e salvati): ripristinando su un altro telefono tornano anche loro */
@@ -3555,30 +3598,39 @@ function markBackup() { settings.lastBackup = Date.now(); saveSettings(); update
 function backup() {
   if (!storable().length) { toast('L\'elenco è vuoto: non c\'è niente da salvare.'); return; }
   if (!backupData()) { openExport(); toast('Preparo il backup con le tue foto: riprova tra un attimo.'); return; }
-  downloadBlob('next-libris-backup-' + today() + '.json', backupData(), 'application/json');
+  downloadBlob(backupName() + '.json', backupData(), 'application/json');
   markBackup();
   toast('Backup scaricato. Tienine una copia anche fuori dal telefono (Drive, email).');
 }
 /* Condivide il file di backup (Drive, Gmail, WhatsApp…). Chrome condivide solo alcuni tipi di file: se il .json non e' ammesso
-   lo mando come .txt (il contenuto e' identico e «Ripristina» lo accetta). Se la condivisione non c'e', scarico il file. */
+   lo mando come .txt (il contenuto e' identico e «Ripristina» lo accetta). Se la condivisione non parte, non scarico in silenzio:
+   lo dico, con «Riprova» (un tocco nuovo spesso basta) e «Salvalo nei Download». */
 async function shareBackup() {
   if (!storable().length) { toast('L\'elenco è vuoto: non c\'è niente da salvare.'); return; }
-  var data = backupData(), base = 'next-libris-backup-' + today(), file = null;
+  var data = backupData(), base = backupName(), file = null;
   if (!data) { openExport(); toast('Preparo il backup con le tue foto: riprova tra un attimo.'); return; }
   try {
     var cands = [new File([data], base + '.json', { type: 'application/json' }), new File([data], base + '.txt', { type: 'text/plain' })];
     for (var i = 0; i < cands.length && !file; i++) if (navigator.canShare && navigator.canShare({ files: [cands[i]] })) file = cands[i];
   } catch (e) { file = null; }
-  if (file) {
-    try {
-      await navigator.share({ files: [file], title: 'Backup Next Libris', text: 'Backup di Next Libris del ' + L.itDate(today()) });
-      markBackup(); toast('Backup condiviso.'); return;
-    } catch (e) {
-      if (e && e.name === 'AbortError') { toast('Condivisione annullata: il backup non è stato salvato.'); return; }
-    }
+  if (!file || !navigator.share) { bkFail('Questo telefono non permette di inviare il file da qui.', false); return; }
+  try {
+    await navigator.share({ files: [file] });
+    markBackup(); $('#bkFailSheet').hidden = true; toast('Backup inviato.');
+  } catch (e) {
+    if (e && e.name === 'AbortError') { toast('Invio annullato: il backup non è stato salvato.'); return; }
+    bkFail('Il telefono non ha aperto la condivisione' + (e && e.name ? ' (' + e.name + ')' : '') + '. Di solito riprovando parte.', true);
   }
-  backup();
 }
+function bkFail(msg, retry) {
+  $('#bkFailMsg').textContent = msg;
+  $('#bkFailRetry').hidden = !retry;
+  $('#bkFailSheet').hidden = false;
+}
+$('#bkFailRetry').addEventListener('click', function () { shareBackup(); });
+$('#bkFailDl').addEventListener('click', function () { $('#bkFailSheet').hidden = true; backup(); });
+$('#bkFailClose').addEventListener('click', function () { $('#bkFailSheet').hidden = true; });
+$('#bkFailSheet').addEventListener('click', function (e) { if (e.target === e.currentTarget) $('#bkFailSheet').hidden = true; });
 function updateBackupInfo() {
   var n = storable().length;
   $('#backupInfo').textContent = 'Ultimo backup: ' + L.agoText(settings.lastBackup) + ' · ' + n + (n === 1 ? ' libro' : ' libri') + ' salvati solo su questo telefono.';
@@ -5276,6 +5328,7 @@ $('#btnType').addEventListener('click', openIsbnSheet);
 $('#scanClose').addEventListener('click', function () { stopScan(false); });
 $('#scanDone').addEventListener('click', function () { stopScan(false); });
 $('#scanTorch').addEventListener('click', toggleTorch);
+$('#scanFlash').addEventListener('click', toggleScanFlash);
 window.addEventListener('popstate', function () { if (scanning) { pushed = false; stopScan(true); } });
 $('#isbnCancel').addEventListener('click', function () { $('#isbnSheet').hidden = true; });
 $('#isbnGo').addEventListener('click', submitIsbn);
@@ -5317,6 +5370,7 @@ document.addEventListener('keydown', function (e) {
   if (!$('#allqSheet').hidden) { closeAllQuotes(); return; }
   if (!$('#newsSheet').hidden) { $('#newsSheet').hidden = true; return; }
   if (!$('#priceAsk').hidden) closePriceAsk();
+  if (!$('#bkFailSheet').hidden) { $('#bkFailSheet').hidden = true; return; }
   ['#statsSheet', '#exportSheet', '#pubSheet', '#dupSheet', '#photoSheet'].forEach(function (k) { $(k).hidden = true; });
   if (!$('#loanSheet').hidden) closeLoan();
 });

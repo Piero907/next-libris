@@ -127,7 +127,8 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
     <span class="scan-count" id="scanCount">0 aggiunti</span>
     <span class="scan-tr">
       <button class="btn scan-snd" type="button" id="scanSound" aria-pressed="true" aria-label="Suoni accesi: tocca per spegnerli">🔊</button>
-      <button class="btn" id="scanTorch" hidden>Torcia</button>
+      <button class="btn scan-ico" type="button" id="scanFlash" hidden aria-pressed="false" aria-label="Flash per la foto della copertina: spento">⚡</button>
+      <button class="btn scan-ico" type="button" id="scanTorch" hidden aria-pressed="false" aria-label="Torcia: spenta">🔦</button>
     </span>
   </div>
   <div class="scan-mid"><div class="scan-guide" id="scanGuide"></div></div>
@@ -178,6 +179,19 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       <button class="btn" id="pickText">Nessuno: tieni il testo letto</button>
       <button class="btn" id="pickClose">Chiudi</button>
     </div>
+  </div>
+</div>
+
+<div class="sheet" id="bkFailSheet" hidden>
+  <div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="bkFailH">
+    <h2 id="bkFailH">Il backup non è partito</h2>
+    <p class="msg" id="bkFailMsg">Il telefono non ha aperto la condivisione.</p>
+    <div class="menu">
+      <button class="btn primary" type="button" id="bkFailRetry">Riprova a inviarlo</button>
+      <button class="btn" type="button" id="bkFailDl">Salvalo nei Download</button>
+      <button class="btn" type="button" id="bkFailClose">Chiudi</button>
+    </div>
+    <p class="hint">Dai Download puoi metterlo su Drive dopo: apri l'app Drive, tocca «+» e poi «Carica».</p>
   </div>
 </div>
 

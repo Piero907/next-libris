@@ -169,6 +169,9 @@ COME SI USA
     (facoltativo); piu' edizioni -> scelta e poi prezzo; non trovato ->
     "Scrivi titolo e autore" con anche il prezzo. "Scrivi a mano" ferma la
     ricerca, "Continua dopo" la lascia andare nell'elenco.
+  * Fotocamera della scansione: in alto a destra la torcia (resta accesa)
+    e, inquadrando la copertina, il flash (la luce si accende un attimo
+    quando scatti). Compaiono se il telefono permette di accendere la luce.
   * Fotocamera: con poca luce compare un avviso (e "Luce" si illumina, se
     il telefono ce l'ha); tocca il libro sullo schermo per mettere a fuoco.
   * Se il libro non si trova online (o il testo non si legge) si apre
@@ -789,9 +792,11 @@ disinstalli l'app o cambi telefono, si perde. Per questo:
 - Esporta > "Fai il backup e mandalo su Drive, email..." apre il menu di
   condivisione del telefono (e' la scelta piu' sicura):
   scegli Drive, Gmail, WhatsApp (anche a te stesso)... Il file si chiama
-  next-libris-backup-DATA. Chrome a volte non permette di condividere
+  "Libreria di NOME - Next Libris - DATA". Chrome a volte non permette di condividere
   file .json: in quel caso lo stesso backup parte come file .txt (il
-  contenuto e' identico). Se la condivisione non c'e', il file si scarica.
+  contenuto e' identico). Se la condivisione non parte compare "Il
+  backup non e' partito": "Riprova a inviarlo" (di solito basta) oppure
+  "Salvalo nei Download".
 - "Fai il backup sul telefono (Download)" lo salva nei Download del
   telefono (se perdi il telefono, perdi anche questo).
 - Con almeno 10 libri, se l'ultimo backup ha piu' di 2 settimane e nel

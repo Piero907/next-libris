@@ -3,6 +3,11 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 88 · 14/11/2026
+- **Backup che non partiva:** se il telefono non apre la condivisione, l'app non scarica più il file in silenzio. Compare «Il backup non è partito», con «Riprova a inviarlo» (di solito al secondo tocco parte) e «Salvalo nei Download».
+- **Nome del file di backup:** «Libreria di Piero - Next Libris - 2026-11-14» (senza nome: «La mia libreria - …»).
+- **Luce nella fotocamera della scansione:** ora usa sempre la fotocamera posteriore principale, quella con la luce. In alto a destra ci sono due pulsanti: 🔦 **torcia**, che resta accesa, e ⚡ **flash**, solo inquadrando la copertina, che accende la luce un attimo quando scatti (come «Luce» nella fotocamera delle foto). Accesi diventano bianchi.
+
 ## Versione 87 · 14/11/2026
 - **Suoni accesi o spenti:** in Opzioni › Aspetto c'è «Suoni» (acceso di predefinito), e nella fotocamera, in alto a destra, il pulsante 🔊/🔇 li accende e spegne al volo. Spenti, niente bip della scansione né «fatto» del prezzo; la vibrazione resta. La scelta resta anche alle aperture successive.
 
