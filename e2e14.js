@@ -46,10 +46,10 @@ const server = http.createServer((req, res) => {
   await ch.accept([IMG + '/cover.jpg', IMG + '/back.jpg', IMG + '/cover_noisy.jpg']); await wait(400);
   console.log('[2 libri]', await n(), '|', await page.$eval('#toastTxt', e => e.textContent));
   assert.strictEqual(await n(), 3); assert(await page.$eval('#priceAsk', e => e.hidden));
-  // 3) una sola foto dalla galleria: chiede il prezzo (si puo' scrivere)
+  // 3) una sola foto dalla galleria: «Riconosco il libro» con l'avanzamento (poi il prezzo)
   await (await page.$('#fileGal')).uploadFile(IMG + '/cover.jpg'); await wait(400);
-  assert.strictEqual(await n(), 4); assert(!(await page.$eval('#priceAsk', e => e.hidden)));
-  await page.click('#priceSkip'); await wait(100);
+  assert.strictEqual(await n(), 4); assert(!(await page.$eval('#recSheet', e => e.hidden)));   // v83: prima la finestra con l'avanzamento
+  await page.click('#recBg'); await wait(100);
   // 4) Azzera nel pannello svuota anche la ricerca
   await page.type('#q', 'rosa'); await wait(200);
   console.log('[4 prima]', await page.$eval('#q', e => e.value), await page.evaluate(() => [...document.querySelectorAll('.sheet:not([hidden])')].map(x => x.id).join(',')));

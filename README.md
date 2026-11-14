@@ -49,7 +49,7 @@ APP_DIR=/percorso/copia node esegui.js
 ## Flusso di lavoro per ogni nuova versione
 
 1. Modificare i file dell'app (`app.js`, `index.html`, `style.css`, `lib.js`, `sw.js`…) in una copia di lavoro.
-2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8174) e una riga di commento iniziale che dica cosa prova.
+2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8175) e una riga di commento iniziale che dica cosa prova.
 3. Aggiornare `REGISTRO_MODIFICHE.md` (nuova voce `## Versione N · gg/mm/aaaa` in cima) e, se serve, `LEGGIMI.txt`.
 4. Alzare la versione: `python3 nuova_versione.py N "breve nota"`. Cambia insieme `APP_VERSION` in `app.js`, `version.json` e il nome della cache in `sw.js` (`catalogo-libri-vN`).
 5. Far girare **tutte** le prove (`node esegui.js`). Se un cambiamento voluto rompe una prova vecchia, si aggiorna la prova e lo si dice.
@@ -135,9 +135,10 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e51.js | 8170 | novità delle versioni dentro l'app, anche senza rete |
 | e2e52.js | 8171 | donazioni: riga dopo 5 accessi, promemoria ogni 50 libri, PayPal, soglia di 20 s |
 | e2e53.js | 8173 | foto della copertina non trovata: titolo e autore a mano; volume accanto al titolo; suono del prezzo |
-| e2e54.js | 8174 | tastiera: «Fatto» (non «Succ.») nei campi della scheda e delle finestre; Invio chiude la tastiera |
+| e2e54.js | 8174 | tastiera: «Fatto» (non «Succ.») nei campi della scheda e delle finestre; Invio chiude la tastiera; statistiche: libri senza pagine |
+| e2e55.js | 8175 | foto di un libro: finestra con l'avanzamento e passo giusto (prezzo, scelta, a mano con prezzo); fotocamera: poca luce, messa a fuoco col tocco |
 
-Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8175** e poi a salire.
+Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8176** e poi a salire.
 
 ## Materiali (`img/`)
 
@@ -146,5 +147,5 @@ Immagini disegnate apposta, non foto di libri veri.
 - **Copertine:** `cover.jpg` (L'amica geniale), `cover_noisy.jpg` (sporca e storta), `author_only.jpg` (solo autore: più edizioni), `cover_blank.jpg` (senza testo). Più `cov_*.png` e `g_*.jpg` / `ol_big.jpg`, piccole immagini usate come copertine «scaricate».
 - **Retri e prezzi:** `back.jpg`, `back_price.jpg`, `back_noprice.jpg`, `back_phone.jpg` (codice 9788806219352); `price_only.jpg`, `price_phone.jpg`, `live_price.jpg`.
 - **Testo:** `isbn_text.jpg` (ISBN scritto senza barre), `pagina.jpg` (pagina per le citazioni). `isbn.txt` è l'ISBN dei retri.
-- **Video per la fotocamera finta (`.mjpeg`):** `live` (codice), `live_price` (codice e prezzo), `cover_live` (copertina), `isbn_text`, `pagina`, `blank` (niente).
+- **Video per la fotocamera finta (`.mjpeg`):** `live` (codice), `live_price` (codice e prezzo), `cover_live` (copertina), `isbn_text`, `pagina`, `blank` (niente), `dark` (quasi buio: avviso di poca luce).
 - **Vuota:** `blank.jpg`.

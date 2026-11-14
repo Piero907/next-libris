@@ -59,7 +59,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   if (r2 && r2.st === 'choose') {
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.screenshot({ path: CFG.OUT + '/s_choose.png' });
-    await page.click('#list [data-act="choose"]'); await sleep(300);
+    if (await page.$eval('#pickSheet', e => e.hidden)) { await page.click('#list [data-act="choose"]'); } await sleep(300);   // v83: con una foto sola la scelta si apre da sola
     await page.screenshot({ path: CFG.OUT + '/s_pick.png' });
     console.log('  candidati:', await page.$$eval('#pickList .cand b', els => els.map(e => e.textContent)));
     await page.click('#pickList li:nth-child(2) .cand'); await sleep(300);
