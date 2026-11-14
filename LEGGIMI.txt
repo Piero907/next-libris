@@ -51,7 +51,7 @@ Per aggiornare l'app in futuro: nel repository "Add file" > "Upload files",
 trascina i file nuovi (sostituiscono quelli vecchi con lo stesso nome) e
 "Commit changes". Nessun credito da consumare.
 ATTENZIONE: i libri sono legati all'indirizzo. Prima di cambiare fai il
-backup dall'app vecchia (Esporta > Scarica backup), poi nella
+backup dall'app vecchia (Esporta > "Fai il backup sul telefono"), poi nella
 nuova usa "Ripristina da backup". Se l'app vecchia non si apre perche' il
 sito e' fermo, attiva la modalita' aereo e riaprila: parte dalla copia
 salvata sul telefono, e il backup si scarica anche offline.
@@ -783,12 +783,14 @@ ATTENZIONE: I DATI STANNO SOLO SUL TELEFONO - IL BACKUP
 -------------------------------------------------------
 L'elenco e' salvato nel browser del telefono. Se cancelli i dati di Chrome,
 disinstalli l'app o cambi telefono, si perde. Per questo:
-- Esporta > "Condividi backup" apre il menu di condivisione del telefono:
+- Esporta > "Fai il backup e mandalo su Drive, email..." apre il menu di
+  condivisione del telefono (e' la scelta piu' sicura):
   scegli Drive, Gmail, WhatsApp (anche a te stesso)... Il file si chiama
   next-libris-backup-DATA. Chrome a volte non permette di condividere
   file .json: in quel caso lo stesso backup parte come file .txt (il
   contenuto e' identico). Se la condivisione non c'e', il file si scarica.
-- "Scarica backup" lo salva nei Download del telefono.
+- "Fai il backup sul telefono (Download)" lo salva nei Download del
+  telefono (se perdi il telefono, perdi anche questo).
 - Con almeno 10 libri, se l'ultimo backup ha piu' di 2 settimane e nel
   frattempo hai cambiato qualcosa, compare un avviso "Fai il backup" (la X
   lo rimanda di 2 settimane). In Esporta vedi quando hai fatto l'ultimo.

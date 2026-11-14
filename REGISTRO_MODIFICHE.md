@@ -3,6 +3,9 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 86 · 14/11/2026
+- **Backup più chiaro:** i pulsanti ora dicono cosa fanno: «Fai il backup e mandalo su Drive, email…» e «Fai il backup sul telefono (Download)». Sotto, una riga spiega che il primo è il più sicuro (resta anche se perdi il telefono).
+
 ## Versione 85 · 14/11/2026
 - **Finestre dal basso:** si chiudono anche trascinandole verso il basso (Statistiche, Citazioni, Novità, Sostieni, prezzo, prestito…). La finestra segue il dito: un tratto lungo o un gesto veloce la chiude, uno corto la rimette a posto. Se il contenuto è scorso, il gesto prima lo riporta in cima; partendo da un campo di testo non si chiude. In cima a ogni finestra c'è una piccola maniglia grigia.
 
