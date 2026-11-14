@@ -80,7 +80,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 84, date: '2026-11-14', note: 'Menu laterale rifatto, filtri riorganizzati, Sostieni al centro' };
+var APP_VERSION = { v: 85, date: '2026-11-14', note: 'Finestre: si chiudono trascinandole verso il basso' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -5306,6 +5306,57 @@ document.addEventListener('keydown', function (e) {
   ['#statsSheet', '#exportSheet', '#pubSheet', '#dupSheet', '#photoSheet'].forEach(function (k) { $(k).hidden = true; });
   if (!$('#loanSheet').hidden) closeLoan();
 });
+/* ---- Finestre dal basso: si chiudono anche trascinandole verso il basso (se il contenuto e' gia' in cima).
+   La finestra segue il dito; oltre una certa distanza, o con un gesto veloce, si chiude come con la sua X. ---- */
+var sdrag = null;
+function closeSheetEl(sh) {
+  function hide() { sh.hidden = true; }
+  var map = {
+    covSheet: closeCovAsk, svcSheet: closeSvcShare, svcInSheet: closeSvcImport, shareSheet: closeShare, importSheet: closeImport,
+    quoteSheet: closeQuote, logSheet: function () { closeLog(); }, auSheet: closeAuthor, donSheet: function () { closeDon(); }, manSheet: closeManual,
+    recSheet: flowLater, allqSheet: closeAllQuotes, priceAsk: closePriceAsk, loanSheet: closeLoan, instSheet: closeInstallHelp,
+    confirmSheet: function () { hide(); confirmFn = null; },
+    pickSheet: function () { $('#pickClose').click(); }, isbnSheet: function () { $('#isbnCancel').click(); }, copySheet: function () { $('#copyClose').click(); }
+  };
+  try { (map[sh.id] || hide)(); } catch (e) {}
+  if (!sh.hidden) hide();
+}
+function scrolledInside(el, top) { for (; el && el !== top.parentNode; el = el.parentElement) if (el.scrollTop > 0) return true; return false; }
+document.addEventListener('touchstart', function (e) {
+  sdrag = null;
+  if (e.touches.length !== 1) return;
+  var t = e.target, sh = t.closest && t.closest('.sheet');
+  if (!sh || sh.hidden) return;
+  var inn = sh.querySelector('.sheet-in');
+  if (!inn || !inn.contains(t) || t.closest('input, textarea, select, canvas, #bkPrev, [data-nodrag]') || scrolledInside(t, inn)) return;
+  sdrag = { sh: sh, inn: inn, y0: e.touches[0].clientY, x0: e.touches[0].clientX, t0: Date.now(), dy: 0, on: false };
+}, { passive: true });
+document.addEventListener('touchmove', function (e) {
+  if (!sdrag) return;
+  var p = e.touches[0], dy = p.clientY - sdrag.y0, dx = p.clientX - sdrag.x0;
+  if (!sdrag.on) {
+    if (Math.abs(dy) < 8 && Math.abs(dx) < 8) return;
+    if (dy <= 0 || Math.abs(dx) > dy) { sdrag = null; return; }       // verso l'alto o di lato: si scorre come sempre
+    sdrag.on = true; sdrag.t0 = Date.now(); sdrag.y0 = p.clientY - 1;
+    sdrag.inn.style.transition = 'none'; sdrag.sh.style.transition = 'none';
+  }
+  sdrag.dy = Math.max(0, p.clientY - sdrag.y0);
+  sdrag.inn.style.transform = 'translateY(' + sdrag.dy + 'px)';
+  sdrag.sh.style.backgroundColor = 'rgba(0,0,0,' + (0.5 * Math.max(0.2, 1 - sdrag.dy / 600)).toFixed(3) + ')';
+  if (e.cancelable) e.preventDefault();
+}, { passive: false });
+function endSheetDrag() {
+  var d = sdrag; sdrag = null;
+  if (!d || !d.on) return;
+  var h = d.inn.getBoundingClientRect().height, v = d.dy / Math.max(1, Date.now() - d.t0);
+  var close = d.dy > Math.min(140, h * 0.35) || (v > 0.6 && d.dy > 40);
+  d.inn.style.transition = 'transform .2s ease';
+  function reset() { d.inn.style.transform = ''; d.inn.style.transition = ''; d.sh.style.backgroundColor = ''; d.sh.style.transition = ''; }
+  if (close) { d.inn.style.transform = 'translateY(' + Math.round(h + 40) + 'px)'; setTimeout(function () { closeSheetEl(d.sh); reset(); }, 190); }
+  else { d.inn.style.transform = ''; d.sh.style.backgroundColor = ''; setTimeout(reset, 220); }
+}
+document.addEventListener('touchend', endSheetDrag);
+document.addEventListener('touchcancel', endSheetDrag);
 $('#q').addEventListener('input', function (e) { q = e.target.value; collapseCards(); renderList(); });
 $('#sort').addEventListener('change', function (e) { sortBy = e.target.value; renderList(); });
 $('#fltGuess').addEventListener('click', function () { flt = flt === 'guess' ? '' : 'guess'; collapseCards(); updateSummary(); renderList(); });

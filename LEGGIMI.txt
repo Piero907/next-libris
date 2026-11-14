@@ -242,6 +242,9 @@ in mezzo il riquadro "Sostieni Next Libris". Le Impostazioni sono divise in:
 - App: installazione e versione.
 Ogni voce apre la sua pagina; "<" torna al menu, la x o il tasto Indietro
 del telefono la chiudono.
+Le finestre che salgono dal basso (Statistiche, Citazioni, prezzo,
+prestito...) si chiudono anche trascinandole verso il basso dalla maniglia
+in cima (o da qualunque punto, se il contenuto e' gia' in cima).
 
 FILTRI E ORDINE (pagina del menu laterale)
 ------------------------------------------

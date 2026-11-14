@@ -3,6 +3,9 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 85 · 14/11/2026
+- **Finestre dal basso:** si chiudono anche trascinandole verso il basso (Statistiche, Citazioni, Novità, Sostieni, prezzo, prestito…). La finestra segue il dito: un tratto lungo o un gesto veloce la chiude, uno corto la rimette a posto. Se il contenuto è scorso, il gesto prima lo riporta in cima; partendo da un campo di testo non si chiude. In cima a ogni finestra c'è una piccola maniglia grigia.
+
 ## Versione 84 · 14/11/2026
 - **Menu laterale rifatto:** più largo (due terzi dello schermo) e, aprendolo dal bordo o dalla linguetta, mostra il **menu** e non più direttamente i filtri.
   - In cima: «Filtri e ordine» (con il riassunto, es. «1 filtro attivo, dai più recenti», e il numero dei filtri attivi), «Tutte le citazioni», «Statistiche».
