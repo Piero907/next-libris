@@ -15,7 +15,7 @@ const books = [B({ id: 'a', t: 'Abdul Bashur', y: '2014', ts: 4 }), B({ id: 'b',
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1 })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8165/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8165/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1200);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);

@@ -16,7 +16,7 @@ const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: 
   page.on('request', r => { const u = r.url(); if (u.startsWith('http://localhost') || u.startsWith('blob:') || u.startsWith('data:')) return r.continue(); r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }); });
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ extra: true, lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1 })); sessionStorage.seeded = 1; } }, [B({ id: 'rosa', t: 'Il nome della rosa', a: 'Umberto Eco' })]);
-  await page.goto('http://localhost:8167/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8167/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1200);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);

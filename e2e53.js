@@ -45,7 +45,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     req.abort();
   });
 
-  await page.goto('http://localhost:8173/', { waitUntil: 'load' }); await sleep(400);
+  await page.goto('http://localhost:8173/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
   await page.evaluate(() => { window.__app.settings.price = false; });
   const first = () => page.evaluate(() => { const b = window.__app.state.books[0]; if (!b) return null; const s = window.__app.S[b.id] || {}; return { id: b.id, t: b.t, a: b.a, i: b.i, g: b.g, st: s.st, man: !!s.manual }; });
   const reset = () => page.evaluate(() => { window.__app.state.books.length = 0; for (const k in window.__app.S) delete window.__app.S[k]; });
@@ -77,7 +77,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await settle(); r = await first(); console.log('[2 scelta]', r.st);
   if (r.st === 'choose') {
     assert(await page.$('#list .row [data-act="manual"]'), 'anche qui «Scrivi a mano»');
-    await page.click('#list [data-act="choose"]'); await sleep(300);
+    if (await page.$eval('#pickSheet', e => e.hidden)) await page.click('#list [data-act="choose"]'); await sleep(300);   // v83: la scelta si apre da sola
     await page.click('#pickMan'); await sleep(300); assert(await manOpen());
     await page.evaluate(() => { document.querySelector('#manT').value = ''; document.querySelector('#manA').value = ''; });
     await page.type('#manT', 'Titolo mio'); await page.click('#manSave'); await sleep(300);
@@ -103,16 +103,17 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await sleep(25000);   // la lettura della foto finisce senza toccare il libro
   r = await first(); console.log('  dopo la lettura:', JSON.stringify(r)); assert(r.t === 'Scritto da me' && !r.st);
 
-  // 5) con la domanda del prezzo: chiusa quella, si apre la finestra di titolo e autore
+  // 5) con il prezzo attivo (v83): niente domanda del prezzo a parte, titolo, autore e prezzo nella stessa finestra
   await page.evaluate(() => { window.__app.settings.price = true; });
   mode = 'empty'; await reset(); await (await page.$('#fileCam')).uploadFile(IMG + '/cover.jpg');
-  await page.waitForFunction(() => !document.querySelector('#priceAsk').hidden, { timeout: 5000 });
-  await settle(); assert(!(await manOpen()), 'non sopra la domanda del prezzo');
+  await page.waitForFunction(() => !document.querySelector('#manSheet').hidden, { timeout: 150000 });
+  assert(await page.$eval('#priceAsk', e => e.hidden) && await page.$eval('#manP', e => !e.closest('.man-p').hidden), 'prezzo nella finestra a mano');
   const ch1 = await page.evaluate(() => window.__app.chimes());
-  await page.type('#priceAskIn', '12'); await page.keyboard.press('Enter'); await sleep(400);
-  assert.strictEqual(await page.evaluate(() => window.__app.chimes()), ch1 + 1, 'prezzo: suono di completato');
-  assert(await manOpen(), 'dopo il prezzo, titolo e autore');
-  await page.click('#manCancel'); await sleep(150);
+  await page.evaluate(() => { document.querySelector('#manT').value = 'Con prezzo'; });
+  await page.type('#manP', '12'); await page.click('#manSave'); await sleep(300);
+  assert.strictEqual(await page.evaluate(() => window.__app.chimes()), ch1 + 1, 'suono di completato');
+  r = await first(); assert(r.t === 'Con prezzo');
+  assert.strictEqual(await page.evaluate(() => window.__app.state.books[0].c), 12);
   await page.evaluate(() => { window.__app.settings.price = false; });
 
   // 6) volume accanto al titolo nella vista compatta

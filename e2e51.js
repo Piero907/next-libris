@@ -13,7 +13,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.evaluateOnNewDocument(() => { localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1 })); });
-  await page.goto('http://localhost:8170/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8170/?vista=elenco', { waitUntil: 'load' });
   await page.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 20000 }).catch(async () => { await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 20000 }); });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1500);

@@ -3,7 +3,7 @@ const CFG = require("./_config");
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
-const ROOT = CFG.APP, BASE = 'http://localhost:8148/';
+const ROOT = CFG.APP, BASE = 'http://localhost:8148/?vista=elenco';
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8148);
 const W = 'https://sbn-libri.piero.workers.dev', K = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQrStUvW';
@@ -20,7 +20,7 @@ const W = 'https://sbn-libri.piero.workers.dev', K = 'AIzaSyA1b2C3d4E5f6G7h8I9j0
     }, Object.assign({ installed: true, instScope: '/', swiped: true, lastBackup: Date.now() }, set));
     await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     p.errors = []; p.on('pageerror', e => p.errors.push(e.message));
-    await p.setRequestInterception(true); p.on('request', r => r.url().startsWith(BASE) ? r.continue() : r.respond({ status: 404, body: '' }));
+    await p.setRequestInterception(true); p.on('request', r => r.url().startsWith(BASE.split('?')[0]) ? r.continue() : r.respond({ status: 404, body: '' }));
     await p.goto(url, { waitUntil: 'load' }); await wait(400); return p;
   }
   const tap = (p, s) => p.$eval(s, e => e.click()), hid = (p, s) => p.$eval(s, e => e.hidden), txt = (p, s) => p.$eval(s, e => e.innerText.replace(/\s+/g, ' ').trim());

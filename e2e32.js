@@ -13,7 +13,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const p = await browser.newPage();
   await p.evaluateOnNewDocument(() => localStorage.setItem('catalogo-libri-set', JSON.stringify({ installed: true, instScope: '/', swiped: true })));
-  await p.goto('http://localhost:8149/', { waitUntil: 'load' });
+  await p.goto('http://localhost:8149/?vista=elenco', { waitUntil: 'load' });
   await p.waitForFunction(() => navigator.serviceWorker && navigator.serviceWorker.controller, { timeout: 20000 }).catch(async () => { await p.reload({ waitUntil: 'load' }); await p.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 20000 }); });
   await new Promise(r => setTimeout(r, 1500));
   slow = true;

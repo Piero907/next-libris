@@ -50,7 +50,7 @@ const netlog = [];
     req.abort();
   });
   const T0 = Date.now(); const t = () => ((Date.now() - T0) / 1000).toFixed(1) + 's';
-  await page.goto('http://localhost:8123/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8123/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(() => { window.__app.settings.price = false; });   // la domanda sul prezzo ha il suo test (e2e5)
   await new Promise(r => setTimeout(r, 500));
   console.log('[load] summary:', await page.$eval('#summary', e => e.textContent), '| empty state:', !!(await page.$('.empty')));

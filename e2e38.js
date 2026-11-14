@@ -21,7 +21,7 @@ const books = [
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     window.__shared = []; navigator.share = d => { window.__shared.push({ text: d.text, files: (d.files || []).length }); return Promise.resolve(); }; navigator.canShare = () => true;
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ extra: true, lastBackup: Date.now(), price: false, installed: true, instScope: '/', swiped: true, name: 'Piero' })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8155/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8155/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1200);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
@@ -60,7 +60,7 @@ const books = [
   s = await last(); assert(s.text.startsWith("«L'inferno dei viventi non è qualcosa che sarà.»\n— Le città invisibili, Italo Calvino, p. 164\n\nInviato con Next Libris"));
   // elenco di tutte: Condividi tutte per libro
   await page.evaluate(() => history.back()); await wait(300);
-  await click('#btnFilters'); await wait(300); await click('#drawerFlt [data-g="quotes"]'); await wait(300);
+  await page.evaluate(() => window.__app.openDrawer('opt')); await wait(300); await click('#goQuotes'); await wait(300);
   const alls = await page.$$eval('#allqList [data-all]', e => e.map(x => x.dataset.all)); assert.deepStrictEqual(alls, ['rosa']);
   await click('#allqList [data-all="rosa"]'); await wait(200); s = await last(); assert(s.text.startsWith('Citazioni da «Il nome della rosa»'));
   await page.screenshot({ path: CFG.OUT + '/share_all.png' });

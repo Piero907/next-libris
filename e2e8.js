@@ -39,7 +39,7 @@ let apiCalls = [];
     r.abort(); });
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), price: false })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8134/', { waitUntil: 'networkidle0' });
+  await page.goto('http://localhost:8134/?vista=elenco', { waitUntil: 'networkidle0' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const lb = () => page.evaluate(() => ({ open: !document.querySelector('#lightbox').hidden, src: (document.querySelector('#lbImg').getAttribute('src') || '').slice(0, 100), w: document.querySelector('#lbImg').naturalWidth, note: document.querySelector('#lbNote').textContent, photo: document.querySelector('#lbPhoto').textContent, reset: document.querySelector('#lbReset').hidden ? '' : document.querySelector('#lbReset').textContent }));
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);

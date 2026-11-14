@@ -45,7 +45,7 @@ let noExtra = new Set();
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8128/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8128/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const books = () => page.evaluate(() => window.__app.state.books.map(b => ({ i: b.i, t: b.t, e: b.e, w: b.w, p: b.p, pd: b.pd, sh: b.sh, gen: b.gen, pg: b.pg, n: b.n, g: b.g })));
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);

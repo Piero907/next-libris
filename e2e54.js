@@ -12,7 +12,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  await page.goto('http://localhost:8174/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8174/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(() => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: [{ id: 'k1', t: 'Libro', a: 'Autore', e: 'Editore', y: '2021', c: 24, ts: 1 }, { id: 'k2', t: 'Altro', a: 'B', pg: '300', ts: 2 }, { id: 'k3', t: 'Terzo', a: 'C', pg: '120', ts: 3 }], updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, extra: true })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-(v2|set)$/.test(k)) return; return o.call(this, k, v); }; });
   await page.reload({ waitUntil: 'load' }); await wait(800);
   await page.evaluate(() => document.querySelector('#list .row[data-id="k1"] .sum').click()); await wait(400);

@@ -28,7 +28,7 @@ let rate = true, nfMode = false;
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8124/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8124/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(() => window.__app.addIsbn('9788806219352'));
   await new Promise(r => setTimeout(r, 4500));
   let st = await page.evaluate(() => { const id = window.__app.state.books[0].id; return { s: window.__app.S[id], nf: window.__app.state.books[0].nf }; });

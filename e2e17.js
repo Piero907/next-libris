@@ -17,7 +17,7 @@ const assert = require('assert');
   page.on('request', r => r.url().startsWith('http://localhost') ? r.continue() : r.abort());
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), swiped: true, look: 'classico' })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8146/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8146/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const st = () => page.evaluate(() => ({ look: document.documentElement.getAttribute('data-look'), theme: document.documentElement.getAttribute('data-theme'), meta: document.querySelector('meta[name="theme-color"]').content, bg: getComputedStyle(document.body).backgroundColor, font: getComputedStyle(document.querySelector('h1')).fontFamily.split(',')[0] }));
   await wait(400);

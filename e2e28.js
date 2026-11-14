@@ -6,7 +6,7 @@ const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8144);
-const BASE = 'http://localhost:8144/';
+const BASE = 'http://localhost:8144/?vista=elenco';
 const BOOKS = [
   { id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', c: 14, i: '9788845292613', ts: 5, img: 'https://books.google.com/books/content?id=ROSA&img=1&zoom=1', pg: '624', n: 'nota segreta', p: 'Marco', sh: 'Studio', gen: 'Gialli', rt: 5 },
   { id: 'b2', t: 'Il deserto dei Tartari', a: 'Dino Buzzati', e: 'Mondadori', y: '2016', i: '9788804668015', ts: 4, gen: 'Narrativa', c: 12.5, imgL: 'https://covers.openlibrary.org/b/isbn/9788804668015-L.jpg?default=false', pg: '240' },
@@ -27,7 +27,7 @@ const BOOKS = [
     }, Object.assign({ installed: true, instScope: '/', swiped: true, lastBackup: Date.now(), price: false }, set || {}), books || null, !!noShare);
     await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     p.errors = []; p.on('pageerror', e => p.errors.push(e.message));
-    await p.setRequestInterception(true); p.on('request', r => r.url().startsWith(BASE) ? r.continue() : r.respond({ status: 404, body: '' }));
+    await p.setRequestInterception(true); p.on('request', r => r.url().startsWith(BASE.split('?')[0]) ? r.continue() : r.respond({ status: 404, body: '' }));
     await p.goto(url, { waitUntil: 'load' }); await wait(450);
     return p;
   }
@@ -49,7 +49,7 @@ const BOOKS = [
   await tap(p, '#list .row[data-id="b1"] [data-act="toggle"]'); await wait(150);
   assert((await txt(p, '#list .row[data-id="b1"] .sum-tags')).includes('Preferito'));
   await p.evaluate(() => { window.__app.state.books.find(b => b.id === 'b2').fav = true; window.__app.openDrawer('flt'); }); await wait(350);
-  console.log('[1 menu]', await txt(p, '#drawerFlt .dlist'));
+  console.log('[1 menu]', await txt(p, '#drawerFlt .dpills'));
   await tap(p, '#drawerFlt [data-g="flt"][data-v="fav"]'); await wait(150);
   await p.evaluate(() => window.__app.closeDrawer()); await wait(350);
   assert.strictEqual(await p.$$eval('#list .row', r => r.length), 2);

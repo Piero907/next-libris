@@ -18,7 +18,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
     await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     p.errors = []; p.on('pageerror', e => p.errors.push(e.message));
     await p.setRequestInterception(true); p.on('request', r => r.url().startsWith('http://localhost:8147') ? r.continue() : r.abort());
-    await p.goto('http://localhost:8147/', { waitUntil: 'domcontentloaded' });
+    await p.goto('http://localhost:8147/?vista=elenco', { waitUntil: 'domcontentloaded' });
     return p;
   }
   let p = await open(true);

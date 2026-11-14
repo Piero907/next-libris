@@ -30,7 +30,7 @@ const ISBN = '9788806219352';
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8126/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8126/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const first = () => page.evaluate(() => { const b = window.__app.state.books[0]; return b && { id: b.id, t: b.t, i: b.i, c: b.c }; });
   const reset = () => page.evaluate(() => { window.__app.state.books.length = 0; });

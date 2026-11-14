@@ -42,7 +42,7 @@ const TITLES = { [A]: ['Libro A', 'Autore Uno'], [B]: ['Il deserto dei Tartari',
     if (/openlibrary|crossref/.test(u)) return j({});
     return nf();
   });
-  await page.goto('http://localhost:8136/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8136/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const book = i => page.evaluate(i => JSON.parse(JSON.stringify(window.__app.state.books.find(b => b.i === i))), i);
   const sel = id => '#list .row[data-id="' + id + '"] [data-act="coverphoto"]';

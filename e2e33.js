@@ -22,20 +22,20 @@ const bump = (v) => {
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const ver = () => p.evaluate(() => document.querySelector('meta[name="prova"]').content + '/' + window.__prova);   // la versione che sta girando: pagina/codice
   bump(1);
-  await p.goto('http://localhost:8150/', { waitUntil: 'load' });
+  await p.goto('http://localhost:8150/?vista=elenco', { waitUntil: 'load' });
   await p.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 20000 }).catch(async () => { await p.reload(); await p.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 20000 }); });
   await p.reload({ waitUntil: 'load' }); await wait(800);
   console.log('[1 copia]', await ver()); assert.strictEqual(await ver(), '1/1');
   // esce la versione 2: la prima apertura usa ancora la copia (veloce), intanto scarica; la seconda e' la nuova
   bump(2); await wait(61000);
-  await p.goto('http://localhost:8150/', { waitUntil: 'load' }); await wait(1500);
+  await p.goto('http://localhost:8150/?vista=elenco', { waitUntil: 'load' }); await wait(1500);
   const a = await ver(); console.log('[2 subito]', a); assert.strictEqual(a, '1/1');
-  await p.goto('http://localhost:8150/', { waitUntil: 'load' }); await wait(500);
+  await p.goto('http://localhost:8150/?vista=elenco', { waitUntil: 'load' }); await wait(500);
   const b = await ver(); console.log('[2 apertura dopo]', b); assert.strictEqual(b, '2/2');
   // esce la 3 ma un file non arriva: nessuna versione mescolata, resta la 2
   bump(3); failApp = true; await wait(61000);
-  await p.goto('http://localhost:8150/', { waitUntil: 'load' }); await wait(1500);
-  await p.goto('http://localhost:8150/', { waitUntil: 'load' }); await wait(500);
+  await p.goto('http://localhost:8150/?vista=elenco', { waitUntil: 'load' }); await wait(1500);
+  await p.goto('http://localhost:8150/?vista=elenco', { waitUntil: 'load' }); await wait(500);
   const c = await ver(); console.log('[3 file mancante]', c); assert.strictEqual(c, '2/2');
   failApp = false;
   console.log('e2e33 OK'); await browser.close(); server.close();

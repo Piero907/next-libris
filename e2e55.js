@@ -46,7 +46,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   });
 
 
-  await page.goto('http://localhost:8175/', { waitUntil: 'load' }); await sleep(400);
+  await page.goto('http://localhost:8175/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
   const first = () => page.evaluate(() => { const b = window.__app.state.books[0]; if (!b) return null; const s = window.__app.S[b.id] || {}; return { id: b.id, t: b.t, a: b.a, i: b.i, c: b.c, st: s.st }; });
   const reset = () => page.evaluate(() => { window.__app.state.books.length = 0; for (const k in window.__app.S) delete window.__app.S[k]; window.__app.renderList && 0; });
   const vis = sel => page.$eval(sel, e => !e.hidden);
@@ -129,7 +129,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const br = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + CFG.IMG + '/' + video] });
     const pg = await br.newPage(); await pg.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     const errs = []; pg.on('pageerror', e => errs.push(e.message));
-    await pg.goto('http://localhost:8175/', { waitUntil: 'load' }); await sleep(400);
+    await pg.goto('http://localhost:8175/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
     await pg.evaluate(() => document.querySelector('#btnPhoto').click()); await sleep(200);
     await pg.evaluate(() => document.querySelector('#photoCam').click());
     await pg.waitForFunction(() => { const v = document.querySelector('#snapVideo'); return !document.querySelector('#snap').hidden && v.videoWidth > 0; }, { timeout: 10000 });

@@ -18,7 +18,7 @@ for (let k = 0; k < 14; k++) books.push(B({ id: 'x' + k, t: 'Libro di prova ' + 
   page.on('request', r => r.url().startsWith('http://localhost') ? r.continue() : r.abort());
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), swiped: true, price: false })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8149/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8149/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const st = () => page.evaluate(() => { const s = document.querySelector('#stick'); return { top: Math.round(s.getBoundingClientRect().top), pos: getComputedStyle(s).position, stuck: s.classList.contains('stuck'), tip: getComputedStyle(document.querySelector('.tip')).display, h: getComputedStyle(document.documentElement).getPropertyValue('--stick-h') }; });
   await wait(400);

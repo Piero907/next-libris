@@ -17,7 +17,7 @@ const assert = require('assert');
   page.on('request', r => r.url().startsWith('http://localhost') ? r.continue() : r.abort());
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now() - 3 * 86400000, price: false, swiped: true })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8143/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8143/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const vis = sel => page.$eval(sel, e => !e.hidden && !e.closest('[hidden]') && getComputedStyle(e).display !== 'none');
   const drawerOpen = () => page.evaluate(() => document.body.classList.contains('drawer-open'));
@@ -43,20 +43,20 @@ const assert = require('assert');
   assert(await vis('#btnMergeDups')); console.log('[2 sistema]', await page.$eval('#optH', e => e.textContent));
   await page.screenshot({ path: CFG.OUT + '/s_opt_fix.png' });
   await page.goBack(); await wait(400);
-  assert(!(await vis('#optSheet'))); assert(!(await drawerOpen())); assert.strictEqual(page.url(), 'http://localhost:8143/');
+  assert(!(await vis('#optSheet'))); assert(!(await drawerOpen())); assert.strictEqual(page.url(), 'http://localhost:8143/?vista=elenco');
   // le impostazioni funzionano ancora
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="cards"]'); await wait(300);
   await page.click('#optOpenAll'); await wait(100);
   assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).openAll), true);
   await page.click('#optClose'); await wait(300); assert(!(await vis('#optSheet')));
-  assert.strictEqual(page.url(), 'http://localhost:8143/');
+  assert.strictEqual(page.url(), 'http://localhost:8143/?vista=elenco');
   // 3) Backup ed esportazione
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="export"]'); await wait(300);
   assert(await vis('#exportSheet')); assert(!(await drawerOpen())); await page.click('#exportClose'); await wait(200);
   // 4) Filtri e linguetta aprono la scheda Filtri
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerX'); await wait(300);
   await page.click('#btnFilters'); await wait(300); assert(await vis('#drawerFilters')); assert(await vis('#drawerFoot'));
-  await page.click('#dtOpt'); await wait(100); assert(await vis('#drawerOpts')); await page.click('#dtFlt'); await wait(100); assert(await vis('#drawerFilters'));
+  await page.click('#drawerBack'); await wait(250); assert(await vis('#drawerOpts')); await page.click('#goFilters'); await wait(150); assert(await vis('#drawerFilters'));   // v84: pagine al posto delle schede
   await page.keyboard.press('Escape'); await wait(300);
   // 5) scheda aperta: X e prestato/smarrito in alto, accanto alla freccetta
   await page.evaluate(() => { window.__app.settings.openAll = false; window.__app.openState()['b2'] = true; window.__app.setTab('lib'); });

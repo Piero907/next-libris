@@ -17,7 +17,7 @@ const assert = require('assert');
   page.on('request', r => r.url().startsWith('http://localhost') ? r.continue() : r.abort());
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), swiped: true, price: false })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8147/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8147/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const click = sel => page.evaluate(s => { const e = document.querySelector(s); if (!e) throw new Error('manca ' + s); e.click(); }, sel);
   const rows = () => page.$$eval('#list .row', e => e.map(r => r.dataset.id));

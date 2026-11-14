@@ -17,7 +17,7 @@ const books = [B({ id: 'arau', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', e
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true); window.__opened = []; window.open = u => { window.__opened.push(u); return null; };
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ extra: true, lastBackup: Date.now(), price: false, installed: true, instScope: '/', swiped: true, name: 'Piero' })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8156/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8156/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1200);
   await page.evaluate(() => document.querySelector('.row[data-id="arau"] [data-act="toggle"]').click()); await wait(300);

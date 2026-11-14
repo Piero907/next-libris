@@ -22,7 +22,7 @@ const books = [B({ id: 'rosa', t: 'Il nome della rosa', a: 'Umberto Eco' }), B({
   const errors = []; page.on('pageerror', e => { if (!/sessionStorage/.test(e.message)) errors.push(e.message); });
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ extra: true, lastBackup: Date.now(), price: false, installed: true, instScope: '/', swiped: true, name: 'Piero' })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8154/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8154/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1200);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
@@ -58,7 +58,7 @@ const books = [B({ id: 'rosa', t: 'Il nome della rosa', a: 'Umberto Eco' }), B({
   // secondo Indietro entro poco: si esce davvero (qui: la pagina precedente, about:blank)
   await page.evaluate(() => history.back()).catch(() => {}); await wait(800);
   console.log('[3 seconda volta]', page.url()); assert(!page.url().startsWith('http://localhost:8154'));
-  await page.goForward({ waitUntil: 'load' }).catch(() => {}); if (!page.url().startsWith('http://localhost')) await page.goto('http://localhost:8154/', { waitUntil: 'load' });
+  await page.goForward({ waitUntil: 'load' }).catch(() => {}); if (!page.url().startsWith('http://localhost')) await page.goto('http://localhost:8154/?vista=elenco', { waitUntil: 'load' });
   await wait(1200);
   // 4) citazione con foto e testo letto
   await click('.row[data-id="rosa"] [data-act="toggle"]'); await wait(250);
@@ -112,7 +112,7 @@ const books = [B({ id: 'rosa', t: 'Il nome della rosa', a: 'Umberto Eco' }), B({
   b = await book('rosa'); assert.deepStrictEqual(b.qs[0].phs, []); assert(b.qs[0].x);
   // 8) dopo il riavvio la foto c'è ancora; tutte le citazioni: miniatura e ingrandimento; Indietro chiude l'ingrandimento
   await wait(600); await page.reload({ waitUntil: 'load' }); await wait(1500);
-  await click('#btnFilters'); await wait(300); await click('#drawerFlt [data-g="quotes"]'); await wait(400);
+  await page.evaluate(() => window.__app.openDrawer('opt')); await wait(300); await click('#goQuotes'); await wait(400);
   assert(await page.$('#allqList .qimg-btn img.qimg'), 'miniatura nell\'elenco');
   await page.screenshot({ path: CFG.OUT + '/qp_all.png' });
   await click('#allqList .qimg-btn'); await wait(300); assert(!(await page.$eval('#phView', e => e.hidden)));

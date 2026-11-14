@@ -33,7 +33,7 @@ let descNet = 'ok', descHits = 0, lookHits = 0;
     r.abort(); });
   await page.evaluateOnNewDocument(() => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: [], updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1, price: false })); sessionStorage.seeded = 1; } });
-  await page.goto('http://localhost:8163/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8163/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1200);
   const byIsbn = i => page.evaluate(i => JSON.parse(JSON.stringify(window.__app.state.books.find(b => b.i === i) || null)), i);

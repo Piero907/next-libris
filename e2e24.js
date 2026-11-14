@@ -16,7 +16,7 @@ const W1 = 'https://sbn-libri.piero.workers.dev', W0 = 'https://vecchio.piero.wo
     await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     p.errors = []; p.on('pageerror', e => p.errors.push(e.message));
     await p.setRequestInterception(true); p.on('request', r => r.url().startsWith('http://localhost:8135') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }));
-    await p.goto('http://localhost:8135/', { waitUntil: 'load' }); await wait(400);
+    await p.goto('http://localhost:8135/?vista=elenco', { waitUntil: 'load' }); await wait(400);
     return p;
   }
   const look = p => p.evaluate(() => [document.documentElement.getAttribute('data-theme'), getComputedStyle(document.body).backgroundColor, JSON.parse(localStorage.getItem('catalogo-libri-set')).theme]);

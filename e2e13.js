@@ -30,7 +30,7 @@ const books = [
     r.abort(); });
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), price: false })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8142/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8142/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const g = id => page.evaluate(i => window.__app.state.books.find(b => b.id === i).g.join(','), id);
   await wait(1200);

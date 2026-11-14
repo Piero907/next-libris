@@ -43,7 +43,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8124/', { waitUntil: 'load' }); await sleep(400);
+  await page.goto('http://localhost:8124/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
   await page.evaluate(() => { window.__app.settings.price = false; });   // la domanda sul prezzo ha il suo test (e2e5)
   const first = () => page.evaluate(() => { const b = window.__app.state.books[0]; if (!b) return null; const s = window.__app.S[b.id] || {}; return { t: b.t, a: b.a, e: b.e, y: b.y, i: b.i, g: b.g, st: s.st, err: s.err, retry: s.retry, nc: (s.cands || []).length, lines: (s.lines || []).map(l => l.text) }; });
   const reset = () => page.evaluate(() => { window.__app.state.books.length = 0; for (const k in window.__app.S) delete window.__app.S[k]; });

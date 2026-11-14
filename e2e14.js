@@ -29,7 +29,7 @@ const server = http.createServer((req, res) => {
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8128/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8128/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const n = () => page.evaluate(() => window.__app.state.books.length);
   // 1) Foto -> scelta tra fotocamera e galleria

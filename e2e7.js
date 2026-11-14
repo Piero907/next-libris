@@ -26,7 +26,7 @@ const books = [
   page.on('request', r => r.url().startsWith('http://localhost') ? r.continue() : r.url().includes('covers.test') ? r.respond({ status: 200, contentType: 'image/jpeg', body: fs.readFileSync(CFG.IMG + '/cover.jpg') }) : r.abort());
   await page.evaluateOnNewDocument(() => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true); });
   await page.evaluateOnNewDocument((b) => { if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now() })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8132/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8132/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const rows = () => page.$$eval('#list .row', e => e.map(r => ({ id: r.dataset.id, closed: r.classList.contains('closed'), txt: r.innerText.replace(/\s+/g, ' ').trim().slice(0, 90) })));
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);

@@ -15,7 +15,7 @@ const B = [{ id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', gen: 'Gialli',
   const errors = []; p.on('pageerror', e => errors.push(e.message));
   await p.setRequestInterception(true);
   p.on('request', r => { const u = r.url(); if (u.startsWith('http://localhost:8145')) return r.continue(); if (u.includes('googleapis.com/books')) return r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ items: [{ id: 'g', volumeInfo: { title: 'Libro scansionato', authors: ['A'] } }] }) }); r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }); });
-  await p.goto('http://localhost:8145/', { waitUntil: 'load' });
+  await p.goto('http://localhost:8145/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const tap = s => p.$eval(s, e => e.click());
   const openN = () => p.$$eval('#list .row.open', a => a.length);

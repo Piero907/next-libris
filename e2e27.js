@@ -12,7 +12,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   await p.evaluateOnNewDocument(() => localStorage.setItem('catalogo-libri-set', JSON.stringify({ installed: true, instScope: '/', swiped: true, lastBackup: Date.now() })));
   const errors = []; p.on('pageerror', e => errors.push(e.message));
   await p.setRequestInterception(true); p.on('request', r => r.url().startsWith('http://localhost:8143') ? r.continue() : r.abort());
-  await p.goto('http://localhost:8143/', { waitUntil: 'load' });
+  await p.goto('http://localhost:8143/?vista=elenco', { waitUntil: 'load' });
   const cases = JSON.parse(fs.readFileSync('/tmp/pb/cases.json')).concat(JSON.parse(fs.readFileSync('/tmp/pb/neg.json')));
   const out = await p.evaluate(async cs => {
     const res = [];

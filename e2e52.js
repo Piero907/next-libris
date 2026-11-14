@@ -16,7 +16,7 @@ const DAY = 864e5;
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const base = { lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1, donOpens: 10 };
   async function load(nBooks, set) {
-    await page.goto('http://localhost:8171/', { waitUntil: 'load' });
+    await page.goto('http://localhost:8171/?vista=elenco', { waitUntil: 'load' });
     await page.evaluate((b, s) => { localStorage.clear(); localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify(s)); const o = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-(v2|set)$/.test(k)) return; return o.call(this, k, v); }; }, books(nBooks), Object.assign({}, base, set || {}));
     await page.reload({ waitUntil: 'load' }); await wait(900);   // all'uscita la pagina vecchia non puo' piu' salvare sopra i dati preparati
   }

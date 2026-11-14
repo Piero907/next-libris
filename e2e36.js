@@ -22,7 +22,7 @@ const books = [
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ extra: true, lastBackup: Date.now(), price: false, installed: true, instScope: '/', swiped: true, name: 'Piero' })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8153/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8153/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1200);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
@@ -30,14 +30,15 @@ const books = [
   // menu laterale
   await click('#btnFilters'); await wait(300);
   const dr = await page.$eval('#drawerFlt', e => e.textContent.replace(/\s+/g, ' ')); console.log('[menu]', dr.slice(0, 160));
-  assert(dr.includes('Con citazioni2') && dr.includes('Leggi tutte le citazioni4'));
+  assert(dr.includes('Con citazioni2'));
+  assert.strictEqual(await page.$eval('#goQTxt', e => e.textContent), '4 citazioni salvate');   // v84: «Tutte le citazioni» sta nel menu
   await page.screenshot({ path: CFG.OUT + '/q_drawer.png' });
   // filtro
   await click('#drawerFlt [data-g="flt"][data-v="qs"]'); await wait(150); await click('#drawerShow'); await wait(300);
   assert.deepStrictEqual((await rows()).sort(), ['calv', 'rosa']);
   assert((await page.$eval('#activeFlt', e => e.textContent)).includes('Con citazioni')); console.log('[filtro] ok');
   // elenco di tutte le citazioni
-  await click('#btnFilters'); await wait(300); await click('#drawerFlt [data-g="quotes"]'); await wait(300);
+  await page.evaluate(() => window.__app.openDrawer('opt')); await wait(300); await click('#goQuotes'); await wait(300);
   assert(await page.$eval('#drawer', e => e.hidden), 'il menu si chiude');
   const books1 = await page.$$eval('#allqList .aq-h b', e => e.map(x => x.textContent)); console.log('[elenco]', books1.join(' | '), '|', await page.$eval('#allqMsg', e => e.textContent));
   assert.deepStrictEqual(books1, ['Le città invisibili', 'Il nome della rosa', 'Sostiene Pereira']);

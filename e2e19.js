@@ -13,7 +13,7 @@ const server = http.createServer((q, s) => { let p = path.join(ROOT, decodeURICo
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.evaluateOnNewDocument(() => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!localStorage.getItem('catalogo-libri-set')) localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), swiped: true })); });
-  await page.goto('http://localhost:8148/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8148/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());
   await wait(3200);

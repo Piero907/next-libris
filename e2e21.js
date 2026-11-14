@@ -34,7 +34,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
     if (u.includes('books.google.com/x')) return req.respond({ status: 404, body: '' });
     req.abort();
   });
-  const resp = await page.goto('http://localhost:8129/', { waitUntil: 'load' }); console.log('[goto]', resp && resp.status(), resp && resp.url());
+  const resp = await page.goto('http://localhost:8129/?vista=elenco', { waitUntil: 'load' }); console.log('[goto]', resp && resp.status(), resp && resp.url());
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const books = () => page.evaluate(() => JSON.parse(JSON.stringify(window.__app.state.books)));
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());

@@ -38,7 +38,7 @@ const gv = (isbn, o) => ({ items: [{ id: isbn, volumeInfo: Object.assign({ indus
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8125/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8125/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const books = () => page.evaluate(() => window.__app.state.books.map(b => ({ i: b.i, t: b.t, e: b.e, g: b.g, nf: b.nf })));
 

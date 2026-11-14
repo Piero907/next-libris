@@ -17,7 +17,7 @@ T.forEach((x, k) => books.push(B({ id: 'b' + k, t: x[0], a: x[1], sh: x[2], gen:
   page.on('request', r => r.url().startsWith('http://localhost') ? r.continue() : r.abort());
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), price: false })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8141/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8141/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const click = sel => page.evaluate(s => { const e = document.querySelector(s); if (!e) throw new Error('manca ' + s); e.click(); }, sel);
   const rows = () => page.$$eval('#list .row', e => e.map(r => r.dataset.id));
@@ -45,10 +45,12 @@ T.forEach((x, k) => books.push(B({ id: 'b' + k, t: x[0], a: x[1], sh: x[2], gen:
   await page.touchscreen.touchEnd(); await wait(400);
   assert(await isOpen(), 'si apre col gesto');
   const box = await page.$eval('#drawer', e => { const r = e.getBoundingClientRect(); return [r.left, r.width]; });
-  console.log('[2 posizione]', box); assert(box[0] === 0 && box[1] < 390 / 2);
+  console.log('[2 posizione]', box); assert(box[0] === 0 && box[1] < 390 * 0.7);   // v84: due terzi dello schermo
   const set = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
   assert.strictEqual(set.swiped, true); assert(await page.$eval('#drawerHint', e => e.hidden));
   await page.screenshot({ path: CFG.OUT + '/s_drawer.png' });
+  assert(await page.$eval('#drawerOpts', e => !e.hidden), 'v84: dal bordo si apre il menu, non i filtri');
+  await click('#goFilters'); await wait(200);
   console.log('[2 piede]', await txt('#drawerShow'));
 
   // 3) filtri: Da leggere + scaffale Studio
@@ -71,7 +73,7 @@ T.forEach((x, k) => books.push(B({ id: 'b' + k, t: x[0], a: x[1], sh: x[2], gen:
   assert.deepStrictEqual((await rows()).sort(), ['b1', 'b4', 'b6']); assert.strictEqual(await txt('#fltBadge'), '1');
   // 5) pulsante, tasto Indietro, Esc, tocco fuori
   await click('#btnFilters'); await wait(350); assert(await isOpen());
-  await page.goBack(); await wait(400); assert(!(await isOpen()), 'Indietro chiude'); assert.strictEqual(page.url(), 'http://localhost:8141/');
+  await page.goBack(); await wait(400); assert(!(await isOpen()), 'Indietro chiude'); assert.strictEqual(page.url(), 'http://localhost:8141/?vista=elenco');
   await click('#btnFilters'); await wait(350); await page.keyboard.press('Escape'); await wait(350); assert(!(await isOpen()), 'Esc');
   await click('#btnFilters'); await wait(350); await page.mouse.click(370, 400); await wait(350); assert(!(await isOpen()), 'tocco fuori');
   // 5b) la linguetta sul bordo sinistro apre il pannello; e' colorata quando ci sono filtri attivi
@@ -101,7 +103,7 @@ T.forEach((x, k) => books.push(B({ id: 'b' + k, t: x[0], a: x[1], sh: x[2], gen:
   await click('#drawerX'); await wait(300);
   // 9) dal bordo sinistro anche sopra l'intestazione (fuori dall'elenco), senza tornare indietro di pagina
   await page.evaluate(() => window.__app.setTab('lib')); await page.evaluate(() => window.scrollTo(0, 0)); await wait(100);
-  await drag(3, 90, 260, 95); assert(await isOpen(), 'dall intestazione'); assert.strictEqual(page.url(), 'http://localhost:8141/');
+  await drag(3, 90, 260, 95); assert(await isOpen(), 'dall intestazione'); assert.strictEqual(page.url(), 'http://localhost:8141/?vista=elenco');
   await page.screenshot({ path: CFG.OUT + '/s_drawer_left.png' });
   await drag(170, 300, 10, 300);
   assert(!(await isOpen()));

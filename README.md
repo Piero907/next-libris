@@ -49,7 +49,7 @@ APP_DIR=/percorso/copia node esegui.js
 ## Flusso di lavoro per ogni nuova versione
 
 1. Modificare i file dell'app (`app.js`, `index.html`, `style.css`, `lib.js`, `sw.js`…) in una copia di lavoro.
-2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8175) e una riga di commento iniziale che dica cosa prova.
+2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8176) e una riga di commento iniziale che dica cosa prova.
 3. Aggiornare `REGISTRO_MODIFICHE.md` (nuova voce `## Versione N · gg/mm/aaaa` in cima) e, se serve, `LEGGIMI.txt`.
 4. Alzare la versione: `python3 nuova_versione.py N "breve nota"`. Cambia insieme `APP_VERSION` in `app.js`, `version.json` e il nome della cache in `sw.js` (`catalogo-libri-vN`).
 5. Far girare **tutte** le prove (`node esegui.js`). Se un cambiamento voluto rompe una prova vecchia, si aggiorna la prova e lo si dice.
@@ -68,6 +68,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 - **Rete simulata:** con `page.setRequestInterception(true)` le chiamate verso Google Libri, Open Library, Wikipedia, il worker SBN e le copertine ricevono risposte preparate nella prova. Le prove non dipendono da internet e possono simulare «nessun risultato», errori 429/500 o niente rete (`page.setOfflineMode`).
 - **Fotocamera finta:** Chrome parte con `--use-fake-device-for-media-stream --use-file-for-fake-video-capture=<video>.mjpeg`. Per le foto da file: `elementHandle.uploadFile(CFG.IMG + '/cover.jpg')` sugli input `#fileCam`, `#fileGal`, `#fileCover` e `#fileBackup`.
 - **Agganci dell'app per le prove:** `window.__app` (stato, impostazioni, `addIsbn`, `addPhotos`, `setTab`, `openOptions`, `openDrawer`, `openManual`, `donBack`, `chimes()`…) e `window.__ped` (editor delle foto). Si usano per preparare situazioni e leggere lo stato; le azioni vere si fanno con clic e tasti come un utente.
+- **Vista dell'elenco:** dalla versione 84 l'app si apre con le copertine. Le prove aprono l'app con `?vista=elenco` nell'indirizzo (vista elenco per quell'apertura), perché quasi tutte lavorano sulle righe dell'elenco. Una prova nuova che vuole le copertine usa l'indirizzo senza parametro o `?vista=copertine`.
 - **Dati salvati:** l'app tiene libri e impostazioni in `localStorage` (`catalogo-libri-v2`, `catalogo-libri-set`) e copertine e foto in IndexedDB. Per partire da dati preparati serve un accorgimento. All'uscita la pagina salva sopra i suoi dati, quindi prima di ricaricare si scrivono i dati e si blocca `Storage.prototype.setItem` per quelle due chiavi, poi `page.reload()` (vedi `load()` in e2e52.js).
 - **Visibilità della pagina** (ritorno da PayPal, accessi): si simula ridefinendo `document.visibilityState` e lanciando l'evento `visibilitychange` (e2e52.js).
 - **Controlli:** con `assert`; ogni prova controlla anche che non ci siano errori JavaScript (`page.on('pageerror')`). Le schermate vanno in `CFG.OUT` e servono a guardare il risultato.
@@ -137,8 +138,9 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e53.js | 8173 | foto della copertina non trovata: titolo e autore a mano; volume accanto al titolo; suono del prezzo |
 | e2e54.js | 8174 | tastiera: «Fatto» (non «Succ.») nei campi della scheda e delle finestre; Invio chiude la tastiera; statistiche: libri senza pagine |
 | e2e55.js | 8175 | foto di un libro: finestra con l'avanzamento e passo giusto (prezzo, scelta, a mano con prezzo); fotocamera: poca luce, messa a fuoco col tocco |
+| e2e56.js | 8176 | menu laterale: pagina principale, largo due terzi, «Filtri e ordine» come pagina con Indietro, pillole e «Altri…», «Sostieni» al centro; «Prestato» centrato |
 
-Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8176** e poi a salire.
+Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8177** e poi a salire.
 
 ## Materiali (`img/`)
 

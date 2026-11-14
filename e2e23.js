@@ -26,7 +26,7 @@ const W1 = 'https://sbn-libri.piero.workers.dev', K1 = 'AIzaSyA1b2C3d4E5f6G7h8I9
     if (/openlibrary|crossref/.test(u)) return j({});
     req.abort();
   });
-  await page.goto('http://localhost:8133/', { waitUntil: 'load' });
+  await page.goto('http://localhost:8133/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());
   const hidden = sel => page.$eval(sel, e => e.hidden);

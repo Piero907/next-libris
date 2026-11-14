@@ -33,7 +33,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
     page.errors = []; page.on('pageerror', e => page.errors.push(e.message));
     await page.setRequestInterception(true);
     page.on('request', req => req.url().startsWith('http://localhost:8130') ? req.continue() : req.abort());
-    await page.goto('http://localhost:8130/', { waitUntil: 'load' }); await wait(400);
+    await page.goto('http://localhost:8130/?vista=elenco', { waitUntil: 'load' }); await wait(400);
     return page;
   }
   const hidden = (page, sel) => page.$eval(sel, e => e.hidden);
@@ -53,7 +53,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   // il tasto Indietro chiude il foglio
   await p.goBack(); await wait(150);
   assert(await hidden(p, '#instSheet'), 'Indietro chiude il foglio');
-  assert.strictEqual(p.url(), 'http://localhost:8130/');
+  assert.strictEqual(p.url(), 'http://localhost:8130/?vista=elenco');
 
   // 2) Chrome offre l'installazione: «Installa» apre la sua richiesta; accettata -> scheda via per sempre
   await p.evaluate(() => {
@@ -94,7 +94,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   assert(await hidden(p, '#optSheet'), 'il foglio prende il posto delle Opzioni');
   await p.click('#instOk'); await wait(150);
   assert(await hidden(p, '#instSheet'));
-  assert.strictEqual(p.url(), 'http://localhost:8130/');
+  assert.strictEqual(p.url(), 'http://localhost:8130/?vista=elenco');
   // «Non trovi la voce?» porta al controllo del telefono in Opzioni › App
   await p.click('#instGo'); await wait(150);
   await p.click('#instWhy'); await wait(400);
@@ -102,7 +102,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   assert.strictEqual(await txt(p, '#optH'), 'App');
   await p.goBack(); await wait(200);
   assert(await hidden(p, '#optSheet'), 'Indietro chiude le Opzioni');
-  assert.strictEqual(p.url(), 'http://localhost:8130/');
+  assert.strictEqual(p.url(), 'http://localhost:8130/?vista=elenco');
   await p.browserContext().close();
 
   // 4) app installata (finestra autonoma): niente scheda, segna «installata»
