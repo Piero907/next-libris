@@ -43,3 +43,8 @@ Questo file sta nel ramo `prove`, separato dall'app. Il README.md accanto spiega
 - **Menu laterale:** largo due terzi. Dal bordo e dalla linguetta apre il menu (Filtri e ordine, Tutte le citazioni, Statistiche, Impostazioni), mai direttamente i filtri. Il pulsante «Filtri» apre la pagina dei filtri.
 - **Vista all'apertura:** Copertine (predefinita) o Elenco, in Opzioni › Aspetto. Le prove usano `?vista=elenco`.
 - **Tastiera:** `enterkeyhint="done"` sui campi singoli («Fatto», non «Succ.»).
+
+## In sospeso (idee concordate, da non costruire finché Piero non lo chiede)
+
+- **«Il tuo anno in libri»**, stile Spotify Wrapped: schermate a storie (apertura; libri e pagine lette, mese più letto, obiettivo; genere e autore dell'anno; libro più lungo e voto più alto; citazione dell'anno, libri nuovi, a chi hai prestato di più; riassunto da condividere come immagine). Proposta mostrata il 14/11/2026; restano da decidere il periodo (anno in corso o anche passati / «da sempre»), le schermate e quando mostrarlo (da Statistiche, invito a dicembre). Limite: conta come letto nell'anno solo un libro con la data di lettura.
+- **Statistiche con una parte di «intrattenimento»** (obiettivi, badge), per invogliare a usare l'app: da pensare insieme al wrap.
