@@ -3,6 +3,14 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 81 · 14/11/2026
+- **Volume nella vista compatta:** se il campo «Volume» della serie è compilato, accanto al titolo compare il numero, separato da una virgola (es. «Il trono di spade, 3»).
+- **Suono di «fatto» per il prezzo:** quando salvi il prezzo (dopo la scansione o nel riquadro «Libro aggiunto») suonano due note che salgono, non più lo stesso bip della scansione.
+- **Foto della copertina rivista:** se il libro non si trova online, o il testo della copertina non si legge, si apre subito «Scrivi titolo e autore», già riempita con il testo letto; salvando, la foto diventa la copertina. Se in quel momento è aperta la domanda del prezzo, la finestra arriva subito dopo.
+  - Nella riga del libro: «Scrivi titolo e autore» e «Usa il testo letto» (prima il testo letto veniva usato da solo).
+  - Tra le edizioni proposte c'è «Nessuno: scrivo io titolo e autore».
+  - Mentre l'app legge la foto o cerca il libro c'è già «Scrivi a mano»: scrivendolo tu, la ricerca si ferma.
+
 ## Versione 80 · 14/11/2026
 - La riga «Next Libris è gratis…» non compare più dal primo avvio: si vede dopo 5 accessi all'app (tornare nell'app dopo almeno 30 minuti conta come un accesso). Il riquadro ogni 50 libri e la voce nel menu restano come prima.
 

@@ -171,8 +171,27 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
     <p class="msg" id="pickMsg">Ho letto il testo della copertina. Tocca il libro giusto: editore e anno dipendono dall'edizione, controllali dopo.</p>
     <ul class="cands" id="pickList"></ul>
     <div class="row-btns">
+      <button class="btn" id="pickMan">Nessuno: scrivo io titolo e autore</button>
       <button class="btn" id="pickText">Nessuno: tieni il testo letto</button>
       <button class="btn" id="pickClose">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<div class="sheet" id="manSheet" hidden>
+  <div class="sheet-in man-in" role="dialog" aria-modal="true" aria-labelledby="manH">
+    <h2 id="manH">Scrivi titolo e autore</h2>
+    <div class="man-top"><span class="man-img" id="manImg" aria-hidden="true"></span><p class="msg" id="manMsg">Non ho trovato questo libro online. Scrivilo tu: la foto diventa la copertina.</p></div>
+    <form class="man-form" id="manForm" autocomplete="off">
+      <label for="manT">Titolo</label>
+      <input id="manT" type="text" enterkeyhint="next" spellcheck="false" placeholder="Il nome della rosa">
+      <label for="manA">Autore <span class="opt">(facoltativo)</span></label>
+      <input id="manA" type="text" enterkeyhint="done" spellcheck="false" placeholder="Umberto Eco">
+    </form>
+    <p class="msg bad" id="manErr" hidden>Scrivi almeno il titolo.</p>
+    <div class="row-btns">
+      <button class="btn primary" type="submit" form="manForm" id="manSave">Salva</button>
+      <button class="btn" type="button" id="manCancel">Più tardi</button>
     </div>
   </div>
 </div>

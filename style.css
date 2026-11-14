@@ -1391,3 +1391,17 @@ body.selecting .cover.sel[data-ord]::after{content:attr(data-ord);display:grid;p
 .dmenu .don-menu .n{color:var(--accent);font-size:17px}
 #donSheet{z-index:37}
 body.selecting .don-row,body.selecting .don-ask,body.scanning .don-row{display:none}
+
+/* ---- foto della copertina non riconosciuta: titolo e autore a mano ---- */
+.man-in{grid-template-columns:minmax(0,1fr)}
+.man-top{display:flex;gap:12px;align-items:flex-start}
+.man-top .msg{margin:0;flex:1}
+.man-img{flex:none;width:52px;height:74px;border-radius:6px;background:var(--surface2,var(--line)) center/cover no-repeat;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.man-img:empty:not([style]){display:none}
+.man-form{display:grid;gap:6px}
+.man-form label{font-size:13px;font-weight:600;color:var(--muted);margin-top:6px}
+.man-form label .opt{font-weight:400}
+.man-form input{min-height:48px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);font:inherit;font-size:17px}
+.man-form input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.status .btn.man{white-space:nowrap}
+.status.nf{color:var(--ink)}

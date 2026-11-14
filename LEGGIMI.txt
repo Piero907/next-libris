@@ -164,6 +164,12 @@ COME SI USA
   telefono, cerca il libro e, se e' certa, lo compila da sola; se ci sono
   piu' possibilita' ti fa scegliere. I dati ricavati dalla copertina hanno
   l'etichetta "Da verificare".
+  * Se il libro non si trova online (o il testo non si legge) si apre
+    subito "Scrivi titolo e autore", gia' riempita con il testo letto:
+    correggi e Salva, la foto diventa la copertina. Nella riga restano
+    "Scrivi titolo e autore" e "Usa il testo letto". Anche tra le edizioni
+    proposte c'e' "Nessuno: scrivo io titolo e autore", e mentre l'app
+    legge o cerca ancora "Scrivi a mano" ferma la ricerca.
 - Digita: scrivi il TITOLO (con l'autore, se lo sai) e premi Cerca o
   Invio: l'app ti propone i libri trovati (prima le edizioni italiane;
   "Ce l'hai gia'" o "Gia' nei Desideri" se li hai gia'); tocca quello
@@ -179,6 +185,8 @@ COME SI USA
   * Non ti interessa il prezzo? Opzioni > Schede e prezzo > togli
     "Chiedi il prezzo dopo ogni libro".
   * Prezzo di copertina = quello stampato sul libro, non quanto l'hai pagato.
+  * Quando salvi il prezzo suona un "fatto" (due note che salgono),
+    diverso dal bip della scansione.
 - Esporta: "Scarica Excel (.xlsx)" crea un vero file Excel (intestazione
   in grassetto, filtri, costo in euro, ISBN come testo). Ci sono anche
   "Copia per Excel o Fogli Google" e "Scarica CSV". Si esporta la scheda
@@ -483,6 +491,8 @@ Nella scheda aperta (con i campi in piu' attivi): "Serie o collana",
   Desideri" li aggiunge con un tocco, "Vedi la serie" li mostra tutti.
 - Il riepilogo di tutte le serie e' in Statistiche.
 - Serie e numero vanno scritti a mano: le banche dati non li danno.
+- Con il numero (Volume) compilato, nella vista compatta il titolo
+  diventa "Titolo, 3".
 
 CITAZIONI E APPUNTI
 -------------------
