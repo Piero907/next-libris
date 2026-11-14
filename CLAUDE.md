@@ -47,4 +47,15 @@ Questo file sta nel ramo `prove`, separato dall'app. Il README.md accanto spiega
 ## In sospeso (idee concordate, da non costruire finché Piero non lo chiede)
 
 - **«Il tuo anno in libri»**, stile Spotify Wrapped: schermate a storie (apertura; libri e pagine lette, mese più letto, obiettivo; genere e autore dell'anno; libro più lungo e voto più alto; citazione dell'anno, libri nuovi, a chi hai prestato di più; riassunto da condividere come immagine). Proposta mostrata il 14/11/2026; restano da decidere il periodo (anno in corso o anche passati / «da sempre»), le schermate e quando mostrarlo (da Statistiche, invito a dicembre). Limite: conta come letto nell'anno solo un libro con la data di lettura.
-- **Statistiche con una parte di «intrattenimento»** (obiettivi, badge), per invogliare a usare l'app: da pensare insieme al wrap.
+- **Statistiche con una parte di «intrattenimento»** (proposta del 14/11/2026, approvata come idea: «conserva queste idee»). Da costruire solo quando Piero lo chiede.
+  1. **Traguardi (badge da collezionare):** griglia di medaglie, colorate se conquistate, grigie con barra di avanzamento se da prendere; piccolo festeggiamento quando se ne conquista una.
+     - Biblioteca: 10, 50, 100, 250, 500 libri catalogati.
+     - Lettore: primo libro letto, poi 10, 25, 50; «Maratoneta» (libro di oltre 800 pagine letto); «Divoratore» (3 libri in un mese).
+     - Esploratore: 5 generi diversi letti, 10 autori diversi, libri di 5 decenni diversi.
+     - Collezionista: una serie completa (campi Serie e Volume); «Fan di…» (10 libri dello stesso autore).
+     - Citazioni: la prima, poi 25; la prima foto evidenziata.
+     - Ordine: tutti i libri con lo scaffale, nessun «Da verificare», tutte le pagine compilate (spinge a completare i dati).
+  2. **Sfide e obiettivi:** obiettivo annuale con il ritmo («sei avanti di 2 libri» / «ti mancano 3 libri in 6 settimane»); sfida del mese che cambia da sola («Finisci un libro iniziato», «Leggi un genere che non leggi mai», «Dai un voto ai libri letti», «Aggiungi le pagine ai libri che non le hanno»); serie di settimane di fila con almeno un libro letto o aggiunto.
+  3. **Curiosità sulla libreria**, una diversa a ogni apertura: altezza della libreria impilata (circa 0,05 mm a pagina più le copertine), tempo per leggere i «da leggere» a 20 pagine al giorno, libro più vecchio, decennio preferito.
+  4. **Il wrap** usa gli stessi dati e diventa il racconto di fine anno.
+  - Da decidere: tono (giocoso con nomi simpatici e festeggiamenti, oppure sobrio da diario di lettura) e posizione (dentro Statistiche oppure voce «Traguardi» a sé nel menu, accanto a Statistiche).
