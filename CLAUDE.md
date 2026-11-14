@@ -43,6 +43,9 @@ Questo file sta nel ramo `prove`, separato dall'app. Il README.md accanto spiega
 - **Menu laterale:** largo due terzi. Dal bordo e dalla linguetta apre il menu (Filtri e ordine, Tutte le citazioni, Statistiche, Impostazioni), mai direttamente i filtri. Il pulsante «Filtri» apre la pagina dei filtri.
 - **Vista all'apertura:** Copertine (predefinita) o Elenco, in Opzioni › Aspetto. Le prove usano `?vista=elenco`.
 - **Tastiera:** `enterkeyhint="done"` sui campi singoli («Fatto», non «Succ.»).
+- **Suoni:** accesi di predefinito; si spengono in Opzioni › Aspetto o con 🔊/🔇 nella fotocamera (la vibrazione resta).
+- **Backup:** pulsanti «Fai il backup e mandalo su Drive, email…» (consigliato) e «Fai il backup sul telefono (Download)».
+- **Finestre dal basso:** si chiudono anche trascinandole giù (maniglia in cima).
 
 ## In sospeso (idee concordate, da non costruire finché Piero non lo chiede)
 
