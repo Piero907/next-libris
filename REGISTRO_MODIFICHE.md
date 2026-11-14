@@ -3,6 +3,9 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 82 · 14/11/2026
+- Nella scheda aperta la tastiera mostra «Fatto» (non più «Succ.») su Costo e su tutti gli altri campi: Invio chiude la tastiera, come già faceva. Lo stesso nei campi singoli delle finestre (prestito, numerazione, pagina della citazione, nome, obiettivo di lettura).
+
 ## Versione 81 · 14/11/2026
 - **Volume nella vista compatta:** se il campo «Volume» della serie è compilato, accanto al titolo compare il numero, separato da una virgola (es. «Il trono di spade, 3»).
 - **Suono di «fatto» per il prezzo:** quando salvi il prezzo (dopo la scansione o nel riquadro «Libro aggiunto») suonano due note che salgono, non più lo stesso bip della scansione.

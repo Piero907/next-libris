@@ -218,7 +218,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
     <label class="field" id="shareTitleBox"><span>Nome della lista</span>
       <input type="text" id="shareTitle" maxlength="40" autocomplete="off" placeholder="es. Gialli da leggere"></label>
     <label class="field"><span>Il tuo nome, così chi riceve vede da chi arriva</span>
-      <input type="text" id="shareName" maxlength="30" autocomplete="given-name" autocapitalize="words" placeholder="es. Piero"></label>
+      <input type="text" id="shareName" enterkeyhint="done" maxlength="30" autocomplete="given-name" autocapitalize="words" placeholder="es. Piero"></label>
     <p class="share-prev" id="sharePrev" aria-live="polite"></p>
     <div class="row-btns">
       <button class="btn primary" type="submit" id="shareSend">Manda</button>
@@ -345,7 +345,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
             <label><input type="radio" name="bkOrd" value="custom"><span>Personalizzato: sposti i libri o scrivi i numeri</span></label>
           </div>
           <p class="hint bk-cust-hint" id="bkCustHint" hidden>Trascina la maniglia ≡ o usa le frecce per cambiare l'ordine (i numeri si rifanno di seguito); tocca un numero per scriverlo a mano.</p>
-          <label class="bk-from">Primo numero <input id="bkFrom" type="text" inputmode="numeric" maxlength="3" value="1" autocomplete="off"></label>
+          <label class="bk-from">Primo numero <input id="bkFrom" type="text" enterkeyhint="done" inputmode="numeric" maxlength="3" value="1" autocomplete="off"></label>
           <ol class="bk-prev" id="bkPrev" aria-label="Anteprima della numerazione"></ol>
         </div>
       </section>
@@ -393,7 +393,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
     </div>
     <button class="btn" type="button" id="quotePhoto">Aggiungi una foto della pagina</button>
     <p class="msg" id="quoteMsg" aria-live="polite"></p>
-    <label class="field q-pg"><span>Pagina (se vuoi)</span><input id="quotePage" type="text" inputmode="numeric" maxlength="5" autocomplete="off"></label>
+    <label class="field q-pg"><span>Pagina (se vuoi)</span><input id="quotePage" type="text" enterkeyhint="done" inputmode="numeric" maxlength="5" autocomplete="off"></label>
     <div class="row-btns">
       <button class="btn primary" type="submit" id="quoteSave">Salva</button>
       <button class="btn" type="button" id="quoteShare">Condividi</button>
@@ -409,7 +409,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
     <p class="msg" id="svcWhat"></p>
     <label class="check"><input type="checkbox" id="svcSbnOn"><span>Worker SBN (catalogo delle biblioteche)</span></label>
     <label class="check"><input type="checkbox" id="svcKeyOn"><span>Chiave Google Libri</span></label>
-    <label class="field"><span>Il tuo nome</span><input type="text" id="svcSendName" maxlength="30" autocomplete="given-name" autocapitalize="words" placeholder="es. Piero"></label>
+    <label class="field"><span>Il tuo nome</span><input type="text" id="svcSendName" enterkeyhint="done" maxlength="30" autocomplete="given-name" autocapitalize="words" placeholder="es. Piero"></label>
     <div class="svc-warn">
       <p><b>Mandalo solo a persone di fiducia, in un messaggio privato.</b> Chi ha il link usa la tua quota: Google 1.000 ricerche al giorno, Cloudflare 100.000, divise tra chi le usa. Non costa nulla, ma se finisce la quota le ricerche rallentano per tutti fino al giorno dopo.</p>
       <p>Consigliato: in Google Cloud › Credenziali limita la chiave alla sola «Books API» e al sito https://piero907.github.io/*. Il worker risponde già solo a Next Libris.</p>
@@ -569,7 +569,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
     </section>
     <section class="opt-sec" data-sec="share" data-title="Condivisione">
       <label class="field"><span>Il tuo nome</span>
-        <input type="text" id="optName" maxlength="30" autocomplete="given-name" autocapitalize="words" placeholder="es. Piero"></label>
+        <input type="text" id="optName" enterkeyhint="done" maxlength="30" autocomplete="given-name" autocapitalize="words" placeholder="es. Piero"></label>
       <p class="hint">Compare quando condividi un libro o una lista: «I preferiti di Piero», «Piero ti consiglia un libro». Per un libro apri la sua scheda e tocca «Condividi»; per una lista usa «Condividi la lista» sopra l'elenco, oppure Esporta.</p>
       <h3 class="opt-h3">Chiave Google e worker</h3>
       <p class="hint">Puoi mandarli a un familiare o a un amico che usa Next Libris: la sua ricerca diventa completa come la tua.</p>
@@ -708,7 +708,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       <button type="button" data-k="p" aria-pressed="true">Prestato</button><button type="button" data-k="v" aria-pressed="false">Venduto</button><button type="button" data-k="r" aria-pressed="false">Regalato</button><button type="button" data-k="s" aria-pressed="false" hidden>Smarrito</button>
     </div>
     <p class="hint" id="loanHint"></p>
-    <label class="field" id="loanWhoF"><span id="loanWhoL">A chi</span><input id="loanWho" type="text" autocomplete="off" placeholder="Nome" role="combobox" aria-expanded="false"></label>
+    <label class="field" id="loanWhoF"><span id="loanWhoL">A chi</span><input id="loanWho" type="text" enterkeyhint="done" autocomplete="off" placeholder="Nome" role="combobox" aria-expanded="false"></label>
     <label class="field"><span id="loanDateL">Dal giorno</span><input id="loanDate" type="date"></label>
     <p class="msg bad" id="loanErr" hidden></p>
     <div class="row-btns">

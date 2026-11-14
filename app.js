@@ -80,7 +80,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 81, date: '2026-11-14', note: 'Volume accanto al titolo, suono del prezzo, foto copertina con titolo e autore a mano' };
+var APP_VERSION = { v: 82, date: '2026-11-14', note: 'Tastiera: «Fatto» nei campi della scheda' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'list', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -2917,11 +2917,11 @@ function rowHTML(b, dups, ex) {
         '</span><button type="button" class="ico au-edit" data-act="auedit" aria-label="Modifica l\'autore" title="Modifica l\'autore">' + icon('pen') + '</button></div>';
     }
     return '<label class="f f-' + k + (b.g.indexOf(k) >= 0 ? ' is-guess' : '') + '"' + fieldTitle(k) + '><span class="lbl">' + label + '</span>' +
-      '<textarea id="' + k + '-' + b.id + '" data-k="' + k + '" rows="1" spellcheck="false" placeholder="' + ph + '"' + dis + '>' + esc(val) + '</textarea></label>';
+      '<textarea id="' + k + '-' + b.id + '" data-k="' + k + '" rows="1" spellcheck="false" enterkeyhint="done" placeholder="' + ph + '"' + dis + '>' + esc(val) + '</textarea></label>';
   }
   function inp(k, label, val, mode, ph, max, listId) {
     return '<label class="f f-' + k + (b.g.indexOf(k) >= 0 ? ' is-guess' : '') + '"' + fieldTitle(k) + '><span class="lbl">' + label + '</span>' +
-      '<input id="' + k + '-' + b.id + '" data-k="' + k + '" inputmode="' + mode + '" autocomplete="off" placeholder="' + ph + '"' + (max ? ' maxlength="' + max + '"' : '') + (listId ? ' list="' + listId + '"' : '') + ' value="' + esc(val) + '"' + dis + '></label>';
+      '<input id="' + k + '-' + b.id + '" data-k="' + k + '" inputmode="' + mode + '" enterkeyhint="done" autocomplete="off" placeholder="' + ph + '"' + (max ? ' maxlength="' + max + '"' : '') + (listId ? ' list="' + listId + '"' : '') + ' value="' + esc(val) + '"' + dis + '></label>';
   }
   var status = '';
   /* libro senza dati (foto della copertina, ISBN non trovato…): titolo e autore si possono scrivere a mano subito, anche mentre cerca */
@@ -4822,7 +4822,7 @@ function goalHTML() {
   var y = String(new Date().getFullYear()), g = Math.max(0, parseInt(settings.goal, 10) || 0);
   var n = state.books.filter(function (b) { return !b.w && b.rs === 'ok' && L.str(b.rd).slice(0, 4) === y; }).length;
   var head = '<section class="st-sec goal"><h3>Obiettivo di lettura ' + y + '</h3>';
-  var form = '<label class="goal-set"><span>' + (g ? 'Cambia obiettivo' : 'Quanti libri vuoi leggere quest\'anno?') + '</span><input id="goalIn" type="text" inputmode="numeric" maxlength="3" autocomplete="off" placeholder="es. 20" value="' + (g || '') + '"><button type="button" class="btn" id="goalSave">Salva</button></label>';
+  var form = '<label class="goal-set"><span>' + (g ? 'Cambia obiettivo' : 'Quanti libri vuoi leggere quest\'anno?') + '</span><input id="goalIn" type="text" inputmode="numeric" enterkeyhint="done" maxlength="3" autocomplete="off" placeholder="es. 20" value="' + (g || '') + '"><button type="button" class="btn" id="goalSave">Salva</button></label>';
   if (!g) return head + '<p class="msg">Finora ne hai ' + (n === 1 ? 'letto 1' : 'letti ' + n) + '.</p>' + form + '</section>';
   var now = new Date(), start = new Date(now.getFullYear(), 0, 1), end = new Date(now.getFullYear() + 1, 0, 1);
   var part = (now - start) / (end - start), due = Math.round(g * part), left = g - n;
