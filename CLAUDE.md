@@ -39,3 +39,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Il README.md accanto spiega
   - Al ritorno da PayPal: con almeno 20 secondi passati lì, pausa di 3 mesi, altrimenti 10 giorni. Non esiste un pulsante «Ho donato».
 - **Foto della copertina non trovata:** si apre subito «Scrivi titolo e autore», già riempita con il testo letto.
 - **Vista compatta:** «Titolo, N» quando il volume della serie è compilato.
+- **Foto di un libro:** con una foto sola si apre «Riconosco il libro» con la percentuale, poi da sola il passo giusto: prezzo, scelta poi prezzo, oppure titolo, autore e prezzo a mano. La fotocamera avvisa con poca luce e mette a fuoco col tocco.
+- **Menu laterale:** largo due terzi. Dal bordo e dalla linguetta apre il menu (Filtri e ordine, Tutte le citazioni, Statistiche, Impostazioni), mai direttamente i filtri. Il pulsante «Filtri» apre la pagina dei filtri.
+- **Vista all'apertura:** Copertine (predefinita) o Elenco, in Opzioni › Aspetto. Le prove usano `?vista=elenco`.
+- **Tastiera:** `enterkeyhint="done"` sui campi singoli («Fatto», non «Succ.»).
