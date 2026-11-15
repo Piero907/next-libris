@@ -1,7 +1,7 @@
 const CFG = require("./_config");
 // modulo «Scheda aperta del libro» (schede.js/.css): Attuale, A (ordinata), B (sezioni), C (linguette), D (pagina del libro);
 // scelta in Opzioni › Aspetto, salvata; i campi spostati si modificano e si salvano come prima.
-// D: in alto preferito/condividi/elimina, sotto le azioni con la scritta; autore che apre la sua finestra; lettura modificabile; etichette = filtri
+// D: in alto icone su una riga (preferito, desideri, condividi, elimina), in fondo Presta e Cerca sul web con la scritta; autore che apre la sua finestra; lettura modificabile; etichette = filtri
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -62,7 +62,9 @@ const books = [
   console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani Editore · 2012 · 624 pagine/.test(d.page) && d.headHidden);
   // in alto solo preferito, condividi, elimina; sotto, con la scritta: presta, desideri, cerca sul web
   const acts = await page.evaluate(s => { const e = document.querySelector(s); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act + ':' + (getComputedStyle(x.querySelector('.al')).display !== 'none')) }; }, card());
-  console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['fav', 'share', 'del']); assert.deepStrictEqual(acts.low, ['loan:true', 'towish:true', 'websearch:true']);
+  console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['fav', 'towish', 'share', 'del']); assert.deepStrictEqual(acts.low, ['loan:true', 'websearch:true']);
+  const lay = await page.evaluate(s => { const e = document.querySelector(s), t = [...e.querySelectorAll('.acts-main [data-act]')].map(x => Math.round(x.getBoundingClientRect().top)), low = e.querySelector('.cv-acts2'); return { oneRow: new Set(t).size === 1, last: e.lastElementChild === low }; }, card());
+  assert(lay.oneRow && lay.last, 'icone su una riga, Presta e Cerca sul web in fondo');
   // lettura modificabile dalla pagina
   assert(await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="in"]').getAttribute('aria-pressed') === 'true', card()));
   await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="ok"]').click(), card()); await wait(400);
