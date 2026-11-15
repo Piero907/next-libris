@@ -9,6 +9,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Il README.md accanto spiega
   - Ramo `main`: l'app, pubblicata su GitHub Pages: https://piero907.github.io/next-libris/
   - Ramo `prove`: prove automatiche, materiali e strumenti; non fa parte dell'app.
   - Ramo `versione-76`: punto di salvataggio della versione 76 (i tag non passano dal proxy: si usano rami).
+- **Copia di prova:** repository `Piero907/next-libris-prova` (GitHub Pages: https://piero907.github.io/next-libris-prova/). Ha dati separati e l'etichetta PROVA, e si pubblica con `pubblica_prova.py` (vedi il README).
 - **File dell'app:**
   - `index.html`, `app.js`, `lib.js` (UMD, provabile in Node), `style.css`;
   - `sw.js` (cache `catalogo-libri-vN`, elenco SHELL per l'uso senza rete), `manifest.json`, `version.json`;
@@ -18,7 +19,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Il README.md accanto spiega
 ## Regole di lavoro concordate con Piero
 
 - **Lingua:** rispondere sempre in italiano, semplice e concreto.
-- **Pubblicazione:** si implementa, si prova e si pubblica direttamente su `main`. Ogni pubblicazione alza il numero di versione e il numero va detto a Piero.
+- **Pubblicazione (dal 15/11/2026):** ogni novità va **prima nella copia di prova** (`pubblica_prova.py`) e Piero la prova sul telefono. Quando dice che va bene, si pubblica su `main` della versione vera. Ogni pubblicazione nella versione vera alza il numero di versione, e il numero va detto a Piero.
 - **Registro:** a ogni versione va aggiunta in cima a `REGISTRO_MODIFICHE.md` la voce `## Versione N · gg/mm/aaaa`. Se serve, si aggiorna anche `LEGGIMI.txt`.
 - **Prima di pubblicare:** girano **tutte** le prove (`node esegui.js`). Per ogni novità serve una prova nuova o aggiornata, salvata anche nel ramo `prove`.
 - **Commit:** i messaggi finiscono con le righe di attribuzione indicate dalla sessione (Co-Authored-By e link alla sessione).

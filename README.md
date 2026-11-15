@@ -46,10 +46,22 @@ APP_DIR=/percorso/copia node esegui.js
 
 **Prove sensibili ai tempi.** e2e8, e2e35, e2e40, e2e42 e e2e44 ogni tanto falliscono per lentezza della macchina (fotocamera finta, pressione lunga, caricamento delle immagini). Se una di queste fallisce, prima di cercare un errore va ripetuta da sola. Un vero errore si ripete sempre.
 
+## Copia di prova (da v93)
+
+- **Cos'è:** una seconda copia dell'app, nel repository `Piero907/next-libris-prova` (GitHub Pages: https://piero907.github.io/next-libris-prova/), per provare le novità prima di portarle nella versione vera.
+- **Dati separati:** sta allo stesso indirizzo di base della versione vera (`piero907.github.io`), quindi sul telefono condividerebbe lo stesso spazio. Per questo il codice riconosce la copia di prova dall'indirizzo (`PROVA` in app.js e sw.js) e usa nomi suoi:
+  - `prova:` davanti alle chiavi di localStorage;
+  - il database `prova-catalogo-libri`;
+  - le copie offline `prova-catalogo-libri-vN`, e ogni service worker cancella solo le proprie.
+
+  Mostra l'etichetta PROVA accanto al titolo. La prova e2e62 controlla tutto questo.
+- **Pubblicarla:** `python3 pubblica_prova.py "nota"`. Copia l'app in `../next-libris-prova` (o in `PROVA_DIR`), mette il manifest da prova («Next Libris (prova)», colore diverso), fa il commit e il push. Le righe di attribuzione dei commit si passano in `ATTRIBUZIONE`.
+- **Flusso concordato con Piero:** ogni novità va prima nella copia di prova. Quando lui dice che va bene, si porta nella versione vera (numero di versione, registro, prove, come sempre).
+
 ## Flusso di lavoro per ogni nuova versione
 
 1. Modificare i file dell'app (`app.js`, `index.html`, `style.css`, `lib.js`, `sw.js`…) in una copia di lavoro.
-2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8181) e una riga di commento iniziale che dica cosa prova.
+2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8182) e una riga di commento iniziale che dica cosa prova.
 3. Aggiornare `REGISTRO_MODIFICHE.md` (nuova voce `## Versione N · gg/mm/aaaa` in cima) e, se serve, `LEGGIMI.txt`.
 4. Alzare la versione: `python3 nuova_versione.py N "breve nota"`. Cambia insieme `APP_VERSION` in `app.js`, `version.json` e il nome della cache in `sw.js` (`catalogo-libri-vN`).
 5. Far girare **tutte** le prove (`node esegui.js`). Se un cambiamento voluto rompe una prova vecchia, si aggiorna la prova e lo si dice.
@@ -143,9 +155,10 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e58.js | 8178 | suoni: Opzioni › Aspetto e pulsante 🔊/🔇 nella fotocamera; spenti niente bip; la scelta resta |
 | e2e59.js | 8179 | backup: nome del file, «Il backup non è partito» con Riprova e Download; fotocamera della scansione: torcia e flash (luce finta via getCapabilities/applyConstraints) |
 | e2e60.js | 8180 | fotocamera del telefono: pulsante nella fotocamera dell'app e nella scansione, opzione «sempre», niente in «Ce l'ho già?» (usa `page.waitForFileChooser`) |
+| e2e62.js | 8182 | copia di prova allo stesso indirizzo di base: dati, database, copie offline ed etichetta separati dalla versione vera |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8182** e poi a salire.
+Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8183** e poi a salire.
 
 ## Materiali (`img/`)
 
