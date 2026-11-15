@@ -47,12 +47,15 @@ Questo file sta nel ramo `prove`, separato dall'app. Il README.md accanto spiega
 - **Suoni:** accesi di predefinito; si spengono in Opzioni › Aspetto o con 🔊/🔇 nella fotocamera (la vibrazione resta).
 - **Backup:** pulsanti «Fai il backup e mandalo su Drive, email…» (consigliato) e «Fai il backup sul telefono (Download)».
 - **Finestre dal basso:** si chiudono anche trascinandole giù (maniglia in cima).
+- **Suggerimenti (v94):** menu › Suggerimenti, schede «Cosa leggere dopo» (locale, `L.nextReads`) e «Da scoprire» (Google, `catalogo-libri-sugg`, solo italiano di predefinito, automatica ogni 7 giorni); riquadro in cima dopo un libro finito.
+- **Moduli staccabili:** una novità che potrebbe non andare nella versione vera si fa come **modulo** in file suoi (`NOME.js`, `NOME.css`) che usa solo `window.NL` (attacco in fondo ad `app.js`: `NL.on('list'|'menu'|'options', fn)`, più libri, impostazioni, toast…). Righe in `index.html` e nomi in `SHELL` di `sw.js` con il commento `// modulo:`. Si toglie con `APP_DIR=… python3 togli_modulo.py NOME`. `pubblica_prova.py` copia i moduli (lista `MODULES`) e li cancella dalla prova se non ci sono più. **Nella pubblicazione su `main` vanno copiati anche i file dei moduli.**
+- **Wrap «Il tuo trimestre in libri» (modulo `wrap`, nella prova dal 15/11/2026):** ogni tre mesi, opzione in Aspetto (predefinito sì), dati in `catalogo-libri-wrap`. Prova e2e64.
 
 ## In sospeso
 
 Le idee e i problemi che Piero ha chiesto di tenere in sospeso stanno in **`IN_SOSPESO.md`**, in questa stessa cartella:
 - fotocamera e luce (torcia e flash che non funzionano sul suo telefono);
-- il wrap «Il tuo anno in libri»;
+- (il wrap ora è il modulo «Il tuo trimestre in libri», nella copia di prova);
 - la parte di intrattenimento delle Statistiche (traguardi, sfide, curiosità);
 - le cose da verificare sul telefono.
 

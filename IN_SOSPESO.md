@@ -30,7 +30,9 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 92.
 
 ## 2. «Il tuo anno in libri» (wrap stile Spotify)
 
-**Stato:** proposta mostrata il 14/11/2026 con un disegno delle schermate. Piero: «Teniamo in sospeso la funzione del wrap».
+**Ripreso il 15/11/2026:** Piero l'ha chiesto **ogni tre mesi**, opzionale (predefinito sì) e facile da togliere. Fatto come modulo `wrap.js`/`wrap.css` nella copia di prova (prova e2e64). Resta da decidere se portarlo nella versione vera. Sotto, l'idea di partenza.
+
+**Stato iniziale:** proposta mostrata il 14/11/2026 con un disegno delle schermate. Piero: «Teniamo in sospeso la funzione del wrap».
 
 **Idea:** schermate a tutto schermo come le storie di Instagram (tocco a destra = avanti, a sinistra = indietro, barre di avanzamento in alto, colori della palette, numeri grandi con le grazie).
 1. Apertura: «Il tuo 2026 in libri».
