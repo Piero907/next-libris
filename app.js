@@ -80,7 +80,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 91, date: '2026-11-15', note: 'Obiettivo con il flash; niente pulsanti della luce se non c\'è' };
+var APP_VERSION = { v: 92, date: '2026-11-15', note: 'Prova la luce; Sostieni in evidenza in Opzioni › App' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -267,7 +267,8 @@ function loadAll() {
     settings.selTip = s.selTip ? 1 : 0;
     settings.sound = s.sound !== false;                                             // suoni: bip della scansione e «fatto» (accesi di predefinito)
     settings.camNative = s.camNative === true;                                      // foto con la fotocamera del telefono (flash del telefono)
-    settings.torchCam = typeof s.torchCam === 'string' ? s.torchCam : '';            // obiettivo con la luce ('none' = nessuno)
+    settings.torchCam = typeof s.torchCam === 'string' ? s.torchCam : '';            // obiettivo con la luce ('none' = nessuno, o non si accende davvero)
+    settings.lightOk = s.lightOk === true;                                          // «Prova la luce»: vista accendersi
     settings.quoteOcrAuto = s.quoteOcrAuto === true;                                // citazioni: leggi subito il testo delle foto
     settings.donUntil = Number(s.donUntil) || 0;                                    // donazioni: richieste in pausa fino a
     settings.donNever = s.donNever === true;                                        // promemoria ogni 50 libri spento
@@ -1282,7 +1283,7 @@ $('#scanRes').addEventListener('click', function (e) {
 var scanLight = { can: false, flash: false };
 async function scanLightCaps(track) {
   var can = false;
-  try { var c = track && track.getCapabilities ? track.getCapabilities() : {}; can = !!c.torch; } catch (e) {}
+  try { var c = track && track.getCapabilities ? track.getCapabilities() : {}; can = !!c.torch && settings.torchCam !== 'none'; } catch (e) {}
   if (can) scanLight.can = true;                    // solo se l'obiettivo dichiara la torcia: altrimenti niente pulsanti della luce
   paintScanLight();
 }
@@ -1295,7 +1296,7 @@ function paintScanLight() {
 async function setTorch(on) {
   var tr = stream && stream.getVideoTracks()[0];
   if (!tr) return false;
-  try { await tr.applyConstraints({ advanced: [{ torch: !!on }] }); } catch (e) { return false; }
+  if (!(await torchOnTrack(tr, on))) return false;
   if (on) { try { var se = tr.getSettings ? tr.getSettings() : {}; if (se.torch === false) return false; } catch (e) {} }   // accettato ma rimasto spento
   return true;
 }
@@ -1738,8 +1739,14 @@ var snap = { stream: null, done: null, pushed: false, track: null, torch: false 
 /* ---- Obiettivo con la luce: i telefoni hanno piu' obiettivi posteriori e il flash e' collegato a uno solo.
    La prima volta li provo uno per uno, scelgo quello che dichiara la luce e me lo ricordo (settings.torchCam:
    deviceId, oppure 'none' se nessuno ce l'ha: allora i pulsanti della luce non compaiono). ---- */
+async function torchOnTrack(tr, on) {
+  var ok = false;
+  try { await tr.applyConstraints({ advanced: [{ torch: !!on }] }); ok = true; } catch (e) {}
+  try { await tr.applyConstraints({ torch: !!on }); ok = true; } catch (e) {}
+  return ok;
+}
 function trackTorch(st) { try { var t = st && st.getVideoTracks()[0], c = t && t.getCapabilities ? t.getCapabilities() : {}; return !!c.torch; } catch (e) { return false; } }
-function lensMsg(t) { if (!$('#snap').hidden) $('#snapMsg').textContent = t; else if (scanning) scanMsg(t); else toast(t); }
+function lensMsg(t) { if (!$('#snap').hidden) $('#snapMsg').textContent = t; else if (scanning) scanMsg(t); else if (optOpen) $('#lensMsg').textContent = t; else toast(t); }
 /* Opzioni › App › «Fotocamera e luce»: prova gli obiettivi e mostra quali hanno la luce (per capire perche' non si accende) */
 function lensRows(list, pick) {
   return list.map(function (r) {
@@ -1751,7 +1758,35 @@ function paintLensState() {
   var t = settings.torchCam;
   $('#lensState').textContent = !t ? 'Non ancora controllato: si controlla da solo la prima volta che apri la fotocamera, oppure qui.' :
     t === 'none' ? 'Nessun obiettivo dichiara la luce a Chrome: i pulsanti della luce non compaiono. Per il flash usa la fotocamera del telefono.' :
-    'Trovato un obiettivo con la luce: l\'app usa quello.';
+    'Trovato un obiettivo con la luce: l\'app usa quello.' + (settings.lightOk ? ' La luce si accende.' : ' Se toccando 🔦 la luce non si accende, usa «Prova la luce».');
+}
+/* alcuni telefoni (es. Galaxy A32) dichiarano la luce e dicono di averla accesa, ma resta spenta: l'app non puo' saperlo.
+   Qui la accendo per qualche secondo e chiedo: se non si e' vista, niente pulsanti della luce (settings.torchCam = 'none'). */
+var lightTest = null;
+async function runLightTest() {
+  var b = $('#lightRun'); b.disabled = true; $('#lightAsk').hidden = true;
+  $('#lensMsg').textContent = 'Accendo la luce per qualche secondo: guarda il retro del telefono…';
+  try {
+    if (settings.torchCam === 'none') settings.torchCam = '';          // riprova da capo
+    var st = await rearStream({ width: { ideal: 1920 }, height: { ideal: 1080 } }), tr = st.getVideoTracks()[0];
+    lightTest = st;
+    var v = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = st; try { await v.play(); } catch (e) {}   // su alcuni telefoni la luce va solo con l'immagine attiva
+    if (!trackTorch(st)) { stopLightTest(); $('#lensMsg').textContent = 'Nessun obiettivo dichiara la luce a Chrome: i pulsanti della luce non compaiono. Per il flash usa la fotocamera del telefono.'; settings.torchCam = 'none'; saveSettings(); paintLensState(); b.disabled = false; return; }
+    await torchOnTrack(tr, true);
+    await new Promise(function (r) { setTimeout(r, 2500); });
+    await torchOnTrack(tr, false);
+    stopLightTest();
+    $('#lensMsg').textContent = 'Hai visto accendersi la luce sul retro del telefono?';
+    $('#lightAsk').hidden = false;
+  } catch (e) { stopLightTest(); $('#lensMsg').textContent = 'Non riesco ad aprire la fotocamera: controlla il permesso del sito.'; }
+  b.disabled = false;
+}
+function stopLightTest() { if (lightTest) { lightTest.getTracks().forEach(function (t) { t.stop(); }); lightTest = null; } }
+function lightAnswer(seen) {
+  $('#lightAsk').hidden = true;
+  if (seen) { settings.lightOk = true; $('#lensMsg').textContent = 'Bene: nella fotocamera dell\'app trovi la luce 🔦 (e il flash ⚡ per le copertine).'; }
+  else { settings.torchCam = 'none'; settings.lightOk = false; $('#lensMsg').textContent = 'Ok: tolgo i pulsanti della luce. Per il flash usa «Usa la fotocamera del telefono», nella fotocamera dell\'app.'; }
+  saveSettings(); paintLensState();
 }
 async function runLensCheck() {
   var b = $('#lensRun'); b.disabled = true; $('#lensList').innerHTML = ''; $('#lensMsg').textContent = 'Provo gli obiettivi uno per uno…';
@@ -1852,7 +1887,7 @@ function snapPhoto(title, fallbackInput) {
       var caps = {};
       try {
         caps = snap.track.getCapabilities ? snap.track.getCapabilities() : {};
-        $('#snapTorch').hidden = !caps.torch;
+        $('#snapTorch').hidden = !caps.torch || settings.torchCam === 'none';     // 'none': nessuna luce, o non si accende davvero
         if (caps.focusMode && caps.focusMode.indexOf('continuous') >= 0) snap.track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(function () {});
       } catch (e) {}
       snap.caps = caps || {};
@@ -1956,7 +1991,8 @@ $('#fileSnapGal').addEventListener('change', function (e) { var f = e.target.fil
 $('#snapTorch').addEventListener('click', async function () {
   if (!snap.track) return;
   var tr = snap.track, want = !snap.torch, ok = true;
-  try { await tr.applyConstraints({ advanced: [{ torch: want }] }); if (want) { var se = tr.getSettings ? tr.getSettings() : {}; if (se.torch === false) ok = false; } } catch (e) { ok = false; }
+  ok = await torchOnTrack(tr, want);
+  if (ok && want) { try { var se = tr.getSettings ? tr.getSettings() : {}; if (se.torch === false) ok = false; } catch (e) {} }
   if (!ok && want) {                                 // la luce non si accende da qui: tolgo il pulsante e lo ricordo
     snap.torch = false; snap.caps = Object.assign({}, snap.caps, { torch: false }); $('#snapTorch').hidden = true;
     settings.torchCam = 'none'; saveSettings();
@@ -5929,6 +5965,9 @@ paintSound();
 $('#optCamNative').checked = !!settings.camNative;
 paintLensState();
 $('#lensRun').addEventListener('click', runLensCheck);
+$('#lightRun').addEventListener('click', runLightTest);
+$('#lightYes').addEventListener('click', function () { lightAnswer(true); });
+$('#lightNo').addEventListener('click', function () { lightAnswer(false); });
 $('#optCamNative').addEventListener('change', function (e) { settings.camNative = e.target.checked; saveSettings(); toast(settings.camNative ? 'Foto con la fotocamera del telefono.' : 'Foto con la fotocamera dell\'app.'); });
 $('#optSound').addEventListener('change', function (e) { setSound(e.target.checked, true); });
 $('#scanSound').addEventListener('click', function () { setSound(settings.sound === false, true); });

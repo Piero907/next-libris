@@ -1493,3 +1493,6 @@ body.selecting .don-row,body.selecting .don-ask,body.scanning .don-row{display:n
 .lens-list li span{font-size:13.5px;color:var(--muted)}
 .lens-list em{font-style:normal;font-weight:600}
 .lens-list em.yes{color:var(--accent)}
+/* Opzioni › App: «Sostieni Next Libris» in evidenza, come nel menu (verde chiaro della palette, boccale) */
+.btn.don-opt{display:flex;align-items:center;gap:12px;background:var(--accent-soft);border-color:color-mix(in srgb,var(--accent) 35%,transparent);color:var(--accent);font-weight:700}
+.btn.don-opt .don-cup{flex:0 0 36px;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--accent)}

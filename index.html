@@ -646,15 +646,20 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       <div class="menu">
         <button class="btn primary" id="btnInstall" hidden>Installa l'app</button>
         <button class="btn" id="btnInstDiag">Perché non si installa?</button>
-        <button class="btn" type="button" id="donOpt">Sostieni Next Libris</button>
+        <button class="btn don-opt" type="button" id="donOpt"><span class="don-cup" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h10v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M15 11h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M5 8a2.5 2.5 0 0 1 2.5-3 3 3 0 0 1 5 0A2.5 2.5 0 0 1 15 8"/><path d="M8.5 12v5.5M11.5 12v5.5"/></svg></span><span>Sostieni Next Libris</span></button>
       </div>
       <div class="diag" id="instOut" hidden aria-live="polite"></div>
       <h3>Fotocamera e luce</h3>
       <p class="hint" id="lensState"></p>
       <div class="menu">
+        <button class="btn" type="button" id="lightRun">Prova la luce</button>
         <button class="btn" type="button" id="lensRun">Prova gli obiettivi</button>
       </div>
       <p class="msg" id="lensMsg" aria-live="polite"></p>
+      <div class="row-btns" id="lightAsk" hidden>
+        <button class="btn primary" type="button" id="lightYes">Sì, si è accesa</button>
+        <button class="btn" type="button" id="lightNo">No, è rimasta spenta</button>
+      </div>
       <ul class="lens-list" id="lensList"></ul>
       <p class="hint" id="verApp"></p>
       <p class="hint">I libri sono salvati solo su questo telefono: fai ogni tanto un backup (Menu › Opzioni › Backup ed esportazione) e tienilo su Drive o nella mail.</p>

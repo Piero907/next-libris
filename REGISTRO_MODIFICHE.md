@@ -3,6 +3,11 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 92 · 15/11/2026
+- **«Prova la luce»** (Opzioni › App › Fotocamera e luce): alcuni telefoni, come il Galaxy A32, dicono a Chrome di avere la luce e di averla accesa, ma resta spenta, e l'app non può accorgersene. La prova la accende per qualche secondo e chiede se l'hai vista: con «No, è rimasta spenta» i pulsanti della luce spariscono dalle fotocamere dell'app (per il flash resta «Usa la fotocamera del telefono»).
+- La luce ora si accende anche nel secondo modo previsto da Chrome, che su alcuni telefoni è l'unico che funziona.
+- **Sostieni Next Libris** anche in Opzioni › App è in evidenza: verde chiaro della palette, con il boccale.
+
 ## Versione 91 · 15/11/2026
 - **Obiettivo con il flash:** i telefoni hanno più obiettivi posteriori e il flash è collegato a uno solo, mentre Chrome a volte apre un altro obiettivo. La prima volta che apri la fotocamera dell'app, l'app li prova uno per uno, usa quello con la luce e se lo ricorda («Cerco l'obiettivo con il flash (solo la prima volta)…»).
 - **Niente pulsanti della luce se la luce non c'è:** se nessun obiettivo ha la luce, o se toccando la luce non si accende davvero, i pulsanti 🔦 e ⚡ spariscono (nelle foto e nella scansione) e l'app consiglia la fotocamera del telefono per il flash.
