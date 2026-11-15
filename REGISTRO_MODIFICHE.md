@@ -3,6 +3,11 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 91 · 15/11/2026
+- **Obiettivo con il flash:** i telefoni hanno più obiettivi posteriori e il flash è collegato a uno solo, mentre Chrome a volte apre un altro obiettivo. La prima volta che apri la fotocamera dell'app, l'app li prova uno per uno, usa quello con la luce e se lo ricorda («Cerco l'obiettivo con il flash (solo la prima volta)…»).
+- **Niente pulsanti della luce se la luce non c'è:** se nessun obiettivo ha la luce, o se toccando la luce non si accende davvero, i pulsanti 🔦 e ⚡ spariscono (nelle foto e nella scansione) e l'app consiglia la fotocamera del telefono per il flash.
+- **Opzioni › App › Fotocamera e luce:** dice se è stato trovato un obiettivo con la luce; «Prova gli obiettivi» li riprova e li elenca (anteriore o posteriore, luce sì o no, quale è in uso).
+
 ## Versione 90 · 15/11/2026
 - **Fotocamera del telefono, con il suo flash:** su alcuni telefoni Chrome non lascia accendere la luce dalla fotocamera dell'app. Ora:
   - nella fotocamera dell'app (Foto, copertina, citazioni) c'è «📷 Usa la fotocamera del telefono (con il flash)»: apre quella del telefono per la stessa foto, che poi torna nell'app;

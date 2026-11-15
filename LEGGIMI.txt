@@ -169,6 +169,11 @@ COME SI USA
     (facoltativo); piu' edizioni -> scelta e poi prezzo; non trovato ->
     "Scrivi titolo e autore" con anche il prezzo. "Scrivi a mano" ferma la
     ricerca, "Continua dopo" la lascia andare nell'elenco.
+  * Obiettivo con il flash: la prima volta che apri la fotocamera dell'app,
+    l'app prova gli obiettivi posteriori e usa quello con la luce (se lo
+    ricorda). Se nessuno ce l'ha, o la luce non si accende davvero, i
+    pulsanti della luce non compaiono. In Opzioni > App > "Fotocamera e
+    luce" vedi cosa ha trovato; "Prova gli obiettivi" li riprova.
   * Fotocamera del telefono: se la luce dell'app non si accende, tocca
     "Usa la fotocamera del telefono (con il flash)" (c'e' sia nella
     fotocamera delle foto sia nella scansione): scatti con la fotocamera

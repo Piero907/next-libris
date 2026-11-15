@@ -80,7 +80,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 90, date: '2026-11-15', note: 'Fotocamera del telefono con il flash; fotocamere con lo stesso aspetto' };
+var APP_VERSION = { v: 91, date: '2026-11-15', note: 'Obiettivo con il flash; niente pulsanti della luce se non c\'è' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -265,8 +265,9 @@ function loadAll() {
     settings.goal = Math.max(0, Math.min(999, parseInt(s.goal, 10) || 0));          // obiettivo di lettura
     settings.newsAuto = s.newsAuto !== false;                                       // novita' degli autori: controllo automatico
     settings.selTip = s.selTip ? 1 : 0;
-    settings.sound = s.sound !== false;
-    settings.camNative = s.camNative === true;                                      // foto con la fotocamera del telefono (flash del telefono)                                             // suoni: bip della scansione e «fatto» (accesi di predefinito)
+    settings.sound = s.sound !== false;                                             // suoni: bip della scansione e «fatto» (accesi di predefinito)
+    settings.camNative = s.camNative === true;                                      // foto con la fotocamera del telefono (flash del telefono)
+    settings.torchCam = typeof s.torchCam === 'string' ? s.torchCam : '';            // obiettivo con la luce ('none' = nessuno)
     settings.quoteOcrAuto = s.quoteOcrAuto === true;                                // citazioni: leggi subito il testo delle foto
     settings.donUntil = Number(s.donUntil) || 0;                                    // donazioni: richieste in pausa fino a
     settings.donNever = s.donNever === true;                                        // promemoria ogni 50 libri spento
@@ -1045,6 +1046,7 @@ async function shootCover() {
     shootBusy = true; $('#scanShoot').disabled = true;
     flashed = await setTorch(true);
     if (flashed) await new Promise(function (r) { setTimeout(r, 650); });
+    else noLight();
     shootBusy = false; $('#scanShoot').disabled = false;
   }
   var c = coverCanvas();
@@ -1281,10 +1283,7 @@ var scanLight = { can: false, flash: false };
 async function scanLightCaps(track) {
   var can = false;
   try { var c = track && track.getCapabilities ? track.getCapabilities() : {}; can = !!c.torch; } catch (e) {}
-  if (!can && track && window.ImageCapture) {
-    try { var pc = await new ImageCapture(track).getPhotoCapabilities(); can = !!(pc && pc.fillLightMode && (pc.fillLightMode.indexOf('flash') >= 0 || pc.fillLightMode.indexOf('torch') >= 0)); } catch (e) {}
-  }
-  if (can) scanLight.can = true;
+  if (can) scanLight.can = true;                    // solo se l'obiettivo dichiara la torcia: altrimenti niente pulsanti della luce
   paintScanLight();
 }
 function paintScanLight() {
@@ -1296,13 +1295,20 @@ function paintScanLight() {
 async function setTorch(on) {
   var tr = stream && stream.getVideoTracks()[0];
   if (!tr) return false;
-  try { await tr.applyConstraints({ advanced: [{ torch: !!on }] }); return true; } catch (e) { return false; }
+  try { await tr.applyConstraints({ advanced: [{ torch: !!on }] }); } catch (e) { return false; }
+  if (on) { try { var se = tr.getSettings ? tr.getSettings() : {}; if (se.torch === false) return false; } catch (e) {} }   // accettato ma rimasto spento
+  return true;
+}
+function noLight() {                                 // la luce non si accende: tolgo i pulsanti e me lo ricordo
+  scanLight.can = false; scanLight.flash = false; torchOn = false;
+  if (!settings.torchCam || settings.torchCam !== 'none') { settings.torchCam = 'none'; saveSettings(); }
+  paintScanLight();
 }
 async function toggleTorch() {
   var want = !torchOn, ok = await setTorch(want);
   torchOn = ok ? want : false;
   paintScanLight();
-  if (!ok && want) scanMsg('Questo telefono non lascia accendere la torcia da qui: usa «Usa la fotocamera del telefono», qui sotto.');
+  if (!ok && want) { noLight(); scanMsg('Da qui la luce non si accende su questo telefono: per il flash usa «Usa la fotocamera del telefono», qui sotto.'); }
 }
 function toggleScanFlash() {
   scanLight.flash = !scanLight.flash; paintScanLight();
@@ -1729,9 +1735,79 @@ $('#bulkSheet').addEventListener('click', function (e) {
 });
 /* ---- fotocamera dentro l'app: sempre quella posteriore (l'app Fotocamera del telefono a volte riparte da quella frontale) ---- */
 var snap = { stream: null, done: null, pushed: false, track: null, torch: false };
+/* ---- Obiettivo con la luce: i telefoni hanno piu' obiettivi posteriori e il flash e' collegato a uno solo.
+   La prima volta li provo uno per uno, scelgo quello che dichiara la luce e me lo ricordo (settings.torchCam:
+   deviceId, oppure 'none' se nessuno ce l'ha: allora i pulsanti della luce non compaiono). ---- */
+function trackTorch(st) { try { var t = st && st.getVideoTracks()[0], c = t && t.getCapabilities ? t.getCapabilities() : {}; return !!c.torch; } catch (e) { return false; } }
+function lensMsg(t) { if (!$('#snap').hidden) $('#snapMsg').textContent = t; else if (scanning) scanMsg(t); else toast(t); }
+/* Opzioni › App › «Fotocamera e luce»: prova gli obiettivi e mostra quali hanno la luce (per capire perche' non si accende) */
+function lensRows(list, pick) {
+  return list.map(function (r) {
+    return '<li><b>' + esc(r.label) + '</b><span>' + (r.ok ? (r.back === false ? 'anteriore' : r.back ? 'posteriore' : 'lato non indicato') + ' · ' + (r.torch ? '<em class="yes">luce sì</em>' : 'luce no') : 'non si apre') +
+      (pick && pick.id === r.id ? ' · <em class="yes">in uso</em>' : '') + '</span></li>';
+  }).join('');
+}
+function paintLensState() {
+  var t = settings.torchCam;
+  $('#lensState').textContent = !t ? 'Non ancora controllato: si controlla da solo la prima volta che apri la fotocamera, oppure qui.' :
+    t === 'none' ? 'Nessun obiettivo dichiara la luce a Chrome: i pulsanti della luce non compaiono. Per il flash usa la fotocamera del telefono.' :
+    'Trovato un obiettivo con la luce: l\'app usa quello.';
+}
+async function runLensCheck() {
+  var b = $('#lensRun'); b.disabled = true; $('#lensList').innerHTML = ''; $('#lensMsg').textContent = 'Provo gli obiettivi uno per uno…';
+  try {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('no');
+    var st = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }); st.getTracks().forEach(function (t) { t.stop(); });   // permesso e nomi degli obiettivi
+    var res = await chooseLightLens(function (r, i, n) { $('#lensMsg').textContent = 'Provo gli obiettivi: ' + (i + 1) + ' di ' + n + '…'; });
+    $('#lensList').innerHTML = lensRows(res.list, res.pick);
+    $('#lensMsg').textContent = res.pick ? 'Fatto: d\'ora in poi la fotocamera dell\'app usa l\'obiettivo con la luce.' : 'Fatto: nessun obiettivo ha la luce disponibile da Chrome.';
+  } catch (e) { $('#lensMsg').textContent = 'Non riesco ad aprire la fotocamera: controlla il permesso del sito.'; }
+  b.disabled = false; paintLensState();
+}
+async function probeLenses(onStep) {
+  var md = navigator.mediaDevices, out = [];
+  var devs = (await md.enumerateDevices()).filter(function (d) { return d.kind === 'videoinput'; });
+  for (var i = 0; i < devs.length; i++) {
+    var d = devs[i], r = { id: d.deviceId, label: d.label || ('Obiettivo ' + (i + 1)), back: null, torch: false, ok: false };
+    try {
+      var st = await md.getUserMedia({ video: { deviceId: { exact: d.deviceId } }, audio: false });
+      var t = st.getVideoTracks()[0], c = t.getCapabilities ? t.getCapabilities() : {}, se = t.getSettings ? t.getSettings() : {};
+      var fm = se.facingMode || (c.facingMode && c.facingMode[0]) || '';
+      r.ok = true; r.torch = !!c.torch;
+      r.back = fm ? fm === 'environment' : /back|rear|posterior|environment/i.test(r.label) ? true : /front|user|anterior|frontale/i.test(r.label) ? false : null;
+      st.getTracks().forEach(function (x) { x.stop(); });
+      await new Promise(function (ok) { setTimeout(ok, 150); });   // alcuni telefoni non riaprono subito un'altra fotocamera
+    } catch (e) {}
+    out.push(r);
+    if (onStep) onStep(r, i, devs.length);
+  }
+  return out;
+}
+async function chooseLightLens(onStep) {
+  var list = await probeLenses(onStep);
+  var pick = list.find(function (r) { return r.torch && r.back !== false; }) || null;
+  settings.torchCam = pick ? pick.id : 'none'; saveSettings();
+  return { pick: pick, list: list };
+}
 async function rearStream(res) {
+  var md = navigator.mediaDevices, hi = res || { width: { ideal: 3264 }, height: { ideal: 2448 } };
+  if (settings.torchCam && settings.torchCam !== 'none') {        // l'obiettivo con la luce, gia' trovato
+    try { return await md.getUserMedia({ video: Object.assign({ deviceId: { exact: settings.torchCam } }, hi), audio: false }); }
+    catch (e) { settings.torchCam = ''; saveSettings(); }          // non c'e' piu' (o ha cambiato nome): lo ricerco
+  }
+  var st = await rearStreamBase(hi);
+  if (settings.torchCam) return st;                                // 'none': gia' provati tutti, nessuno ha la luce
+  if (trackTorch(st)) { try { settings.torchCam = st.getVideoTracks()[0].getSettings().deviceId || ''; saveSettings(); } catch (e) {} return st; }
+  try {                                                            // prima volta e senza luce: provo gli altri obiettivi
+    st.getTracks().forEach(function (t) { t.stop(); });
+    lensMsg('Cerco l\'obiettivo con il flash (solo la prima volta)…');
+    var found = await chooseLightLens();
+    if (found.pick) { try { return await md.getUserMedia({ video: Object.assign({ deviceId: { exact: found.pick.id } }, hi), audio: false }); } catch (e) {} }
+  } catch (e) {}
+  return await rearStreamBase(hi);
+}
+async function rearStreamBase(hi) {
   var md = navigator.mediaDevices;
-  var hi = res || { width: { ideal: 3264 }, height: { ideal: 2448 } };
   try { return await md.getUserMedia({ video: Object.assign({ facingMode: { exact: 'environment' } }, hi), audio: false }); }
   catch (e) {
     var st = await md.getUserMedia({ video: Object.assign({ facingMode: { ideal: 'environment' } }, hi), audio: false });
@@ -1877,10 +1953,17 @@ $('#scanNative').addEventListener('click', function () {      // scansione: foto
   $('#fileCam').click();
 });
 $('#fileSnapGal').addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) closeSnap(f); });
-$('#snapTorch').addEventListener('click', function () {
+$('#snapTorch').addEventListener('click', async function () {
   if (!snap.track) return;
-  snap.torch = !snap.torch;
-  snap.track.applyConstraints({ advanced: [{ torch: snap.torch }] }).catch(function () {});
+  var tr = snap.track, want = !snap.torch, ok = true;
+  try { await tr.applyConstraints({ advanced: [{ torch: want }] }); if (want) { var se = tr.getSettings ? tr.getSettings() : {}; if (se.torch === false) ok = false; } } catch (e) { ok = false; }
+  if (!ok && want) {                                 // la luce non si accende da qui: tolgo il pulsante e lo ricordo
+    snap.torch = false; snap.caps = Object.assign({}, snap.caps, { torch: false }); $('#snapTorch').hidden = true;
+    settings.torchCam = 'none'; saveSettings();
+    $('#snapMsg').textContent = 'Da qui la luce non si accende su questo telefono: per il flash usa «Usa la fotocamera del telefono».';
+    return;
+  }
+  snap.torch = want;
   $('#snapTorch').setAttribute('aria-pressed', snap.torch ? 'true' : 'false');
   snap.dark = null; snapLight();                    // ridisegna subito l'avviso
 });
@@ -4324,6 +4407,7 @@ $('#verUpdate').addEventListener('click', updateNow);
 /* Pagina delle opzioni: una sezione alla volta, con «‹» per tornare al menu e il tasto Indietro del telefono per chiudere */
 var optOpen = false, optPushed = false;
 function openOptions(sec, reuse) {
+  try { paintLensState(); } catch (e) {}                 // stato dell'obiettivo con la luce, sempre aggiornato
   var found = false;
   Array.prototype.forEach.call(document.querySelectorAll('#optSheet .opt-sec'), function (s) {
     var on = s.dataset.sec === sec; s.hidden = !on;
@@ -5843,6 +5927,8 @@ $('#optPrice').checked = settings.price;
 $('#optQuoteOcr').checked = !!settings.quoteOcrAuto;
 paintSound();
 $('#optCamNative').checked = !!settings.camNative;
+paintLensState();
+$('#lensRun').addEventListener('click', runLensCheck);
 $('#optCamNative').addEventListener('change', function (e) { settings.camNative = e.target.checked; saveSettings(); toast(settings.camNative ? 'Foto con la fotocamera del telefono.' : 'Foto con la fotocamera dell\'app.'); });
 $('#optSound').addEventListener('change', function (e) { setSound(e.target.checked, true); });
 $('#scanSound').addEventListener('click', function () { setSound(settings.sound === false, true); });
