@@ -40,8 +40,8 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   const pos = await page.evaluate(() => { const s = document.querySelector('#stick').getBoundingClientRect().top; return ['#nxBox', '#donRow', '#instCard'].map(k => { const e = document.querySelector(k); return e && !e.hidden ? Math.round(e.getBoundingClientRect().top - s) : null; }); });
   console.log('[A avvisi rispetto alla ricerca]', pos.join(' '));
   const notes = await page.evaluate(() => ['#notice', '#nxBox', '#wrapAsk', '#donAsk', '#instCard', '#donRow'].map(k => document.querySelector(k)).filter(e => e && !e.hidden).map(e => e.id + (e.classList.contains('lay-later') ? ':dopo' : ':ora')));
-  console.log('[A avvisi]', notes.join(' '), '|', await txt('#layMore'));
-  assert(notes.filter(x => /:ora/.test(x)).length === 1 && notes.length >= 2 && /Avviso 1 di/.test(await txt('#layMore')));
+  console.log('[A avvisi]', notes.join(' '), '|', await page.$eval('#layMore', e => e.getAttribute('aria-label')));
+  assert(notes.filter(x => /:ora/.test(x)).length === 1 && notes.length >= 2 && /Avviso 1 di/.test(await page.$eval('#layMore', e => e.getAttribute('aria-label'))));
   assert(await page.evaluate(() => { const e = [...document.querySelectorAll('#nxBox,#donRow,#instCard,#wrapAsk')].find(e => !e.hidden && !e.classList.contains('lay-later')); return e.getBoundingClientRect().bottom <= document.querySelector('#stick').getBoundingClientRect().top + 1; }), 'avviso sopra la ricerca');
   await page.screenshot({ path: CFG.OUT + '/layout_a.png' });
   // scorrere col dito: verso sinistra il prossimo, verso destra quello prima; il menu non si apre
@@ -51,8 +51,10 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
     for (let i = 1; i <= 6; i++) { await page.touchscreen.touchMove(r.x + dx * i / 6, r.y + dy * i / 6); await wait(16); }
     await page.touchscreen.touchEnd(); await wait(500);
   };
-  const idx = async () => (await txt('#layMore')).match(/Avviso (\d+) di/)[1];
-  assert.strictEqual(await page.$$eval('#layMore .lay-dots i', e => e.length), 3);
+  const idx = async () => (await page.$eval('#layMore', e => e.getAttribute('aria-label'))).match(/Avviso (\d+) di/)[1];
+  assert.strictEqual(await page.$$eval('#layMore i', e => e.length), 3);
+  const dots = await page.evaluate(() => { const m = document.querySelector('#layMore'), box = document.querySelector('[data-lay-swipe]'), r = m.getBoundingClientRect(), b = box.getBoundingClientRect(); return { inside: box.contains(m), cx: Math.round(r.left + r.width / 2 - (b.left + b.width / 2)), bottom: Math.round(b.bottom - r.bottom), text: m.innerText.trim() }; });
+  console.log('[pallini]', JSON.stringify(dots)); assert(dots.inside && Math.abs(dots.cx) <= 2 && dots.bottom >= 0 && dots.bottom <= 10 && dots.text === '', 'pallini dentro l\'avviso, in basso al centro, senza scritte');
   await swipe(-160); assert.strictEqual(await idx(), '2', 'verso sinistra: il prossimo');
   await swipe(150); assert.strictEqual(await idx(), '1', 'verso destra: quello prima');
   await swipe(150); assert.strictEqual(await idx(), '3', 'in giro');
@@ -61,7 +63,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   assert(!(await page.evaluate(() => document.body.classList.contains('drawer-open'))), 'il menu non si apre');
   assert.strictEqual(await page.evaluate(() => document.querySelector('[data-lay-swipe]').style.transform), '');
   await swipe(-160); assert.strictEqual(await idx(), '1');
-  await page.click('#layMore'); await wait(150); assert(/Avviso 2 di/.test(await txt('#layMore')));
+  await page.$eval('#layMore', e => e.click()); await wait(500); assert(/Avviso 2 di/.test(await page.$eval('#layMore', e => e.getAttribute('aria-label'))));
   await page.click('#layNav [data-l="wish"]'); await wait(250);
   assert.strictEqual(await page.evaluate(() => window.NL.tab()), 'wish'); assert(await page.$eval('#layNav [data-l="wish"]', e => e.classList.contains('on')));
   assert(/da comprare/.test(await txt('#summary')));
