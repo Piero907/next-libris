@@ -143,7 +143,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e58.js | 8178 | suoni: Opzioni › Aspetto e pulsante 🔊/🔇 nella fotocamera; spenti niente bip; la scelta resta |
 | e2e59.js | 8179 | backup: nome del file, «Il backup non è partito» con Riprova e Download; fotocamera della scansione: torcia e flash (luce finta via getCapabilities/applyConstraints) |
 | e2e60.js | 8180 | fotocamera del telefono: pulsante nella fotocamera dell'app e nella scansione, opzione «sempre», niente in «Ce l'ho già?» (usa `page.waitForFileChooser`) |
-| e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App |
+| e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
 Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8182** e poi a salire.
 

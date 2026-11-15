@@ -4,7 +4,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui e va nel registro delle novità dell'app.
 
-Ultimo aggiornamento: 15/11/2026, app alla versione 91.
+Ultimo aggiornamento: 15/11/2026, app alla versione 92.
 
 ---
 
@@ -21,7 +21,10 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 91.
   - La prima volta `rearStream()` prova gli obiettivi (`probeLenses` / `chooseLightLens`) e salva in `settings.torchCam` l'obiettivo con `torch`, oppure `'none'`.
   - Se nessuno ha la luce, o la luce non si accende davvero (`getSettings().torch` resta `false`), i pulsanti della luce spariscono (`noLight`).
   - La diagnosi è in Opzioni › App › «Prova gli obiettivi».
-  - **Da verificare sul telefono di Piero:** cosa mostra la diagnosi, cioè se un obiettivo ha «luce sì» e se poi la luce si accende davvero.
+  - **Esito sul Galaxy A32 di Piero (15/11/2026):** Chrome vede solo 3 fotocamere: «camera 1, facing front», «camera 2, facing front» e «camera 0, facing back», che dichiara la luce («luce sì»). Il telefono ne ha di più, ma Chrome espone un solo obiettivo posteriore. La luce però non si accende: il telefono dichiara la torcia e accetta il comando senza accenderla, e l'app non può accorgersene.
+  - **v92:** «Prova la luce» (Opzioni › App) accende per 2,5 s e chiede «Sì / No». Con «No» si salva `settings.torchCam = 'none'` e i pulsanti della luce spariscono, anche se l'obiettivo dichiara `torch`. `torchOnTrack()` prova sia `advanced: [{ torch }]` sia `{ torch }`.
+  - **Da sapere da Piero:** cosa risponde a «Prova la luce» dopo la v92. Con «No» la soluzione per lui resta la fotocamera del telefono (v90).
+  - **Possibile prova futura, solo se lui la chiede:** riaprire la fotocamera a risoluzione più bassa prima di accendere la luce (su alcuni Samsung la torcia va solo a certe risoluzioni). Non è verificato.
 
 ---
 

@@ -1,5 +1,5 @@
 const CFG = require("./_config");
-// obiettivo con la luce: l'app prova gli obiettivi e usa quello con la torcia (e se lo ricorda); se nessuno ce l'ha
+// obiettivo con la luce, «Prova la luce» (sì/no), Sostieni in evidenza in Opzioni › App: l'app prova gli obiettivi e usa quello con la torcia (e se lo ricorda); se nessuno ce l'ha
 // o la luce non si accende davvero, i pulsanti della luce spariscono; Opzioni › App › «Prova gli obiettivi»
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -7,7 +7,8 @@ const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip', '.wasm': 'application/wasm' };
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8181);
-// tre obiettivi finti sopra la fotocamera finta di Chrome: anteriore, posteriore grandangolare (senza luce), posteriore principale
+// tre obiettivi finti sopra la fotocamera finta di Chrome: anteriore, posteriore grandangolare (senza luce), posteriore principale.
+// modi: ok, none (nessuna luce), dead (luce che resta spenta e lo dice), lie (dice accesa ma non si vede, come il Galaxy A32)
 function stub(mode) {
   const real = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
   window.__lenses = [{ id: 'f', label: 'camera2 1, facing front', fm: 'user', torch: false }, { id: 'w', label: 'camera2 2, facing back', fm: 'environment', torch: false }, { id: 'm', label: 'camera2 0, facing back', fm: 'environment', torch: mode !== 'none' }];
@@ -92,6 +93,31 @@ function stub(mode) {
   st = await page.evaluate(() => ({ torch: !document.querySelector('#snapTorch').hidden, cam: window.__app.settings.torchCam, msg: document.querySelector('#snapMsg').textContent }));
   console.log('[C luce che non si accende]', JSON.stringify(st)); assert(!st.torch && st.cam === 'none' && /fotocamera del telefono/.test(st.msg));
   await snapClose(page); await ctx.close();
+  // D) il telefono dice di averla accesa ma resta spenta (Galaxy A32): «Prova la luce» -> «No» -> niente pulsanti della luce
+  ({ ctx, page } = await open('lie'));
+  await page.evaluate(() => window.__app.openOptions('app')); await wait(300);
+  const don = await page.$eval('#donOpt', e => ({ bg: getComputedStyle(e).backgroundColor, svg: !!e.querySelector('svg') }));
+  console.log('[Sostieni in App]', JSON.stringify(don)); assert(don.svg && don.bg !== 'rgba(0, 0, 0, 0)' && don.bg !== 'rgb(255, 255, 255)', 'Sostieni in evidenza');
+  await page.click('#lightRun');
+  await page.waitForFunction(() => !document.querySelector('#lightAsk').hidden, { timeout: 15000 });
+  assert(await page.evaluate(() => window.__torchOn === false), 'luce spenta di nuovo dopo la prova');
+  await page.screenshot({ path: CFG.OUT + '/light_ask.png' });
+  await page.click('#lightNo'); await wait(200);
+  assert.strictEqual(await page.evaluate(() => window.__app.settings.torchCam), 'none');
+  await page.evaluate(() => window.__app.closeOptions()); await wait(300);
+  await snapOpen(page);
+  assert(await page.evaluate(() => document.querySelector('#snapTorch').hidden), 'foto: niente luce');
+  await snapClose(page);
+  await page.evaluate(() => window.__app.startScan()); await page.waitForFunction(() => !document.querySelector('#scan').hidden, { timeout: 8000 }); await wait(900);
+  assert(await page.evaluate(() => document.querySelector('#scanTorch').hidden), 'scansione: niente luce');
+  await page.evaluate(() => document.querySelector('#scanClose').click()); await wait(300);
+  // «Sì»: resta tutto
+  await page.evaluate(() => window.__app.openOptions('app')); await wait(300);
+  await page.click('#lightRun'); await page.waitForFunction(() => !document.querySelector('#lightAsk').hidden, { timeout: 15000 });
+  await page.click('#lightYes'); await wait(200);
+  const after = await page.evaluate(() => ({ cam: window.__app.settings.torchCam, ok: window.__app.settings.lightOk })); console.log('[D sì]', JSON.stringify(after));
+  assert(after.cam === 'm' && after.ok === true);
+  await ctx.close();
   assert.deepStrictEqual(errors, []);
   console.log('e2e61 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });
