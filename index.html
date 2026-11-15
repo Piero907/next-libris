@@ -147,6 +147,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
   <div class="scan-kinds" id="scanKinds" role="radiogroup" aria-label="Cosa inquadri">
     <button type="button" role="radio" data-k="bar" aria-checked="true">Codice a barre</button><button type="button" role="radio" data-k="text" aria-checked="false">ISBN scritto</button><button type="button" role="radio" data-k="cover" aria-checked="false">Copertina</button>
   </div>
+  <button class="btn scan-native" id="scanNative" type="button">📷 Usa la fotocamera del telefono (con il flash)</button>
   <button class="btn scan-done" id="scanDone" type="button">Chiudi la fotocamera</button>
   <p class="scan-msg" id="scanMsg" role="status">Inquadra il codice a barre, di solito sul retro. Ogni libro viene aggiunto da solo.</p>
 </div>
@@ -599,6 +600,10 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         <span>Chiedi il prezzo dopo ogni libro<small>Dopo ogni libro aggiunto (scansione, foto o ISBN scritto) compare un riquadro con titolo e autore dove scrivere il prezzo, facoltativo. Spegni se il prezzo non ti interessa.</small></span>
       </label>
       <label class="check">
+        <input type="checkbox" id="optCamNative">
+        <span>Per le foto usa la fotocamera del telefono<small>Con il suo flash e la sua messa a fuoco: utile se nella fotocamera dell'app la luce non si accende. Vale per Foto, copertine e citazioni; la scansione del codice resta nell'app. Se si apre in modalità selfie, girala una volta: di solito il telefono se lo ricorda.</small></span>
+      </label>
+      <label class="check">
         <input type="checkbox" id="optQuoteOcr">
         <span>Leggi subito il testo delle foto delle citazioni<small>Spenta: il testo si legge solo quando tocchi «Leggi il testo». Accesa: ogni foto aggiunta a una citazione viene letta da sola.</small></span>
       </label>
@@ -825,15 +830,22 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
 <datalist id="seriesList"></datalist>
 
 <div class="snap" id="snap" hidden role="dialog" aria-modal="true" aria-labelledby="snapH">
-  <div class="snap-top"><button type="button" class="btn snap-x" id="snapClose">× Chiudi</button><b id="snapH">Foto</b></div>
+  <!-- stesso schema della scansione: inquadratura a tutto schermo; in alto Chiudi, titolo, luce; in basso scatto, fotocamera del telefono, messaggio -->
   <video id="snapVideo" playsinline muted autoplay></video>
+  <div class="snap-top">
+    <button type="button" class="btn snap-x" id="snapClose">× Chiudi</button>
+    <b id="snapH">Foto</b>
+    <span class="scan-tr"><button type="button" class="btn scan-ico snap-torch" id="snapTorch" hidden aria-pressed="false" aria-label="Luce">🔦</button></span>
+  </div>
   <span class="snap-focus" id="snapFocus" hidden aria-hidden="true"></span>
-  <p class="snap-msg" id="snapMsg" aria-live="polite"></p>
+  <div class="snap-mid" aria-hidden="true"></div>
   <div class="snap-bar">
     <button type="button" class="btn snap-gal" id="snapGal">Galleria</button>
     <button type="button" class="shutter" id="snapShoot" aria-label="Scatta"></button>
-    <button type="button" class="btn snap-torch" id="snapTorch" hidden aria-pressed="false">Luce</button>
+    <span aria-hidden="true"></span>
   </div>
+  <button type="button" class="btn snap-native" id="snapNative">📷 Usa la fotocamera del telefono (con il flash)</button>
+  <p class="snap-msg" id="snapMsg" aria-live="polite"></p>
 </div>
 <div class="ped" id="ped" hidden role="dialog" aria-modal="true" aria-labelledby="pedH">
   <div class="ped-top">
@@ -884,6 +896,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
 <input class="sr" id="fileCover" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
 <input class="sr" id="filePrice" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
 <input class="sr" id="fileGal" type="file" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+<input class="sr" id="fileNative" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
 <input class="sr" id="fileBackup" type="file" accept="application/json,.json,text/plain,.txt" tabindex="-1" aria-hidden="true">
 
 <div class="toast" id="toast" role="status" hidden><span id="toastTxt"></span><button id="toastBtn" hidden></button></div>

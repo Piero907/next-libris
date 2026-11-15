@@ -1467,3 +1467,23 @@ body.selecting .don-row,body.selecting .don-ask,body.scanning .don-row{display:n
 /* boccale di «Sostieni»: icona a tratto come le altre, nel cerchio (prima il cerchio veniva schiacciato) */
 .dmenu .don-menu > span.don-cup:first-child{flex:0 0 40px;width:40px;height:40px;min-width:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--accent);font-size:0}
 .dmenu .don-menu > span.don-cup svg{display:block}
+/* fotocamera del telefono: pulsante nella fotocamera dell'app e nella scansione */
+.snap-native,.scan-native{position:relative;z-index:3;align-self:center;margin:6px 16px 0;min-height:42px;padding:8px 16px;border-radius:999px;background:#000a;border:1px solid #ffffff55;color:#fff;font-weight:600;font-size:14px;backdrop-filter:blur(8px)}
+.snap-native{display:block;margin:4px auto 8px}
+.scan.checking .scan-native{display:none}
+/* fotocamera delle foto con lo stesso schema della scansione (v90) */
+.snap video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+.snap-top{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;background:linear-gradient(#000a,#0000)}
+.snap-top b{flex:1;text-align:center;font:600 17px/1.2 var(--font-body);text-shadow:0 1px 3px #000a}
+.snap-top .snap-x{background:#000b;border-color:#fffc;color:#fff;font-weight:700;padding:10px 16px}
+.snap-top .scan-tr{min-width:46px;justify-content:flex-end}
+.snap-top .btn{backdrop-filter:blur(6px)}
+.snap-top .scan-ico{background:#ffffff26;border-color:#ffffff40;min-width:46px;padding:8px 10px;font-size:18px;line-height:1}
+.snap-top .scan-ico[aria-pressed="true"]{background:#fff;border-color:#fff;color:#111}
+.snap-top .snap-torch.hint{background:#ffd54a;color:#111;border-color:#ffd54a}
+.snap-mid{position:relative;z-index:1;flex:1;pointer-events:none}
+.snap-bar{position:relative;z-index:3;padding:4px 16px 2px}
+.snap-gal{background:#000a;border-color:#ffffff55;backdrop-filter:blur(8px)}
+.snap-native{position:relative;z-index:3;display:block;margin:6px auto 0}
+.snap-msg{position:relative;z-index:2;margin:0;padding:14px 16px calc(18px + env(safe-area-inset-bottom));text-align:center;background:linear-gradient(#0000,#000b);font-size:15px;min-height:72px}
+.snap .snap-gal,.snap .snap-native{background:#000a;border-color:#ffffff55;color:#fff}

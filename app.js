@@ -80,7 +80,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 89, date: '2026-11-15', note: 'Sostieni: boccale di birra al posto della tazzina' };
+var APP_VERSION = { v: 90, date: '2026-11-15', note: 'Fotocamera del telefono con il flash; fotocamere con lo stesso aspetto' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -265,7 +265,8 @@ function loadAll() {
     settings.goal = Math.max(0, Math.min(999, parseInt(s.goal, 10) || 0));          // obiettivo di lettura
     settings.newsAuto = s.newsAuto !== false;                                       // novita' degli autori: controllo automatico
     settings.selTip = s.selTip ? 1 : 0;
-    settings.sound = s.sound !== false;                                             // suoni: bip della scansione e «fatto» (accesi di predefinito)
+    settings.sound = s.sound !== false;
+    settings.camNative = s.camNative === true;                                      // foto con la fotocamera del telefono (flash del telefono)                                             // suoni: bip della scansione e «fatto» (accesi di predefinito)
     settings.quoteOcrAuto = s.quoteOcrAuto === true;                                // citazioni: leggi subito il testo delle foto
     settings.donUntil = Number(s.donUntil) || 0;                                    // donazioni: richieste in pausa fino a
     settings.donNever = s.donNever === true;                                        // promemoria ogni 50 libri spento
@@ -1301,7 +1302,7 @@ async function toggleTorch() {
   var want = !torchOn, ok = await setTorch(want);
   torchOn = ok ? want : false;
   paintScanLight();
-  if (!ok && want) scanMsg('Questo telefono non lascia accendere la torcia da qui: prova la fotocamera di Foto, con «Luce».');
+  if (!ok && want) scanMsg('Questo telefono non lascia accendere la torcia da qui: usa «Usa la fotocamera del telefono», qui sotto.');
 }
 function toggleScanFlash() {
   scanLight.flash = !scanLight.flash; paintScanLight();
@@ -1746,8 +1747,16 @@ async function rearStream(res) {
   }
 }
 /* resolve(File) con la foto scattata o scelta dalla galleria, oppure null; senza fotocamera usa il selettore del telefono */
+/* la fotocamera del telefono: scatta con il suo flash e restituisce la foto (un input a parte, che non aggiunge libri da solo) */
+function nativePhoto(resolve) {
+  var inp = $('#fileNative'), done = false;
+  function on() { inp.removeEventListener('change', on); done = true; var f = inp.files && inp.files[0]; inp.value = ''; resolve(f || null); }
+  inp.addEventListener('change', on); inp.click();
+  window.addEventListener('focus', function back() { window.removeEventListener('focus', back); setTimeout(function () { if (!done) { inp.removeEventListener('change', on); resolve(null); } }, 1500); });
+}
 function snapPhoto(title, fallbackInput) {
   return new Promise(async function (resolve) {
+    if (settings.camNative && !scanning) { nativePhoto(resolve); return; }      // scelta nelle Opzioni: sempre quella del telefono
     function viaInput(sel) {
       var inp = $(sel), done = false;
       function on() { inp.removeEventListener('change', on); done = true; var f = inp.files && inp.files[0]; inp.value = ''; resolve(f || null); }
@@ -1811,7 +1820,7 @@ function snapLight() {
 function snapFocusAt(e) {
   var v = $('#snapVideo');
   if (!snap.track || !v.videoWidth) return;
-  var r = v.getBoundingClientRect(), sc = Math.min(r.width / v.videoWidth, r.height / v.videoHeight);
+  var r = v.getBoundingClientRect(), sc = Math.max(r.width / v.videoWidth, r.height / v.videoHeight);   // inquadratura a tutto schermo (object-fit: cover)
   var w = v.videoWidth * sc, h = v.videoHeight * sc, ox = r.left + (r.width - w) / 2, oy = r.top + (r.height - h) / 2;
   var px = (e.clientX - ox) / w, py = (e.clientY - oy) / h;
   if (px < 0 || px > 1 || py < 0 || py > 1) return;
@@ -1858,6 +1867,15 @@ async function snapShoot() {
 $('#snapShoot').addEventListener('click', snapShoot);
 $('#snapClose').addEventListener('click', function () { closeSnap(null); });
 $('#snapGal').addEventListener('click', function () { $('#fileSnapGal').click(); });
+$('#snapNative').addEventListener('click', function () {      // dalla fotocamera dell'app a quella del telefono, per la stessa foto
+  var done = snap.done; snap.done = null;
+  closeSnap(null);
+  if (done) nativePhoto(done);
+});
+$('#scanNative').addEventListener('click', function () {      // scansione: foto con la fotocamera del telefono; codice, ISBN o copertina li legge l'app dalla foto
+  stopScan();
+  $('#fileCam').click();
+});
 $('#fileSnapGal').addEventListener('change', function (e) { var f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) closeSnap(f); });
 $('#snapTorch').addEventListener('click', function () {
   if (!snap.track) return;
@@ -5824,6 +5842,8 @@ renderOwner();
 $('#optPrice').checked = settings.price;
 $('#optQuoteOcr').checked = !!settings.quoteOcrAuto;
 paintSound();
+$('#optCamNative').checked = !!settings.camNative;
+$('#optCamNative').addEventListener('change', function (e) { settings.camNative = e.target.checked; saveSettings(); toast(settings.camNative ? 'Foto con la fotocamera del telefono.' : 'Foto con la fotocamera dell\'app.'); });
 $('#optSound').addEventListener('change', function (e) { setSound(e.target.checked, true); });
 $('#scanSound').addEventListener('click', function () { setSound(settings.sound === false, true); });
 $('#optExtra').checked = settings.extra;

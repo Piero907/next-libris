@@ -169,6 +169,12 @@ COME SI USA
     (facoltativo); piu' edizioni -> scelta e poi prezzo; non trovato ->
     "Scrivi titolo e autore" con anche il prezzo. "Scrivi a mano" ferma la
     ricerca, "Continua dopo" la lascia andare nell'elenco.
+  * Fotocamera del telefono: se la luce dell'app non si accende, tocca
+    "Usa la fotocamera del telefono (con il flash)" (c'e' sia nella
+    fotocamera delle foto sia nella scansione): scatti con la fotocamera
+    del telefono e la foto torna nell'app, che ne legge codice, ISBN o
+    copertina. Per usarla sempre: Opzioni > Schede e prezzo > "Per le foto
+    usa la fotocamera del telefono".
   * Fotocamera della scansione: in alto a destra la torcia (resta accesa)
     e, inquadrando la copertina, il flash (la luce si accende un attimo
     quando scatti). Compaiono se il telefono permette di accendere la luce.

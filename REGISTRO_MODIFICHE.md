@@ -3,6 +3,13 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 90 · 15/11/2026
+- **Fotocamera del telefono, con il suo flash:** su alcuni telefoni Chrome non lascia accendere la luce dalla fotocamera dell'app. Ora:
+  - nella fotocamera dell'app (Foto, copertina, citazioni) c'è «📷 Usa la fotocamera del telefono (con il flash)»: apre quella del telefono per la stessa foto, che poi torna nell'app;
+  - nella scansione c'è lo stesso pulsante: chiude la scansione, scatti con la fotocamera del telefono e l'app legge dalla foto il codice a barre, l'ISBN o la copertina (non in «Ce l'ho già?»);
+  - in Opzioni › Schede e prezzo: «Per le foto usa la fotocamera del telefono», per usarla sempre (la scansione del codice dal vivo resta nell'app).
+- **Le due fotocamere hanno lo stesso aspetto:** quella delle foto ora è come quella della scansione: inquadratura a tutto schermo, in alto «× Chiudi», il titolo al centro e la luce 🔦 a destra; in basso lo scatto, la fotocamera del telefono e il messaggio.
+
 ## Versione 89 · 15/11/2026
 - **Sostieni Next Libris:** al posto della tazzina c'è un boccale di birra disegnato a tratto, come le altre icone dell'app, in un cerchio che non viene più schiacciato. Il testo ora dice «Se ti piace, offrimi una birra!».
 
