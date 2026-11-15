@@ -89,15 +89,19 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 92.
 
 ---
 
-## 5. Quanti dispositivi usano l'app principale (chiesto il 15/11/2026, «per dopo»)
+## 5. Quanti dispositivi usano l'app principale (chiesto il 15/11/2026; «inizia a pensarci»)
 
-**Domanda di Piero:** c'è un modo per capire su quanti dispositivi è installata l'app principale?
+**Domanda di Piero:** c'è un modo per capire su quanti dispositivi è installata l'app principale? Oggi no: GitHub Pages non dà statistiche e l'app non manda nulla fuori dal telefono.
 
-**Oggi non si può:** GitHub Pages non dà statistiche e l'app non manda nulla a nessuno (tutto resta sul telefono).
+**Proposta preferita: contatore senza identificativo** (nessun codice del dispositivo, nessun dato personale):
+- Al primo avvio l'app manda una volta sola «nuovo dispositivo» (+ installata sì/no) e si segna sul telefono che l'ha fatto.
+- Una volta al mese manda «attivo a novembre 2026» (+ installata sì/no, numero di versione) e si segna il mese. Ogni telefono conta al massimo una volta al mese, quindi la somma = **dispositivi attivi nel mese**, senza bisogno di riconoscerli.
+- Riceve un **worker Cloudflare nuovo e separato** (non quello SBN, che ognuno si installa per conto suo), indirizzo fisso nell'app. Il worker non salva l'IP: incrementa solo dei contatori in **D1** (`UPDATE ... SET n = n + 1`, atomico; KV non va bene: 1.000 scritture al giorno sul piano gratuito e non incrementa in modo sicuro).
+- Lettura per Piero: una pagina del worker (`/riepilogo?chiave=…`, con una parola segreta) con totale dispositivi, attivi per mese, quanti l'hanno installata, versioni in uso.
+- Copia di prova esclusa (o contata a parte). Senza rete: il segnale parte alla prossima apertura con rete.
+- Nell'app: riga nella guida + opzione «Conta questo telefono (anonimo)» in Opzioni › App. Da decidere con Piero se acceso di predefinito o chiesto una volta (in Italia la regola sui dati salvati nel telefono va tenuta presente: chiedere una volta è la strada più tranquilla; non siamo avvocati).
+- Limiti: chi cancella i dati del browser viene contato di nuovo come «nuovo»; non si sa quanti l'hanno disinstallata (si vede dal calo degli attivi).
 
-**Strade possibili, da proporre quando lo riprende (senza dati personali, niente email, niente libri):**
-1. **Contatore anonimo nel worker Cloudflare** che l'app usa già per SBN (`cloudflare-sbn-worker.js`): una volta al giorno l'app manda solo un numero casuale creato al primo avvio (nessun dato) e se è installata o aperta dal browser. Il worker conta i numeri diversi visti negli ultimi 30 giorni (Cloudflare KV o Durable Object). Si vede su una paginetta o in Opzioni › App. Gratis nei limiti di Cloudflare.
-2. **Servizio di statistiche rispettoso della privacy** (GoatCounter, gratuito per uso personale, o Cloudflare Web Analytics): una riga nell'`index.html`; conta visite e visitatori, non le installazioni vere.
-3. In entrambi i casi: dirlo nella guida e mettere un'opzione per spegnerlo.
+**Alternativa più semplice:** Cloudflare Web Analytics o GoatCounter (una riga in `index.html`): contano visite e visitatori di passaggio, **non** i dispositivi; utile per vedere se l'app viene aperta, meno per «quanti telefoni».
 
-**Limiti:** conta i dispositivi che aprono l'app, non quelli dove è solo installata; chi la usa senza rete non viene contato; chi cancella i dati del browser viene contato di nuovo.
+**Cosa servirebbe da Piero per partire:** creare su Cloudflare un worker «contatore-next-libris» e un database D1 (passi guidati, come per il worker SBN), scegliere la parola segreta, decidere acceso/chiesto.
