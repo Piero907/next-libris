@@ -9,7 +9,7 @@ const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8191));
 const books = [
-  { id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', c: 13, i: '9788845292613', gen: 'Narrativa', pg: '624', sh: 'Studio', rs: 'ok', rt: 5, rd: '2026-10-02', se: 'I grandi romanzi', sn: '3', n: 'Regalo di Anna', qs: [{ x: 'Stat rosa', pg: '', d: 1, phs: [] }], ts: 10 },
+  { id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', c: 13, i: '9788845292613', gen: 'Narrativa', pg: '624', sh: 'Studio', rs: 'ok', rt: 5, rd: '2026-10-02', se: 'I grandi romanzi', sn: '3', n: 'Regalo di Anna', ds: 'Ultima settimana del novembre 1327: frate Guglielmo indaga.', dsf: 'google', qs: [{ x: 'Stat rosa', pg: '', d: 1, phs: [] }], ts: 10 },
   { id: 'r2', t: 'Baudolino', a: 'Umberto Eco', e: 'Bompiani', y: '2000', ts: 9, rs: 'da' }];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -65,6 +65,11 @@ const books = [
   console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['fav', 'towish', 'share', 'del']); assert.deepStrictEqual(acts.low, ['loan:true', 'websearch:true']);
   const lay = await page.evaluate(s => { const e = document.querySelector(s), t = [...e.querySelectorAll('.acts-main [data-act]')].map(x => Math.round(x.getBoundingClientRect().top)), low = e.querySelector('.cv-acts2'); return { oneRow: new Set(t).size === 1, last: e.lastElementChild === low }; }, card());
   assert(lay.oneRow && lay.last, 'icone su una riga, Presta e Cerca sul web in fondo');
+  // descrizione subito sotto i dati, senza riquadro; etichette in fondo, prima di Presta e Cerca sul web
+  const order = await page.evaluate(s => { const e = document.querySelector(s); const kids = [...e.querySelector('.cv-page').children].map(x => x.className.split(' ')[0] || x.tagName); const all = [...e.children].map(x => x.className.split(' ')[0]); return { page: kids, card: all.slice(-2), desc: e.querySelector('.cv-desc .desc-t') ? e.querySelector('.cv-desc .desc-t').textContent : '' }; }, card());
+  console.log('  ordine', JSON.stringify(order));
+  assert.strictEqual(order.page[0], 'cv-hero'); assert.strictEqual(order.page[1], 'desc'); assert(/frate Guglielmo/.test(order.desc));
+  assert.deepStrictEqual(order.card, ['cv-tags', 'cv-acts2']);
   // lettura modificabile dalla pagina
   assert(await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="in"]').getAttribute('aria-pressed') === 'true', card()));
   await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="ok"]').click(), card()); await wait(400);
