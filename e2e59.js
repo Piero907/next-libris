@@ -1,5 +1,5 @@
 const CFG = require("./_config");
-// backup: nome «Libreria di Piero - Next Libris - data»; se l'invio non parte compare «Il backup non è partito» con Riprova e Download.
+// backup: nome «Libreria di Piero - Next Libris - data ora» (2026-11-15 22.58); se l'invio non parte compare «Il backup non è partito» con Riprova e Download.
 // fotocamera della scansione: torcia (resta accesa) e flash (solo per la foto della copertina, un attimo allo scatto)
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -37,7 +37,7 @@ const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + 
   // 1) l'invio non parte: finestra con Riprova
   await page.click('#btnShareBackup'); await wait(300);
   let sh = await page.evaluate(() => window.__shared); console.log('[1 nome]', JSON.stringify(sh));
-  assert.deepStrictEqual(sh[0], ['Libreria di Piero - Next Libris - ' + today + '.txt']);
+  assert.strictEqual(sh[0].length, 1); assert(new RegExp('^Libreria di Piero - Next Libris - ' + today + ' \\d\\d\\.\\d\\d\\.txt$').test(sh[0][0]), 'nome con data e ora: ' + sh[0][0]);
   assert(await vis('#bkFailSheet') && await vis('#bkFailRetry'), 'finestra con Riprova');
   assert(await page.evaluate(() => { const r = document.querySelector('#bkFailSheet .sheet-in').getBoundingClientRect(); return !!document.elementFromPoint(r.left + r.width / 2, r.top + 30).closest('#bkFailSheet'); }), 'in primo piano, sopra Esporta');
   assert(/NotAllowedError/.test(await page.$eval('#bkFailMsg', e => e.textContent)));
@@ -55,7 +55,7 @@ const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + 
   assert(await vis('#bkFailSheet') && !(await vis('#bkFailRetry')));
   await page.click('#bkFailDl'); await wait(300);
   const dl = await page.evaluate(() => window.__dl); console.log('[4 download]', JSON.stringify(dl));
-  assert.deepStrictEqual(dl, ['Libreria di Piero - Next Libris - ' + today + '.json']);
+  assert.strictEqual(dl.length, 1); assert(new RegExp('^Libreria di Piero - Next Libris - ' + today + ' \\d\\d\\.\\d\\d\\.json$').test(dl[0]), 'nome con data e ora: ' + dl[0]);
   await page.click('#exportClose'); await wait(300);
   // 5) fotocamera: torcia e flash
   await page.evaluate(() => window.__app.startScan()); await page.waitForFunction(() => !document.querySelector('#scan').hidden, { timeout: 8000 }); await wait(900);
