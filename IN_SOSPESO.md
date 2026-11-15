@@ -4,11 +4,11 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui e va nel registro delle novità dell'app.
 
-Ultimo aggiornamento: 15/11/2026, app alla versione 90.
+Ultimo aggiornamento: 15/11/2026, app alla versione 91.
 
 ---
 
-## 1. Fotocamera e luce — ripresa il 15/11/2026, risolta con la fotocamera del telefono (v90)
+## 1. Fotocamera e luce — ripresa il 15/11/2026: fotocamera del telefono (v90) e controllo dell'obiettivo (v91)
 
 - **Il problema:** Piero ha confermato che il flash non si accende neanche nella fotocamera dell'app. Quindi Chrome su quel telefono non lascia usare la luce.
 - **La soluzione:**
@@ -17,6 +17,11 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 90.
   - le due fotocamere hanno lo stesso aspetto.
 - **Da verificare sul telefono:** che la fotocamera del telefono si apra su quella posteriore (`capture="environment"`). Se si apre in selfie, di solito basta girarla una volta.
 - **Restano nell'app:** torcia 🔦 e flash ⚡ della scansione (v88), per i telefoni che li permettono.
+- **v91, il controllo dell'obiettivo** (chiesto da Piero il 15/11/2026):
+  - La prima volta `rearStream()` prova gli obiettivi (`probeLenses` / `chooseLightLens`) e salva in `settings.torchCam` l'obiettivo con `torch`, oppure `'none'`.
+  - Se nessuno ha la luce, o la luce non si accende davvero (`getSettings().torch` resta `false`), i pulsanti della luce spariscono (`noLight`).
+  - La diagnosi è in Opzioni › App › «Prova gli obiettivi».
+  - **Da verificare sul telefono di Piero:** cosa mostra la diagnosi, cioè se un obiettivo ha «luce sì» e se poi la luce si accende davvero.
 
 ---
 
