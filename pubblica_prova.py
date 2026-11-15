@@ -39,10 +39,12 @@ entry = '## Prova %s · %s\n' % (num, when) + ''.join('- %s\n' % x for x in note
 i = reg.find('\n## ')
 reg = reg.rstrip('\n') + '\n\n' + entry if i < 0 else reg[:i + 1] + entry + reg[i + 1:]
 open(rp, 'w', encoding='utf-8').write(reg)
+# nota breve per il Menu: senza ** e `, fino ai due punti se la nota comincia con la novita' in grassetto
+breve = re.sub(r'\*\*|`', '', nota.split(':')[0] if nota.startswith('**') and ':' in nota else nota).strip()[:90]
 a = open(os.path.join(DST, 'app.js'), encoding='utf-8').read()
 ph = "var BUILD = { t: '', n: '', note: '' };"
 assert ph in a, 'manca var BUILD in app.js'
-open(os.path.join(DST, 'app.js'), 'w', encoding='utf-8').write(a.replace(ph, 'var BUILD = ' + json.dumps({'t': stamp, 'n': num, 'note': nota}, ensure_ascii=False) + ';', 1))
+open(os.path.join(DST, 'app.js'), 'w', encoding='utf-8').write(a.replace(ph, 'var BUILD = ' + json.dumps({'t': stamp, 'n': num, 'note': breve}, ensure_ascii=False) + ';', 1))
 vj = json.load(open(os.path.join(DST, 'version.json'), encoding='utf-8')); vj['build'] = stamp; vj['prova'] = num
 json.dump(vj, open(os.path.join(DST, 'version.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 m = json.load(open(os.path.join(APP, 'manifest.json'), encoding='utf-8'))
