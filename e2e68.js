@@ -24,8 +24,8 @@ const books = Array.from({ length: 8 }, (_, i) => ({ id: 'z' + i, t: 'Libro ' + 
   // chiudo il prestito: compare il triangolo accanto a «1 in prestito»
   await page.click('#noticeX'); await wait(200);
   s = await st(); console.log('[2 chiuso prestito]', JSON.stringify(s)); assert(!s.notice && s.alert && /1 in prestito/.test(s.sum) && /Riapri l'avviso chiuso/.test(s.label));
-  const pos = await page.evaluate(() => { const a = document.querySelector('#summary .sum-alert').getBoundingClientRect(), l = document.querySelector('#summary [data-sum="loan"]').getBoundingClientRect(); return { dx: Math.round(a.left - l.right), dy: Math.round((a.top + a.height / 2) - (l.top + l.height / 2)) }; });
-  console.log('  accanto:', JSON.stringify(pos)); assert(pos.dx >= 0 && pos.dx < 20 && Math.abs(pos.dy) <= 4);
+  const pos = await page.evaluate(() => { const a = document.querySelector('#summary .sum-alert svg').getBoundingClientRect(), l = document.querySelector('#summary [data-sum="loan"]').getBoundingClientRect(); return { dx: Math.round(a.left - l.right), dy: Math.round((a.top + a.height / 2) - (l.top + l.height / 2)) }; });
+  console.log('  accanto:', JSON.stringify(pos)); assert(pos.dx >= 0 && pos.dx < 20 && Math.abs(pos.dy) <= 2, 'triangolo allineato alla scritta');
   // chiudo anche «Hai finito…»: due avvisi chiusi
   await page.click('#nxBoxX'); await wait(200);
   s = await st(); assert(s.alert && /Riapri i 2 avvisi chiusi/.test(s.label));

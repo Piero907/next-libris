@@ -1,12 +1,13 @@
 const CFG = require("./_config");
-// copertine -> scheda: chiudendo la scheda (freccetta o Indietro) si torna alle copertine, allo stesso punto dello scorrimento
+// copertine -> scheda: si apre solo quella scheda (anche se ci sono libri senza titolo, «Non trovato»); chiudendola (freccetta o Indietro,
+// anche dopo «Cerca sul web») si torna alle copertine, allo stesso punto dello scorrimento
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8186));
-const books = Array.from({ length: 40 }, (_, i) => ({ id: 'g' + i, t: 'Copertina ' + i, a: 'Autore ' + i, ts: 1000 - i, rs: 'da' }));
+const books = Array.from({ length: 40 }, (_, i) => i % 5 === 1 ? { id: 'g' + i, i: '97988574' + String(10000 + i), nf: true, ts: 1000 - i } : { id: 'g' + i, t: 'Copertina ' + i, a: 'Autore ' + i, ts: 1000 - i, rs: 'da' });
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
@@ -45,6 +46,16 @@ const books = Array.from({ length: 40 }, (_, i) => ({ id: 'g' + i, t: 'Copertina
   await page.evaluate(() => document.querySelector('#list .row[data-id="g3"] .sum').click()); await wait(400);
   await page.evaluate(() => document.querySelector('#list .row.open .chev-btn').click()); await wait(400);
   assert(!(await st()).grid);
+  // libro senza titolo («Non trovato») dalle copertine: si apre solo lui; «Cerca sul web», poi Indietro: copertine
+  await page.evaluate(() => { document.querySelector('#btnView').click(); }); await wait(300);
+  assert((await st()).grid);
+  await page.evaluate(() => { window.open = () => null; window.scrollTo(0, 600); }); await wait(200);
+  const y1 = (await st()).y;
+  await page.evaluate(() => document.querySelector('#list .cover[data-id="g11"]').click()); await wait(500);
+  s = await st(); console.log('[5 senza titolo]', JSON.stringify(s)); assert.deepStrictEqual(s.open, ['g11'], 'solo la sua scheda, non tutte le «Non trovato»');
+  await page.evaluate(() => document.querySelector('#list .row[data-id="g11"] [data-act="websearch"]').click()); await wait(300);
+  await page.evaluate(() => history.back()); await wait(600);
+  s = await st(); console.log('[6 dopo Cerca sul web e Indietro]', JSON.stringify(s)); assert(s.grid && Math.abs(s.y - y1) <= 4 && !s.open.length);
   assert.deepStrictEqual(errors, []);
   console.log('e2e66 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });
