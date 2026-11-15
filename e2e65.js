@@ -1,6 +1,8 @@
 const CFG = require("./_config");
-// Modulo «Disposizione dello schermo» (layout.js + layout.css): Classico, A (barra in basso), B (leggera), C (pulsante tondo), D (tutto in basso);
-// scelta in Opzioni › Aspetto, salvata; avvisi in cima uno alla volta; finestre «Aggiungi» e «Per te»; senza modulo resta la classica
+// Modulo «Disposizione dello schermo» (layout.js + layout.css): Classico e A (barra in basso; B, C, D tolte il 15/11/2026);
+// nella A avvisi sopra la ricerca, uno alla volta (opzione), riga «Prestati» solo se serve; finestre «Aggiungi» e «Per te»;
+// riepilogo in alto con le opzioni (euro e «non più in libreria» spenti, «in prestito» si tocca), «Salvato su questo telefono» opzionale;
+// scelta salvata (una vecchia B/C/D diventa A); senza modulo resta la classica
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -9,7 +11,7 @@ let noMod = false;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; if (noMod && /^\/layout\./.test(p)) { res.writeHead(404); return res.end(); } const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8185);
 const today = new Date().toISOString().slice(0, 10);
-const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro numero ' + i, a: 'Autore ' + (i % 4), ts: Date.now() - i * 864e5, rs: i === 0 ? 'ok' : 'da', rd: i === 0 ? today : '', gen: 'Romanzo', pg: String(200 + i * 10), qs: i === 1 ? [{ x: 'Una citazione', pg: '', d: Date.now(), phs: [] }] : [] }));
+const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro numero ' + i, a: 'Autore ' + (i % 4), c: 10, ts: Date.now() - i * 864e5, rs: i === 0 ? 'ok' : 'da', rd: i === 0 ? today : '', gen: 'Romanzo', pg: String(200 + i * 10), p: i === 3 ? 'Anna' : '', pd: i === 3 ? today : '', xs: i === 13 ? 'v' : '', qs: i === 1 ? [{ x: 'Una citazione', pg: '', d: Date.now(), phs: [] }] : [] }));
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
@@ -26,19 +28,33 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   // A
   assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.layout), 'a');
   assert(await vis('#layNav') && !(await vis('.dock')) && !(await vis('#tabLib')) && !(await vis('#btnStats')), 'A: barra in basso');
-  // avvisi uno alla volta: installa, «hai finito», sostieni
+  // riepilogo: niente euro né «non più in libreria»; «1 in prestito» si tocca; la riga Prestati non serve
+  let sum = await txt('#summary'); console.log('[A riepilogo]', sum);
+  assert(/^13 libri · 1 in prestito$/.test(sum), 'riepilogo essenziale');
+  assert(!(await vis('#fltLoan')), 'riga Prestati nascosta');
+  assert(await vis('#sync'));
+  await page.click('#summary [data-sum="loan"]'); await wait(250);
+  assert.deepStrictEqual(await page.$$eval('#list [data-id]', e => e.map(x => x.dataset.id)), ['k3']);
+  await page.click('#summary [data-sum="loan"]'); await wait(250);
+  // avvisi sopra la ricerca, uno alla volta
+  const pos = await page.evaluate(() => { const s = document.querySelector('#stick').getBoundingClientRect().top; return ['#nxBox', '#donRow', '#instCard'].map(k => { const e = document.querySelector(k); return e && !e.hidden ? Math.round(e.getBoundingClientRect().top - s) : null; }); });
+  console.log('[A avvisi rispetto alla ricerca]', pos.join(' '));
   const notes = await page.evaluate(() => ['#notice', '#nxBox', '#wrapAsk', '#donAsk', '#instCard', '#donRow'].map(k => document.querySelector(k)).filter(e => e && !e.hidden).map(e => e.id + (e.classList.contains('lay-later') ? ':dopo' : ':ora')));
   console.log('[A avvisi]', notes.join(' '), '|', await txt('#layMore'));
   assert(notes.filter(x => /:ora/.test(x)).length === 1 && notes.length >= 2 && /Avviso 1 di/.test(await txt('#layMore')));
+  assert(await page.evaluate(() => { const e = [...document.querySelectorAll('#nxBox,#donRow,#instCard,#wrapAsk')].find(e => !e.hidden && !e.classList.contains('lay-later')); return e.getBoundingClientRect().bottom <= document.querySelector('#stick').getBoundingClientRect().top + 1; }), 'avviso sopra la ricerca');
   await page.screenshot({ path: CFG.OUT + '/layout_a.png' });
   await page.click('#layMore'); await wait(150); assert(/Avviso 2 di/.test(await txt('#layMore')));
   await page.click('#layNav [data-l="wish"]'); await wait(250);
   assert.strictEqual(await page.evaluate(() => window.NL.tab()), 'wish'); assert(await page.$eval('#layNav [data-l="wish"]', e => e.classList.contains('on')));
+  assert(/da comprare/.test(await txt('#summary')));
   await page.click('#layNav [data-l="lib"]'); await wait(250);
   await page.click('#layNav [data-l="add"]'); await wait(250);
   assert(await vis('#layAdd')); await page.screenshot({ path: CFG.OUT + '/layout_a_add.png' });
   await page.click('#layAdd [data-l="scan"]'); await wait(150);
   assert.strictEqual(await page.evaluate(() => window.__hit), 'btnScan'); assert(!(await vis('#layAdd')));
+  await page.click('#layNav [data-l="add"]'); await wait(250); await page.click('#layAdd [data-l="check"]'); await wait(150);
+  assert.strictEqual(await page.evaluate(() => window.__hit), 'btnCheck');
   await page.click('#layNav [data-l="you"]'); await wait(250);
   const you = await txt('#layYouList'); console.log('[A per te]', you);
   assert(/Suggerimenti/.test(you) && /Tutte le citazioni/.test(you) && /Statistiche/.test(you) && /Backup/.test(you));
@@ -47,44 +63,39 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   assert(await vis('#statsSheet')); await page.keyboard.press('Escape'); await wait(250);
   await page.click('#layNav [data-l="menu"]'); await wait(400);
   assert(await page.evaluate(() => document.body.classList.contains('drawer-open'))); await page.evaluate(() => window.__app.closeDrawer()); await wait(350);
-  // scelta in Opzioni › Aspetto
+  // Opzioni › Aspetto: disposizione (Classico, A), avvisi uno alla volta, riepilogo
   await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
-  const opts = await page.$$eval('#optLayout input', e => e.map(x => x.value + (x.checked ? '*' : '')));
-  console.log('[opzione]', opts.join(' ')); assert.deepStrictEqual(opts, ['classico', 'a*', 'b', 'c', 'd']);
+  const opts = await page.$$eval('#optLayout input[name="layout"]', e => e.map(x => x.value + (x.checked ? '*' : '')));
+  console.log('[opzione]', opts.join(' ')); assert.deepStrictEqual(opts, ['classico', 'a*']);
+  assert(await page.$eval('#layOne', e => e.checked) && await vis('#layOne'));
+  const sumOpts = await page.$$eval('.sum-opts input', e => e.map(x => x.id + (x.checked ? '*' : ''))); console.log('[riepilogo opzioni]', sumOpts.join(' '));
+  assert.deepStrictEqual(sumOpts, ['optSumEur', 'optSumLoan*', 'optSumGone', 'optShowSync*']);
   await page.screenshot({ path: CFG.OUT + '/layout_opzione.png' });
+  await page.click('#optSumEur'); await page.click('#optSumGone'); await page.click('#optSumLoan'); await page.click('#optShowSync'); await page.click('#layOne'); await wait(250);
+  await page.evaluate(() => window.__app.closeOptions()); await wait(350); await page.evaluate(() => window.scrollTo(0, 0));
+  sum = await txt('#summary'); console.log('[riepilogo cambiato]', sum);
+  assert(/^13 libri · 130,00 € · 1 non più in libreria$/.test(sum));
+  assert(await vis('#fltLoan'), 'senza «in prestito» nel riepilogo torna la riga Prestati');
+  assert(!(await vis('#sync')), 'Salvato nascosto');
+  assert(await page.evaluate(() => !document.querySelector('.lay-later')) && !(await vis('#layMore')), 'avvisi tutti');
+  const st = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
+  assert(st.sumEur === true && st.sumGone === true && st.sumLoan === false && st.showSync === false);
+  // classico: come prima, avvisi al loro posto (sotto la ricerca)
   const pick = async v => { await page.evaluate(() => window.__app.openOptions('look')); await wait(200); await page.click('#optLayout input[value="' + v + '"]'); await wait(250); await page.evaluate(() => window.__app.closeOptions()); await wait(350); await page.evaluate(() => window.scrollTo(0, 0)); };
-  // B
-  await pick('b');
-  assert(await vis('.dock') && await vis('#tabLib') && await vis('#btnCheck') && await vis('#btnView') && !(await vis('#btnStats')) && !(await vis('#btnExport')) && !(await vis('#layNav')));
-  assert(!(await vis('.tip')), 'B: niente testo d\'aiuto con più di 10 libri');
-  await page.screenshot({ path: CFG.OUT + '/layout_b.png' });
-  // C
-  await pick('c');
-  assert(await vis('#layFabB') && !(await vis('.dock')) && await vis('#layStrip'));
-  const strip = await txt('#layStrip'); console.log('[C scorciatoie]', strip); assert(/Suggerimenti/.test(strip) && /Statistiche/.test(strip) && /Ce l'ho già/.test(strip));
-  await page.screenshot({ path: CFG.OUT + '/layout_c.png' });
-  await page.click('#layFabB'); await wait(250);
-  assert(await vis('#layDial')); await page.screenshot({ path: CFG.OUT + '/layout_c_aperto.png' });
-  await page.click('#layDial [data-l="type"]'); await wait(150);
-  assert.strictEqual(await page.evaluate(() => window.__hit), 'btnType'); assert(!(await vis('#layDial')));
-  // D
-  await pick('d');
-  const d = await page.evaluate(() => { const s = document.querySelector('#stick').getBoundingClientRect(), k = document.querySelector('.dock').getBoundingClientRect(); return { stickBottom: Math.round(s.bottom), dockTop: Math.round(k.top), vh: innerHeight, pos: getComputedStyle(document.querySelector('#stick')).position }; });
-  console.log('[D]', JSON.stringify(d)); assert(d.pos === 'fixed' && Math.abs(d.stickBottom - d.dockTop) <= 2 && d.dockTop > d.vh - 120);
-  // l'ultimo libro non resta nascosto sotto i comandi
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await wait(200);
-  const last = await page.evaluate(() => { const r = [...document.querySelectorAll('#list .row')].pop().getBoundingClientRect(); return { b: Math.round(r.bottom), top: Math.round(document.querySelector('#stick').getBoundingClientRect().top) }; });
-  assert(last.b <= last.top + 1, 'ultimo libro visibile');
-  await page.evaluate(() => window.scrollTo(0, 0)); await wait(100);
-  await page.screenshot({ path: CFG.OUT + '/layout_d.png' });
-  // classico: come prima, tutti gli avvisi
   await pick('classico');
-  assert(await vis('#btnStats') && await vis('#tabLib') && await vis('.dock') && !(await vis('#layNav')) && !(await vis('#layFabB')));
-  assert(await page.evaluate(() => !document.querySelector('.lay-later')), 'classico: avvisi tutti');
+  assert(await vis('#btnStats') && await vis('#tabLib') && await vis('.dock') && !(await vis('#layNav')));
+  assert(await page.evaluate(() => document.querySelector('#nxBox').compareDocumentPosition(document.querySelector('#stick')) & Node.DOCUMENT_POSITION_PRECEDING), 'nxBox di nuovo sotto la ricerca');
+  await page.evaluate(() => window.__app.openOptions('look')); await wait(200);
+  assert(!(await vis('#layOne')), 'opzione degli avvisi solo per la A');
+  await page.evaluate(() => window.__app.closeOptions()); await wait(300);
   await page.screenshot({ path: CFG.OUT + '/layout_classico.png' });
+  await pick('a');
   // la scelta resta dopo la riapertura
-  await pick('c'); await page.reload({ waitUntil: 'load' }); await wait(700);
-  assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.layout), 'c');
+  await page.reload({ waitUntil: 'load' }); await wait(700);
+  assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.layout), 'a');
+  // una vecchia scelta B, C o D diventa A
+  await page.evaluate(() => localStorage.setItem('catalogo-libri-layout', JSON.stringify({ v: 'c' }))); await page.reload({ waitUntil: 'load' }); await wait(700);
+  assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.layout), 'a');
   assert.deepStrictEqual(errors, []);
   // senza modulo: classica
   noMod = true;

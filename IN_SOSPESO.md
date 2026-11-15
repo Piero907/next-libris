@@ -4,7 +4,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui e va nel registro delle novità dell'app.
 
-Ultimo aggiornamento: 15/11/2026, app alla versione 92.
+Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avanti: Suggerimenti, trimestre, disposizione A).
 
 ---
 
@@ -105,3 +105,33 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 92.
 **Alternativa più semplice:** Cloudflare Web Analytics o GoatCounter (una riga in `index.html`): contano visite e visitatori di passaggio, **non** i dispositivi; utile per vedere se l'app viene aperta, meno per «quanti telefoni».
 
 **Cosa servirebbe da Piero per partire:** creare su Cloudflare un worker «contatore-next-libris» e un database D1 (passi guidati, come per il worker SBN), scegliere la parola segreta, decidere acceso/chiesto.
+
+---
+
+## 6. Film tratti dai libri (chiesto il 15/11/2026, «per dopo»)
+
+**Domanda di Piero:** l'app può cercare i film ispirati o tratti dai libri che ha in libreria o nei Desideri?
+
+**Idea (da proporre quando la riprende):**
+- **Fonte: Wikidata**, gratuita, senza chiave, interrogabile dal browser (query.wikidata.org). Ogni film ha la proprietà «basato su» (P144) che punta all'opera letteraria.
+- Collegare il libro all'opera: dall'ISBN (P212/P957) si trova l'edizione, e da lì l'opera («edizione di», P629); se l'ISBN non c'è, si cerca per titolo e autore (etichetta in italiano + autore P50). Poi: film e serie con P144 = quell'opera, con anno, regista, titolo italiano e, se c'è, la pagina di Wikipedia in italiano (l'app usa già Wikipedia per le descrizioni).
+- **Dove:** nella scheda del libro una riga «🎬 Ne hanno tratto un film: Il nome della rosa (1986, Jean-Jacques Annaud)»; e in «Per te» / Suggerimenti una scheda «Dai tuoi libri al cinema» con l'elenco dei film tratti dai libri della libreria (e dei Desideri), magari con «Visto» / «Da vedere».
+- Ricerca a gruppi in sottofondo (una richiesta SPARQL per più opere), una volta sola per libro, risultato salvato.
+- **Limiti:** Wikidata è ricca per i classici e i libri famosi, povera per le edizioni minori; un libro senza opera collegata non dà risultati. Alternativa con più film ma con chiave: TMDB (serve registrarsi).
+
+---
+
+## 7. Backup automatico (chiesto il 15/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** automatizzare il backup, magari in una cartella dedicata dell'app. Ha chiesto anche se è un'app o una pagina web.
+
+**Risposta da dargli:** è una **app web installabile (PWA)**: una pagina web che, installata, si apre a schermo intero con la sua icona e funziona senza rete. Per questo ha i limiti del browser sul telefono.
+
+**Cosa si può fare (da proporre quando la riprende):**
+1. **Copie automatiche dentro l'app:** ogni giorno (o a ogni N modifiche) l'app salva da sola una copia completa nel suo spazio (IndexedDB), tenendo le ultime 7-10. Opzioni › Backup: «Copie automatiche» con l'elenco e «Ripristina questa». Protegge da errori (libri cancellati, import sbagliato) ma **non** se si cancellano i dati del browser o si cambia telefono.
+2. **Promemoria più furbo per il backup vero** (già c'è l'avviso): dopo N modifiche o X giorni, un tocco solo «Fai il backup e mandalo su Drive».
+3. **Cartella sul telefono senza toccare nulla: non si può** su Android con Chrome: una pagina web non può scrivere da sola nei file del telefono (la scelta di una cartella permanente, File System Access, c'è solo su computer). Ogni salvataggio nei Download chiede un tocco.
+4. **Google Drive automatico:** possibile con l'accesso a Google (OAuth): l'app salverebbe da sola un file nella cartella «Next Libris» su Drive. Serve creare un progetto su Google Cloud (ID cliente) e il consenso di Google; più lavoro, ma è il vero backup automatico fuori dal telefono.
+5. Se un giorno ci sarà l'**APK**: con un'app vera (non solo una PWA impacchettata) si potrebbe scrivere in una cartella del telefono da soli.
+
+**Proposta di partenza:** 1 + 2 subito (facili, nessun account), 4 se vuole il backup automatico fuori dal telefono.
