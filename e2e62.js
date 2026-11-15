@@ -73,6 +73,14 @@ const server = http.createServer((req, res) => {
   console.log('[registro prova]', JSON.stringify(lg));
   assert.deepStrictEqual(lg.parts, ['Copia di prova', 'Versione vera']); assert(/^Prova 94\.8/.test(lg.cur) && /questa/.test(lg.cur) && /^Prova 94\.8/.test(lg.first));
   await page.click('#logClose'); await wait(300);
+  // dopo l'aggiornamento della prova: «Aggiornato in questa versione» con le righe delle prove nuove
+  await page.evaluate(() => { const k = 'prova:catalogo-libri-set'; const s = JSON.parse(localStorage.getItem(k)); s.seenB = '94.7'; s.seenV = 94; localStorage.setItem(k, JSON.stringify(s)); });
+  siteBuild = appBuild;
+  await page.goto(provaUrl, { waitUntil: 'load' }); await wait(1800);
+  const wn = await page.evaluate(() => ({ on: !document.querySelector('#wnSheet').hidden, sub: document.querySelector('#wnSub').textContent, li: [...document.querySelectorAll('#wnList li')].map(x => x.textContent) }));
+  console.log('[novità della prova]', JSON.stringify(wn));
+  assert(wn.on && /^Prova 94\.8 · 1 novità$/.test(wn.sub) && wn.li.join() === '4 avvisi di prova');
+  await page.click('#wnClose'); await wait(200);
   await page.evaluate(() => window.__app.closeDrawer()); await wait(300);
   await page.goto('http://localhost:' + CFG.port(8182) + '/next-libris/?vista=elenco', { waitUntil: 'load' }); await wait(3200);
   nt = await page.evaluate(() => { const n = document.querySelector('#notice'); return n.hidden ? '' : n.innerText; });
