@@ -1,5 +1,5 @@
 const CFG = require("./_config");
-// modulo «Scheda aperta del libro» (schede.js/.css): Attuale, A (ordinata), B (sezioni), C (linguette), D (pagina del libro);
+// modulo «Scheda aperta del libro» (schede.js/.css): Classica e D, pagina del libro (A, B, C tolte);
 // scelta in Opzioni › Aspetto, salvata; i campi spostati si modificano e si salvano come prima.
 // D: in alto icone su una riga (preferito, desideri, condividi, elimina), in fondo Presta e Cerca sul web con la scritta; autore che apre la sua finestra; lettura modificabile; etichette = filtri
 const puppeteer = require('puppeteer-core');
@@ -29,37 +29,15 @@ const books = [
   // scelta nelle Opzioni: Attuale di predefinito
   await page.evaluate(() => window.__app.openOptions('look')); await wait(250);
   const opts = await page.$$eval('#optCard input', e => e.map(x => x.value + (x.checked ? '*' : ''))); console.log('[opzioni]', opts.join(' '));
-  assert.deepStrictEqual(opts, ['attuale*', 'a', 'b', 'c', 'd']);
+  assert.deepStrictEqual(opts, ['attuale*', 'd']);
   await page.evaluate(() => window.__app.closeOptions()); await wait(300);
   await open();
   const h0 = await page.$eval(card(), e => Math.round(e.getBoundingClientRect().height));
   assert(await page.$eval(card(), e => !e.querySelector('.cv-secs, .cv-tabs, .cv-page')));
-  // A: azioni solo icona, scheda piu' corta
-  await pick('a'); await open();
-  const a = await page.evaluate(s => { const e = document.querySelector(s); const lab = e.querySelector('.acts-main .ico.act .al'); return { h: Math.round(e.getBoundingClientRect().height), lab: lab ? getComputedStyle(lab).display : '' }; }, card());
-  console.log('[A]', JSON.stringify(a), 'attuale:', h0); assert(a.lab === 'none' && a.h < h0);
-  // B: sezioni; «Dati» aperta, le altre chiuse col riassunto; si modifica la casa editrice
-  await pick('b'); await open();
-  const b = await page.evaluate(s => [...document.querySelectorAll(s + ' .cv-sec')].map(d => d.dataset.k + (d.open ? '*' : '') + ':' + d.querySelector('.cv-sum').textContent), card());
-  console.log('[B]', b.join(' | ')); assert.deepStrictEqual(b.map(x => x.split(':')[0]), ['dati*', 'lettura', 'libreria', 'altro']);
-  assert(/Letto ★★★★★/.test(b[1]) && /Studio · I grandi romanzi, 3/.test(b[2]));
-  await page.evaluate(s => { const i = document.querySelector(s + ' .cv-sec[data-k="dati"] [data-k="e"]'); i.focus(); i.value = 'Bompiani Editore'; i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); i.blur(); }, card()); await wait(400);
-  assert.strictEqual((await book()).e, 'Bompiani Editore', 'campo spostato: si salva');
-  await page.evaluate(s => { const d = document.querySelector(s + ' .cv-sec[data-k="lettura"]'); d.open = true; }, card()); await wait(200);
-  await page.evaluate(s => document.querySelector(s + ' .cv-sec[data-k="lettura"] [data-act="rs"][data-v="in"]').click(), card()); await wait(400);
-  assert.strictEqual((await book()).rs, 'in', 'lettura cambiata');
-  assert(await page.evaluate(s => document.querySelector(s + ' .cv-sec[data-k="lettura"]').open, card()), 'la sezione resta aperta dopo il ridisegno');
-  // C: linguette
-  await pick('c'); await open();
-  const tabs = await page.$$eval(card() + ' .cv-tab', e => e.map(x => x.textContent + (x.getAttribute('aria-selected') === 'true' ? '*' : ''))); console.log('[C]', tabs.join(' '));
-  assert.deepStrictEqual(tabs, ['Dati*', 'Lettura', 'In libreria', 'Altro']);
-  await page.evaluate(s => document.querySelector(s + ' .cv-tab[data-k="libreria"]').click(), card()); await wait(200);
-  const vis = await page.evaluate(s => [...document.querySelectorAll(s + ' .cv-pane')].filter(p => !p.hidden).map(p => p.dataset.k), card());
-  assert.deepStrictEqual(vis, ['libreria']); assert(await page.evaluate(s => !!document.querySelector(s + ' .cv-pane[data-k="libreria"] [data-k="sh"]'), card()));
   // D: pagina del libro; Modifica mostra i campi, Fatto torna alla pagina
   await pick('d'); await open();
   const d = await page.evaluate(s => { const e = document.querySelector(s); const p = e.querySelector('.cv-page'); return { page: p ? p.innerText.replace(/\s+/g, ' ') : '', headHidden: getComputedStyle(e.querySelector('.head')).display === 'none' }; }, card());
-  console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani Editore · 2012 · 624 pagine/.test(d.page) && d.headHidden);
+  console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani · 2012 · 624 pagine/.test(d.page) && d.headHidden);
   // in alto solo preferito, condividi, elimina; sotto, con la scritta: presta, desideri, cerca sul web
   const acts = await page.evaluate(s => { const e = document.querySelector(s); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act + ':' + (getComputedStyle(x.querySelector('.al')).display !== 'none')) }; }, card());
   console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['fav', 'towish', 'share', 'del']); assert.deepStrictEqual(acts.low, ['loan:true', 'websearch:true']);
@@ -70,10 +48,18 @@ const books = [
   console.log('  ordine', JSON.stringify(order));
   assert.strictEqual(order.page[0], 'cv-hero'); assert.strictEqual(order.page[1], 'desc'); assert(/frate Guglielmo/.test(order.desc));
   assert.deepStrictEqual(order.card, ['cv-tags', 'cv-acts2']);
+  // descrizione: anteprima, fonte e «rimuovila» solo aperta, con la freccetta
+  const dsc = () => page.evaluate(s => { const d = document.querySelector(s + ' .cv-desc'); return { src: getComputedStyle(d.querySelector('.desc-src')).display, open: d.classList.contains('cv-open'), more: !!d.querySelector('.cv-dmore') }; }, card());
+  let dd = await dsc(); assert(dd.more && !dd.open && dd.src === 'none', 'anteprima senza fonte');
+  await page.evaluate(s => document.querySelector(s + ' .cv-dmore').click(), card()); await wait(200);
+  dd = await dsc(); assert(dd.open && dd.src !== 'none', 'aperta: fonte visibile');
+  // Modifica: icona della matita in alto, sulla stessa riga
+  const pen = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.acts-main .cv-editb'), f = e.querySelector('.acts-main [data-act="fav"]'); return p && Math.round(p.getBoundingClientRect().top) === Math.round(f.getBoundingClientRect().top) && getComputedStyle(p.querySelector('.al')).display === 'none'; }, card());
+  assert(pen, 'matita in alto, solo icona');
   // lettura modificabile dalla pagina
-  assert(await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="in"]').getAttribute('aria-pressed') === 'true', card()));
-  await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="ok"]').click(), card()); await wait(400);
-  assert.strictEqual((await book()).rs, 'ok', 'letto dalla pagina');
+  assert(await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="ok"]').getAttribute('aria-pressed') === 'true', card()));
+  await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="in"]').click(), card()); await wait(400);
+  assert.strictEqual((await book()).rs, 'in', 'stato cambiato dalla pagina');
   assert(await page.evaluate(s => !!document.querySelector(s + ' .cv-page'), card()), 'resta la pagina');
   // etichette = filtri; la serie porta alla serie
   const chips = await page.$$eval(card() + ' .cv-chips .fchip', e => e.map(x => (x.dataset.f || x.dataset.act) + ':' + x.textContent.trim()));
@@ -91,6 +77,18 @@ const books = [
   await page.evaluate(s => document.querySelector(s + ' .cv-chips .fchip[data-f="gen"]').click(), card()); await wait(400);
   const rows = await page.$$eval('#list [data-id]', e => e.map(x => x.dataset.id)); console.log('  filtro genere:', rows.join(','));
   assert.deepStrictEqual(rows, ['r1']);
+  // la copertina (senza immagine) cerca o fa fotografare la copertina; con l'immagine si ingrandisce
+  await page.evaluate(() => window.__app.setTab('lib')); await wait(200);
+  await open();
+  assert(await page.evaluate(s => { const c = document.querySelector(s + ' .cv-cov'); return !!c && (c.dataset.act === 'coverphoto' || c.dataset.act === 'zoom'); }, card()), 'copertina toccabile');
+  await page.evaluate(() => { const b = window.__app.state.books.find(x => x.id === 'r1'); b.img = 'https://example.org/c.jpg'; }); await page.evaluate(() => window.NL.refresh()); await wait(300); await open();
+  await page.evaluate(s => document.querySelector(s + ' .cv-cov[data-act="zoom"]').click(), card()); await wait(400);
+  assert(await page.evaluate(() => !document.querySelector('#lightbox').hidden), 'si ingrandisce');
+  await page.keyboard.press('Escape'); await wait(300);
+  // una vecchia scelta A, B o C diventa D
+  await page.evaluate(() => localStorage.setItem('catalogo-libri-card', JSON.stringify({ v: 'b' })));
+  await page.reload({ waitUntil: 'load' }); await wait(700);
+  assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.card), 'd');
   // la scelta resta dopo la riapertura
   await page.reload({ waitUntil: 'load' }); await wait(700);
   assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.card), 'd');
