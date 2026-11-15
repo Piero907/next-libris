@@ -49,7 +49,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   assert(c.over <= 0);
   await p.evaluate(() => window.__app.setTab('wish')); await wait(200);
   c = await card('b3'); console.log('[desideri]', JSON.stringify(c.main));
-  assert.deepStrictEqual(c.main, ['Libreria|Sposta in Libreria (l\'ho comprato)', 'Cerca sul web|Cerca questo libro su Google: prezzo, recensioni, dove comprarlo', 'Elimina|Elimina il libro']);
+  assert.deepStrictEqual(c.main, ['Presta, vendi o regala|Presta, vendi o regala il libro', 'Libreria|Sposta in Libreria (l\'ho comprato)', 'Preferito|Metti tra i preferiti', 'Cerca sul web|Cerca questo libro su Google: prezzo, recensioni, dove comprarlo', 'Elimina|Elimina il libro']);
   // stesso stile per tutte le azioni con scritta
   const st = await p.evaluate(() => [...document.querySelectorAll('#list .ico.act, #list .row .ico.act')].map(b => { const s = getComputedStyle(b); return [s.height, s.borderRadius, s.fontSize, s.fontWeight].join(' '); }));
   console.log('[stile]', [...new Set(st)]); assert.strictEqual(new Set(st).size, 1);

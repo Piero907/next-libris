@@ -140,6 +140,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   assert(await hidden(p, '#instCard'));
   await p.evaluate(() => window.__app.openDrawer('opt')); await wait(350);
   console.log('[7 menu]', await txt(p, '#drawerOpts .dmenu'));
+  await p.click('#goSettings'); await wait(250);                       // la voce sta sotto «Impostazioni» (16/11/2026)
   await p.click('#drawerOpts [data-sec="share"]'); await wait(350);
   assert.strictEqual(await txt(p, '#optH'), 'Condivisione');
   const box = await p.$eval('.qr', e => { const r = e.getBoundingClientRect(); return [r.width, r.height]; });

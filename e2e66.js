@@ -61,6 +61,17 @@ const books = Array.from({ length: 40 }, (_, i) => i % 5 === 1 ? { id: 'g' + i, 
   assert((await st()).grid);
   await page.evaluate(() => document.querySelector('#btnView').click()); await wait(400);
   s = await st(); console.log('[7 copertine → elenco]', JSON.stringify(s)); assert(!s.grid && !s.open.length, 'nessuna scheda «Non trovato» aperta');
+  // filtro per autore e poi tolto con la x: le «Non trovato» restano chiuse
+  await page.evaluate(() => document.querySelector('#list .row[data-id="g3"] .sum').click()); await wait(400);
+  const fb = await page.evaluate(() => { const f = document.querySelector('#list .row[data-id="g3"] [data-act="auinfo"]'); if (f) f.click(); return f ? f.textContent : ''; }); await wait(500);
+  await page.evaluate(() => document.querySelector('#auMine').click()); await wait(400);
+  console.log('[8 filtro]', fb, await page.$eval('#activeFilters', e => e.innerText.replace(/\s+/g, ' ')).catch(() => '?'));
+  assert(fb, 'filtro dalla scheda');
+  await page.evaluate(() => document.querySelector('[data-clear]').click()); await wait(400);
+  s = await st(); console.log('[9 filtro tolto]', JSON.stringify(s)); assert(!s.grid && !s.open.length, 'togliendo il filtro nessuna «Non trovato» aperta');
+  // tornando all'app (riapertura) nessuna si apre da sola
+  await page.reload({ waitUntil: 'load' }); await wait(800);
+  s = await st(); assert(!s.open.length);
   assert.deepStrictEqual(errors, []);
   console.log('e2e66 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

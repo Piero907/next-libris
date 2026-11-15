@@ -31,11 +31,11 @@ const books = [
   const rows = () => page.$$eval('#list .row', e => e.map(r => ({ id: r.dataset.id, closed: r.classList.contains('closed'), txt: r.innerText.replace(/\s+/g, ' ').trim().slice(0, 90) })));
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
 
-  // 1) di regola chiuse: solo titolo, autore e (prestito / da verificare); il libro senza titolo è aperto da compilare
+  // 1) di regola chiuse: solo titolo, autore e (prestito / da verificare); anche il libro senza titolo, gia' salvato, resta chiuso (si apre da solo solo appena aggiunto: Piero, 16/11/2026)
   let r = await rows(); console.log('[1]', r.map(x => (x.closed ? '▸ ' : '▾ ') + x.txt).join('\n    '));
   assert.strictEqual(r.length, 5);
   for (const id of ['rosa', 'cook', 'citta', 'levi']) assert(r.find(x => x.id === id).closed, id);
-  assert(!r.find(x => x.id === 'nf').closed);
+  assert(r.find(x => x.id === 'nf').closed, 'senza titolo ma non appena aggiunto: chiuso');
   const rosa = r.find(x => x.id === 'rosa').txt;
   assert(rosa.includes('Il nome della rosa') && rosa.includes('Umberto Eco') && rosa.includes('Prestato a Marco · da 3 settimane'));
   assert(!rosa.includes('Bompiani') && !rosa.includes('14,00') && !rosa.includes('Soggiorno'));

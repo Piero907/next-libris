@@ -87,20 +87,20 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   assert(await vis('#statsSheet')); await page.keyboard.press('Escape'); await wait(250);
   await page.click('#layNav [data-l="menu"]'); await wait(400);
   assert(await page.evaluate(() => document.body.classList.contains('drawer-open'))); await page.evaluate(() => window.__app.closeDrawer()); await wait(350);
-  // Opzioni › Aspetto: niente scelta della disposizione (la A e' quella dell'app), avvisi uno alla volta, riepilogo
+  // Opzioni › Aspetto: niente scelta della disposizione (la A e' quella dell'app) ne' degli avvisi uno alla volta, riepilogo
   await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
   assert(await page.evaluate(() => !document.querySelector('#optLayout') && !/Disposizione dello schermo/.test(document.querySelector('#optSheet').innerText)), 'la scelta della disposizione non c\'e\' piu\'');
-  assert(await page.$eval('#layOne', e => e.checked) && await vis('#layOne'));
+  assert(await page.evaluate(() => !document.querySelector('#layOne')), 'niente opzione «Avvisi in cima uno alla volta»: e\' sempre cosi\' (16/11/2026)');
   const sumOpts = await page.$$eval('.sum-opts input', e => e.map(x => x.id + (x.checked ? '*' : ''))); console.log('[riepilogo opzioni]', sumOpts.join(' '));
   assert.deepStrictEqual(sumOpts, ['optSumEur', 'optSumLoan*', 'optSumGone', 'optShowSync*']);
   await page.screenshot({ path: CFG.OUT + '/layout_opzione.png' });
-  await page.click('#optSumEur'); await page.click('#optSumGone'); await page.click('#optSumLoan'); await page.click('#optShowSync'); await page.click('#layOne'); await wait(250);
+  await page.click('#optSumEur'); await page.click('#optSumGone'); await page.click('#optSumLoan'); await page.click('#optShowSync'); await wait(250);
   await page.evaluate(() => window.__app.closeOptions()); await wait(350); await page.evaluate(() => window.scrollTo(0, 0));
   sum = await txt('#summary'); console.log('[riepilogo cambiato]', sum);
   assert(/^13 libri · 130,00 € · 1 non più in libreria$/.test(sum));
   assert(await vis('#fltLoan'), 'senza «in prestito» nel riepilogo torna la riga Prestati');
   assert(!(await vis('#sync')), 'Salvato nascosto');
-  assert(await page.evaluate(() => !document.querySelector('.lay-later')) && !(await vis('#layMore')), 'avvisi tutti');
+  assert(await page.evaluate(() => !!document.querySelector('.lay-later')), 'avvisi sempre uno alla volta');
   const st = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
   assert(st.sumEur === true && st.sumGone === true && st.sumLoan === false && st.showSync === false);
   // classico: come prima, avvisi al loro posto (sotto la ricerca)
@@ -108,9 +108,6 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   await pick('classico');
   assert(await vis('#btnStats') && await vis('#tabLib') && await vis('.dock') && !(await vis('#layNav')));
   assert(await page.evaluate(() => document.querySelector('#nxBox').compareDocumentPosition(document.querySelector('#stick')) & Node.DOCUMENT_POSITION_PRECEDING), 'nxBox di nuovo sotto la ricerca');
-  await page.evaluate(() => window.__app.openOptions('look')); await wait(200);
-  assert(!(await vis('#layOne')), 'opzione degli avvisi solo per la A');
-  await page.evaluate(() => window.__app.closeOptions()); await wait(300);
   await page.screenshot({ path: CFG.OUT + '/layout_classico.png' });
   await pick('a');
   // la scelta resta dopo la riapertura
