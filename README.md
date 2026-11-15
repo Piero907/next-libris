@@ -167,9 +167,10 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e64.js | 8184 | Modulo «Il tuo trimestre in libri» (wrap.js/wrap.css): invito nel primo mese del trimestre (orologio finto al 5/10/2026), 6 schermate a storie con i numeri, trimestre prima, immagine 1080×1350, menu, opzione in Aspetto, Esc e Indietro; tema scuro con fondo scuro; l'app senza i file del modulo funziona uguale |
 | e2e65.js | 8185 | Modulo «Disposizione dello schermo» (layout.js/layout.css): Classico e A (B, C, D tolte). A: barra in basso (Aggiungi, Per te, Menu), avvisi sopra la ricerca e uno alla volta (opzione), da scorrere col dito (sinistra/destra, in giro; il menu non si apre), riga Prestati solo se serve; riepilogo in alto con le opzioni (euro e «non più in libreria» spenti, «in prestito» si tocca), «Salvato» nascondibile; vecchia scelta B/C/D → A; senza modulo resta la classica |
 | e2e66.js | 8186 | Dalle copertine alla scheda e ritorno: chiudendo la scheda (freccetta o Indietro) si torna alle copertine allo stesso punto; con la vista cambiata a mano resta l'elenco |
+| e2e67.js | 8187 | Suoni della scansione: bip alla lettura; «non trovato» (due note basse) se titolo e autore non si trovano; trovato: niente in più; in sottofondo e con i suoni spenti: niente |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8187** e poi a salire, sempre attraverso `CFG.port()`.
+Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8188** e poi a salire, sempre attraverso `CFG.port()`.
 
 ## Materiali (`img/`)
 
