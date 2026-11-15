@@ -17,6 +17,8 @@ const books = [
   { id: 'b5', t: 'Racconti brevi', a: 'Italo Calvino', rs: 'da', pg: '160', ts: now - 900 * D },
   { id: 'b6', t: 'Libro prestato', a: 'Andrea Camilleri', rs: 'da', p: 'Anna', pd: '2026-10-01', ts: now - 1000 * D },
   { id: 'b7', t: 'Il barone rampante', a: 'Italo Calvino', rs: 'ok', rt: 3, rd: '2025-05-01', ts: now - 800 * D },
+  { id: 'b8', t: 'La concessione del telefono', a: 'Andrea Camilleri', rs: 'ok', rd: '2025-01-01', gen: 'Gialli', ts: now - 900 * D },
+  { id: 'b9', t: 'Il re di Girgenti', a: 'Andrea Camilleri', rs: 'ok', rd: '2025-02-01', gen: 'Gialli', ts: now - 900 * D },
 ];
 const vol = (t, a, y, lang, isbn) => ({ id: t, volumeInfo: { title: t, authors: [a], publisher: 'Sellerio', publishedDate: String(y), language: lang, industryIdentifiers: [{ type: 'ISBN_13', identifier: isbn }] } });
 const Y = new Date().getFullYear();
@@ -129,6 +131,17 @@ const Y = new Date().getFullYear();
   assert(!(await hid('#nxBox')), 'torna');
   await page.evaluate(() => window.__app.setTab('wish')); await wait(300);
   assert(await hid('#nxBox'), 'non nei Desideri');
+  // 8) una collana di 30 volumi conta come un libro solo, per gli autori e per i generi di «Da scoprire»
+  const rank = await page.evaluate(() => {
+    const A = window.__app, add = o => A.state.books.push(Object.assign({ g: [], ts: 1, rs: 'da', w: false }, o));
+    for (let i = 1; i <= 30; i++) add({ id: 'c' + i, t: 'Tex ' + i, a: 'Gian Luigi Bonelli', gen: 'Fumetti', se: 'Tex', sn: String(i) });
+    ['Rossi', 'Verdi'].forEach((a, j) => { add({ id: 'x' + j, t: 'Uno ' + a, a: 'Mario ' + a, gen: 'Fumetti' }); add({ id: 'y' + j, t: 'Due ' + a, a: 'Mario ' + a, gen: 'Saggi' }); });
+    add({ id: 'z1', t: 'Tre', a: 'Altro', gen: 'Fumetti' });
+    return A.suggRank();
+  });
+  console.log('[8 collana]', JSON.stringify(rank));
+  assert(!rank.a.some(x => /^Gian Luigi Bonelli/.test(x)), 'la collana non porta l\'autore in testa (conta 1)');
+  const fum = rank.g.find(x => /^Fumetti:/.test(x)); assert(fum && /^Fumetti:4\/33$/.test(fum), 'Fumetti: 4 unità, 33 libri veri');
   assert.deepStrictEqual(errors, []);
   console.log('e2e63 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });
