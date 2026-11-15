@@ -171,9 +171,10 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e68.js | 8188 | Triangolino nel riepilogo: compare quando un avviso ancora valido è stato chiuso (prestiti, «Hai finito…»), accanto a «N in prestito»; li riapre tutti; non nei Desideri; nella A si riparte dal primo |
 | e2e69.js | 8189 | ISBN 979-8 non trovato (pubblicazione Amazon): casa editrice «Amazon (pubblicazione in proprio)», riquadro nella scheda (Fotografa la copertina, Cerca sul web, uno solo), foto che riconosce titolo e autore tenendo il codice; i 979-8 vecchi sistemati all'avvio |
 | e2e70.js | 8190 | Dopo un aggiornamento: «Aggiornato in questa versione» con le novità delle versioni nuove (prima quelle in grassetto), una volta sola, non alla prima apertura; «Tutte le novità» apre il registro. La versione per la prova è in e2e62 |
+| e2e71.js | 8191 | Modulo «Scheda aperta del libro» (schede.js/.css): Attuale, A ordinata (icone, più corta), B sezioni (riassunti, campi spostati che si salvano, sezione aperta che resta), C linguette, D pagina del libro (Modifica / Fatto); scelta salvata |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8191** e poi a salire, sempre attraverso `CFG.port()`.
+Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8192** e poi a salire, sempre attraverso `CFG.port()`.
 
 ## Materiali (`img/`)
 
