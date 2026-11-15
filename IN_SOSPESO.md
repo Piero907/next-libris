@@ -150,3 +150,17 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - «Finito!» con un tocco: segna Letto con la data e chiede il voto (si collega a «Cosa leggere dopo»);
 - filtro rapido «In lettura» e ordine «iniziati di recente»;
 - nelle statistiche e nel trimestre: tempo medio per finire un libro.
+
+## 9. Panoramica copertine più esplorabile (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** una nuova organizzazione della vista Copertine, «più interattiva e organizzata, più facilmente esplorabile, non solo scrollabile». Non costruire finché non lo chiede; quando lo riprende, proporre (proponimi) e provarlo prima nella copia di prova, magari come modulo staccabile.
+
+**Idee da proporre (nessuna costruita):**
+- **scaffali per gruppo:** le copertine divise in file orizzontali scorrevoli col dito (per scaffale, genere, autore, serie o stato di lettura), ognuna col titolo e «Vedi tutti»; si sceglie con un tocco come raggruppare;
+- **serie e collane impilate:** una pila sola con il numero dei volumi, che si apre a ventaglio toccandola;
+- **barra delle lettere / anni** sul bordo destro per saltare (A–Z per titolo o autore, anni di acquisto), come nella rubrica del telefono;
+- **zoom a pizzico:** copertine piccole (molte per riga) o grandi (2 per riga con titolo e voto);
+- **anteprima veloce:** tenendo premuta una copertina compare una scheda piccola (titolo, autore, stato, preferito) senza aprire tutta la pagina del libro;
+- **filtri in alto a chip** (Da leggere, In lettura, Preferiti, In prestito) che si combinano, con il numero dei libri;
+- **«Mescola» / «Pesca un libro»:** una copertina a caso dalla libreria o dai «Da leggere»;
+- colori: sfondo della fila preso dal colore della copertina (già c'è `NL.hue`).

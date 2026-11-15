@@ -99,7 +99,7 @@ let noExtra = new Set();
   b = (await books()).find(x => x.i === W1); assert.strictEqual(b.w, true);
   assert.strictEqual(await text('#cntWish'), '1'); assert.strictEqual(await text('#cntLib'), '1');
   assert((await text('#summary')).includes('da comprare'));
-  assert(await page.$('#list .row [data-act="tolib"]')); assert.strictEqual(await page.$('#list .row [data-act="loan"]'), null);
+  assert(await page.$('#list .row [data-act="tolib"]')); assert(await page.$('#list .row [data-act="loan"]'), 'anche nei Desideri: Presta, vendi o regala (16/11/2026)');
   await click('#list .row [data-act="tolib"]'); await wait(200);
   assert.strictEqual((await books()).find(x => x.i === W1).w, false);
   await click('#toastBtn'); await wait(150);

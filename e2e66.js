@@ -56,6 +56,11 @@ const books = Array.from({ length: 40 }, (_, i) => i % 5 === 1 ? { id: 'g' + i, 
   await page.evaluate(() => document.querySelector('#list .row[data-id="g11"] [data-act="websearch"]').click()); await wait(300);
   await page.evaluate(() => history.back()); await wait(600);
   s = await st(); console.log('[6 dopo Cerca sul web e Indietro]', JSON.stringify(s)); assert(s.grid && Math.abs(s.y - y1) <= 4 && !s.open.length);
+  // appena aperta l'app, dalle copertine all'elenco col pulsante: le «Non trovato» restano chiuse (Piero, 16/11/2026)
+  await page.reload({ waitUntil: 'load' }); await wait(800);
+  assert((await st()).grid);
+  await page.evaluate(() => document.querySelector('#btnView').click()); await wait(400);
+  s = await st(); console.log('[7 copertine → elenco]', JSON.stringify(s)); assert(!s.grid && !s.open.length, 'nessuna scheda «Non trovato» aperta');
   assert.deepStrictEqual(errors, []);
   console.log('e2e66 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

@@ -10,7 +10,8 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8191));
 const books = [
   { id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', c: 13, i: '9788845292613', gen: 'Narrativa', pg: '624', sh: 'Studio', rs: 'ok', rt: 5, rd: '2026-10-02', se: 'I grandi romanzi', sn: '3', n: 'Regalo di Anna', ds: 'Ultima settimana del novembre 1327: frate Guglielmo indaga.', dsf: 'google', qs: [{ x: 'Stat rosa', pg: '', d: 1, phs: [] }], ts: 10 },
-  { id: 'r2', t: 'Baudolino', a: 'Umberto Eco', e: 'Bompiani', y: '2000', ts: 9, rs: 'da' }];
+  { id: 'r2', t: 'Baudolino', a: 'Umberto Eco', e: 'Bompiani', y: '2000', ts: 9, rs: 'da' },
+  { id: 'w1', t: 'Il pendolo di Foucault', a: 'Umberto Eco', e: 'Bompiani', y: '1988', w: true, ts: 8 }];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
@@ -24,13 +25,13 @@ const books = [
   await page.reload({ waitUntil: 'load' }); await wait(800);
   const card = () => '#list .row[data-id="r1"]';
   const open = async () => { if (!(await page.$(card() + '.open'))) { await page.evaluate(s => document.querySelector(s + ' .sum').click(), card()); await wait(400); } };
-  const pick = async v => { await page.evaluate(() => window.__app.openOptions('look')); await wait(250); await page.click('#optCard input[value="' + v + '"]'); await wait(300); await page.evaluate(() => window.__app.closeOptions()); await wait(350); };
+  const pick = async v => { await page.evaluate(v => window.NLCard.set(v), v); await wait(350); };   // la scelta non e' piu' nelle Opzioni: si cambia solo nelle prove
   const book = () => page.evaluate(() => window.__app.state.books.find(b => b.id === 'r1'));
-  // scelta nelle Opzioni: Attuale di predefinito
+  // nelle Opzioni non c'e' piu' la scelta della scheda: la pagina del libro e' quella dell'app (su localhost parte la classica, per le prove vecchie)
   await page.evaluate(() => window.__app.openOptions('look')); await wait(250);
-  const opts = await page.$$eval('#optCard input', e => e.map(x => x.value + (x.checked ? '*' : ''))); console.log('[opzioni]', opts.join(' '));
-  assert.deepStrictEqual(opts, ['attuale*', 'd']);
+  assert(await page.evaluate(() => !document.querySelector('#optCard') && !/Scheda aperta del libro/.test(document.querySelector('#optSheet').innerText)), 'sezione tolta');
   await page.evaluate(() => window.__app.closeOptions()); await wait(300);
+  assert.strictEqual(await page.evaluate(() => window.NLCard.get()), 'attuale');
   await open();
   const h0 = await page.$eval(card(), e => Math.round(e.getBoundingClientRect().height));
   assert(await page.$eval(card(), e => !e.querySelector('.cv-secs, .cv-tabs, .cv-page')));
@@ -85,10 +86,14 @@ const books = [
   await page.evaluate(s => document.querySelector(s + ' .cv-cov[data-act="zoom"]').click(), card()); await wait(400);
   assert(await page.evaluate(() => !document.querySelector('#lightbox').hidden), 'si ingrandisce');
   await page.keyboard.press('Escape'); await wait(300);
-  // una vecchia scelta A, B o C diventa D
-  await page.evaluate(() => localStorage.setItem('catalogo-libri-card', JSON.stringify({ v: 'b' })));
-  await page.reload({ waitUntil: 'load' }); await wait(700);
-  assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.card), 'd');
+  // nei Desideri: anche preferito e Presta, vendi o regala, come nella scheda normale
+  await page.evaluate(() => window.__app.setTab('wish')); await wait(300);
+  await page.evaluate(() => document.querySelector('#list .row[data-id="w1"] .sum').click()); await wait(400);
+  const wa = await page.evaluate(() => { const e = document.querySelector('#list .row[data-id="w1"]'); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act) }; });
+  console.log('  desideri', JSON.stringify(wa)); assert.deepStrictEqual(wa.top, ['fav', 'tolib', 'share', 'del']); assert.deepStrictEqual(wa.low, ['loan', 'websearch']);
+  await page.evaluate(() => document.querySelector('#list .row[data-id="w1"] .acts-main [data-act="fav"]').click()); await wait(300);
+  assert.strictEqual(await page.evaluate(() => window.__app.state.books.find(b => b.id === 'w1').fav), true, 'preferito anche nei Desideri');
+  await page.screenshot({ path: CFG.OUT + '/scheda_d_desideri.png' });
   // la scelta resta dopo la riapertura
   await page.reload({ waitUntil: 'load' }); await wait(700);
   assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.card), 'd');

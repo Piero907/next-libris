@@ -87,10 +87,9 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   assert(await vis('#statsSheet')); await page.keyboard.press('Escape'); await wait(250);
   await page.click('#layNav [data-l="menu"]'); await wait(400);
   assert(await page.evaluate(() => document.body.classList.contains('drawer-open'))); await page.evaluate(() => window.__app.closeDrawer()); await wait(350);
-  // Opzioni › Aspetto: disposizione (Classico, A), avvisi uno alla volta, riepilogo
+  // Opzioni › Aspetto: niente scelta della disposizione (la A e' quella dell'app), avvisi uno alla volta, riepilogo
   await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
-  const opts = await page.$$eval('#optLayout input[name="layout"]', e => e.map(x => x.value + (x.checked ? '*' : '')));
-  console.log('[opzione]', opts.join(' ')); assert.deepStrictEqual(opts, ['classico', 'a*']);
+  assert(await page.evaluate(() => !document.querySelector('#optLayout') && !/Disposizione dello schermo/.test(document.querySelector('#optSheet').innerText)), 'la scelta della disposizione non c\'e\' piu\'');
   assert(await page.$eval('#layOne', e => e.checked) && await vis('#layOne'));
   const sumOpts = await page.$$eval('.sum-opts input', e => e.map(x => x.id + (x.checked ? '*' : ''))); console.log('[riepilogo opzioni]', sumOpts.join(' '));
   assert.deepStrictEqual(sumOpts, ['optSumEur', 'optSumLoan*', 'optSumGone', 'optShowSync*']);
@@ -105,7 +104,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   const st = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
   assert(st.sumEur === true && st.sumGone === true && st.sumLoan === false && st.showSync === false);
   // classico: come prima, avvisi al loro posto (sotto la ricerca)
-  const pick = async v => { await page.evaluate(() => window.__app.openOptions('look')); await wait(200); await page.click('#optLayout input[value="' + v + '"]'); await wait(250); await page.evaluate(() => window.__app.closeOptions()); await wait(350); await page.evaluate(() => window.scrollTo(0, 0)); };
+  const pick = async v => { await page.evaluate(v => window.NLLayout.set(v), v); await wait(350); await page.evaluate(() => window.scrollTo(0, 0)); };   // la classica resta solo per le prove
   await pick('classico');
   assert(await vis('#btnStats') && await vis('#tabLib') && await vis('.dock') && !(await vis('#layNav')));
   assert(await page.evaluate(() => document.querySelector('#nxBox').compareDocumentPosition(document.querySelector('#stick')) & Node.DOCUMENT_POSITION_PRECEDING), 'nxBox di nuovo sotto la ricerca');
@@ -116,9 +115,6 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   await pick('a');
   // la scelta resta dopo la riapertura
   await page.reload({ waitUntil: 'load' }); await wait(700);
-  assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.layout), 'a');
-  // una vecchia scelta B, C o D diventa A
-  await page.evaluate(() => localStorage.setItem('catalogo-libri-layout', JSON.stringify({ v: 'c' }))); await page.reload({ waitUntil: 'load' }); await wait(700);
   assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.layout), 'a');
   assert.deepStrictEqual(errors, []);
   // senza modulo: classica
