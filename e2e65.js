@@ -63,6 +63,11 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   assert(!(await page.evaluate(() => document.body.classList.contains('drawer-open'))), 'il menu non si apre');
   assert.strictEqual(await page.evaluate(() => document.querySelector('[data-lay-swipe]').style.transform), '');
   await swipe(-160); assert.strictEqual(await idx(), '1');
+  // scorrendo la pagina la barra resta in alto: il pulsante della vista mostra sempre la sua icona
+  await page.evaluate(() => window.scrollTo(0, 2000)); await wait(400);
+  const ico = await page.evaluate(() => ({ stuck: document.querySelector('#stick').classList.contains('stuck'), svg: getComputedStyle(document.querySelector('#btnView svg')).display }));
+  console.log('[barra in alto]', JSON.stringify(ico)); assert(ico.stuck && ico.svg !== 'none', 'icona della vista visibile');
+  await page.evaluate(() => window.scrollTo(0, 0)); await wait(300);
   await page.$eval('#layMore', e => e.click()); await wait(500); assert(/Avviso 2 di/.test(await page.$eval('#layMore', e => e.getAttribute('aria-label'))));
   await page.click('#layNav [data-l="wish"]'); await wait(250);
   assert.strictEqual(await page.evaluate(() => window.NL.tab()), 'wish'); assert(await page.$eval('#layNav [data-l="wish"]', e => e.classList.contains('on')));
