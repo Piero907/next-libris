@@ -4,42 +4,19 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui e va nel registro delle novità dell'app.
 
-Ultimo aggiornamento: 15/11/2026, app alla versione 89.
+Ultimo aggiornamento: 15/11/2026, app alla versione 90.
 
 ---
 
-## 1. Fotocamera e luce (torcia e flash) — problema aperto
+## 1. Fotocamera e luce — ripresa il 15/11/2026, risolta con la fotocamera del telefono (v90)
 
-**Stato:** segnalato da Piero il 15/11/2026: «La torcia ed il flash non funzionano». In sospeso su sua richiesta.
-
-**Cosa c'è oggi nell'app (v88-89):**
-- **Scansione dal vivo** (`startScan`, schermata `#scan`): per la scelta della fotocamera usa `rearStream({ width: 1920, height: 1080 })`, cioè la posteriore principale. Se non riesce, ripiega su `getUserMedia` con `facingMode: environment`.
-  - La luce si cerca con `scanLightCaps()`: `track.getCapabilities().torch` oppure `ImageCapture.getPhotoCapabilities().fillLightMode`, ricontrollando dopo 700 ms.
-  - 🔦 `#scanTorch`: la torcia resta accesa (`setTorch` → `applyConstraints({ advanced: [{ torch }] })`).
-  - ⚡ `#scanFlash`: compare solo in modalità Copertina. Allo scatto (`shootCover`) accende la torcia, aspetta 650 ms, prende il fotogramma e la spegne.
-  - Se `applyConstraints` fallisce compare il messaggio «Questo telefono non lascia accendere la torcia da qui…».
-- **Fotocamera delle foto** (`snapPhoto`, schermata `#snap`: Foto › Scatta, copertina di un libro, citazioni): usa `rearStream()` ad alta risoluzione.
-  - Il pulsante «Luce» `#snapTorch` accende la torcia.
-  - `snapShoot` usa `ImageCapture.takePhoto({ fillLightMode: 'flash' })` se la luce è accesa.
-  - C'è anche l'avviso di poca luce e la messa a fuoco col tocco (v83).
-- **Fotocamera del telefono:** gli input `#fileCam`, `#fileCover`, `#fileQuote` e `#filePrice` hanno `capture="environment"`. Oggi si usano solo come ripiego, se la fotocamera dell'app non si apre.
-- **Prove:** la luce è stata provata solo con una luce finta (e2e59 sovrascrive `getCapabilities` e `applyConstraints`); sul telefono di Piero non funziona.
-
-**Domande ancora senza risposta (farle per prime):**
-1. Nella scansione compaiono i pulsanti 🔦 e ⚡ in alto a destra? Se sì, toccandoli compare un messaggio in basso?
-2. In Foto › Scatta una foto, il pulsante «Luce» funziona?
-
-**Come leggere le risposte:**
-- **«Luce» funziona in Foto ma non nella scansione:** il problema è come la scansione apre la fotocamera. Si può provare la stessa `rearStream()` senza vincoli di risoluzione, cercare la luce più tardi o riaprire lo stream.
-- **Non funziona da nessuna parte:** Chrome su quel telefono non lascia accendere la luce, e la soluzione è la fotocamera del telefono.
-- **I pulsanti non compaiono:** il telefono non dichiara la luce a Chrome. Stessa soluzione: la fotocamera del telefono.
-
-**Soluzione proposta a Piero (da confermare):**
-1. **Nella fotocamera dell'app** (Foto, copertina nella scansione, citazioni): pulsante «📷 Fotocamera del telefono», che apre quella del telefono con il suo flash; la foto torna nell'app come adesso.
-2. **Nella scansione dal vivo:** «Scatta il codice con la fotocamera del telefono», per poca luce. Si fa la foto con il flash e l'app legge il codice dalla foto (`processPhoto` legge già i codici a barre).
-3. **Nelle Opzioni:** «Per le foto usa: fotocamera dell'app / del telefono». Predefinita quella dell'app: la fotocamera del telefono si apriva a volte in modalità selfie, ed è il motivo per cui nella v62 è nata la fotocamera dell'app.
-
-**Limite da ricordare:** la fotocamera del telefono non permette la scansione dal vivo, perché passa all'app solo la foto finita.
+- **Il problema:** Piero ha confermato che il flash non si accende neanche nella fotocamera dell'app. Quindi Chrome su quel telefono non lascia usare la luce.
+- **La soluzione:**
+  - pulsante «📷 Usa la fotocamera del telefono (con il flash)» nella fotocamera dell'app (`#snapNative`, usa l'input `#fileNative`) e nella scansione (`#scanNative`, chiude la scansione e usa `#fileCam` → `addPhotos`);
+  - opzione `settings.camNative` («Per le foto usa la fotocamera del telefono»);
+  - le due fotocamere hanno lo stesso aspetto.
+- **Da verificare sul telefono:** che la fotocamera del telefono si apra su quella posteriore (`capture="environment"`). Se si apre in selfie, di solito basta girarla una volta.
+- **Restano nell'app:** torcia 🔦 e flash ⚡ della scansione (v88), per i telefoni che li permettono.
 
 ---
 
