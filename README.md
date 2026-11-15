@@ -169,9 +169,10 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e66.js | 8186 | Dalle copertine alla scheda e ritorno: chiudendo la scheda (freccetta o Indietro) si torna alle copertine allo stesso punto; con la vista cambiata a mano resta l'elenco |
 | e2e67.js | 8187 | Suoni della scansione: bip alla lettura; «non trovato» (due note basse) se titolo e autore non si trovano; trovato: niente in più; in sottofondo e con i suoni spenti: niente |
 | e2e68.js | 8188 | Triangolino nel riepilogo: compare quando un avviso ancora valido è stato chiuso (prestiti, «Hai finito…»), accanto a «N in prestito»; li riapre tutti; non nei Desideri; nella A si riparte dal primo |
+| e2e69.js | 8189 | ISBN 979-8 non trovato (pubblicazione Amazon): casa editrice «Amazon (pubblicazione in proprio)», riquadro nella scheda (Fotografa la copertina, Cerca sul web, uno solo), foto che riconosce titolo e autore tenendo il codice; i 979-8 vecchi sistemati all'avvio |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8189** e poi a salire, sempre attraverso `CFG.port()`.
+Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8190** e poi a salire, sempre attraverso `CFG.port()`.
 
 ## Materiali (`img/`)
 
