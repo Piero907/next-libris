@@ -137,3 +137,16 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 **Proposta di partenza:** 1 + 2 subito (facili, nessun account), 4 se vuole il backup automatico fuori dal telefono.
 
 **Aggiunta del 15/11/2026 (Piero: «ottima idea», chiede se Wikipedia ha banche dati per i libri):** Wikidata ha i libri, ma solo quelli «notevoli» e con l'ISBN solo sulle singole edizioni: come fonte per la ricerca iniziale (ISBN → titolo, autore, editore) troverebbe poco delle edizioni italiane, che SBN, Google Libri e Open Library coprono già meglio. È invece utile a livello di **opera**, insieme ai film: titolo originale, anno della prima edizione, premi, serie, genere. Proposta: quando si fanno i film, usare la stessa ricerca su Wikidata anche per arricchire la scheda (riga «Prima edizione 1980 · titolo originale … · Premio Strega»), senza toccare la ricerca iniziale.
+
+---
+
+## 8. Libri in lettura (chiesto il 15/11/2026: «dobbiamo lavorare ai libri in lettura»)
+
+**Richiesta di Piero:** segnare che bisogna lavorare sui libri «In lettura». Non ha ancora detto cosa vuole: quando lo riprende, chiedere prima che cosa non gli torna o cosa gli manca.
+
+**Idee da proporre (nessuna costruita):**
+- un riquadro «Stai leggendo» in cima all'elenco (o in «Per te») con la copertina e un tocco per aprire la scheda;
+- a che pagina sei (campo «pagina» + barra di avanzamento sulle pagine totali), giorni da quando l'hai iniziato, data di inizio messa da sola quando passa a «In lettura»;
+- «Finito!» con un tocco: segna Letto con la data e chiede il voto (si collega a «Cosa leggere dopo»);
+- filtro rapido «In lettura» e ordine «iniziati di recente»;
+- nelle statistiche e nel trimestre: tempo medio per finire un libro.

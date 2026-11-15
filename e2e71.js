@@ -1,6 +1,7 @@
 const CFG = require("./_config");
 // modulo «Scheda aperta del libro» (schede.js/.css): Attuale, A (ordinata), B (sezioni), C (linguette), D (pagina del libro);
-// scelta in Opzioni › Aspetto, salvata; i campi spostati si modificano e si salvano come prima
+// scelta in Opzioni › Aspetto, salvata; i campi spostati si modificano e si salvano come prima.
+// D: in alto preferito/condividi/elimina, sotto le azioni con la scritta; autore che apre la sua finestra; lettura modificabile; etichette = filtri
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -58,12 +59,31 @@ const books = [
   // D: pagina del libro; Modifica mostra i campi, Fatto torna alla pagina
   await pick('d'); await open();
   const d = await page.evaluate(s => { const e = document.querySelector(s); const p = e.querySelector('.cv-page'); return { page: p ? p.innerText.replace(/\s+/g, ' ') : '', headHidden: getComputedStyle(e.querySelector('.head')).display === 'none' }; }, card());
-  console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani Editore · 2012 · 624 pagine/.test(d.page) && /In lettura/.test(d.page) && d.headHidden);
+  console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani Editore · 2012 · 624 pagine/.test(d.page) && d.headHidden);
+  // in alto solo preferito, condividi, elimina; sotto, con la scritta: presta, desideri, cerca sul web
+  const acts = await page.evaluate(s => { const e = document.querySelector(s); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act + ':' + (getComputedStyle(x.querySelector('.al')).display !== 'none')) }; }, card());
+  console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['fav', 'share', 'del']); assert.deepStrictEqual(acts.low, ['loan:true', 'towish:true', 'websearch:true']);
+  // lettura modificabile dalla pagina
+  assert(await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="in"]').getAttribute('aria-pressed') === 'true', card()));
+  await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="ok"]').click(), card()); await wait(400);
+  assert.strictEqual((await book()).rs, 'ok', 'letto dalla pagina');
+  assert(await page.evaluate(s => !!document.querySelector(s + ' .cv-page'), card()), 'resta la pagina');
+  // etichette = filtri; la serie porta alla serie
+  const chips = await page.$$eval(card() + ' .cv-chips .fchip', e => e.map(x => (x.dataset.f || x.dataset.act) + ':' + x.textContent.trim()));
+  console.log('  etichette', chips.join(' | ')); assert(chips.some(c => /^gen:Narrativa/.test(c)) && chips.some(c => /^sh:Studio/.test(c)) && chips.some(c => /^serall:I grandi romanzi, vol\. 3/.test(c)));
+  // l'autore apre la sua finestra
+  await page.evaluate(s => document.querySelector(s + ' .cv-au [data-act="auinfo"]').click(), card()); await wait(500);
+  assert(await page.evaluate(() => !document.querySelector('#auSheet').hidden), 'finestra dell\'autore');
+  await page.keyboard.press('Escape'); await wait(300);
   await page.screenshot({ path: CFG.OUT + '/scheda_d_prova.png' });
   await page.evaluate(s => document.querySelector(s + ' .cv-editb').click(), card()); await wait(300);
   assert(await page.evaluate(s => { const e = document.querySelector(s); return !e.querySelector('.cv-page') && getComputedStyle(e.querySelector('.head')).display !== 'none' && !!e.querySelector('.cv-done'); }, card()));
   await page.evaluate(s => document.querySelector(s + ' .cv-done').click(), card()); await wait(300);
   assert(await page.evaluate(s => !!document.querySelector(s + ' .cv-page'), card()));
+  // un'etichetta e' un filtro: «Narrativa» mostra i libri di quel genere
+  await page.evaluate(s => document.querySelector(s + ' .cv-chips .fchip[data-f="gen"]').click(), card()); await wait(400);
+  const rows = await page.$$eval('#list [data-id]', e => e.map(x => x.dataset.id)); console.log('  filtro genere:', rows.join(','));
+  assert.deepStrictEqual(rows, ['r1']);
   // la scelta resta dopo la riapertura
   await page.reload({ waitUntil: 'load' }); await wait(700);
   assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.card), 'd');
