@@ -17,6 +17,18 @@ for f in FILES + MODULES:
 for d in DIRS:
     if os.path.isdir(os.path.join(APP, d)):
         shutil.rmtree(os.path.join(DST, d), ignore_errors=True); shutil.copytree(os.path.join(APP, d), os.path.join(DST, d))
+# timbro della pubblicazione: l'app di prova lo confronta con version.json e propone «Aggiorna adesso» anche a parita' di versione
+import datetime
+try:
+    from zoneinfo import ZoneInfo
+    stamp = datetime.datetime.now(ZoneInfo('Europe/Rome')).strftime('%Y-%m-%d %H:%M')
+except Exception:
+    stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M')
+a = open(os.path.join(DST, 'app.js'), encoding='utf-8').read()
+assert "var BUILD = '';" in a, 'manca var BUILD in app.js'
+open(os.path.join(DST, 'app.js'), 'w', encoding='utf-8').write(a.replace("var BUILD = '';", "var BUILD = '%s';" % stamp, 1))
+vj = json.load(open(os.path.join(DST, 'version.json'), encoding='utf-8')); vj['build'] = stamp
+json.dump(vj, open(os.path.join(DST, 'version.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 m = json.load(open(os.path.join(APP, 'manifest.json'), encoding='utf-8'))
 m.update({'name': 'Next Libris (prova)', 'short_name': 'NL prova', 'description': 'Copia di prova di Next Libris: dati separati da quelli della versione vera.', 'theme_color': '#7A3B26', 'background_color': '#7A3B26'})
 json.dump(m, open(os.path.join(DST, 'manifest.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
