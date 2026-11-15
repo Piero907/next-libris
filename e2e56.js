@@ -63,6 +63,10 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   assert(await page.evaluate(() => document.body.classList.contains('gridview') && !!document.querySelector('#list .grid')), 'copertine di predefinito');
   await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
   assert(await page.$eval('input[name="viewDef"][value="grid"]', e => e.checked));
+  // la scelta ha l'aspetto di quella del tema: due pulsanti uguali affiancati, il pallino della radio non si vede
+  const vseg = await page.evaluate(() => { const sp = [...document.querySelectorAll('.seg-view span')].map(x => x.getBoundingClientRect()), th = document.querySelector('.seg-theme span').getBoundingClientRect(); return { w: sp.map(r => Math.round(r.width)), h: Math.round(sp[0].height), th: Math.round(th.height), op: getComputedStyle(document.querySelector('.seg-view input')).opacity, bg: getComputedStyle(document.querySelector('.seg-view input:checked+span')).backgroundColor }; });
+  console.log('[vista: aspetto]', JSON.stringify(vseg)); assert(vseg.op === '0' && Math.abs(vseg.w[0] - vseg.w[1]) <= 2 && vseg.h === vseg.th && vseg.bg !== 'rgba(0, 0, 0, 0)');
+  await page.evaluate(() => document.querySelector('.seg-view').scrollIntoView({ block: 'center' })); await page.screenshot({ path: CFG.OUT + '/vista_scelta.png' });
   await page.click('input[name="viewDef"][value="list"]'); await wait(300);
   assert(await page.evaluate(() => !document.body.classList.contains('gridview') && window.__app.settings.viewDef === 'list'));
   await page.click('input[name="viewDef"][value="grid"]'); await wait(300);
