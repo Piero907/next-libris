@@ -15,7 +15,26 @@ p = os.path.join(APP, 'index.html'); s = open(p, encoding='utf-8').read()
 s2 = '\n'.join(l for l in s.split('\n') if ('src="%s.js"' % n) not in l and ('href="%s.css"' % n) not in l)
 if s2 != s: open(p, 'w', encoding='utf-8').write(s2); print('index.html: righe tolte')
 p = os.path.join(APP, 'sw.js'); s = open(p, encoding='utf-8').read()
-s2 = re.sub(r",\s*'%s\.(js|css)'" % re.escape(n), '', s)
-s2 = re.sub(r"\];[ \t]*// modulo:[^\n]*", '];', s2)
-if s2 != s: open(p, 'w', encoding='utf-8').write(s2); print('sw.js: tolto dalla lista SHELL')
+# lista SHELL: ogni modulo sta su una riga sua («'NOME.js', 'NOME.css',   // modulo: …»). Tolgo le righe del modulo
+# e risistemo la fine di ogni riga (virgola, oppure «];» sull'ultima), tenendo i commenti.
+m = re.search(r"const SHELL = \[(.*?)\];[^\n]*", s, re.S)
+if m:
+    block = m.group(0)
+    lines = block.split('\n')
+    gone = {"'%s.js'" % n, "'%s.css'" % n}
+    keep = []
+    for l in lines:
+        items = re.findall(r"'[^']*'", l.split('//')[0])
+        if items and all(i in gone for i in items): continue
+        for g in gone: l = re.sub(r",?\s*" + re.escape(g), '', l)
+        keep.append(l)
+    out = []
+    for i, l in enumerate(keep):
+        code, sep, com = l.partition('//')
+        code = code.rstrip()
+        code = re.sub(r"(\];|,)$", '', code).rstrip()
+        code += '];' if i == len(keep) - 1 else ','
+        out.append(code + ('   //' + com if sep else ''))
+    nb = '\n'.join(out)
+    if nb != block: s = s.replace(block, nb); open(p, 'w', encoding='utf-8').write(s); print('sw.js: tolto dalla lista SHELL')
 print('Fatto. Ricorda: sezione in LEGGIMI.txt, prove del modulo, poi tutte le prove.')
