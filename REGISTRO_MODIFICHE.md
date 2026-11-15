@@ -3,6 +3,9 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 89 · 15/11/2026
+- **Sostieni Next Libris:** al posto della tazzina c'è un boccale di birra disegnato a tratto, come le altre icone dell'app, in un cerchio che non viene più schiacciato. Il testo ora dice «Se ti piace, offrimi una birra!».
+
 ## Versione 88 · 14/11/2026
 - **Backup che non partiva:** se il telefono non apre la condivisione, l'app non scarica più il file in silenzio. Compare «Il backup non è partito», con «Riprova a inviarlo» (di solito al secondo tocco parte) e «Salvalo nei Download».
 - **Nome del file di backup:** «Libreria di Piero - Next Libris - 2026-11-14» (senza nome: «La mia libreria - …»).

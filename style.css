@@ -1464,3 +1464,6 @@ body.selecting .don-row,body.selecting .don-ask,body.scanning .don-row{display:n
 .scan-top .scan-ico{min-width:46px;padding:8px 10px;font-size:18px;line-height:1}
 .scan-top .scan-ico[aria-pressed="true"]{background:#fff;border-color:#fff;color:#111}
 #bkFailSheet{z-index:38}   /* sopra Esporta, da cui si apre */
+/* boccale di «Sostieni»: icona a tratto come le altre, nel cerchio (prima il cerchio veniva schiacciato) */
+.dmenu .don-menu > span.don-cup:first-child{flex:0 0 40px;width:40px;height:40px;min-width:40px;border-radius:50%;display:grid;place-items:center;background:var(--surface);color:var(--accent);font-size:0}
+.dmenu .don-menu > span.don-cup svg{display:block}
