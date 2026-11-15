@@ -10,7 +10,7 @@ nota = sys.argv[1] if len(sys.argv) > 1 else 'aggiornamento'
 FILES = ['index.html', 'app.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt', '.nojekyll', 'cloudflare-sbn-worker.js']
 DIRS = ['icons', 'vendor']
 assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository della copia di prova: ' + DST
-MODULES = ['wrap.js', 'wrap.css']        # moduli che si possono togliere (togli_modulo.py): se non ci sono piu' nell'app, spariscono anche qui
+MODULES = ['wrap.js', 'wrap.css', 'layout.js', 'layout.css']        # moduli che si possono togliere (togli_modulo.py): se non ci sono piu' nell'app, spariscono anche qui
 for f in FILES + MODULES:
     if os.path.exists(os.path.join(APP, f)): shutil.copy2(os.path.join(APP, f), os.path.join(DST, f))
     elif f in MODULES and os.path.exists(os.path.join(DST, f)): os.remove(os.path.join(DST, f))

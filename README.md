@@ -158,9 +158,10 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e62.js | 8182 | copia di prova allo stesso indirizzo di base: dati, database, copie offline ed etichetta separati dalla versione vera |
 | e2e63.js | 8183 | Suggerimenti: «Cosa leggere dopo» (seguito della serie, perché, Inizio questo, Un altro, niente prestati), riquadro in cima dopo aver finito un libro, «Da scoprire» (autori, generi, serie; italiano o tutte le lingue; + Desideri, No grazie), ricerca automatica settimanale. Google finto con intestazione CORS |
 | e2e64.js | 8184 | Modulo «Il tuo trimestre in libri» (wrap.js/wrap.css): invito nel primo mese del trimestre (orologio finto al 5/10/2026), 6 schermate a storie con i numeri, trimestre prima, immagine 1080×1350, menu, opzione in Aspetto, Esc e Indietro; tema scuro con fondo scuro; l'app senza i file del modulo funziona uguale |
+| e2e65.js | 8185 | Modulo «Disposizione dello schermo» (layout.js/layout.css): A barra in basso (Aggiungi, Per te, Menu), avvisi uno alla volta, B leggera, C pulsante tondo e scorciatoie, D tutto in basso (ultimo libro non coperto), Classico come prima, scelta salvata; senza modulo resta la classica |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8185** e poi a salire.
+Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8186** e poi a salire.
 
 ## Materiali (`img/`)
 

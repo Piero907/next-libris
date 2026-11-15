@@ -86,3 +86,18 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 92.
 - **Backup «Fai il backup e mandalo su Drive, email…»** (v88): se la condivisione non parte compare «Il backup non è partito», con il motivo tra parentesi (per esempio `NotAllowedError`). Se Piero riferisce la sigla, la causa si capisce da lì:
   - `NotAllowedError`: di solito il tocco è «scaduto» o il file non è ammesso;
   - `DataError` / `TypeError`: file troppo grande o non ammesso.
+
+---
+
+## 5. Quanti dispositivi usano l'app principale (chiesto il 15/11/2026, «per dopo»)
+
+**Domanda di Piero:** c'è un modo per capire su quanti dispositivi è installata l'app principale?
+
+**Oggi non si può:** GitHub Pages non dà statistiche e l'app non manda nulla a nessuno (tutto resta sul telefono).
+
+**Strade possibili, da proporre quando lo riprende (senza dati personali, niente email, niente libri):**
+1. **Contatore anonimo nel worker Cloudflare** che l'app usa già per SBN (`cloudflare-sbn-worker.js`): una volta al giorno l'app manda solo un numero casuale creato al primo avvio (nessun dato) e se è installata o aperta dal browser. Il worker conta i numeri diversi visti negli ultimi 30 giorni (Cloudflare KV o Durable Object). Si vede su una paginetta o in Opzioni › App. Gratis nei limiti di Cloudflare.
+2. **Servizio di statistiche rispettoso della privacy** (GoatCounter, gratuito per uso personale, o Cloudflare Web Analytics): una riga nell'`index.html`; conta visite e visitatori, non le installazioni vere.
+3. In entrambi i casi: dirlo nella guida e mettere un'opzione per spegnerlo.
+
+**Limiti:** conta i dispositivi che aprono l'app, non quelli dove è solo installata; chi la usa senza rete non viene contato; chi cancella i dati del browser viene contato di nuovo.
