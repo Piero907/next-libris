@@ -124,6 +124,8 @@ let gHits = 0;
   await click('#list .row[data-id="v1"] .sum'); await wait(100);
   await click('#list .row[data-id="v1"] .ico[data-act="loan"]'); await wait(100);
   assert.strictEqual(await txt('#loanH'), 'Presta, vendi o regala');
+  await wait(120);
+  assert(await page.evaluate(() => document.activeElement && document.activeElement.id !== 'loanWho'), 'all\'apertura «A chi» non prende il cursore (niente tastiera)');
   await click('#loanKind [data-k="v"]'); await wait(50);
   await page.screenshot({ path: CFG.OUT + '/s_kinds.png' });
   console.log('[9 venduto]', await txt('#loanH'), '|', await txt('#loanWhoL'), '|', await txt('#loanDateL'));
