@@ -54,4 +54,33 @@ const now = Date.UTC(2026, 10, 12);
 assert.strictEqual(L.agoText(0, now), 'mai');
 assert.strictEqual(L.agoText(now - 3 * 86400000, now), '3 giorni fa');
 assert.strictEqual(L.agoText(now - 21 * 86400000, now), '3 settimane fa');
+// cosa leggere dopo
+{
+  const D = 864e5, n0 = Date.UTC(2026, 10, 15);
+  const B = [
+    { id: 'r1', t: 'Uno', a: 'Rossi', rs: 'ok', rt: 5, rd: '2026-11-14', gen: 'Gialli', se: 'Saga', sn: '1', pg: '700' },
+    { id: 'r2', t: 'Altro letto', a: 'Rossi', rs: 'ok', rt: 4, rd: '2026-01-01', gen: 'Gialli' },
+    { id: 'c3', t: 'Tre', a: 'Rossi', rs: 'da', se: 'Saga', sn: '3', ts: n0 - 10 * D },
+    { id: 'c2', t: 'Due', a: 'Rossi', rs: 'da', se: 'Saga', sn: '2', ts: n0 - 10 * D },
+    { id: 'cb', t: 'Breve', a: 'Bianchi', rs: 'da', pg: '120', ts: n0 - 3 * 365 * D },
+    { id: 'cp', t: 'Prestato', a: 'Rossi', rs: 'da', p: 'Anna' },
+    { id: 'cx', t: 'Regalato', a: 'Rossi', rs: 'da', xs: 'regalato' },
+    { id: 'cw', t: 'Desiderio', a: 'Rossi', w: true },
+  ];
+  const r = L.nextReads(B, n0);
+  assert.deepStrictEqual(r.map(x => x.id).slice(0, 1), ['c2']);
+  assert(r.findIndex(x => x.id === 'c3') > r.findIndex(x => x.id === 'cb'), 'il vol. 3 non prima del 2');
+  assert(!r.some(x => /cp|cx|cw|r1/.test(x.id)));
+  assert(/seguito/.test(r[0].why[0]));
+  const cb = r.find(x => x.id === 'cb');
+  assert(cb.why.some(w => /da 3 anni/.test(w)) && cb.why.some(w => /breve \(120 pagine\)/.test(w)));
+  assert(L.nextReads([{ id: 'z', t: 'Solo', rs: 'da', ts: 0 }], n0)[0].why[0] === 'È tra i tuoi libri da leggere.');
+  assert.strictEqual(L.genreSubject('Storia'), 'history');
+  assert.strictEqual(L.genreSubject('Gialli'), 'mystery');
+  assert.strictEqual(L.genreSubject('Misteri vari'), 'Misteri vari');
+  // pickNews: senza autore (generi) e in tutte le lingue
+  const J = { items: [{ volumeInfo: { title: 'Nuovo', authors: ['X'], publishedDate: '2026', language: 'en' } }, { volumeInfo: { title: 'Nuovissimo', authors: ['Y'], publishedDate: '2026', language: 'it' } }] };
+  assert.deepStrictEqual(L.pickNews(J, '', {}, 2025, 2027).map(x => x.t), ['Nuovissimo']);
+  assert.deepStrictEqual(L.pickNews(J, '', {}, 2025, 2027, '').map(x => x.t).sort(), ['Nuovissimo', 'Nuovo']);
+}
 console.log('new OK');

@@ -156,9 +156,10 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e59.js | 8179 | backup: nome del file, «Il backup non è partito» con Riprova e Download; fotocamera della scansione: torcia e flash (luce finta via getCapabilities/applyConstraints) |
 | e2e60.js | 8180 | fotocamera del telefono: pulsante nella fotocamera dell'app e nella scansione, opzione «sempre», niente in «Ce l'ho già?» (usa `page.waitForFileChooser`) |
 | e2e62.js | 8182 | copia di prova allo stesso indirizzo di base: dati, database, copie offline ed etichetta separati dalla versione vera |
+| e2e63.js | 8183 | Suggerimenti: «Cosa leggere dopo» (seguito della serie, perché, Inizio questo, Un altro, niente prestati), riquadro in cima dopo aver finito un libro, «Da scoprire» (autori, generi, serie; italiano o tutte le lingue; + Desideri, No grazie), ricerca automatica settimanale. Google finto con intestazione CORS |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8183** e poi a salire.
+Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8184** e poi a salire.
 
 ## Materiali (`img/`)
 
