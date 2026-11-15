@@ -1,4 +1,4 @@
-# uso: python3 pubblica_prova.py "nota"
+# uso: python3 pubblica_prova.py "nota" ["altra nota" ...]   (ogni nota diventa una riga del registro della prova)
 # Copia l'app (APP_DIR, altrimenti ../next-libris) nel repository della copia di prova (PROVA_DIR, altrimenti ../next-libris-prova),
 # con il manifest da «prova» (nome, nome breve, colore), poi commit e push. La versione vera (Piero907/next-libris) non cambia.
 # Nel codice la copia di prova si riconosce dall'indirizzo (…/next-libris-prova/): dati, foto e copie offline con nomi suoi.
@@ -6,7 +6,8 @@ import os, sys, json, shutil, subprocess
 here = os.path.dirname(os.path.abspath(__file__))
 APP = os.path.abspath(os.environ.get('APP_DIR') or os.path.join(here, '..', 'next-libris'))
 DST = os.path.abspath(os.environ.get('PROVA_DIR') or os.path.join(here, '..', 'next-libris-prova'))
-nota = sys.argv[1] if len(sys.argv) > 1 else 'aggiornamento'
+note = [a.strip() for a in sys.argv[1:] if a.strip()] or ['aggiornamento']
+nota = note[0]
 FILES = ['index.html', 'app.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt', '.nojekyll', 'cloudflare-sbn-worker.js']
 DIRS = ['icons', 'vendor']
 assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository della copia di prova: ' + DST
@@ -24,17 +25,32 @@ try:
     stamp = datetime.datetime.now(ZoneInfo('Europe/Rome')).strftime('%Y-%m-%d %H:%M')
 except Exception:
     stamp = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M')
+# registro della copia di prova (REGISTRO_PROVA.md, solo nel repository della prova): numero «versione.n» che avanza a ogni pubblicazione
+import re
+ver = json.load(open(os.path.join(APP, 'version.json'), encoding='utf-8')).get('v')
+rp = os.path.join(DST, 'REGISTRO_PROVA.md')
+reg = open(rp, encoding='utf-8').read() if os.path.exists(rp) else ("# Registro della copia di prova\n\nLe modifiche pubblicate nella copia di prova, dalla piu' recente. "
+    "Quando vanno bene passano nella versione vera e finiscono nel suo registro (REGISTRO_MODIFICHE.md).\n")
+last = re.search(r"^## Prova (\d+)\.(\d+)", reg, re.M)
+n = int(last.group(2)) + 1 if last and int(last.group(1)) == int(ver) else 1
+num = '%s.%d' % (ver, n)
+when = '%s/%s/%s %s' % (stamp[8:10], stamp[5:7], stamp[0:4], stamp[11:16])
+entry = '## Prova %s · %s\n' % (num, when) + ''.join('- %s\n' % x for x in note) + '\n'
+i = reg.find('\n## ')
+reg = reg.rstrip('\n') + '\n\n' + entry if i < 0 else reg[:i + 1] + entry + reg[i + 1:]
+open(rp, 'w', encoding='utf-8').write(reg)
 a = open(os.path.join(DST, 'app.js'), encoding='utf-8').read()
-assert "var BUILD = '';" in a, 'manca var BUILD in app.js'
-open(os.path.join(DST, 'app.js'), 'w', encoding='utf-8').write(a.replace("var BUILD = '';", "var BUILD = '%s';" % stamp, 1))
-vj = json.load(open(os.path.join(DST, 'version.json'), encoding='utf-8')); vj['build'] = stamp
+ph = "var BUILD = { t: '', n: '', note: '' };"
+assert ph in a, 'manca var BUILD in app.js'
+open(os.path.join(DST, 'app.js'), 'w', encoding='utf-8').write(a.replace(ph, 'var BUILD = ' + json.dumps({'t': stamp, 'n': num, 'note': nota}, ensure_ascii=False) + ';', 1))
+vj = json.load(open(os.path.join(DST, 'version.json'), encoding='utf-8')); vj['build'] = stamp; vj['prova'] = num
 json.dump(vj, open(os.path.join(DST, 'version.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 m = json.load(open(os.path.join(APP, 'manifest.json'), encoding='utf-8'))
 m.update({'name': 'Next Libris (prova)', 'short_name': 'NL prova', 'description': 'Copia di prova di Next Libris: dati separati da quelli della versione vera.', 'theme_color': '#7A3B26', 'background_color': '#7A3B26'})
 json.dump(m, open(os.path.join(DST, 'manifest.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
 open(os.path.join(DST, 'LEGGIMI-PROVA.txt'), 'w', encoding='utf-8').write('Copia di PROVA di Next Libris, per provare le novita\' prima di portarle nella versione vera\n(https://piero907.github.io/next-libris/). Ha dati tutti suoi: i libri messi qui non compaiono nella versione vera.\n')
 v = json.load(open(os.path.join(APP, 'version.json'), encoding='utf-8'))
-msg = 'Prova: versione %s, %s' % (v.get('v') or v.get('version') or '?', nota)
+msg = 'Prova %s: %s' % (num, '; '.join(note))
 att = os.environ.get('ATTRIBUZIONE', '')
 subprocess.run(['git', '-C', DST, 'add', '-A'], check=True)
 if subprocess.run(['git', '-C', DST, 'diff', '--cached', '--quiet']).returncode == 0: print('niente da pubblicare'); sys.exit(0)

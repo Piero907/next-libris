@@ -13,10 +13,11 @@ const server = http.createServer((req, res) => {
   if (!m) { res.writeHead(404); return res.end(); }
   if (!m[2]) { res.writeHead(301, { Location: p + '/' }); return res.end(); }
   let rel = m[2] === '/' ? '/index.html' : m[2];
+  if (m[1] === 'next-libris-prova' && rel === '/REGISTRO_PROVA.md') { res.writeHead(200, { 'Content-Type': 'text/markdown; charset=utf-8' }); return res.end('# Registro della copia di prova\n\nIntro.\n\n## Prova 94.8 · 15/11/2026 20:00\n- **4 avvisi di prova**\n\n## Prova 94.7 · 15/11/2026 19:00\n- Copertine ed Elenco\n'); }
   const f = path.join(ROOT, rel); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
   // nella prova, come fa pubblica_prova.py: app.js col suo timbro, version.json con quello pubblicato adesso
-  if (m[1] === 'next-libris-prova' && rel === '/app.js') { res.writeHead(200, { 'Content-Type': 'text/javascript', 'Cache-Control': 'no-cache' }); return res.end(fs.readFileSync(f, 'utf8').replace("var BUILD = '';", "var BUILD = '" + appBuild + "';")); }
-  if (m[1] === 'next-libris-prova' && rel === '/version.json') { const j = JSON.parse(fs.readFileSync(f, 'utf8')); j.build = siteBuild; res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(j)); }
+  if (m[1] === 'next-libris-prova' && rel === '/app.js') { res.writeHead(200, { 'Content-Type': 'text/javascript', 'Cache-Control': 'no-cache' }); return res.end(fs.readFileSync(f, 'utf8').replace("var BUILD = { t: '', n: '', note: '' };", 'var BUILD = ' + JSON.stringify({ t: appBuild, n: '94.8', note: 'avvisi di prova' }) + ';')); }
+  if (m[1] === 'next-libris-prova' && rel === '/version.json') { const j = JSON.parse(fs.readFileSync(f, 'utf8')); j.build = siteBuild; j.prova = siteBuild === appBuild ? '94.8' : '94.9'; res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(j)); }
   res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' }); fs.createReadStream(f).pipe(res);
 }).listen(CFG.port(8182));
 (async () => {
@@ -61,10 +62,17 @@ const server = http.createServer((req, res) => {
   siteBuild = '2026-11-15 22:05';
   await page.goto(provaUrl, { waitUntil: 'load' }); await wait(3200);
   nt = await page.evaluate(() => { const n = document.querySelector('#notice'); return n.hidden ? '' : n.innerText; }); console.log('[timbro nuovo]', nt.replace(/\s+/g, ' '));
-  assert(/aggiornamento della copia di prova \(del 15\/11 alle 22:05\)/.test(nt) && /Aggiorna adesso/.test(nt));
+  assert(/aggiornamento della copia di prova \(94\.9, del 15\/11 alle 22:05\)/.test(nt) && /Aggiorna adesso/.test(nt));
   await page.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
   const vd = await page.$eval('#verDate', e => e.textContent), vs = await page.$eval('#verState', e => e.textContent); console.log('[menu]', vd, '|', vs);
-  assert(/prova del 15\/11 alle 20:00/.test(vd) && /aggiornamento della prova/.test(vs) && await page.$eval('#verUpdate', e => !e.hidden));
+  assert(/prova 94\.8 del 15\/11 alle 20:00/.test(vd) && /aggiornamento della prova \(94\.9/.test(vs) && await page.$eval('#verUpdate', e => !e.hidden));
+  assert(/Ultime novità della prova: avvisi di prova/.test(await page.$eval('#verNote', e => e.textContent)));
+  // il registro della prova sopra quello della versione vera, con «questa» sulla prova in uso
+  await page.click('#verLog'); await wait(700);
+  const lg = await page.evaluate(() => ({ parts: [...document.querySelectorAll('#logBody .log-part')].map(e => e.textContent), cur: document.querySelector('#logBody .log-v.cur h3').textContent, first: document.querySelector('#logBody .log-v h3').textContent }));
+  console.log('[registro prova]', JSON.stringify(lg));
+  assert.deepStrictEqual(lg.parts, ['Copia di prova', 'Versione vera']); assert(/^Prova 94\.8/.test(lg.cur) && /questa/.test(lg.cur) && /^Prova 94\.8/.test(lg.first));
+  await page.click('#logClose'); await wait(300);
   await page.evaluate(() => window.__app.closeDrawer()); await wait(300);
   await page.goto('http://localhost:' + CFG.port(8182) + '/next-libris/?vista=elenco', { waitUntil: 'load' }); await wait(3200);
   nt = await page.evaluate(() => { const n = document.querySelector('#notice'); return n.hidden ? '' : n.innerText; });
