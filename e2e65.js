@@ -9,7 +9,7 @@ const assert = require('assert');
 const ROOT = CFG.APP;
 let noMod = false;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; if (noMod && /^\/layout\./.test(p)) { res.writeHead(404); return res.end(); } const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8185);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; if (noMod && /^\/layout\./.test(p)) { res.writeHead(404); return res.end(); } const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8185));
 const today = new Date().toISOString().slice(0, 10);
 const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro numero ' + i, a: 'Autore ' + (i % 4), c: 10, ts: Date.now() - i * 864e5, rs: i === 0 ? 'ok' : 'da', rd: i === 0 ? today : '', gen: 'Romanzo', pg: String(200 + i * 10), p: i === 3 ? 'Anna' : '', pd: i === 3 ? today : '', xs: i === 13 ? 'v' : '', qs: i === 1 ? [{ x: 'Una citazione', pg: '', d: Date.now(), phs: [] }] : [] }));
 (async () => {
@@ -18,7 +18,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  await page.goto('http://localhost:8185/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8185) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'Piero', selTip: 1, lastBackup: Date.now(), donOpens: 9, donUntil: 0 })); localStorage.setItem('catalogo-libri-layout', JSON.stringify({ v: 'a' })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(900);
   // i tasti veri vengono intercettati: basta sapere che il modulo li ha premuti
@@ -117,7 +117,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   // senza modulo: classica
   noMod = true;
   const ctx2 = await browser.createBrowserContext(); const p2 = await ctx2.newPage(); const err2 = []; p2.on('pageerror', e => err2.push(e.message));
-  await p2.goto('http://localhost:8185/', { waitUntil: 'load' }); await wait(700);
+  await p2.goto('http://localhost:' + CFG.port(8185) + '/', { waitUntil: 'load' }); await wait(700);
   const st2 = await p2.evaluate(() => ({ lay: document.documentElement.dataset.layout || '', nav: !!document.getElementById('layNav'), stats: getComputedStyle(document.querySelector('#btnStats')).display }));
   console.log('[senza modulo]', JSON.stringify(st2)); assert(!st2.lay && !st2.nav && st2.stats !== 'none'); assert.deepStrictEqual(err2, []);
   console.log('e2e65 OK'); await browser.close(); server.close();

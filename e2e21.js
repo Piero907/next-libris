@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8129);
+}).listen(CFG.port(8129));
 const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors: [a], publisher: pub, publishedDate: '2012', language: lang, industryIdentifiers: isbn ? [{ type: 'ISBN_13', identifier: isbn }] : [], imageLinks: { thumbnail: 'https://books.google.com/x' + id } } });
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -23,7 +23,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();
-    if (u.startsWith('http://localhost:8129')) return req.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8129) + '')) return req.continue();
     const j = (o) => req.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
     if (u.includes('googleapis.com/books/v1/volumes?')) {
       const qq = decodeURIComponent(u.match(/q=([^&]*)/)[1]); queries.push(qq);
@@ -34,7 +34,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
     if (u.includes('books.google.com/x')) return req.respond({ status: 404, body: '' });
     req.abort();
   });
-  const resp = await page.goto('http://localhost:8129/?vista=elenco', { waitUntil: 'load' }); console.log('[goto]', resp && resp.status(), resp && resp.url());
+  const resp = await page.goto('http://localhost:' + CFG.port(8129) + '/?vista=elenco', { waitUntil: 'load' }); console.log('[goto]', resp && resp.status(), resp && resp.url());
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const books = () => page.evaluate(() => JSON.parse(JSON.stringify(window.__app.state.books)));
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());

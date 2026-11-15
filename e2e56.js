@@ -6,7 +6,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8176);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8176));
 const SH = ['Studio', 'Sala', 'Camera', 'Corridoio', 'Cantina', 'Soffitta', 'Ufficio', 'Cucina', 'Bagno', 'Ingresso', 'Garage', 'Terrazzo'];
 const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' + i, a: 'Autore ' + (i % 3), ts: 100 + i, sh: SH[i % SH.length], gen: i % 2 ? 'Romanzo' : 'Saggio', rs: i < 4 ? 'ok' : 'da', fav: i === 1, p: i < 2 ? 'Anna' : '', pd: i < 2 ? '2026-10-01' : '', img: '' }));
 (async () => {
@@ -15,7 +15,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  await page.goto('http://localhost:8176/', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8176) + '/', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: Date.now() })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-(v2|set)$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(700);
   const st = () => page.evaluate(() => ({ open: document.body.classList.contains('drawer-open'), h: document.querySelector('#drawerH').textContent, home: !document.querySelector('#drawerOpts').hidden, flt: !document.querySelector('#drawerFilters').hidden, back: !document.querySelector('#drawerBack').hidden, w: Math.round(document.querySelector('#drawer').getBoundingClientRect().width) }));

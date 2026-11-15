@@ -5,7 +5,7 @@ const ROOT = CFG.APP;
 let fakeVer = null;
 const server = http.createServer((q, s) => { let p = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (p.endsWith('/')) p += 'index.html';
   if (fakeVer && q.url.startsWith('/version.json')) { s.writeHead(200, { 'Content-Type': 'application/json' }); return s.end(JSON.stringify(fakeVer)); }
-  fs.readFile(p, (e, d) => { if (e) { s.writeHead(404); return s.end(); } const ext = path.extname(p); s.writeHead(200, { 'Content-Type': ext === '.js' ? 'text/javascript' : ext === '.css' ? 'text/css' : ext === '.html' ? 'text/html' : ext === '.json' ? 'application/json' : 'application/octet-stream' }); s.end(d); }); }).listen(8148);
+  fs.readFile(p, (e, d) => { if (e) { s.writeHead(404); return s.end(); } const ext = path.extname(p); s.writeHead(200, { 'Content-Type': ext === '.js' ? 'text/javascript' : ext === '.css' ? 'text/css' : ext === '.html' ? 'text/html' : ext === '.json' ? 'application/json' : 'application/octet-stream' }); s.end(d); }); }).listen(CFG.port(8148));
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
@@ -13,7 +13,7 @@ const server = http.createServer((q, s) => { let p = path.join(ROOT, decodeURICo
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.evaluateOnNewDocument(() => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!localStorage.getItem('catalogo-libri-set')) localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), swiped: true })); });
-  await page.goto('http://localhost:8148/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8148) + '/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());
   await wait(3200);

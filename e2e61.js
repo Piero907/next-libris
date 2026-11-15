@@ -6,7 +6,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip', '.wasm': 'application/wasm' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8181);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8181));
 // tre obiettivi finti sopra la fotocamera finta di Chrome: anteriore, posteriore grandangolare (senza luce), posteriore principale.
 // modi: ok, none (nessuna luce), dead (luce che resta spenta e lo dice), lie (dice accesa ma non si vede, come il Galaxy A32)
 function stub(mode) {
@@ -40,7 +40,7 @@ function stub(mode) {
     page.on('pageerror', e => errors.push(mode + ': ' + e.message));
     await page.evaluateOnNewDocument(stub, mode);
     await page.evaluateOnNewDocument(() => { if (!localStorage.getItem('catalogo-libri-set')) localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), price: false })); });
-    await page.goto('http://localhost:8181/?vista=elenco', { waitUntil: 'load' }); await wait(500);
+    await page.goto('http://localhost:' + CFG.port(8181) + '/?vista=elenco', { waitUntil: 'load' }); await wait(500);
     return { ctx, page };
   }
   async function snapOpen(page) {

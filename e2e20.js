@@ -2,7 +2,7 @@ const CFG = require("./_config");
 const puppeteer = require('puppeteer-core'); const http = require('http'), fs = require('fs'), path = require('path');
 const ROOT = CFG.APP;
 const server = http.createServer((q, s) => { let p = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (p.endsWith('/')) p += 'index.html';
-  fs.readFile(p, (e, d) => { if (e) { s.writeHead(404); return s.end(); } const ext = path.extname(p); s.writeHead(200, { 'Content-Type': ext === '.js' ? 'text/javascript' : ext === '.css' ? 'text/css' : ext === '.html' ? 'text/html' : ext === '.json' ? 'application/json' : 'application/octet-stream' }); s.end(d); }); }).listen(8149);
+  fs.readFile(p, (e, d) => { if (e) { s.writeHead(404); return s.end(); } const ext = path.extname(p); s.writeHead(200, { 'Content-Type': ext === '.js' ? 'text/javascript' : ext === '.css' ? 'text/css' : ext === '.html' ? 'text/html' : ext === '.json' ? 'application/json' : 'application/octet-stream' }); s.end(d); }); }).listen(CFG.port(8149));
 const B = o => Object.assign({ id: 'x', t: '', a: '', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: 1, sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: false, rs: '', rt: 0, rd: '' }, o);
 const books = [];
 const T = [['Il nome della rosa','Umberto Eco','Studio','Narrativa','ok'],['Lessico famigliare','Natalia Ginzburg','Studio','Narrativa','da'],['La storia','Elsa Morante','Camera','Narrativa','in'],['Se questo è un uomo','Primo Levi','Soggiorno','Memorie','ok'],['Il Gattopardo','Giuseppe Tomasi di Lampedusa','Soggiorno','Narrativa','da'],['Le città invisibili','Italo Calvino','Camera','Narrativa',''],['Storia d\'Italia','Indro Montanelli','Studio','Storia','da'],['Breve storia del tempo','Stephen Hawking','Studio','Scienza','']];
@@ -18,7 +18,7 @@ for (let k = 0; k < 14; k++) books.push(B({ id: 'x' + k, t: 'Libro di prova ' + 
   page.on('request', r => r.url().startsWith('http://localhost') ? r.continue() : r.abort());
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), swiped: true, price: false })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8149/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8149) + '/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const st = () => page.evaluate(() => { const s = document.querySelector('#stick'); return { top: Math.round(s.getBoundingClientRect().top), pos: getComputedStyle(s).position, stuck: s.classList.contains('stuck'), tip: getComputedStyle(document.querySelector('.tip')).display, h: getComputedStyle(document.documentElement).getPropertyValue('--stick-h') }; });
   await wait(400);

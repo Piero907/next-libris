@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8124);
+}).listen(CFG.port(8124));
 const ISBN = fs.readFileSync(IMG + '/isbn.txt', 'utf8').trim();
 const gItem = (id, t, a, e, y, lang, isbn) => ({ id, volumeInfo: { title: t, authors: [a], publisher: e, publishedDate: y, language: lang, industryIdentifiers: isbn ? [{ type: 'ISBN_13', identifier: isbn }] : [], imageLinks: { thumbnail: 'http://books.google.com/t/' + id + '.png' } } });
 const png1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAf9JkWQAAAABJRU5ErkJggg==', 'base64');
@@ -30,7 +30,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();
-    if (u.startsWith('http://localhost:8124')) return req.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8124) + '')) return req.continue();
     const json = (o, status = 200) => req.respond({ status, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
     if (u.includes('googleapis.com/books/v1/volumes')) {
       if (mode === 'fail') return json({ error: 'x' }, 500);
@@ -43,7 +43,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8124/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
+  await page.goto('http://localhost:' + CFG.port(8124) + '/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
   await page.evaluate(() => { window.__app.settings.price = false; });   // la domanda sul prezzo ha il suo test (e2e5)
   const first = () => page.evaluate(() => { const b = window.__app.state.books[0]; if (!b) return null; const s = window.__app.S[b.id] || {}; return { t: b.t, a: b.a, e: b.e, y: b.y, i: b.i, g: b.g, st: s.st, err: s.err, retry: s.retry, nc: (s.cands || []).length, lines: (s.lines || []).map(l => l.text) }; });
   const reset = () => page.evaluate(() => { window.__app.state.books.length = 0; for (const k in window.__app.S) delete window.__app.S[k]; });

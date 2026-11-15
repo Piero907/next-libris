@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   const ext = path.extname(f); res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[ext]) || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8123);
+}).listen(CFG.port(8123));
 
 const ISBN = fs.readFileSync(IMG + '/isbn.txt', 'utf8').trim();
 const gItem = (id, t, a, e, y, lang, isbn) => ({ id, volumeInfo: { title: t, authors: [a], publisher: e, publishedDate: y, language: lang, industryIdentifiers: isbn ? [{ type: 'ISBN_13', identifier: isbn }] : [], imageLinks: { thumbnail: 'http://books.google.com/t/' + id + '.png' } } });
@@ -28,7 +28,7 @@ const netlog = [];
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();
-    if (u.startsWith('http://localhost:8123')) return req.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8123) + '')) return req.continue();
     netlog.push(u.slice(0, 120));
     const json = (o) => req.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
     if (u.includes('googleapis.com/books/v1/volumes')) {
@@ -50,7 +50,7 @@ const netlog = [];
     req.abort();
   });
   const T0 = Date.now(); const t = () => ((Date.now() - T0) / 1000).toFixed(1) + 's';
-  await page.goto('http://localhost:8123/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8123) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(() => { window.__app.settings.price = false; });   // la domanda sul prezzo ha il suo test (e2e5)
   await new Promise(r => setTimeout(r, 500));
   console.log('[load] summary:', await page.$eval('#summary', e => e.textContent), '| empty state:', !!(await page.$('.empty')));

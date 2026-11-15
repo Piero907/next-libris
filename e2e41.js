@@ -5,7 +5,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP, IMG = CFG.IMG;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.gz': 'application/gzip' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8159);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8159));
 const json = o => ({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
 const G = { '9788845292613': ['Il nome della rosa', 'Umberto Eco'], '9788806219352': ['La storia', 'Elsa Morante'], '9788804668015': ['Le città invisibili', 'Italo Calvino'] };
 (async () => {
@@ -23,7 +23,7 @@ const G = { '9788845292613': ['Il nome della rosa', 'Umberto Eco'], '97888062193
     r.abort(); });
   await page.evaluateOnNewDocument(() => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: [], updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1 })); sessionStorage.seeded = 1; } });
-  await page.goto('http://localhost:8159/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8159) + '/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await wait(1200);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);

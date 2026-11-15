@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8130);
+}).listen(CFG.port(8130));
 const ANDROID = 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36';
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1';
 const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.0.0 Mobile Safari/537.36 Instagram 300.0';
@@ -32,8 +32,8 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
     await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     page.errors = []; page.on('pageerror', e => page.errors.push(e.message));
     await page.setRequestInterception(true);
-    page.on('request', req => req.url().startsWith('http://localhost:8130') ? req.continue() : req.abort());
-    await page.goto('http://localhost:8130/?vista=elenco', { waitUntil: 'load' }); await wait(400);
+    page.on('request', req => req.url().startsWith('http://localhost:' + CFG.port(8130) + '') ? req.continue() : req.abort());
+    await page.goto('http://localhost:' + CFG.port(8130) + '/?vista=elenco', { waitUntil: 'load' }); await wait(400);
     return page;
   }
   const hidden = (page, sel) => page.$eval(sel, e => e.hidden);
@@ -53,7 +53,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   // il tasto Indietro chiude il foglio
   await p.goBack(); await wait(150);
   assert(await hidden(p, '#instSheet'), 'Indietro chiude il foglio');
-  assert.strictEqual(p.url(), 'http://localhost:8130/?vista=elenco');
+  assert.strictEqual(p.url(), 'http://localhost:' + CFG.port(8130) + '/?vista=elenco');
 
   // 2) Chrome offre l'installazione: «Installa» apre la sua richiesta; accettata -> scheda via per sempre
   await p.evaluate(() => {
@@ -94,7 +94,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   assert(await hidden(p, '#optSheet'), 'il foglio prende il posto delle Opzioni');
   await p.click('#instOk'); await wait(150);
   assert(await hidden(p, '#instSheet'));
-  assert.strictEqual(p.url(), 'http://localhost:8130/?vista=elenco');
+  assert.strictEqual(p.url(), 'http://localhost:' + CFG.port(8130) + '/?vista=elenco');
   // «Non trovi la voce?» porta al controllo del telefono in Opzioni › App
   await p.click('#instGo'); await wait(150);
   await p.click('#instWhy'); await wait(400);
@@ -102,7 +102,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   assert.strictEqual(await txt(p, '#optH'), 'App');
   await p.goBack(); await wait(200);
   assert(await hidden(p, '#optSheet'), 'Indietro chiude le Opzioni');
-  assert.strictEqual(p.url(), 'http://localhost:8130/?vista=elenco');
+  assert.strictEqual(p.url(), 'http://localhost:' + CFG.port(8130) + '/?vista=elenco');
   await p.browserContext().close();
 
   // 4) app installata (finestra autonoma): niente scheda, segna «installata»

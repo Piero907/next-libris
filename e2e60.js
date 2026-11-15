@@ -5,7 +5,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip', '.wasm': 'application/wasm' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8180);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8180));
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + CFG.IMG + '/blank.mjpeg'] });
   const page = await browser.newPage();
@@ -13,9 +13,9 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.setRequestInterception(true);
-  page.on('request', r => r.url().startsWith('http://localhost:8180') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
+  page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8180) + '') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
   await page.evaluateOnNewDocument(() => { if (!localStorage.getItem('catalogo-libri-set')) localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), price: false })); });
-  await page.goto('http://localhost:8180/?vista=elenco', { waitUntil: 'load' }); await wait(600);
+  await page.goto('http://localhost:' + CFG.port(8180) + '/?vista=elenco', { waitUntil: 'load' }); await wait(600);
   const n = () => page.evaluate(() => window.__app.state.books.length);
   const vis = sel => page.$eval(sel, e => !e.hidden);
   // 1) Foto › Scatta: fotocamera dell'app, poi «Usa la fotocamera del telefono» -> la stessa foto arriva dal telefono

@@ -5,7 +5,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; if (p === '/vuota') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<!doctype html><title>vuota</title>'); } const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' }); fs.createReadStream(f).pipe(res); }).listen(8171);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; if (p === '/vuota') { res.writeHead(200, { 'Content-Type': 'text/html' }); return res.end('<!doctype html><title>vuota</title>'); } const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8171));
 const books = n => Array.from({ length: n }, (_, i) => ({ id: 'b' + i, t: 'Libro ' + i, a: 'Autore', ts: 1000 + i }));
 const DAY = 864e5;
 (async () => {
@@ -16,7 +16,7 @@ const DAY = 864e5;
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const base = { lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1, donOpens: 10 };
   async function load(nBooks, set) {
-    await page.goto('http://localhost:8171/?vista=elenco', { waitUntil: 'load' });
+    await page.goto('http://localhost:' + CFG.port(8171) + '/?vista=elenco', { waitUntil: 'load' });
     await page.evaluate((b, s) => { localStorage.clear(); localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify(s)); const o = Storage.prototype.setItem; Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-(v2|set)$/.test(k)) return; return o.call(this, k, v); }; }, books(nBooks), Object.assign({}, base, set || {}));
     await page.reload({ waitUntil: 'load' }); await wait(900);   // all'uscita la pagina vecchia non puo' piu' salvare sopra i dati preparati
   }

@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8128);
+}).listen(CFG.port(8128));
 const mk = (body12) => { let sum = 0; for (let i = 0; i < 12; i++) sum += (+body12[i]) * (i % 2 ? 3 : 1); return body12 + ((10 - sum % 10) % 10); };
 const ROSA = '9788806219352';
 const PUB = { [ROSA]: 'Bompiani' };
@@ -31,7 +31,7 @@ let noExtra = new Set();
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();
-    if (u.startsWith('http://localhost:8128')) return req.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8128) + '')) return req.continue();
     const j = (o, s = 200) => req.respond({ status: s, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
     if (u.includes('googleapis.com/books')) {
       const isbn = (decodeURIComponent(u).match(/97[89]\d{10}/) || [])[0];
@@ -45,7 +45,7 @@ let noExtra = new Set();
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8128/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8128) + '/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const books = () => page.evaluate(() => window.__app.state.books.map(b => ({ i: b.i, t: b.t, e: b.e, w: b.w, p: b.p, pd: b.pd, sh: b.sh, gen: b.gen, pg: b.pg, n: b.n, g: b.g })));
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);

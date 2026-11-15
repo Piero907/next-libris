@@ -6,7 +6,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8179);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8179));
 const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + i, a: 'Autore', ts: 10 + i }));
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + CFG.IMG + '/blank.mjpeg'] });
@@ -15,7 +15,7 @@ const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + 
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.setRequestInterception(true);
-  page.on('request', r => r.url().startsWith('http://localhost:8179') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
+  page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8179) + '') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
   await page.evaluateOnNewDocument(() => {
     // condivisione finta: canShare accetta solo .txt (come Chrome su Android); share segue window.__shareMode
     window.__shared = []; window.__shareMode = 'fail'; window.__dl = [];
@@ -28,7 +28,7 @@ const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + 
     const ac = MediaStreamTrack.prototype.applyConstraints;
     MediaStreamTrack.prototype.applyConstraints = function (c) { const a = c && c.advanced && c.advanced[0]; if (a && 'torch' in a) { window.__torch.push(a.torch); return Promise.resolve(); } return ac.call(this, c); };
   });
-  await page.goto('http://localhost:8179/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8179) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'Piero', selTip: 1, lastBackup: 1, price: false })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-(v2|set)$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(600);
   const today = await page.evaluate(() => { const d = new Date(), p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); });

@@ -4,7 +4,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8135);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8135));
 const W1 = 'https://sbn-libri.piero.workers.dev', W0 = 'https://vecchio.piero.workers.dev', K1 = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQrStUvW';
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -15,8 +15,8 @@ const W1 = 'https://sbn-libri.piero.workers.dev', W0 = 'https://vecchio.piero.wo
     await p.evaluateOnNewDocument(s => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true); if (s && !localStorage.getItem('catalogo-libri-set')) localStorage.setItem('catalogo-libri-set', JSON.stringify(s)); }, set);
     await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     p.errors = []; p.on('pageerror', e => p.errors.push(e.message));
-    await p.setRequestInterception(true); p.on('request', r => r.url().startsWith('http://localhost:8135') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }));
-    await p.goto('http://localhost:8135/?vista=elenco', { waitUntil: 'load' }); await wait(400);
+    await p.setRequestInterception(true); p.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8135) + '') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }));
+    await p.goto('http://localhost:' + CFG.port(8135) + '/?vista=elenco', { waitUntil: 'load' }); await wait(400);
     return p;
   }
   const look = p => p.evaluate(() => [document.documentElement.getAttribute('data-theme'), getComputedStyle(document.body).backgroundColor, JSON.parse(localStorage.getItem('catalogo-libri-set')).theme]);

@@ -6,7 +6,7 @@ const ROOT = CFG.APP, IMG = CFG.IMG;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.gz': 'application/gzip' };
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
   const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
-  res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8134);
+  res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8134));
 const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: Date.now(), sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: false }, o);
 const gimg = (id, z) => 'https://books.google.com/books/content?id=' + id + '&printsec=frontcover&img=1&zoom=' + z + '&source=gbs_api';
 const books = [
@@ -39,7 +39,7 @@ let apiCalls = [];
     r.abort(); });
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), price: false })); sessionStorage.seeded = 1; } }, books);
-  await page.goto('http://localhost:8134/?vista=elenco', { waitUntil: 'networkidle0' });
+  await page.goto('http://localhost:' + CFG.port(8134) + '/?vista=elenco', { waitUntil: 'networkidle0' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const lb = () => page.evaluate(() => ({ open: !document.querySelector('#lightbox').hidden, src: (document.querySelector('#lbImg').getAttribute('src') || '').slice(0, 100), w: document.querySelector('#lbImg').naturalWidth, note: document.querySelector('#lbNote').textContent, photo: document.querySelector('#lbPhoto').textContent, reset: document.querySelector('#lbReset').hidden ? '' : document.querySelector('#lbReset').textContent }));
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);

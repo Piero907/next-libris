@@ -5,7 +5,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8147);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8147));
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -17,8 +17,8 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
     }, standalone, theme || 'light');
     await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     p.errors = []; p.on('pageerror', e => p.errors.push(e.message));
-    await p.setRequestInterception(true); p.on('request', r => r.url().startsWith('http://localhost:8147') ? r.continue() : r.abort());
-    await p.goto('http://localhost:8147/?vista=elenco', { waitUntil: 'domcontentloaded' });
+    await p.setRequestInterception(true); p.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8147) + '') ? r.continue() : r.abort());
+    await p.goto('http://localhost:' + CFG.port(8147) + '/?vista=elenco', { waitUntil: 'domcontentloaded' });
     return p;
   }
   let p = await open(true);

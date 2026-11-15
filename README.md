@@ -36,13 +36,20 @@ Variabili d'ambiente facoltative:
 ## Eseguire le prove
 
 ```bash
-node esegui.js                    # tutte, una dopo l'altra (circa 10-12 minuti)
+node esegui.js                    # tutte, due alla volta (circa 9 minuti); prima della versione vera
+node esegui.js --veloce e2e65     # libreria + gruppo di controllo + quelle indicate (circa 1-2 minuti); prima della copia di prova
 node esegui.js e2e53 e2e52        # solo alcune
+node esegui.js --paralleli=1      # una alla volta, come prima (circa 14 minuti)
 node esegui.js --solo-unita       # solo le prove della libreria lib.js (pochi secondi)
 APP_DIR=/percorso/copia node esegui.js
 ```
 
-`esegui.js` stampa `OK`/`FAIL` per ogni prova e il tempo impiegato. Il resoconto completo di ogni prova va in `<PROVE_OUT>/log/<nome>.log`, e alla fine elenca quelle fallite. Si può anche lanciare una prova da sola con `node e2e53.js`.
+`esegui.js` stampa `OK`/`FAIL` per ogni prova e il tempo impiegato. Il resoconto completo di ogni prova va in `<PROVE_OUT>/log/<nome>.log`, e alla fine elenca quelle fallite.
+
+- **Due alla volta:** le prove nel browser girano a coppie (`--paralleli=N` per cambiare). La seconda della coppia usa le porte spostate di 1000 (`PROVE_SLOT=1`, vedi `CFG.port`).
+- **Da sole:** le prove sensibili ai tempi (elenco `DA_SOLE` in `esegui.js`: e2e8, 30, 35, 37, 40, 42, 43, 44, 55) girano da sole, alla fine.
+- **Ripetizione:** una prova fallita viene ripetuta una volta, da sola; se passa, conta come superata e il riepilogo lo dice («Passate alla seconda»). Se fallisce di nuovo, è un errore da guardare.
+- **`--veloce`:** prove della libreria + gruppo di controllo `FUMO` (e2e, 5, 6, 7, 10, 15, 56, 62: aggiunta dei libri, schede, prestiti ed esportazione, menu e opzioni, copia di prova) + le prove indicate (quelle della parte toccata). Si può anche lanciare una prova da sola con `node e2e53.js`.
 
 **Prove sensibili ai tempi.** e2e8, e2e35, e2e40, e2e42 e e2e44 ogni tanto falliscono per lentezza della macchina (fotocamera finta, pressione lunga, caricamento delle immagini). Se una di queste fallisce, prima di cercare un errore va ripetuta da sola. Un vero errore si ripete sempre.
 
@@ -61,10 +68,10 @@ APP_DIR=/percorso/copia node esegui.js
 ## Flusso di lavoro per ogni nuova versione
 
 1. Modificare i file dell'app (`app.js`, `index.html`, `style.css`, `lib.js`, `sw.js`…) in una copia di lavoro.
-2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera dopo 8182) e una riga di commento iniziale che dica cosa prova.
+2. Scrivere o aggiornare una prova `e2eNN.js` per la novità: nuovo numero, nuova porta (la prossima libera, vedi in fondo; scritta come `.listen(CFG.port(NNNN))` e `'http://localhost:' + CFG.port(NNNN) + '/…'`) e una riga di commento iniziale che dica cosa prova.
 3. Aggiornare `REGISTRO_MODIFICHE.md` (nuova voce `## Versione N · gg/mm/aaaa` in cima) e, se serve, `LEGGIMI.txt`.
 4. Alzare la versione: `python3 nuova_versione.py N "breve nota"`. Cambia insieme `APP_VERSION` in `app.js`, `version.json` e il nome della cache in `sw.js` (`catalogo-libri-vN`).
-5. Far girare **tutte** le prove (`node esegui.js`). Se un cambiamento voluto rompe una prova vecchia, si aggiorna la prova e lo si dice.
+5. Prove: per la **copia di prova** basta `node esegui.js --veloce eNN …` con le prove della parte toccata; per la **versione vera** sempre **tutte** (`node esegui.js`). Se un cambiamento voluto rompe una prova vecchia, si aggiorna la prova e lo si dice.
 6. Copiare i file nel ramo `main`, fare il commit (con le righe di attribuzione richieste) e il push. GitHub Pages pubblica da `main`.
 7. Fare il commit anche qui nel ramo `prove` delle prove nuove o cambiate.
 
@@ -161,7 +168,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e65.js | 8185 | Modulo «Disposizione dello schermo» (layout.js/layout.css): Classico e A (B, C, D tolte). A: barra in basso (Aggiungi, Per te, Menu), avvisi sopra la ricerca e uno alla volta (opzione), da scorrere col dito (sinistra/destra, in giro; il menu non si apre), riga Prestati solo se serve; riepilogo in alto con le opzioni (euro e «non più in libreria» spenti, «in prestito» si tocca), «Salvato» nascondibile; vecchia scelta B/C/D → A; senza modulo resta la classica |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse perché girano una alla volta. Per una prova nuova usare **8186** e poi a salire.
+Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8186** e poi a salire, sempre attraverso `CFG.port()`.
 
 ## Materiali (`img/`)
 

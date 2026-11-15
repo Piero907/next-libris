@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8126);
+}).listen(CFG.port(8126));
 const ISBN = '9788806219352';
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new',
@@ -22,7 +22,7 @@ const ISBN = '9788806219352';
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();
-    if (u.startsWith('http://localhost:8126')) return req.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8126) + '')) return req.continue();
     const j = (o, s = 200) => req.respond({ status: s, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
     if (u.includes('googleapis.com/books')) return j({ items: [{ id: 'x', volumeInfo: { title: 'Il nome della rosa', authors: ['Umberto Eco'], publisher: 'Bompiani', publishedDate: '2012', industryIdentifiers: [{ type: 'ISBN_13', identifier: ISBN }] } }] });
     if (u.includes('openlibrary.org')) return j({});
@@ -30,7 +30,7 @@ const ISBN = '9788806219352';
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8126/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8126) + '/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const first = () => page.evaluate(() => { const b = window.__app.state.books[0]; return b && { id: b.id, t: b.t, i: b.i, c: b.c }; });
   const reset = () => page.evaluate(() => { window.__app.state.books.length = 0; });

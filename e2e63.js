@@ -7,7 +7,7 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8183);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8183));
 const D = 864e5, now = Date.now(), today = new Date().toISOString().slice(0, 10);
 const books = [
   { id: 'b1', t: 'La forma dell\'acqua', a: 'Andrea Camilleri', rs: 'ok', rt: 5, rd: '2026-09-01', gen: 'Gialli', se: 'Montalbano', sn: '1', sq: '5', ts: now - 500 * D },
@@ -29,7 +29,7 @@ const Y = new Date().getFullYear();
   await page.setRequestInterception(true);
   page.on('request', r => {
     const u = r.url();
-    if (u.startsWith('http://localhost:8183')) return r.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8183) + '')) return r.continue();
     if (/googleapis\.com\/books\/v1\/volumes/.test(u)) {
       gq.push(decodeURIComponent(u));
       const items = /inauthor:"Andrea Camilleri"/.test(decodeURIComponent(u)) ? [vol('Il birraio di Preston', 'Andrea Camilleri', 1995, 'it', '9788838912344'), vol('La forma dell\'acqua', 'Andrea Camilleri', 1994, 'it', '9788838911111'), vol('The Shape of Water', 'Andrea Camilleri', 2002, 'en', '9780142004371')]
@@ -39,7 +39,7 @@ const Y = new Date().getFullYear();
     r.respond({ status: 404, body: '' });
   });
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  await page.goto('http://localhost:8183/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8183) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, suggAuto: true })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(800);
   const txt = s => page.$eval(s, e => e.innerText.replace(/\s+/g, ' ').trim()), hid = s => page.$eval(s, e => e.hidden);

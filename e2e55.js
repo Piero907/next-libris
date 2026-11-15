@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8175);
+}).listen(CFG.port(8175));
 const ISBN = fs.readFileSync(IMG + '/isbn.txt', 'utf8').trim();
 const gItem = (id, t, a, e, y, lang, isbn) => ({ id, volumeInfo: { title: t, authors: [a], publisher: e, publishedDate: y, language: lang, industryIdentifiers: isbn ? [{ type: 'ISBN_13', identifier: isbn }] : [], imageLinks: { thumbnail: 'http://books.google.com/t/' + id + '.png' } } });
 const png1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAf9JkWQAAAABJRU5ErkJggg==', 'base64');
@@ -31,7 +31,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();
-    if (u.startsWith('http://localhost:8175')) return req.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8175) + '')) return req.continue();
     const json = (o, status = 200) => req.respond({ status, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
     if (u.includes('googleapis.com/books/v1/volumes')) {
       if (mode === 'fail') return json({ error: 'x' }, 500);
@@ -46,7 +46,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   });
 
 
-  await page.goto('http://localhost:8175/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
+  await page.goto('http://localhost:' + CFG.port(8175) + '/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
   const first = () => page.evaluate(() => { const b = window.__app.state.books[0]; if (!b) return null; const s = window.__app.S[b.id] || {}; return { id: b.id, t: b.t, a: b.a, i: b.i, c: b.c, st: s.st }; });
   const reset = () => page.evaluate(() => { window.__app.state.books.length = 0; for (const k in window.__app.S) delete window.__app.S[k]; window.__app.renderList && 0; });
   const vis = sel => page.$eval(sel, e => !e.hidden);
@@ -129,7 +129,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
     const br = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + CFG.IMG + '/' + video] });
     const pg = await br.newPage(); await pg.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     const errs = []; pg.on('pageerror', e => errs.push(e.message));
-    await pg.goto('http://localhost:8175/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
+    await pg.goto('http://localhost:' + CFG.port(8175) + '/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
     await pg.evaluate(() => document.querySelector('#btnPhoto').click()); await sleep(200);
     await pg.evaluate(() => document.querySelector('#photoCam').click());
     await pg.waitForFunction(() => { const v = document.querySelector('#snapVideo'); return !document.querySelector('#snap').hidden && v.videoWidth > 0; }, { timeout: 10000 });

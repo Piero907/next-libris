@@ -13,7 +13,7 @@ const server = http.createServer((req, res) => {
   let rel = m[2] === '/' ? '/index.html' : m[2];
   const f = path.join(ROOT, rel); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' }); fs.createReadStream(f).pipe(res);
-}).listen(8182);
+}).listen(CFG.port(8182));
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
@@ -21,16 +21,16 @@ const server = http.createServer((req, res) => {
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   await page.setRequestInterception(true);
-  page.on('request', r => r.url().startsWith('http://localhost:8182') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
+  page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8182) + '') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
   // versione vera: un libro
-  await page.goto('http://localhost:8182/next-libris/?vista=elenco', { waitUntil: 'load' }); await wait(800);
+  await page.goto('http://localhost:' + CFG.port(8182) + '/next-libris/?vista=elenco', { waitUntil: 'load' }); await wait(800);
   let info = await page.evaluate(() => ({ prova: document.documentElement.classList.contains('prova'), tag: !!document.querySelector('.prova-tag'), title: document.title }));
   console.log('[vera]', JSON.stringify(info)); assert(!info.prova && !info.tag);
   await page.evaluate(() => { window.__app.settings.price = false; window.__app.addIsbn('9788806219352'); }); await wait(800);
   assert.strictEqual(await page.evaluate(() => window.__app.state.books.length), 1);
   await page.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 15000 }).catch(() => {});
   // copia di prova: vuota, con l'etichetta; i suoi libri restano suoi
-  await page.goto('http://localhost:8182/next-libris-prova/?vista=elenco', { waitUntil: 'load' }); await wait(800);
+  await page.goto('http://localhost:' + CFG.port(8182) + '/next-libris-prova/?vista=elenco', { waitUntil: 'load' }); await wait(800);
   info = await page.evaluate(() => ({ prova: document.documentElement.classList.contains('prova'), tag: document.querySelector('.prova-tag') && document.querySelector('.prova-tag').textContent, title: document.title, n: window.__app.state.books.length }));
   console.log('[prova]', JSON.stringify(info)); assert(info.prova && info.tag === 'PROVA' && /prova/.test(info.title) && info.n === 0, 'prova vuota e riconoscibile');
   await page.screenshot({ path: CFG.OUT + '/prova.png' });
@@ -41,7 +41,7 @@ const server = http.createServer((req, res) => {
   await page.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 15000 }).catch(() => {});
   await wait(1500);
   // di nuovo la vera: sempre e solo il suo libro
-  await page.goto('http://localhost:8182/next-libris/?vista=elenco', { waitUntil: 'load' }); await wait(800);
+  await page.goto('http://localhost:' + CFG.port(8182) + '/next-libris/?vista=elenco', { waitUntil: 'load' }); await wait(800);
   assert.strictEqual(await page.evaluate(() => window.__app.state.books.length), 1, 'la vera non vede i libri della prova');
   await wait(1500);
   const cs = await page.evaluate(async () => (await caches.keys()).sort()); console.log('[copie offline]', JSON.stringify(cs));

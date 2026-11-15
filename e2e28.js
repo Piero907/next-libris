@@ -5,8 +5,8 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8144);
-const BASE = 'http://localhost:8144/?vista=elenco';
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8144));
+const BASE = 'http://localhost:' + CFG.port(8144) + '/?vista=elenco';
 const BOOKS = [
   { id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', c: 14, i: '9788845292613', ts: 5, img: 'https://books.google.com/books/content?id=ROSA&img=1&zoom=1', pg: '624', n: 'nota segreta', p: 'Marco', sh: 'Studio', gen: 'Gialli', rt: 5 },
   { id: 'b2', t: 'Il deserto dei Tartari', a: 'Dino Buzzati', e: 'Mondadori', y: '2016', i: '9788804668015', ts: 4, gen: 'Narrativa', c: 12.5, imgL: 'https://covers.openlibrary.org/b/isbn/9788804668015-L.jpg?default=false', pg: '240' },

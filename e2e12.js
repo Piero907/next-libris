@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8127);
+}).listen(CFG.port(8127));
 const ISBN = '9788804668015';
 async function open(video) {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new',
@@ -23,7 +23,7 @@ async function open(video) {
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();
-    if (u.startsWith('http://localhost:8127')) return req.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8127) + '')) return req.continue();
     const j = (o, s = 200) => req.respond({ status: s, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
     if (u.includes('googleapis.com/books/v1/volumes?')) {
       const isbn = (decodeURIComponent(u).match(/isbn:(\d{13})/) || [])[1];
@@ -36,7 +36,7 @@ async function open(video) {
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8127/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8127) + '/?vista=elenco', { waitUntil: 'load' });
   return { browser, page, errors };
 }
 const wait = ms => new Promise(r => setTimeout(r, ms));

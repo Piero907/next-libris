@@ -21,7 +21,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Il README.md accanto spiega
 - **Lingua:** rispondere sempre in italiano, semplice e concreto.
 - **Pubblicazione (dal 15/11/2026):** ogni novità va **prima nella copia di prova** (`pubblica_prova.py`) e Piero la prova sul telefono. Quando dice che va bene, si pubblica su `main` della versione vera. Ogni pubblicazione nella versione vera alza il numero di versione, e il numero va detto a Piero.
 - **Registro:** a ogni versione va aggiunta in cima a `REGISTRO_MODIFICHE.md` la voce `## Versione N · gg/mm/aaaa`. Se serve, si aggiorna anche `LEGGIMI.txt`.
-- **Prima di pubblicare:** girano **tutte** le prove (`node esegui.js`). Per ogni novità serve una prova nuova o aggiornata, salvata anche nel ramo `prove`.
+- **Prima di pubblicare (regola cambiata con Piero il 15/11/2026):** prima della **copia di prova** bastano le prove veloci, `node esegui.js --veloce eNN …` (libreria + gruppo di controllo + le prove della parte toccata, 1-2 minuti); prima della **versione vera** girano **tutte** (`node esegui.js`, due alla volta, circa 9 minuti). Per ogni novità serve una prova nuova o aggiornata, salvata anche nel ramo `prove`.
 - **Commit:** i messaggi finiscono con le righe di attribuzione indicate dalla sessione (Co-Authored-By e link alla sessione).
 - **Privacy:** l'indirizzo email di Piero non va mai mandato a servizi esterni né messo nei file.
 - **Materiali separati:** prove e materiali restano fuori da `main`, così un eventuale APK contiene solo l'app.

@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
   res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' });
   fs.createReadStream(f).pipe(res);
-}).listen(8125);
+}).listen(CFG.port(8125));
 const mk = (body12) => { let sum = 0; for (let i = 0; i < 12; i++) sum += (+body12[i]) * (i % 2 ? 3 : 1); return body12 + ((10 - sum % 10) % 10); };
 const A = mk('978885026001'), COOK = '9788850262359', D = mk('978885026004'), Z = mk('978880099991');
 const gv = (isbn, o) => ({ items: [{ id: isbn, volumeInfo: Object.assign({ industryIdentifiers: [{ type: 'ISBN_13', identifier: isbn }] }, o) }] });
@@ -24,7 +24,7 @@ const gv = (isbn, o) => ({ items: [{ id: isbn, volumeInfo: Object.assign({ indus
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();
-    if (u.startsWith('http://localhost:8125')) return req.continue();
+    if (u.startsWith('http://localhost:' + CFG.port(8125) + '')) return req.continue();
     const j = (o, s = 200) => req.respond({ status: s, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
     hits.push(u.replace(/\?.*/, '').replace(/^https?:\/\//, ''));
     if (u.includes('googleapis.com')) {
@@ -38,7 +38,7 @@ const gv = (isbn, o) => ({ items: [{ id: isbn, volumeInfo: Object.assign({ indus
     if (u.includes('fonts.')) return req.respond({ status: 200, contentType: 'text/css', body: '' });
     req.abort();
   });
-  await page.goto('http://localhost:8125/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8125) + '/?vista=elenco', { waitUntil: 'load' });
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const books = () => page.evaluate(() => window.__app.state.books.map(b => ({ i: b.i, t: b.t, e: b.e, g: b.g, nf: b.nf })));
 

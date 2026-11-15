@@ -8,7 +8,7 @@ const assert = require('assert');
 const ROOT = CFG.APP;
 let noMod = false;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; if (noMod && /^\/wrap\./.test(p)) { res.writeHead(404); return res.end(); } const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(8184);
+const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; if (noMod && /^\/wrap\./.test(p)) { res.writeHead(404); return res.end(); } const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8184));
 const T = s => Date.parse(s + 'T10:00:00');
 const books = [
   { id: 'a', t: 'La forma dell\'acqua', a: 'Andrea Camilleri', rs: 'ok', rd: '2026-07-10', pg: '300', gen: 'Gialli', rt: 4, ts: T('2025-01-01') },
@@ -31,7 +31,7 @@ const books = [
     window.Date = FD;
   });
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  await page.goto('http://localhost:8184/?vista=elenco', { waitUntil: 'load' });
+  await page.goto('http://localhost:' + CFG.port(8184) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'Piero', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, goal: 20, nxSeen: 'c' })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(800);
   const txt = s => page.$eval(s, e => e.innerText.replace(/\s+/g, ' ').trim()), hid = s => page.$eval(s, e => e.hidden);
@@ -112,7 +112,7 @@ const books = [
   noMod = true;
   const ctx2 = await browser.createBrowserContext(); const p2 = await ctx2.newPage(); const err2 = []; p2.on('pageerror', e => err2.push(e.message));
   await p2.setViewport({ width: 412, height: 915 });
-  await p2.goto('http://localhost:8184/?vista=elenco', { waitUntil: 'load' }); await wait(800);
+  await p2.goto('http://localhost:' + CFG.port(8184) + '/?vista=elenco', { waitUntil: 'load' }); await wait(800);
   const st2 = await p2.evaluate(() => ({ nl: !!window.NL, wrap: !!window.NLWrap, ask: !!document.getElementById('wrapAsk'), books: document.querySelector('#list').innerHTML.length }));
   await p2.evaluate(() => window.__app.openDrawer('opt')); await wait(350);
   st2.menu = await p2.evaluate(() => !!document.getElementById('goWrap'));
