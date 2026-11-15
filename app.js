@@ -5,9 +5,13 @@ var L = window.Lib;
 /* ---------- utilità ---------- */
 var $ = function (s) { return document.querySelector(s); };
 var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+/* Copia di prova (piero907.github.io/next-libris-prova/): stesso codice, ma dati tutti suoi. Sta allo stesso indirizzo di base
+   della versione vera, quindi sul telefono condividerebbe lo stesso spazio: qui ogni nome di dato ha il prefisso «prova:». */
+var PROVA = /\/next-libris-prova(\/|$)/.test(location.pathname);
+function lsKey(k) { return PROVA ? 'prova:' + k : k; }
 var ls = {
-  get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
-  set: function (k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  get: function (k) { try { return localStorage.getItem(lsKey(k)); } catch (e) { return null; } },
+  set: function (k, v) { try { localStorage.setItem(lsKey(k), v); return true; } catch (e) { return false; } }
 };
 var ICON = {
   pen: '<path d="M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20z"/><path d="M13.5 7.5l3 3"/>',
@@ -80,7 +84,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set';
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 92, date: '2026-11-15', note: 'Prova la luce; Sostieni in evidenza in Opzioni › App' };
+var APP_VERSION = { v: 93, date: '2026-11-15', note: 'Pronta la copia di prova (dati separati)' };
 var state = { books: [], updated: 0 };
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
@@ -3837,7 +3841,7 @@ function idb() {
   if (idbP) return idbP;
   idbP = new Promise(function (res, rej) {
     if (!window.indexedDB) { rej(new Error('IndexedDB non disponibile')); return; }
-    var r = indexedDB.open('catalogo-libri', 1);
+    var r = indexedDB.open(PROVA ? 'prova-catalogo-libri' : 'catalogo-libri', 1);   // copertine e foto: anche queste separate nella prova
     r.onupgradeneeded = function () { r.result.createObjectStore('covers'); };
     r.onsuccess = function () { res(r.result); };
     r.onerror = function () { rej(r.error); };
@@ -5948,6 +5952,12 @@ var rz = null;
 window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { autosizeAll(list); }, 150); });
 
 /* ---------- avvio ---------- */
+if (PROVA) {                                       // copia di prova: si vede subito, per non confonderla con quella vera
+  document.documentElement.classList.add('prova');
+  document.title = 'Next Libris (prova)';
+  var h1 = document.querySelector('h1');
+  if (h1) h1.insertAdjacentHTML('beforeend', ' <span class="prova-tag" title="Copia di prova: dati separati da quelli della versione vera">PROVA</span>');
+}
 loadAll();
 settings.donOpens = Math.min(9999, settings.donOpens + 1);   // un accesso in piu' (per la riga «Sostieni»)
 saveSettings();                                  // salva subito eventuali scelte aggiornate (es. palette predefinita)

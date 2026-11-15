@@ -3,6 +3,9 @@
 Le novità di ogni versione, dalla più recente. Il numero di versione dell'app si vede in Opzioni › App.
 L'indirizzo dell'app è https://piero907.github.io/next-libris/ (fino alla versione 49 era …/catalogo-libri/).
 
+## Versione 93 · 15/11/2026
+- **Pronta la copia di prova:** nasce una seconda copia dell'app, per provare le novità prima di portarle qui. Sta a un indirizzo suo, ha l'etichetta PROVA e **dati tutti suoi**: libri, foto, impostazioni e copia offline non si mescolano mai con quelli di questa versione. In questa versione non cambia nulla di visibile.
+
 ## Versione 92 · 15/11/2026
 - **«Prova la luce»** (Opzioni › App › Fotocamera e luce): alcuni telefoni, come il Galaxy A32, dicono a Chrome di avere la luce e di averla accesa, ma resta spenta, e l'app non può accorgersene. La prova la accende per qualche secondo e chiede se l'hai vista: con «No, è rimasta spenta» i pulsanti della luce spariscono dalle fotocamere dell'app (per il flash resta «Usa la fotocamera del telefono»).
 - La luce ora si accende anche nel secondo modo previsto da Chrome, che su alcuni telefoni è l'unico che funziona.

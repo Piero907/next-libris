@@ -1,5 +1,8 @@
 /* Next Libris: funziona anche senza rete. Le ricerche (Google Libri, Open Library) passano sempre dalla rete. */
-const CACHE = 'catalogo-libri-v92';
+// la copia di prova (…/next-libris-prova/) sta allo stesso indirizzo di base: copie offline con un prefisso suo, e ognuna cancella solo le proprie
+const PROVA = /\/next-libris-prova\//.test(self.registration.scope);
+const CACHE = (PROVA ? 'prova-' : '') + 'catalogo-libri-v93';
+const MINE = (k) => (PROVA ? k.startsWith('prova-') : !k.startsWith('prova-'));
 const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'lib.js', 'manifest.json',
   'icons/next-libris-192.png', 'icons/next-libris-512.png', 'vendor/zxing.min.js', 'vendor/fonts/literata-latin.woff2', 'vendor/tesseract.min.js', 'vendor/worker.min.js', 'REGISTRO_MODIFICHE.md'];
 
@@ -8,7 +11,7 @@ self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));   // anche la «prossima» di un service worker vecchio
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE && MINE(k)).map((k) => caches.delete(k)))).then(() => self.clients.claim()));   // anche la «prossima» di un service worker vecchio
 });
 /* Avvio immediato: la pagina e i suoi file partono dalla copia sul telefono (stessa versione, niente attese di rete);
    intanto, in sottofondo, scarico la versione nuova di tutti i file e la salvo solo se arrivano tutti (mai versioni mescolate).
