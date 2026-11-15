@@ -1,6 +1,6 @@
 # Next Libris: prove automatiche
 
-Questo è il ramo `prove` del repository `Piero907/next-libris`. Contiene **solo** le prove automatiche, i materiali che usano (foto e video finti) e gli strumenti di lavoro. **Non contiene l'app.**
+Questo è il ramo `prove` del repository `Piero907/next-libris`. Le regole di lavoro sono in `CLAUDE.md`, le idee e i problemi in sospeso in `IN_SOSPESO.md`. Contiene **solo** le prove automatiche, i materiali che usano (foto e video finti) e gli strumenti di lavoro. **Non contiene l'app.**
 
 - L'app sta nel ramo `main`: è quello pubblicato su GitHub Pages (https://piero907.github.io/next-libris/) e l'unico da usare per un eventuale APK.
 - Questo ramo non ha file in comune con `main` (è un ramo «orfano»). Così nulla di quanto c'è qui finisce nel sito o nell'app.
