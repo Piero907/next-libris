@@ -44,6 +44,23 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   assert(notes.filter(x => /:ora/.test(x)).length === 1 && notes.length >= 2 && /Avviso 1 di/.test(await txt('#layMore')));
   assert(await page.evaluate(() => { const e = [...document.querySelectorAll('#nxBox,#donRow,#instCard,#wrapAsk')].find(e => !e.hidden && !e.classList.contains('lay-later')); return e.getBoundingClientRect().bottom <= document.querySelector('#stick').getBoundingClientRect().top + 1; }), 'avviso sopra la ricerca');
   await page.screenshot({ path: CFG.OUT + '/layout_a.png' });
+  // scorrere col dito: verso sinistra il prossimo, verso destra quello prima; il menu non si apre
+  const swipe = async (dx, dy = 0) => {
+    const r = await page.evaluate(() => { const e = document.querySelector('[data-lay-swipe]').getBoundingClientRect(); return { x: e.left + e.width / 2, y: e.top + 30 }; });
+    await page.touchscreen.touchStart(r.x, r.y);
+    for (let i = 1; i <= 6; i++) { await page.touchscreen.touchMove(r.x + dx * i / 6, r.y + dy * i / 6); await wait(16); }
+    await page.touchscreen.touchEnd(); await wait(500);
+  };
+  const idx = async () => (await txt('#layMore')).match(/Avviso (\d+) di/)[1];
+  assert.strictEqual(await page.$$eval('#layMore .lay-dots i', e => e.length), 3);
+  await swipe(-160); assert.strictEqual(await idx(), '2', 'verso sinistra: il prossimo');
+  await swipe(150); assert.strictEqual(await idx(), '1', 'verso destra: quello prima');
+  await swipe(150); assert.strictEqual(await idx(), '3', 'in giro');
+  await swipe(-30, 160); assert.strictEqual(await idx(), '3', 'in verticale non cambia');
+  await swipe(-40); assert.strictEqual(await idx(), '3', 'poco: torna al suo posto');
+  assert(!(await page.evaluate(() => document.body.classList.contains('drawer-open'))), 'il menu non si apre');
+  assert.strictEqual(await page.evaluate(() => document.querySelector('[data-lay-swipe]').style.transform), '');
+  await swipe(-160); assert.strictEqual(await idx(), '1');
   await page.click('#layMore'); await wait(150); assert(/Avviso 2 di/.test(await txt('#layMore')));
   await page.click('#layNav [data-l="wish"]'); await wait(250);
   assert.strictEqual(await page.evaluate(() => window.NL.tab()), 'wish'); assert(await page.$eval('#layNav [data-l="wish"]', e => e.classList.contains('on')));
