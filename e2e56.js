@@ -26,8 +26,8 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   const items = await page.$$eval('#drawerOpts .dopt b', e => e.map(x => x.textContent)); console.log('  voci:', items.join(' | '));
   const iDon = items.indexOf('Sostieni Next Libris'), set = items.slice(3);
   assert(iDon > 3 && iDon < items.length - 2, 'Sostieni in mezzo alle impostazioni');
-  const don = await page.$eval('#donMenu', e => ({ bg: getComputedStyle(e).backgroundColor, sub: e.querySelector('small').textContent }));
-  console.log('  sostieni:', JSON.stringify(don)); assert(don.bg !== 'rgba(0, 0, 0, 0)' && /caffè/.test(don.sub));
+  const don = await page.$eval('#donMenu', e => { const c = e.querySelector('.don-cup').getBoundingClientRect(); return { bg: getComputedStyle(e).backgroundColor, sub: e.querySelector('small').textContent, svg: !!e.querySelector('.don-cup svg'), w: Math.round(c.width), h: Math.round(c.height) }; });
+  console.log('  sostieni:', JSON.stringify(don)); assert(don.bg !== 'rgba(0, 0, 0, 0)' && /birra/.test(don.sub) && don.svg && don.w === don.h && don.w >= 36, 'boccale nel cerchio');
   await page.screenshot({ path: CFG.OUT + '/menu_home.png' });
   // 2) «Filtri e ordine» -> pagina; Indietro torna al menu; un altro Indietro chiude
   await page.click('#goFilters'); await wait(300);
