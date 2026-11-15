@@ -135,3 +135,5 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 5. Se un giorno ci sarà l'**APK**: con un'app vera (non solo una PWA impacchettata) si potrebbe scrivere in una cartella del telefono da soli.
 
 **Proposta di partenza:** 1 + 2 subito (facili, nessun account), 4 se vuole il backup automatico fuori dal telefono.
+
+**Aggiunta del 15/11/2026 (Piero: «ottima idea», chiede se Wikipedia ha banche dati per i libri):** Wikidata ha i libri, ma solo quelli «notevoli» e con l'ISBN solo sulle singole edizioni: come fonte per la ricerca iniziale (ISBN → titolo, autore, editore) troverebbe poco delle edizioni italiane, che SBN, Google Libri e Open Library coprono già meglio. È invece utile a livello di **opera**, insieme ai film: titolo originale, anno della prima edizione, premi, serie, genere. Proposta: quando si fanno i film, usare la stessa ricerca su Wikidata anche per arricchire la scheda (riga «Prima edizione 1980 · titolo originale … · Premio Strega»), senza toccare la ricerca iniziale.
