@@ -23,7 +23,7 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 92.
   - La diagnosi è in Opzioni › App › «Prova gli obiettivi».
   - **Esito sul Galaxy A32 di Piero (15/11/2026):** Chrome vede solo 3 fotocamere: «camera 1, facing front», «camera 2, facing front» e «camera 0, facing back», che dichiara la luce («luce sì»). Il telefono ne ha di più, ma Chrome espone un solo obiettivo posteriore. La luce però non si accende: il telefono dichiara la torcia e accetta il comando senza accenderla, e l'app non può accorgersene.
   - **v92:** «Prova la luce» (Opzioni › App) accende per 2,5 s e chiede «Sì / No». Con «No» si salva `settings.torchCam = 'none'` e i pulsanti della luce spariscono, anche se l'obiettivo dichiara `torch`. `torchOnTrack()` prova sia `advanced: [{ torch }]` sia `{ torch }`.
-  - **Da sapere da Piero:** cosa risponde a «Prova la luce» dopo la v92. Con «No» la soluzione per lui resta la fotocamera del telefono (v90).
+  - **Esito di «Prova la luce» (15/11/2026, v92):** Piero ha risposto **No**, quindi sul Galaxy A32 la luce non si accende neanche con il secondo metodo. Per lui la soluzione è la fotocamera del telefono (v90), anche sempre attiva con l'opzione «Per le foto usa la fotocamera del telefono». I pulsanti della luce gli spariscono dopo il «No».
   - **Possibile prova futura, solo se lui la chiede:** riaprire la fotocamera a risoluzione più bassa prima di accendere la luce (su alcuni Samsung la torcia va solo a certe risoluzioni). Non è verificato.
 
 ---
