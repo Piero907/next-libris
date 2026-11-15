@@ -29,6 +29,8 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   assert.strictEqual(w.h, 'Aggiornato in questa versione'); assert(new RegExp('^Versione ' + V + ' · 5 novità$').test(w.sub));
   assert.deepStrictEqual(w.li, ['Novità grande: descritta.', 'Sotto-novità importante.', 'Novità di ieri.', 'Correzione piccola.', 'Ritocco.'], 'prima le novità in grassetto; niente della versione già vista');
   assert(await page.evaluate(() => !!document.querySelector('#wnList li b')), 'grassetto');
+  const pos = await page.evaluate(() => { const r = document.querySelector('#wnSheet .sheet-in').getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(innerHeight - r.bottom) }; });
+  console.log('  posizione', JSON.stringify(pos)); assert(Math.abs(pos.top - pos.bottom) <= 4 && pos.top > 40, 'al centro');
   await page.screenshot({ path: CFG.OUT + '/novita_versione.png' });
   // «Tutte le novità» apre il registro
   await page.click('#wnAll'); await wait(600);
