@@ -39,6 +39,9 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
 @media (prefers-reduced-motion:reduce){html[data-splash] #splash{transition:none}}
 </style>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="wrap.css"><!-- modulo: riepilogo ogni tre mesi -->
+<link rel="stylesheet" href="layout.css"><!-- modulo: disposizione dello schermo -->
+<link rel="stylesheet" href="schede.css"><!-- modulo: aspetto della scheda aperta -->
 </head>
 <body>
 <div id="splash" aria-hidden="true"><img src="icons/next-libris-192.png" alt="" width="168" height="168"><b>Next Libris</b><span id="splashWho"></span></div>
@@ -348,8 +351,11 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
 
 <div class="sheet" id="auSheet" hidden>
   <div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="auH">
-    <h2 id="auH"></h2>
-    <p class="au-desc" id="auDesc"></p>
+    <div class="au-head">
+      <button type="button" class="au-pic" id="auPic" hidden aria-label="Ingrandisci la foto"><img alt="" referrerpolicy="no-referrer"></button>
+      <div><h2 id="auH"></h2>
+      <p class="au-desc" id="auDesc"></p></div>
+    </div>
     <div class="au-txt" id="auTxt" aria-live="polite"></div>
     <p class="au-src" id="auSrc" hidden>Da Wikipedia, l'enciclopedia libera.</p>
     <div class="au-acts">
@@ -384,6 +390,18 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
     <p class="hint">Dalla più recente. Quella che stai usando è evidenziata.</p>
     <div class="log-body" id="logBody" aria-live="polite"></div>
     <button class="btn" type="button" id="logClose">Chiudi</button>
+  </div>
+</div>
+
+<div class="sheet" id="wnSheet" hidden>
+  <div class="sheet-in wide" role="dialog" aria-modal="true" aria-labelledby="wnH">
+    <h2 id="wnH">Aggiornato in questa versione</h2>
+    <p class="hint" id="wnSub"></p>
+    <ul class="wn-list" id="wnList"></ul>
+    <div class="row-btns">
+      <button class="btn" type="button" id="wnAll">Tutte le novità</button>
+      <button class="btn primary" type="button" id="wnClose">Ho capito</button>
+    </div>
   </div>
 </div>
 
@@ -536,17 +554,6 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         </div>
         <p class="hint">Chiaro è il predefinito. Automatico segue il tema del telefono (chiaro di giorno, scuro di sera se l'hai impostato così).</p>
       </fieldset>
-      <label class="check">
-        <input type="checkbox" id="optSound">
-        <span>Suoni<small>Il bip quando legge un codice e il «fatto» quando salvi il prezzo. Si accendono e spengono anche dalla fotocamera, con 🔊 in alto. La vibrazione resta.</small></span>
-      </label>
-      <fieldset class="choice">
-        <legend>All'apertura mostra</legend>
-        <div class="seg seg-view">
-          <label><input type="radio" name="viewDef" value="grid"><span>Copertine</span></label><label><input type="radio" name="viewDef" value="list"><span>Elenco</span></label>
-        </div>
-        <p class="hint">Copertine è il predefinito. Il pulsante «Elenco» / «Copertine» sopra i libri cambia la vista solo fino alla prossima apertura.</p>
-      </fieldset>
       <div id="lookNew">
         <fieldset class="choice">
           <legend>Colori</legend>
@@ -566,6 +573,21 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         </fieldset>
         <button class="btn" id="lookReset" type="button">Torna all'aspetto predefinito</button>
       </div>
+      <fieldset class="choice">
+        <legend>All'apertura mostra</legend>
+        <div class="seg seg-view">
+          <label><input type="radio" name="viewDef" value="grid"><span>Copertine</span></label><label><input type="radio" name="viewDef" value="list"><span>Elenco</span></label>
+        </div>
+        <p class="hint">Copertine è il predefinito. Il pulsante «Elenco» / «Copertine» sopra i libri cambia la vista solo fino alla prossima apertura.</p>
+      </fieldset>
+      <fieldset class="choice sum-opts">
+        <legend>Riepilogo in alto</legend>
+        <p class="hint">Sotto il nome compare sempre il numero dei libri. Puoi aggiungere:</p>
+        <label class="check"><input type="checkbox" id="optSumEur"><span>Valore in euro<small>La somma dei prezzi dei libri in libreria.</small></span></label>
+        <label class="check"><input type="checkbox" id="optSumLoan"><span>Libri in prestito<small>«4 in prestito»: toccandolo vedi solo quelli.</small></span></label>
+        <label class="check"><input type="checkbox" id="optSumGone"><span>Libri non più in libreria<small>Venduti, regalati o smarriti.</small></span></label>
+        <label class="check"><input type="checkbox" id="optShowSync"><span>Conferma del salvataggio<small>Mostra «Salvato su questo telefono» sotto il riepilogo: vuol dire che ogni modifica è già salvata. Se il salvataggio non riesce o sei senza rete, l'avviso compare comunque.</small></span></label>
+      </fieldset>
     </section>
     <section class="opt-sec" data-sec="search" data-title="Ricerca dei libri">
       <p class="hint">Senza worker e senza chiave l'app cerca lo stesso (Google Libri e Open Library): servono a fare più ricerche e ad avere dati più precisi.</p>
@@ -616,27 +638,31 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       <div class="opts-row"><button class="btn" id="btnDiag">Prova la ricerca ISBN</button></div>
       <div class="diag" id="diagOut" hidden aria-live="polite"></div>
     </section>
-    <section class="opt-sec" data-sec="cards" data-title="Schede e prezzo">
-      <label class="check">
-        <input type="checkbox" id="optOpenAll">
-        <span>Mostra le schede sempre aperte<small>Di solito ogni libro mostra solo titolo e autore e si apre con la freccetta. Con questa opzione vedi subito tutti i campi (sullo schermo largo, come una tabella).</small></span>
-      </label>
-      <label class="check">
-        <input type="checkbox" id="optExtra" checked>
-        <span>Mostra scaffale, genere, pagine e note<small>Campi in più sulla scheda di ogni libro. Genere e pagine si compilano da soli quando Google Libri o Open Library li conoscono; finiscono anche nel file Excel.</small></span>
-      </label>
+    <section class="opt-sec" data-sec="cards" data-title="Aggiunta dei libri">
       <label class="check">
         <input type="checkbox" id="optPrice" checked>
         <span>Chiedi il prezzo dopo ogni libro<small>Dopo ogni libro aggiunto (scansione, foto o ISBN scritto) compare un riquadro con titolo e autore dove scrivere il prezzo, facoltativo. Spegni se il prezzo non ti interessa.</small></span>
       </label>
       <label class="check">
+        <input type="checkbox" id="optSound">
+        <span>Suoni<small>Il bip quando legge un codice e il «fatto» quando salvi il prezzo. Si accendono e spengono anche dalla fotocamera, con 🔊 in alto. La vibrazione resta.</small></span>
+      </label>
+      <label class="check">
         <input type="checkbox" id="optCamNative">
         <span>Per le foto usa la fotocamera del telefono<small>Con il suo flash e la sua messa a fuoco: utile se nella fotocamera dell'app la luce non si accende. Vale per Foto, copertine e citazioni; la scansione del codice resta nell'app. Se si apre in modalità selfie, girala una volta: di solito il telefono se lo ricorda.</small></span>
       </label>
-      <label class="check">
-        <input type="checkbox" id="optQuoteOcr">
-        <span>Leggi subito il testo delle foto delle citazioni<small>Spenta: il testo si legge solo quando tocchi «Leggi il testo». Accesa: ogni foto aggiunta a una citazione viene letta da sola.</small></span>
-      </label>
+      <h3>Fotocamera e luce</h3>
+      <p class="hint" id="lensState"></p>
+      <div class="menu">
+        <button class="btn" type="button" id="lightRun">Prova la luce</button>
+        <button class="btn" type="button" id="lensRun">Prova gli obiettivi</button>
+      </div>
+      <p class="msg" id="lensMsg" aria-live="polite"></p>
+      <div class="row-btns" id="lightAsk" hidden>
+        <button class="btn primary" type="button" id="lightYes">Sì, si è accesa</button>
+        <button class="btn" type="button" id="lightNo">No, è rimasta spenta</button>
+      </div>
+      <ul class="lens-list" id="lensList"></ul>
     </section>
     <section class="opt-sec" data-sec="fix" data-title="Sistema l'elenco">
       <div class="menu fixlist">
@@ -658,7 +684,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       <h3 class="opt-h3">Chiave Google e worker</h3>
       <p class="hint">Puoi mandarli a un familiare o a un amico che usa Next Libris: la sua ricerca diventa completa come la tua.</p>
       <button class="btn" id="svcShareBtn" type="button">Condividi chiave e worker</button>
-      <p class="hint" id="svcShareNone" hidden>Non ne hai ancora: si impostano in Opzioni › Ricerca dei libri.</p>
+      <p class="hint" id="svcShareNone" hidden>Non ne hai ancora: si impostano in Menu › Impostazioni › Ricerca dei libri.</p>
       <h3 class="opt-h3">Fai conoscere l'app</h3>
       <p class="share-lead">Fai inquadrare il codice con la fotocamera del telefono, oppure manda il link.</p>
       <figure class="qr-box">
@@ -671,7 +697,8 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       </div>
       <p class="hint">Chi apre il link in Chrome trova in alto il pulsante «Installa». Ognuno ha il proprio catalogo: i tuoi libri restano sul tuo telefono.</p>
     </section>
-    <section class="opt-sec" data-sec="app" data-title="App">
+    <section class="opt-sec" data-sec="app" data-title="Installazione sul telefono">
+      <p class="hint">Installata, Next Libris ha la sua icona tra le app del telefono, si apre a schermo intero e funziona anche senza rete. I libri restano gli stessi.</p>
       <p class="inst-ok" id="instOkTxt" hidden>✓ Stai usando l'app installata.</p>
       <div class="menu">
         <button class="btn primary" id="btnInstall" hidden>Installa l'app</button>
@@ -679,20 +706,8 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         <button class="btn don-opt" type="button" id="donOpt"><span class="don-cup" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h10v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M15 11h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M5 8a2.5 2.5 0 0 1 2.5-3 3 3 0 0 1 5 0A2.5 2.5 0 0 1 15 8"/><path d="M8.5 12v5.5M11.5 12v5.5"/></svg></span><span>Sostieni Next Libris</span></button>
       </div>
       <div class="diag" id="instOut" hidden aria-live="polite"></div>
-      <h3>Fotocamera e luce</h3>
-      <p class="hint" id="lensState"></p>
-      <div class="menu">
-        <button class="btn" type="button" id="lightRun">Prova la luce</button>
-        <button class="btn" type="button" id="lensRun">Prova gli obiettivi</button>
-      </div>
-      <p class="msg" id="lensMsg" aria-live="polite"></p>
-      <div class="row-btns" id="lightAsk" hidden>
-        <button class="btn primary" type="button" id="lightYes">Sì, si è accesa</button>
-        <button class="btn" type="button" id="lightNo">No, è rimasta spenta</button>
-      </div>
-      <ul class="lens-list" id="lensList"></ul>
       <p class="hint" id="verApp"></p>
-      <p class="hint">I libri sono salvati solo su questo telefono: fai ogni tanto un backup (Menu › Opzioni › Backup ed esportazione) e tienilo su Drive o nella mail.</p>
+      <p class="hint">I libri sono salvati solo su questo telefono: fai ogni tanto un backup (Menu › Backup ed esportazione) e tienilo su Drive o nella mail.</p>
     </section>
   </div>
 </div>
@@ -725,7 +740,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       <button class="btn" type="button" id="priceSkip">Salta</button>
     </div>
     <button class="link quiet pa-undo" type="button" id="priceUndo">Non volevo aggiungerlo: togli il libro</button>
-    <p class="hint">Puoi non farti più chiedere il prezzo: Menu › Opzioni › Schede e prezzo.</p>
+    <p class="hint">Puoi non farti più chiedere il prezzo: Menu › Impostazioni › Aggiunta dei libri.</p>
   </div>
 </div>
 
@@ -745,18 +760,24 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         <button type="button" class="dopt dgo dq-all" id="goQuotes" hidden><span><b>Tutte le citazioni</b><small id="goQTxt"></small></span><span class="n" aria-hidden="true">›</span></button>
         <button type="button" class="dopt dgo" id="goStats"><span><b>Statistiche</b><small>Libri, valore, pagine e letture</small></span><span class="n" aria-hidden="true">›</span></button>
       </div>
-      <h3>Impostazioni</h3>
+      <h3>La tua libreria</h3>
       <div class="dlist dmenu">
-        <button type="button" class="dopt" data-sec="look"><span><b>Aspetto</b><small>Tema chiaro o scuro, colori, caratteri, suoni</small></span><span class="n" aria-hidden="true">›</span></button>
-        <button type="button" class="dopt" data-sec="search"><span><b>Ricerca dei libri</b><small>Chiave Google, catalogo SBN, richieste di oggi</small></span><span class="n" aria-hidden="true">›</span></button>
-        <button type="button" class="dopt" data-sec="cards"><span><b>Schede e prezzo</b><small>Campi in più, schede aperte, prezzo</small></span><span class="n" aria-hidden="true">›</span></button>
-        <button type="button" class="dopt don-menu" id="donMenu"><span class="don-cup" aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h10v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M15 11h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M5 8a2.5 2.5 0 0 1 2.5-3 3 3 0 0 1 5 0A2.5 2.5 0 0 1 15 8"/><path d="M8.5 12v5.5M11.5 12v5.5"/></svg></span><span><b>Sostieni Next Libris</b><small>Niente pubblicità, niente abbonamenti. Se ti piace, offrimi una birra!</small></span><span class="n" aria-hidden="true">♥</span></button>
-        <button type="button" class="dopt" data-sec="fix"><span><b>Sistema l'elenco</b><small>Doppioni, case editrici, copertine</small></span><span class="n" aria-hidden="true">›</span></button>
-        <button type="button" class="dopt" data-sec="export"><span><b>Backup ed esportazione</b><small>Backup, Excel, PDF</small></span><span class="n" aria-hidden="true">›</span></button>
-        <button type="button" class="dopt" data-sec="share"><span><b>Condivisione</b><small>Il tuo nome; link e QR code dell'app</small></span><span class="n" aria-hidden="true">›</span></button>
-        <button type="button" class="dopt" data-sec="app"><span><b>App</b><small>Installazione e versione</small></span><span class="n" aria-hidden="true">›</span></button>
+      <button type="button" class="dopt" data-sec="fix"><span><b>Sistema l'elenco</b><small>Doppioni, case editrici, copertine</small></span><span class="n" aria-hidden="true">›</span></button>
+      <button type="button" class="dopt" data-sec="export"><span><b>Backup ed esportazione</b><small>Backup, Excel, PDF</small><small class="dbk" id="optBackupHint"></small></span><span class="n" aria-hidden="true">›</span></button>
       </div>
-      <p class="dhint" id="optBackupHint"></p>
+      <div class="dlist dmenu dset">
+        <button type="button" class="dopt dset-t" id="goSettings" aria-expanded="false" aria-controls="setList"><span class="dset-i" aria-hidden="true"></span><span><b>Impostazioni</b><small>Aspetto, ricerca e aggiunta dei libri, condivisione, installazione</small></span><span class="n dset-c" aria-hidden="true">›</span></button>
+        <div class="dsub" id="setList" hidden>
+        <button type="button" class="dopt" data-sec="look"><span><b>Aspetto</b><small>Tema, colori e caratteri; riepilogo in alto</small></span><span class="n" aria-hidden="true">›</span></button>
+        <button type="button" class="dopt" data-sec="search"><span><b>Ricerca dei libri</b><small>Chiave Google, catalogo SBN, richieste di oggi</small></span><span class="n" aria-hidden="true">›</span></button>
+        <button type="button" class="dopt" data-sec="cards"><span><b>Aggiunta dei libri</b><small>Prezzo, suoni, fotocamera e luce</small></span><span class="n" aria-hidden="true">›</span></button>
+        <button type="button" class="dopt" data-sec="share"><span><b>Condivisione</b><small>Il tuo nome; link e QR code dell'app</small></span><span class="n" aria-hidden="true">›</span></button>
+        <button type="button" class="dopt" data-sec="app"><span><b>Installazione sul telefono</b><small>Next Libris tra le app, a schermo intero e senza rete</small></span><span class="n" aria-hidden="true">›</span></button>
+        </div>
+      </div>
+      <div class="dlist dmenu">
+        <button type="button" class="dopt don-menu" id="donMenu"><span class="don-cup" aria-hidden="true"><svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h10v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M15 11h2a2.5 2.5 0 0 1 0 5h-2"/><path d="M5 8a2.5 2.5 0 0 1 2.5-3 3 3 0 0 1 5 0A2.5 2.5 0 0 1 15 8"/><path d="M8.5 12v5.5M11.5 12v5.5"/></svg></span><span><b>Sostieni Next Libris</b><small>Niente pubblicità, niente abbonamenti. Se ti piace, offrimi una birra!</small></span><span class="n" aria-hidden="true">♥</span></button>
+      </div>
       <div class="ver" id="verBox">
         <p class="ver-h"><b id="verNum"></b> <span id="verDate"></span></p>
         <p class="ver-note" id="verNote"></p>
@@ -948,6 +969,9 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
 <script src="vendor/tesseract.min.js" defer></script>
 <script src="lib.js" defer></script>
 <script src="app.js" defer></script>
+<script src="wrap.js" defer></script><!-- modulo: riepilogo ogni tre mesi -->
+<script src="layout.js" defer></script><!-- modulo: disposizione dello schermo -->
+<script src="schede.js" defer></script><!-- modulo: aspetto della scheda aperta -->
 <div id="printView" aria-hidden="true"></div>
 </body>
 </html>

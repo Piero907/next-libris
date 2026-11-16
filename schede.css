@@ -1,0 +1,81 @@
+/* Next Libris · modulo «Scheda aperta del libro» (si toglie insieme a schede.js). Con «Classica», o senza modulo, nulla cambia. */
+#optCard .lay-o{display:flex;gap:10px;align-items:flex-start;padding:9px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+#optCard .lay-o input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--accent)}
+#optCard .lay-o b{display:block;font-size:15px}
+#optCard .lay-o small{display:block;font-size:13px;line-height:1.35;color:var(--muted);margin-top:2px}
+
+/* pagina del libro: azioni in alto solo icone, rotonde, in una riga; campi piu' stretti (quando si modifica) */
+html[data-card]:not([data-card="attuale"]) .row.open .acts-main{flex-wrap:nowrap;gap:6px}
+html[data-card]:not([data-card="attuale"]) .row.open .acts-main .ico.act{width:42px;min-width:42px;height:42px;min-height:42px;padding:0;justify-content:center;border-radius:50%}
+html[data-card]:not([data-card="attuale"]) .row.open .acts-main .ico.act .al{display:none}
+html[data-card]:not([data-card="attuale"]) .row.open .acts-main .ico.act.danger{margin-left:auto}
+html[data-card]:not([data-card="attuale"]) .row.open .card-top{margin-bottom:4px}
+html[data-card]:not([data-card="attuale"]) .row.open .f textarea,html[data-card]:not([data-card="attuale"]) .row.open .f input{padding:3px 4px}
+html[data-card]:not([data-card="attuale"]) .row.open .lbl{font-size:10.5px;margin-bottom:0}
+html[data-card]:not([data-card="attuale"]) .row.open .meta,html[data-card]:not([data-card="attuale"]) .row.open .more,html[data-card]:not([data-card="attuale"]) .row.open .ser{row-gap:4px;margin-top:2px}
+html[data-card]:not([data-card="attuale"]) .row.open .serbox{padding:8px 10px;font-size:13.5px}
+html[data-card]:not([data-card="attuale"]) .row.open .facets .fchip{min-height:34px;padding:3px 10px;font-size:13px}
+
+/* D · pagina del libro */
+.row.cv-view .head,.row.cv-view .meta,.row.cv-view .more,.row.cv-view .ser,.row.cv-view .foot,.row.cv-view .serbox,.row.cv-view .facets,.row.cv-view .links{display:none}
+.cv-page{display:grid;gap:10px;margin:8px 0 12px}
+.cv-hero{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:start}
+.cv-cov{display:block;width:96px;height:142px;padding:0;border:0;background:none;cursor:zoom-in;border-radius:4px 8px 8px 4px}
+.cv-hero img,.cv-ph{width:96px;height:142px;object-fit:cover;border-radius:4px 8px 8px 4px;box-shadow:0 4px 12px #0002;display:block}
+.cv-ph{display:grid;grid-template-rows:1fr auto;place-items:center;background:hsl(var(--h) 32% 40%);color:#f3e3b8;font:700 40px var(--font-display);cursor:pointer;padding:0 0 8px}
+.cv-ph small{display:flex;align-items:center;gap:4px;font:600 11px var(--font-body);opacity:.9}
+.cv-ph small svg{width:14px;height:14px}
+.cv-cov:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.cv-ht h3{margin:2px 0 4px;font:700 22px/1.2 var(--font-display);text-wrap:balance}
+.cv-au{margin:0;font-size:16px;color:var(--ink)}
+.cv-meta{margin:6px 0 0;font-size:14px;line-height:1.4;color:var(--muted)}
+.cv-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+.cv-au .au-name{padding:0;border:0;background:none;color:var(--ink);font:inherit;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;cursor:pointer}
+.cv-au .au-sep{color:var(--muted)}
+/* lettura e voto: striscia sotto copertina e titolo (proposta C, scelta il 16/11/2026) */
+.cv-readbox{display:grid!important;gap:6px;margin:0}
+.cv-readbox>.lbl{display:none}
+.cv-readbox>.seg{display:grid;grid-template-columns:repeat(3,1fr);width:100%;background:var(--surface)}
+.cv-readbox>.seg button{min-height:40px;padding:6px 4px;font-size:14px;white-space:nowrap}
+.cv-rline{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 12px}
+.cv-rline .stars{margin-left:-6px}
+.cv-rline .f-rd{min-width:0;display:flex;align-items:center;gap:8px;margin:0;padding:0}
+.cv-rline .f-rd .lbl{display:inline;margin:0;color:var(--muted);font-size:13.5px;white-space:nowrap}
+.cv-rline .f-rd input{min-height:36px;padding:4px 4px;font-size:14.5px;width:auto;max-width:150px;background:transparent}
+/* D: azioni con la scritta sotto la riga delle icone */
+.cv-acts2{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 2px;padding-top:12px;border-top:1px solid var(--line)}
+.cv-acts2 .ico.act{min-height:40px}
+.cv-note{margin:0;padding:8px 12px;border-left:3px solid var(--line);font-size:14.5px;color:var(--ink)}
+.cv-editb{justify-self:start;gap:6px}
+.cv-done{display:block;margin:6px 0 10px auto}
+
+/* D: descrizione sobria sotto i dati; etichette-filtro in fondo */
+.cv-desc{border:0!important;background:none!important;padding:0!important;margin:0!important;box-shadow:none!important}
+.cv-desc[open]>summary{display:none}
+.cv-desc>summary{min-height:0;padding:0;font-size:14px;color:var(--accent);text-decoration:underline;text-underline-offset:3px;background:none}
+.cv-desc>summary::after{display:none}
+.cv-desc .desc-b{padding:0}
+.cv-desc .desc-t{font-size:14.5px;line-height:1.5;color:var(--ink)}
+.cv-desc .desc-t p{margin:0 0 6px}
+.cv-desc .desc-src{font-size:12px;color:var(--muted);margin:2px 0 0}
+.cv-tags{margin:12px 0 0;display:grid;gap:6px}
+.cv-tags-h{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.cv-tags-h svg{width:15px;height:15px}
+.cv-desc .desc-src,.cv-desc .desc-acts{display:inline}
+.cv-desc .desc-acts .link{font-size:12px;color:var(--muted);margin-left:6px}
+.cv-desc .link[data-act="descmore"]{font-size:13.5px}
+
+/* D: anteprima della descrizione di 3 righe; fonte e «rimuovila» solo a descrizione aperta; freccetta per aprirla */
+.cv-desc{position:relative}
+.cv-desc:not(.cv-open) .desc-t,.cv-desc:not(.cv-open) .desc-t.clip{display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-height:none;-webkit-mask-image:none;mask-image:none}
+.cv-desc:not(.cv-open) .desc-t p{display:inline;margin:0}
+.cv-desc:not(.cv-open) .desc-src,.cv-desc:not(.cv-open) .desc-acts,.cv-desc [data-act="descmore"]{display:none!important}
+.cv-desc.cv-open .desc-src,.cv-desc.cv-open .desc-acts{display:inline}
+.cv-dmore{display:flex;align-items:center;justify-content:center;width:100%;height:28px;margin:0;padding:0;border:0;background:none;color:var(--muted);cursor:pointer}
+.cv-desc.cv-open .cv-dmore svg{transform:rotate(180deg)}
+.cv-dmore:focus-visible{outline:2px solid var(--accent);border-radius:8px}
+.acts-main .cv-editb.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.acts-main .cv-editb.on svg{color:inherit}
+.cv-readbox.cv-strip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 0 6px}
+.cv-rline .stars .star{width:32px}
+.cv-rline .f-rd input{max-width:140px}
