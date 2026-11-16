@@ -19,6 +19,9 @@ const num = f => { const m = f.match(/^e2e(\d*)/); return m ? Number(m[1] || 1) 
 const base = f => f.replace(/\.m?js$/, '');
 let files = fs.readdirSync(__dirname).filter(f => /^test_.*\.(m?js)$/.test(f) || (!onlyUnit && /^e2e\d*\.js$/.test(f)));
 files.sort((a, b) => (a.startsWith('test_') ? -1 : 0) - (b.startsWith('test_') ? -1 : 0) || num(a) - num(b) || a.localeCompare(b));
+// le prove della copia social (e2e100-e2e199) servono solo dove c'e' il suo modulo (social.js): sulla vera e sulla prova fallirebbero sempre
+const socialOff = !fs.existsSync(require('path').join(CFG.APP, 'social.js'));
+if (socialOff) { const skip = files.filter(f => num(f) >= 100 && num(f) < 200 && !want.includes(base(f))); if (skip.length) console.log('Salto (copia social, manca social.js):', skip.join(', ')); files = files.filter(f => !skip.includes(f)); }
 if (quick) files = files.filter(f => f.startsWith('test_') || FUMO.includes(base(f)) || want.includes(base(f)));
 else if (want.length) files = files.filter(f => want.includes(base(f)));
 if (!CFG.CHROME && files.some(f => f.startsWith('e2e'))) { console.error('Chrome non trovato: indica il percorso con CHROME=...'); process.exit(2); }
