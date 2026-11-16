@@ -5,10 +5,12 @@ var L = window.Lib;
 /* ---------- utilità ---------- */
 var $ = function (s) { return document.querySelector(s); };
 var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-/* Copia di prova (piero907.github.io/next-libris-prova/): stesso codice, ma dati tutti suoi. Sta allo stesso indirizzo di base
-   della versione vera, quindi sul telefono condividerebbe lo stesso spazio: qui ogni nome di dato ha il prefisso «prova:». */
-var PROVA = /\/next-libris-prova(\/|$)/.test(location.pathname);
-function lsKey(k) { return PROVA ? 'prova:' + k : k; }
+/* Copie parallele (piero907.github.io/next-libris-prova/, …/next-libris-social/, …): stesso codice, ma dati tutti loro. Stanno allo
+   stesso indirizzo di base della versione vera, quindi sul telefono condividerebbero lo stesso spazio: ogni nome di dato ha il
+   prefisso della copia («prova:», «social:»…). COPIA e' il nome della copia ('' per la versione vera); PROVA vale solo per la prova. */
+var COPIA = (location.pathname.match(/\/next-libris-([a-z]+)(\/|$)/) || [])[1] || '';
+var PROVA = COPIA === 'prova';
+function lsKey(k) { return COPIA ? COPIA + ':' + k : k; }
 var ls = {
   get: function (k) { try { return localStorage.getItem(lsKey(k)); } catch (e) { return null; } },
   set: function (k, v) { try { localStorage.setItem(lsKey(k), v); return true; } catch (e) { return false; } }
@@ -4218,7 +4220,7 @@ function idb() {
   if (idbP) return idbP;
   idbP = new Promise(function (res, rej) {
     if (!window.indexedDB) { rej(new Error('IndexedDB non disponibile')); return; }
-    var r = indexedDB.open(PROVA ? 'prova-catalogo-libri' : 'catalogo-libri', 1);   // copertine e foto: anche queste separate nella prova
+    var r = indexedDB.open((COPIA ? COPIA + '-' : '') + 'catalogo-libri', 1);   // copertine e foto: anche queste separate in ogni copia
     r.onupgradeneeded = function () { r.result.createObjectStore('covers'); };
     r.onsuccess = function () { res(r.result); };
     r.onerror = function () { rej(r.error); };
@@ -6378,11 +6380,11 @@ var rz = null;
 window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { autosizeAll(list); }, 150); });
 
 /* ---------- avvio ---------- */
-if (PROVA) {                                       // copia di prova: si vede subito, per non confonderla con quella vera
-  document.documentElement.classList.add('prova');
-  document.title = 'Next Libris (prova)';
+if (COPIA) {                                       // copia parallela (prova, social…): si vede subito, per non confonderla con quella vera
+  document.documentElement.classList.add('prova', 'copia-' + COPIA);
+  document.title = 'Next Libris (' + COPIA + ')';
   var h1 = document.querySelector('h1');
-  if (h1) h1.insertAdjacentHTML('beforeend', ' <span class="prova-tag" title="Copia di prova: dati separati da quelli della versione vera">PROVA</span>');
+  if (h1) h1.insertAdjacentHTML('beforeend', ' <span class="prova-tag" title="Copia ' + esc(COPIA) + ': dati separati da quelli della versione vera">' + esc(COPIA.toUpperCase()) + '</span>');
 }
 loadAll();
 settings.donOpens = Math.min(9999, settings.donOpens + 1);   // un accesso in piu' (per la riga «Sostieni»)
@@ -6503,7 +6505,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
    Un modulo si toglie cancellando i suoi file e le sue righe in index.html e sw.js (vedi togli_modulo.py nel ramo prove). ---- */
 window.NL = {
   on: function (name, fn) { (hooks[name] || (hooks[name] = [])).push(fn); },
-  L: L, esc: esc, $: $, ls: ls, toast: toast, eur: eur, hue: hue, bigImg: bigImg, authorsOf: authorsOf, coll: coll, PROVA: PROVA,
+  L: L, esc: esc, $: $, ls: ls, toast: toast, eur: eur, hue: hue, bigImg: bigImg, authorsOf: authorsOf, coll: coll, PROVA: PROVA, COPIA: COPIA,
   books: function () { return state.books; }, quotes: allQuotes, tab: function () { return tab; }, settings: settings, saveSettings: saveSettings,
   name: function () { return settings.name || ''; }, goal: function () { return settings.goal || 0; },
   closeDrawer: function () { closeDrawer(); }, refresh: function () { renderList(); updateSummary(); },
