@@ -86,7 +86,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set', oldApp = false;
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 97, date: '2026-11-16', note: 'Ogni copia dell\'app tiene solo i suoi dati e le sue copie offline' };
+var APP_VERSION = { v: 98, date: '2026-11-16', note: 'I tuoi libri anche online con Google, voto a libricini, segnalibro, «In lettura» in cima, preferiti con la stella' };
 var state = { books: [], updated: 0 };
 var hooks = {};                              // moduli aggiuntivi (vedi window.NL in fondo): si agganciano dopo l'avvio
 function emit(name, arg) { (hooks[name] || []).forEach(function (fn) { try { fn(arg); } catch (e) { if (window.console) console.warn('modulo', name, e); } }); }
