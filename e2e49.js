@@ -8,7 +8,8 @@ const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8168));
 const json = o => ({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
 const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: 1, sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: false, rs: 'da', rt: 0, rd: '' }, o);
-const books = [B({ id: 'm1', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', ts: 3 }), B({ id: 'm2', t: 'Ilona arriva con la pioggia', a: 'Álvaro Mutis', ts: 2 }), B({ id: 'x', t: 'Due autori', a: 'Mario Rossi, Anna Bianchi', ts: 1 }), B({ id: 'v', t: 'Senza autore', ts: 0 })];
+const books = [B({ id: 'm1', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', ts: 3 }), B({ id: 'm2', t: 'Ilona arriva con la pioggia', a: 'Álvaro Mutis', ts: 2 }), B({ id: 'x', t: 'Due autori', a: 'Mario Rossi, Anna Bianchi', ts: 1 }), B({ id: 'v', t: 'Senza autore', ts: 0 }), B({ id: 'sg', t: 'Africa', a: 'Sebastião Salgado', ts: -1 }), B({ id: 'pr', t: 'I filosofi e le macchine', a: 'Paolo Rossi', ts: -2 })];
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
 let hits = [];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -24,6 +25,14 @@ let hits = [];
     if (u.includes('/page/summary/Mario_Rossi_(scrittore)')) return r.respond(json({ type: 'standard', title: 'Mario Rossi (scrittore)', description: 'scrittore italiano', extract: 'Mario Rossi è uno scrittore italiano di romanzi gialli.' }));
     if (u.includes('/page/summary/Mario_Rossi_(calciatore)')) return r.respond(json({ type: 'standard', title: 'Mario Rossi (calciatore)', description: 'calciatore italiano', extract: 'Calciatore.' }));
     if (u.includes('/page/summary/Mario_Rossi?')) return r.respond(json({ type: 'disambiguation', title: 'Mario Rossi', extract: 'Mario Rossi può riferirsi a...' }));
+    // fotografo (non «scrittore»): prima non veniva trovato; ora si', con la foto (16/11/2026)
+    if (u.includes('/page/summary/Sebastião_Salgado')) return r.respond(json({ type: 'standard', title: 'Sebastião Salgado', description: 'fotografo brasiliano', extract: 'Sebastião Ribeiro Salgado Júnior è stato un fotografo e fotoreporter brasiliano.', thumbnail: { source: 'https://upload.wikimedia.org/wikipedia/commons/thumb/x/xx/Salgado.jpg/320px-Salgado.jpg' } }));
+    if (u.includes('list=search') && u.includes('Sebastião Salgado')) return r.respond(json({ query: { search: [{ title: 'Sebastião Salgado' }] } }));
+    if (u.startsWith('https://upload.wikimedia.org/')) return r.respond({ status: 200, contentType: 'image/png', headers: { 'access-control-allow-origin': '*' }, body: PNG });
+    // omonimo: la voce col nome e' un calciatore, ma c'e' il filosofo che scrive: vince lui
+    if (u.includes('/page/summary/Paolo_Rossi?')) return r.respond(json({ type: 'standard', title: 'Paolo Rossi', description: 'calciatore italiano', extract: 'Paolo Rossi è stato un calciatore italiano.' }));
+    if (u.includes('list=search') && u.includes('Paolo Rossi')) return r.respond(json({ query: { search: [{ title: 'Paolo Rossi (filosofo)' }] } }));
+    if (u.includes('/page/summary/Paolo_Rossi_(filosofo)')) return r.respond(json({ type: 'standard', title: 'Paolo Rossi (filosofo)', description: 'filosofo e storico della scienza italiano', extract: 'Paolo Rossi è stato un filosofo e storico della scienza.' }));
     if (u.includes('wikipedia.org')) return r.respond({ status: 404, headers: { 'access-control-allow-origin': '*' }, contentType: 'application/json', body: '{}' });
     r.abort(); });
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true); window.__opened = []; window.open = u => { window.__opened.push(u); return null; };
@@ -69,6 +78,26 @@ let hits = [];
   await page.evaluate(() => history.back()); await wait(300); assert(await page.$eval('#auSheet', e => e.hidden), 'Indietro chiude');
   assert(await page.$('.row.open[data-id="x"]'), 'la scheda resta aperta');
   await page.evaluate(() => history.back()); await wait(300); assert(!(await page.$('.row.open[data-id="x"]')), 'poi Indietro chiude la scheda');
+  // 4b) fotografo: trovato, con la foto accanto al nome; toccandola si ingrandisce
+  await open('sg');
+  await click('.row[data-id="sg"] .au-name');
+  await page.waitForFunction(() => /fotoreporter/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 });
+  await page.waitForFunction(() => !document.querySelector('#auPic').hidden, { timeout: 5000 });
+  console.log('[fotografo]', await page.$eval('#auDesc', e => e.textContent), '| foto:', await page.$eval('#auPic img', e => e.src.slice(-20)));
+  assert.strictEqual(await page.$eval('#auDesc', e => e.textContent), 'Fotografo brasiliano');
+  await click('#auPic'); await wait(150); assert(await page.$eval('#auPic', e => e.classList.contains('big')));
+  await page.screenshot({ path: CFG.OUT + '/au_foto.png' });
+  await click('#auClose'); await wait(200);
+  // senza foto (Mutis): nessun riquadro vuoto
+  await open('m2'); await click('.row[data-id="m2"] .au-name');
+  await page.waitForFunction(() => /Maqroll/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 });
+  assert(await page.$eval('#auPic', e => e.hidden), 'senza foto niente riquadro');
+  await click('#auClose'); await wait(200);
+  // 4c) omonimo: vince chi scrive
+  await open('pr');
+  await click('.row[data-id="pr"] .au-name');
+  await page.waitForFunction(() => /storico della scienza/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 });
+  await click('#auClose'); await wait(200);
   // 5) autore vuoto: campo normale
   await open('v'); assert(await page.$('.row[data-id="v"] textarea[data-k="a"]'));
   assert.deepStrictEqual(errors, []);

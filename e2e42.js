@@ -43,16 +43,16 @@ const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: 
   assert.strictEqual(await page.$eval('#quoteOcr', e => e.textContent), 'Leggi il testo dalla foto');
   console.log('[1 testo letto]', JSON.stringify(await page.$eval('#quoteText', e => e.value)));
   await click('#quoteSave'); await wait(300); assert(/^q:/.test((await book('rosa')).qs[0].phs[0]));
-  // opzione: lettura automatica
-  await page.evaluate(() => { const c = document.querySelector('#optQuoteOcr'); c.checked = true; c.dispatchEvent(new Event('change')); });
-  assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).quoteOcrAuto), true);
+  // lettura automatica: non e' piu' un'opzione (tolta il 16/11/2026), il codice resta; la provo accendendola dall'interno
+  assert(await page.evaluate(() => !document.querySelector('#optQuoteOcr') && window.__app.settings.quoteOcrAuto === false));
+  await page.evaluate(() => { window.__app.settings.quoteOcrAuto = true; });
   await click('details.quotes[data-id="rosa"] [data-act="quoteadd"]'); await wait(150);
   await click('#quotePhoto'); await live(); await click('#snapShoot');
   await page.waitForFunction(() => !document.querySelector('#ped').hidden, { timeout: 10000 }); await click('#pedSkip');
   await page.waitForFunction(() => document.querySelector('#quoteText').value.length > 10, { timeout: 90000 }); console.log('[1b automatica] ok');
   await page.waitForFunction(() => !document.querySelector('#quoteOcr').classList.contains('busy'), { timeout: 10000 });
   await click('#quoteCancel');
-  await page.evaluate(() => { const c = document.querySelector('#optQuoteOcr'); c.checked = false; c.dispatchEvent(new Event('change')); });
+  await page.evaluate(() => { window.__app.settings.quoteOcrAuto = false; });
   // 2) Indietro chiude la fotocamera senza foto
   await click('details.quotes[data-id="rosa"] [data-act="quoteadd"]'); await wait(150);
   await click('#quotePhoto'); await live();

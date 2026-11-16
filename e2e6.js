@@ -68,11 +68,9 @@ let noExtra = new Set();
   await page.type('#q', 'soggiorno'); await wait(200);
   assert.strictEqual((await page.$$('#list .row')).length, 1);
   await page.evaluate(() => { const q = document.querySelector('#q'); q.value = ''; q.dispatchEvent(new Event('input')); });
-  // opzione spenta: i campi spariscono
-  await page.evaluate(() => { window.__app.openOptions(); document.querySelector('#optExtra').click(); });
-  assert.strictEqual(await page.$('#list .row .more'), null);
-  await page.evaluate(() => document.querySelector('#optExtra').click());
+  // i campi in piu' ci sono sempre: l'opzione per nasconderli e' stata tolta (16/11/2026)
   assert(await page.$('#list .row .more'));
+  assert(await page.evaluate(() => !document.querySelector('#optExtra')));
   console.log('[2 scaffale/note/opzione] ok');
 
   // 3) prestito: presta, filtro, restituito con Annulla
@@ -162,9 +160,13 @@ let noExtra = new Set();
   const st = await text('#statsBody'); console.log('[8 statistiche]', st.slice(0, 160));
   assert(st.includes('5') && st.includes('libri') && st.includes('Narrativa') && st.includes('in prestito'));
   await page.screenshot({ path: CFG.OUT + '/s_stats.png' });
-  await page.evaluate(() => [...document.querySelectorAll('#statsBody [data-q]')].find(b => b.dataset.q === 'Bompiani').click()); await wait(200);
+  await page.evaluate(() => [...document.querySelectorAll('#statsBody [data-sf="e"]')].find(b => b.dataset.sv === 'Bompiani').click()); await wait(300);
   assert.strictEqual((await page.$$('#list .row')).length, 1);
-  await page.evaluate(() => { const q = document.querySelector('#q'); q.value = ''; q.dispatchEvent(new Event('input')); });
+  // dalle statistiche si apre un vero filtro (casa editrice), non una ricerca: si conta tra i filtri (16/11/2026)
+  const sf = await page.evaluate(() => ({ q: document.querySelector('#q').value, f: window.__app.filtersAll(), chip: document.querySelector('[data-clear="ed"]') ? document.querySelector('[data-clear="ed"]').textContent : '' }));
+  console.log('[8 filtro dalle statistiche]', JSON.stringify(sf));
+  assert(sf.q === '' && sf.f.edFlt && /Casa editrice: Bompiani/.test(sf.chip));
+  await page.evaluate(() => document.querySelector('[data-clear="ed"]').click()); await wait(250);
 
   // 9) uniforma case editrici (+ Annulla)
   await page.evaluate(() => { window.__app.openOptions(); document.querySelector('#btnPubs').click(); }); await wait(200);

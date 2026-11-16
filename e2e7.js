@@ -95,12 +95,8 @@ const books = [
   assert.strictEqual(await page.$eval('#cntLoan', e => e.textContent), '0');
   await click('#fltLoan');
 
-  // 4) opzione «schede sempre aperte»
-  await page.evaluate(() => { window.__app.openOptions(); document.querySelector('#optOpenAll').click(); }); await wait(150);
-  assert.strictEqual(await page.$('#list .row.closed'), null); assert.strictEqual(await page.$('#list .chev-btn'), null);
-  await page.evaluate(() => document.querySelector('#optOpenAll').click()); await wait(150);
-  assert(await page.$('#list .row.closed'));
-  await page.evaluate(() => { window.__app.closeOptions(); });
+  // 4) l'opzione «schede sempre aperte» non c'e' piu' (16/11/2026)
+  assert(await page.evaluate(() => !document.querySelector('#optOpenAll')));
 
   // 5) schermo largo
   await page.setViewport({ width: 1100, height: 800 }); await wait(200);

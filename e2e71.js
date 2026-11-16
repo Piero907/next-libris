@@ -57,6 +57,13 @@ const books = [
   // Modifica: icona della matita in alto, sulla stessa riga
   const pen = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.acts-main .cv-editb'), f = e.querySelector('.acts-main [data-act="fav"]'); return p && Math.round(p.getBoundingClientRect().top) === Math.round(f.getBoundingClientRect().top) && getComputedStyle(p.querySelector('.al')).display === 'none'; }, card());
   assert(pen, 'matita in alto, solo icona');
+  // lettura e voto incolonnati accanto alla copertina, sotto casa editrice, anno, pagine (16/11/2026)
+  const rb = await page.evaluate(s => { const e = document.querySelector(s), r = e.querySelector('.cv-readbox'), m = e.querySelector('.cv-meta'); return { inHero: !!r && r.parentNode.classList.contains('cv-ht'), below: !!r && r.getBoundingClientRect().top >= m.getBoundingClientRect().bottom - 1, right: !!r && r.getBoundingClientRect().left > e.querySelector('.cv-cov').getBoundingClientRect().right }; }, card());
+  console.log('  lettura', JSON.stringify(rb)); assert(rb.inHero && rb.below && rb.right, 'lettura e voto sotto la riga dei dati, accanto alla copertina');
+  // «Letto il» sotto la descrizione e la nota «Regalo di Anna»
+  const rdt = await page.evaluate(s => { const e = document.querySelector(s), d = e.querySelector('.cv-rdate'), n = e.querySelector('.cv-note'), ds = e.querySelector('.cv-desc'); return { ok: !!d && !!d.querySelector('input[data-k="rd"]'), afterNote: !!d && !!n && n.nextElementSibling === d, belowDesc: !!d && d.getBoundingClientRect().top > ds.getBoundingClientRect().bottom }; }, card());
+  console.log('  letto il', JSON.stringify(rdt)); assert(rdt.ok && rdt.afterNote && rdt.belowDesc);
+  await page.screenshot({ path: CFG.OUT + '/scheda_d_lettura.png' });
   // lettura modificabile dalla pagina
   assert(await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="ok"]').getAttribute('aria-pressed') === 'true', card()));
   await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="in"]').click(), card()); await wait(400);

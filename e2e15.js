@@ -34,7 +34,7 @@ const assert = require('assert');
   await page.screenshot({ path: CFG.OUT + '/s_menu_opts.png' });
   // 2) voce -> pagina; «‹» torna al menu; Indietro chiude tutto
   await page.click('#drawerOpts [data-sec="search"]'); await wait(350);
-  assert(!(await drawerOpen())); assert(await vis('#optSheet')); assert(await vis('#gbKey')); assert(!(await vis('#optOpenAll')));
+  assert(!(await drawerOpen())); assert(await vis('#optSheet')); assert(await vis('#gbKey')); assert(!(await vis('#optPrice')));
   console.log('[2 titolo]', await page.$eval('#optH', e => e.textContent), '|', await page.$eval('#gbCount', e => e.textContent));
   await page.screenshot({ path: CFG.OUT + '/s_opt_search.png' });
   await page.click('#optBack'); await wait(350);
@@ -46,8 +46,10 @@ const assert = require('assert');
   assert(!(await vis('#optSheet'))); assert(!(await drawerOpen())); assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8143) + '/?vista=elenco');
   // le impostazioni funzionano ancora
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="cards"]'); await wait(300);
-  await page.click('#optOpenAll'); await wait(100);
-  assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).openAll), true);
+  const pr0 = await page.evaluate(() => window.__app.settings.price);
+  await page.click('#optPrice'); await wait(100);
+  assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).price), !pr0);
+  await page.click('#optPrice'); await wait(100);
   await page.click('#optClose'); await wait(300); assert(!(await vis('#optSheet')));
   assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8143) + '/?vista=elenco');
   // 3) Backup ed esportazione

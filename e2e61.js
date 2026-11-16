@@ -67,7 +67,7 @@ function stub(mode) {
   assert(await page.evaluate(() => !document.querySelector('#scanTorch').hidden));
   await page.evaluate(() => document.querySelector('#scanClose').click()); await wait(300);
   // diagnosi nelle Opzioni › App
-  await page.evaluate(() => window.__app.openOptions('app')); await wait(300);
+  await page.evaluate(() => window.__app.openOptions('cards')); await wait(300);
   assert(/obiettivo con la luce/.test(await page.$eval('#lensState', e => e.textContent)));
   await page.click('#lensRun'); await page.waitForFunction(() => document.querySelectorAll('#lensList li').length === 3, { timeout: 15000 });
   const rows = await page.$$eval('#lensList li', e => e.map(x => x.textContent)); console.log('[A diagnosi]', JSON.stringify(rows));
@@ -95,7 +95,7 @@ function stub(mode) {
   await snapClose(page); await ctx.close();
   // D) il telefono dice di averla accesa ma resta spenta (Galaxy A32): «Prova la luce» -> «No» -> niente pulsanti della luce
   ({ ctx, page } = await open('lie'));
-  await page.evaluate(() => window.__app.openOptions('app')); await wait(300);
+  await page.evaluate(() => window.__app.openOptions('cards')); await wait(300);
   const don = await page.$eval('#donOpt', e => ({ bg: getComputedStyle(e).backgroundColor, svg: !!e.querySelector('svg') }));
   console.log('[Sostieni in App]', JSON.stringify(don)); assert(don.svg && don.bg !== 'rgba(0, 0, 0, 0)' && don.bg !== 'rgb(255, 255, 255)', 'Sostieni in evidenza');
   await page.click('#lightRun');
@@ -112,7 +112,7 @@ function stub(mode) {
   assert(await page.evaluate(() => document.querySelector('#scanTorch').hidden), 'scansione: niente luce');
   await page.evaluate(() => document.querySelector('#scanClose').click()); await wait(300);
   // «Sì»: resta tutto
-  await page.evaluate(() => window.__app.openOptions('app')); await wait(300);
+  await page.evaluate(() => window.__app.openOptions('cards')); await wait(300);
   await page.click('#lightRun'); await page.waitForFunction(() => !document.querySelector('#lightAsk').hidden, { timeout: 15000 });
   await page.click('#lightYes'); await wait(200);
   const after = await page.evaluate(() => ({ cam: window.__app.settings.torchCam, ok: window.__app.settings.lightOk })); console.log('[D sì]', JSON.stringify(after));

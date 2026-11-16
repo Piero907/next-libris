@@ -17,8 +17,8 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   await page.evaluateOnNewDocument(() => { if (!localStorage.getItem('catalogo-libri-set')) localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), price: false })); });
   await page.goto('http://localhost:' + CFG.port(8178) + '/?vista=elenco', { waitUntil: 'load' }); await wait(600);
   const snd = () => page.evaluate(() => window.__app.sounds());
-  // 1) Opzioni › Aspetto: «Suoni» acceso di predefinito; spento -> niente bip
-  await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
+  // 1) Impostazioni › Aggiunta dei libri (prima in Aspetto, spostato il 16/11/2026): «Suoni» acceso di predefinito; spento -> niente bip
+  await page.evaluate(() => window.__app.openOptions('cards')); await wait(300);
   assert(await page.$eval('#optSound', e => e.checked), 'acceso di predefinito');
   await page.click('#optSound'); await wait(200);
   assert.strictEqual(await page.evaluate(() => window.__app.settings.sound), false);

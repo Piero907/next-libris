@@ -1,6 +1,6 @@
 const CFG = require("./_config");
 // Menu laterale riordinato (16/11/2026): «La tua libreria» (Sistema l'elenco, Backup con la data dell'ultimo),
-// «Impostazioni» chiuse finche' non le apri (Aspetto, Ricerca, Schede e prezzo, Condivisione, App), Sostieni e versione dove erano.
+// «Impostazioni» chiuse finche' non le apri (Aspetto, Ricerca, Aggiunta dei libri, Condivisione, Installazione sul telefono), Sostieni e versione dove erano.
 // L'ingranaggio in alto apre il menu con le impostazioni gia' aperte; tornando da una voce restano aperte.
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -64,6 +64,27 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   // si richiudono toccando di nuovo
   await page.click('#goSettings'); await wait(300);
   assert(!(await menu()).setOpen);
+  await page.evaluate(() => window.__app.closeDrawer()); await wait(400);
+  // Aspetto: tema vicino a colori e caratteri; poi all'apertura e riepilogo (16/11/2026)
+  await page.evaluate(() => window.__app.openOptions('look')); await wait(350);
+  const legs = await page.$$eval('#optSheet .opt-sec[data-sec="look"] legend', e => e.map(x => x.textContent)); console.log('[aspetto]', legs.join(' | '));
+  assert.deepStrictEqual(legs, ['Tema', 'Colori', 'Carattere dei titoli', 'Carattere del testo', 'All\'apertura mostra', 'Riepilogo in alto']);
+  assert(await page.evaluate(() => !document.querySelector('.opt-sec[data-sec="look"] #optSound')), 'Suoni non piu\' in Aspetto');
+  await page.screenshot({ path: CFG.OUT + '/opzioni_aspetto.png' });
+  await page.evaluate(() => window.__app.closeOptions()); await wait(300);
+  // Aggiunta dei libri: solo prezzo, suoni, fotocamera del telefono e la prova della luce; le altre opzioni tolte
+  await page.evaluate(() => window.__app.openOptions('cards')); await wait(350);
+  const add = await page.evaluate(() => { const c = document.querySelector('.opt-sec[data-sec="cards"]'); return { h: document.querySelector('#optH').textContent, ids: [...c.querySelectorAll('input[type=checkbox]')].map(x => x.id), light: !!c.querySelector('#lightRun'), gone: ['optOpenAll', 'optExtra', 'optQuoteOcr'].filter(k => document.getElementById(k)) }; });
+  console.log('[aggiunta]', JSON.stringify(add));
+  assert.strictEqual(add.h, 'Aggiunta dei libri'); assert.deepStrictEqual(add.ids, ['optPrice', 'optSound', 'optCamNative']); assert(add.light); assert.deepStrictEqual(add.gone, []);
+  assert(await page.evaluate(() => window.__app.settings.extra === true && window.__app.settings.quoteOcrAuto === false));
+  await page.screenshot({ path: CFG.OUT + '/opzioni_aggiunta.png' });
+  await page.evaluate(() => window.__app.closeOptions()); await wait(300);
+  // Installazione sul telefono: si capisce a cosa serve
+  await page.evaluate(() => window.__app.openOptions('app')); await wait(350);
+  assert.strictEqual(await page.$eval('#optH', e => e.textContent), 'Installazione sul telefono');
+  assert(/icona tra le app del telefono/.test(await page.$eval('.opt-sec[data-sec="app"]', e => e.innerText)));
+  await page.screenshot({ path: CFG.OUT + '/opzioni_installazione.png' });
   assert.deepStrictEqual(errors, []);
   console.log('e2e72 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

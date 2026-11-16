@@ -150,7 +150,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e46.js | 8165 | numerazione personalizzata della serie |
 | e2e47.js | 8166 | durata dei messaggi (brevi; con Annulla 4 s) |
 | e2e48.js | 8167 | editor delle foto: gomma, adesivi |
-| e2e49.js | 8168 | autore: profilo Wikipedia, matita, ricerca, i suoi libri |
+| e2e49.js | 8168 | autore: profilo Wikipedia, matita, ricerca, i suoi libri; fotografo trovato con la foto (si ingrandisce), omonimo: vince chi scrive |
 | e2e50.js | 8169 | editor delle foto: maniglie per grandezza e rotazione |
 | e2e51.js | 8170 | novità delle versioni dentro l'app, anche senza rete |
 | e2e52.js | 8171 | donazioni: riga dopo 5 accessi, promemoria ogni 50 libri, PayPal, soglia di 20 s |
@@ -172,7 +172,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e69.js | 8189 | ISBN 979-8 non trovato (pubblicazione Amazon): casa editrice «Amazon (pubblicazione in proprio)», riquadro nella scheda (Fotografa la copertina, Cerca sul web, uno solo), foto che riconosce titolo e autore tenendo il codice; i 979-8 vecchi sistemati all'avvio |
 | e2e70.js | 8190 | Dopo un aggiornamento: «Aggiornato in questa versione» con le novità delle versioni nuove (prima quelle in grassetto), una volta sola, non alla prima apertura; «Tutte le novità» apre il registro. La versione per la prova è in e2e62 |
 | e2e71.js | 8191 | Modulo «Scheda aperta del libro» (schede.js/.css): Pagina del libro è quella dell'app, sezione tolta dalle Opzioni (Classica solo su localhost, con `NLCard.set`); nei Desideri anche preferito e Presta, vendi o regala. Icone in alto su una riga con la matita, descrizione in 3 righe con freccetta, lettura modificabile, autore che apre la sua finestra, etichette-filtro in fondo, copertina che si ingrandisce, Presta e Cerca sul web in fondo |
-| e2e72.js | 8192 | Menu laterale riordinato: «La tua libreria» (Sistema l'elenco, Backup con la data dell'ultimo), «Impostazioni» chiuse finché non le apri (Aspetto, Ricerca, Schede e prezzo, Condivisione, App), Sostieni e versione in fondo; l'ingranaggio le apre già aperte; tornando da una voce restano aperte |
+| e2e72.js | 8192 | Menu laterale riordinato: «La tua libreria» (Sistema l'elenco, Backup con la data dell'ultimo), «Impostazioni» chiuse finché non le apri (Aspetto, Ricerca, Schede e prezzo, Condivisione, App), Sostieni e versione in fondo; l'ingranaggio le apre già aperte; tornando da una voce restano aperte; Aspetto (tema, colori, caratteri vicini), «Aggiunta dei libri» (prezzo, suoni, fotocamera, luce; tolte le altre opzioni), «Installazione sul telefono» |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
 Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8193** e poi a salire, sempre attraverso `CFG.port()`.

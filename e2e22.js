@@ -99,7 +99,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   await p.click('#instGo'); await wait(150);
   await p.click('#instWhy'); await wait(400);
   assert(await hidden(p, '#instSheet')); assert(!(await hidden(p, '#optSheet'))); assert(!(await hidden(p, '#instOut')));
-  assert.strictEqual(await txt(p, '#optH'), 'App');
+  assert.strictEqual(await txt(p, '#optH'), 'Installazione sul telefono');
   await p.goBack(); await wait(200);
   assert(await hidden(p, '#optSheet'), 'Indietro chiude le Opzioni');
   assert.strictEqual(p.url(), 'http://localhost:' + CFG.port(8130) + '/?vista=elenco');
