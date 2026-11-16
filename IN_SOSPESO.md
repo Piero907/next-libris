@@ -228,3 +228,7 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - **la collezione**: «Ex-libris incontrati: 7», con la griglia degli ex-libris, chi sono, quando e con quale libro li hai incontrati;
 - **sul libro**: nella pagina del libro, la «storia» con gli ex-libris di chi l'ha avuto (regalato da…, prestato a…), come i timbri di un passaporto;
 - niente server: tutto viaggia nei link e resta nei telefoni.
+
+**Aggiunta di Piero (16/11/2026) al punto 15:** l'ex-libris potrebbe essere anche un **valore casuale** (un codice) assegnato a quell'ex-libris, che **segue il libro**; collegato o **al telefono** che ha scansionato il libro o **all'account** di chi usa l'app.
+- Nota: oggi l'app non ha account (niente server né accesso). La strada semplice è un **codice casuale creato una volta** al primo uso (per esempio `NL-7F3K-Q9`), salvato nel telefono **e nel backup**: così non si perde cambiando telefono (con un collegamento al solo telefono si perderebbe). Un vero account richiederebbe un servizio esterno (vedi il punto 7 su Google Drive).
+- Ogni libro può portare la sua «catena» di codici: chi l'ha scansionato per primo, a chi è passato (prestito, regalo), così si ricostruisce la storia del libro anche senza immagini.
