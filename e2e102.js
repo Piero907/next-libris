@@ -1,15 +1,18 @@
 const CFG = require("./_config");
-// modulo «Amici» (amici.js) con un Supabase finto: parte del Menu «Account e amici» (Account e Amici), nome utente (proposto dal nome,
-// già preso → messaggio), ricerca per nome utente (da 3 lettere), richiesta, avviso in cima a chi la riceve con il numero nel Menu,
-// accetta, amici da tutte e due le parti, togli con conferma; link d'invito (…/?amico=nome) aperto senza account: entra con Google,
-// sceglie il nome utente e chiede l'amicizia a chi l'ha invitato; indirizzo pulito
+// modulo «Amici» (amici.js) con un Supabase finto: parte «Amici» nel Menu (sotto Filtri/Statistiche, prima di «La tua libreria»),
+// icona accanto all'ingranaggio con il numero delle richieste; un solo nome (quello dell'app = quello per gli amici: proposto,
+// già preso senza badare alle maiuscole → messaggio; cambiato nelle Impostazioni → anche per gli amici, se preso torna com'era);
+// ricerca per nome (da 3 lettere), richiesta, avviso in cima PRIMA degli altri avvisi (disposizione A, con «Installa»), accetta,
+// amici da tutte e due le parti, togli con conferma; finestra che non esce di lato a 360 px; link d'invito (…/?amico=Nome) senza
+// account: entra con Google, sceglie il nome e chiede l'amicizia a chi l'ha invitato; indirizzo pulito
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.wasm': 'application/wasm' };
 // ---- Supabase finto ----
-const DB = { users: { 'anna@esempio.it': 'uA', 'bruno@esempio.it': 'uB' }, prof: { uA: { nome: 'Anna', utente: null }, uB: { nome: 'Bruno', utente: 'bruno' } }, am: [] };
+const DB = { users: { 'anna@esempio.it': 'uA', 'bruno@esempio.it': 'uB' }, prof: { uA: { nome: 'Anna', utente: null }, uB: { nome: 'Bruno', utente: 'Bruno' } }, am: [] };
+const low = (x) => String(x || '').toLowerCase();
 const uidOf = (req) => { const m = /Bearer AT-(\w+)/.exec(req.headers.authorization || ''); return m ? m[1] : null; };
 function rel(me, o) { const f = DB.am.find(x => (x.da === me && x.a === o) || (x.da === o && x.a === me)); return !f ? '' : f.stato === 'amici' ? 'amici' : f.da === me ? 'inviata' : 'ricevuta'; }
 function fake(req, res, body, url) {
@@ -28,20 +31,20 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/profili' && req.method === 'GET') { const pr = DB.prof[me]; return send(200, pr ? [{ utente: pr.utente, nome: pr.nome }] : []); }
   if (p === '/rest/v1/profili' && req.method === 'POST') {
     if (body.utente) {
-      if (!/^[a-z0-9._]{3,20}$/.test(body.utente)) return send(400, { code: '23514', message: 'new row violates check constraint' });
-      if (Object.keys(DB.prof).some(k => k !== me && DB.prof[k].utente === body.utente)) return send(409, { code: '23505', message: 'duplicate key value violates unique constraint "profili_utente_key"' });
+      if (!/^[0-9A-Za-zÀ-ÖØ-öø-ÿ ._'-]{3,20}$/.test(body.utente) || body.utente !== body.utente.trim()) return send(400, { code: '23514', message: 'new row violates check constraint' });
+      if (Object.keys(DB.prof).some(k => k !== me && low(DB.prof[k].utente) === low(body.utente))) return send(409, { code: '23505', message: 'duplicate key value violates unique constraint "profili_utente_key"' });
     }
     DB.prof[me] = Object.assign(DB.prof[me] || { nome: '', utente: null }, body.utente ? { utente: body.utente } : {}, body.nome ? { nome: body.nome } : {});
     return send(201);
   }
   if (p === '/rest/v1/rpc/cerca_utenti') {
     DB.cerche = (DB.cerche || 0) + 1;
-    const s = String(body.q || '').toLowerCase().replace(/^@/, '');
+    const s = low(body.q).replace(/^@/, '').trim();
     if (s.length < 3) return send(200, []);
-    return send(200, Object.keys(DB.prof).filter(k => k !== me && DB.prof[k].utente && DB.prof[k].utente.startsWith(s)).map(k => ({ id: k, utente: DB.prof[k].utente, nome: DB.prof[k].nome, rel: rel(me, k) })));
+    return send(200, Object.keys(DB.prof).filter(k => k !== me && DB.prof[k].utente && low(DB.prof[k].utente).startsWith(s)).map(k => ({ id: k, utente: DB.prof[k].utente, nome: DB.prof[k].nome, rel: rel(me, k) })));
   }
   if (p === '/rest/v1/rpc/chiedi_amicizia') {
-    const o = Object.keys(DB.prof).find(k => DB.prof[k].utente === body.utente);
+    const o = Object.keys(DB.prof).find(k => low(DB.prof[k].utente) === low(body.utente).trim());
     if (!o) return send(400, { message: 'utente non trovato' });
     const back = DB.am.find(x => x.da === o && x.a === me); if (back) { back.stato = 'amici'; return send(200, 'amici'); }
     if (!DB.am.find(x => x.da === me && x.a === o)) DB.am.push({ da: me, a: o, stato: 'attesa', creato: new Date().toISOString() });
@@ -88,64 +91,83 @@ const base = 'http://localhost:' + CFG.port(8302);
     page.openFri = async () => { await page.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await page.click('#goFri'); await wait(700); };
     return page;
   }
-  // ---- A: Anna, già entrata; Menu con la parte «Account e amici» ----
+  // ---- A: Anna, già entrata; parte «Amici» nel Menu, icona in alto ----
   const A = await phone('A', 'uA', 'anna@esempio.it');
-  await A.evaluate(() => { window.__app.settings.name = 'Anna'; }); await wait(2500);
+  await A.evaluate(() => { window.__app.settings.name = 'Anna'; }); await wait(2000);
+  assert(await A.$('header.top #btnFri') && await A.$eval('#btnFriN', x => x.hidden), 'icona Amici in testata, senza numero');
   await A.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
-  const menu = await A.evaluate(() => { const h = document.getElementById('accMenuH'), m = document.getElementById('accMenu'); return { h: h && h.textContent, ids: m ? Array.from(m.children).map(x => x.id) : [], fri: document.getElementById('goFriTxt').textContent, prev: h && h.previousElementSibling.querySelector('[data-sec="export"]') ? 'libreria' : '' }; });
+  const menu = await A.evaluate(() => { const o = document.getElementById('drawerOpts'); return { heads: [...o.querySelectorAll('h3')].filter(h => h.getClientRects().length).map(h => h.textContent),
+    m: [...document.getElementById('friMenu').children].map(x => x.id), after: document.getElementById('friMenuH').previousElementSibling.classList.contains('dmain'),
+    acc: document.getElementById('goAcc').previousElementSibling.dataset.sec, fri: document.getElementById('goFriTxt').textContent }; });
   console.log('[menu]', JSON.stringify(menu));
-  assert(menu.h === 'Account e amici' && menu.ids.join() === 'goAcc,goFri' && menu.prev === 'libreria', 'parte del Menu dopo «La tua libreria»');
-  assert(/Scegli il tuo nome utente/.test(menu.fri), 'senza nome utente il Menu lo chiede');
-  await A.click('#goFri'); await wait(700);
-  assert.strictEqual(await A.$eval('#friU', x => x.value), 'anna', 'nome utente proposto dal nome');
+  assert.deepStrictEqual(menu.heads, ['Amici', 'La tua libreria']); assert(menu.after && menu.m.join() === 'goFri,goInv', 'Amici subito dopo Filtri/Statistiche');
+  assert.strictEqual(menu.acc, 'export', 'Account e sincronizzazione in «La tua libreria», dopo il backup');
+  assert(/Scegli il nome/.test(menu.fri), 'senza nome il Menu lo chiede');
+  await A.evaluate(() => window.__app.closeDrawer()); await wait(300);
+  await A.click('#btnFri'); await wait(700);
+  assert.strictEqual(await A.$eval('#friU', x => x.value), 'Anna', 'il nome proposto è quello dell\'app');
   await A.$eval('#friU', x => { x.value = 'bruno'; }); await A.click('#friSaveU'); await wait(500);
-  let t = await A.body(); console.log('[nome preso]', t.slice(0, 160)); assert(/già preso/.test(t));
-  await A.$eval('#friU', x => { x.value = '@Anna.R'; }); await A.click('#friSaveU'); await wait(700);
-  assert.strictEqual(DB.prof.uA.utente, 'anna.r', 'nome utente salvato, senza @ e minuscolo');
-  t = await A.body(); assert(/Sei @anna\.r/.test(t) && /Ancora nessuno/.test(t), 'profilo e nessun amico');
-  // ricerca: 2 lettere no, 3 sì
+  let t = await A.body(); console.log('[nome preso]', t.slice(0, 160)); assert(/già usato da un altro/.test(t), 'preso, anche con le maiuscole diverse');
+  await A.$eval('#friU', x => { x.value = '  Anna  R. '; }); await A.click('#friSaveU'); await wait(700);
+  assert.strictEqual(DB.prof.uA.utente, 'Anna R.', 'nome salvato com\'è scritto (spazi in più tolti)');
+  assert.strictEqual(await A.evaluate(() => window.NL.name()), 'Anna R.', 'è anche il nome dell\'app');
+  t = await A.body(); assert(/Il tuo nome Anna R\./.test(t) && /Ancora nessuno/.test(t), 'profilo e nessun amico');
+  // nome cambiato nelle Impostazioni: vale anche per gli amici; se è preso torna com'era
+  await A.evaluate(() => window.NL.setName('Anna Rossi')); await wait(600);
+  assert.strictEqual(DB.prof.uA.utente, 'Anna Rossi', 'nome dell\'app → nome per gli amici');
+  await A.evaluate(() => window.NL.setName('BRUNO')); await wait(600);
+  assert.strictEqual(DB.prof.uA.utente, 'Anna Rossi'); assert.strictEqual(await A.evaluate(() => window.NL.name()), 'Anna Rossi', 'preso: torna com\'era');
+  // ricerca: 2 lettere no, 3 sì (senza badare alle maiuscole)
+  await A.evaluate(() => { window.NLAmici.open(); }); await wait(600);
   await A.type('#friQ', 'br'); await A.click('#friFormQ button'); await wait(300);
   assert(/almeno 3 lettere/.test(await A.body()), 'ricerca da 3 lettere');
   await A.$eval('#friQ', x => { x.value = 'BRU'; }); await A.click('#friFormQ button'); await wait(500);
-  t = await A.body(); console.log('[ricerca]', t.slice(0, 200)); assert(/Bruno @bruno/.test(t) && /Chiedi l.amicizia/.test(t));
-  await A.click('[data-f="ask"][data-u="bruno"]'); await wait(700);
+  t = await A.body(); console.log('[ricerca]', t.slice(0, 200)); assert(/Bruno Chiedi l.amicizia/.test(t));
+  await A.click('[data-f="ask"][data-u="Bruno"]'); await wait(700);
   assert(DB.am.length === 1 && DB.am[0].da === 'uA' && DB.am[0].a === 'uB' && DB.am[0].stato === 'attesa', 'richiesta salvata');
   t = await A.body(); assert(/Richiesta inviata/.test(t) && /Richieste che hai mandato/.test(t) && /In attesa/.test(t), 'richiesta tra quelle mandate');
   await A.screenshot({ path: CFG.OUT + '/amici-cerca.png' });
-  // ---- B: Bruno apre l'app: avviso in cima e numero nel Menu ----
-  const B = await phone('B', 'uB', 'bruno@esempio.it'); await wait(2600);
-  const note = await B.evaluate(() => { const n = document.getElementById('friNote'); return n && !n.hidden ? n.innerText.replace(/\s+/g, ' ') : ''; });
-  console.log('[avviso]', note); assert(/Anna vuole essere tuo amico/.test(note), 'avviso della richiesta');
+  // ---- B: Bruno apre l'app (disposizione A, telefono stretto): avviso PRIMA di «Installa», numero sull'icona e nel Menu ----
+  const B = await phone('B', 'uB', 'bruno@esempio.it');
+  await B.setViewport({ width: 360, height: 780, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await B.evaluate(() => { window.NLLayout.set('A'); const c = document.getElementById('instCard'); if (c) c.hidden = false; }); await wait(2200);
+  const note = await B.evaluate(() => { const n = document.getElementById('friNote'); return n && !n.hidden && !n.classList.contains('lay-later') && n.getClientRects().length ? n.innerText.replace(/\s+/g, ' ') : ''; });
+  console.log('[avviso]', note); assert(/Anna Rossi vuole essere tuo amico/.test(note), 'avviso della richiesta, davanti agli altri');
+  assert(await B.evaluate(() => { const c = document.getElementById('instCard'); return !c || c.hidden || c.classList.contains('lay-later'); }), '«Installa» dietro');
+  assert.strictEqual(await B.$eval('#btnFriN', x => x.hidden ? '' : x.textContent), '1', 'numero sull\'icona');
   await B.screenshot({ path: CFG.OUT + '/amici-avviso.png' });
   await B.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
-  assert.strictEqual(await B.$eval('#goFriN', x => x.hidden ? '' : x.textContent), '1', 'numero delle richieste nel Menu');
+  assert.strictEqual(await B.$eval('#goFriN', x => x.hidden ? '' : x.textContent), '1', 'numero nel Menu');
   await B.evaluate(() => window.__app.closeDrawer()); await wait(300);
   await B.click('#friNoteGo'); await wait(900);
   assert(await B.$eval('#friNote', x => x.hidden), 'avviso visto: sparisce');
-  t = await B.body(); assert(/Richieste per te 1/.test(t) && /Anna @anna\.r/.test(t));
+  t = await B.body(); assert(/Richieste per te 1/.test(t) && /Anna Rossi/.test(t));
+  const side = await B.evaluate(() => { const si = document.querySelector('#friSheet .sheet-in'); return si.scrollWidth - si.clientWidth; });
+  assert(side <= 0, 'la finestra non esce di lato a 360 px (' + side + ')');
   await B.screenshot({ path: CFG.OUT + '/amici-richiesta.png' });
   await B.click('[data-f="yes"]'); await wait(800);
   assert.strictEqual(DB.am[0].stato, 'amici', 'accettata');
-  t = await B.body(); assert(/I tuoi amici 1/.test(t) && /Anna @anna\.r/.test(t) && !/Richieste per te/.test(t), 'B: amici');
+  t = await B.body(); assert(/I tuoi amici 1/.test(t) && /Anna Rossi/.test(t) && !/Richieste per te/.test(t), 'B: amici');
+  assert(await B.$eval('#btnFriN', x => x.hidden), 'accettata: niente numero sull\'icona');
   // A vede l'amico (aggiornando)
   await A.evaluate(() => window.NLAmici.load(true)); await wait(500);
-  t = await A.body(); assert(/I tuoi amici 1/.test(t) && /Bruno @bruno/.test(t) && !/Richieste che hai mandato/.test(t), 'A: amici');
+  t = await A.body(); assert(/I tuoi amici 1/.test(t) && /Bruno/.test(t) && !/Richieste che hai mandato/.test(t), 'A: amici');
   // togli con conferma
   await A.click('[data-f="ask-drop"]'); await wait(200);
-  assert(/Togli Bruno @bruno dagli amici\?/.test(await A.body()), 'conferma'); assert.strictEqual(DB.am.length, 1, 'non ancora tolto');
+  assert(/Togli Bruno dagli amici\?/.test(await A.body()), 'conferma'); assert.strictEqual(DB.am.length, 1, 'non ancora tolto');
   await A.click('[data-f="drop"]'); await wait(700);
   assert.strictEqual(DB.am.length, 0, 'tolto'); assert(/Ancora nessuno/.test(await A.body()));
   // ---- C: apre il link d'invito senza account ----
-  const C = await phone('C', '', 'carla@esempio.it', '?amico=Anna.R&vista=elenco'); await wait(600);
+  const C = await phone('C', '', 'carla@esempio.it', '?amico=Anna%20Rossi&vista=elenco'); await wait(600);
   const url = await C.evaluate(() => location.href); console.log('[indirizzo]', url);
   assert(!/amico=/.test(url) && /vista=elenco/.test(url), 'indirizzo pulito, il resto resta');
-  t = await C.body(); assert(/Ti ha invitato @anna\.r/.test(t) && /serve l.account/.test(t), 'invito senza account');
+  t = await C.body(); assert(/Ti ha invitato Anna Rossi/.test(t) && /serve l.account/.test(t), 'invito senza account');
   await C.click('[data-f="login"]'); await wait(900);
   await C.click('#gisFinto'); await wait(1500);
   assert(await C.$eval('#friSheet', x => !x.hidden), 'dopo l\'accesso torna la finestra Amici');
-  t = await C.body(); assert(/Ti ha invitato @anna\.r/.test(t) && /nome utente/.test(t), 'prima il nome utente');
-  await C.$eval('#friU', x => { x.value = 'carla'; }); await C.click('#friSaveU'); await wait(900);
-  t = await C.body(); console.log('[invito]', t.slice(0, 200)); assert(/Ti ha invitato: Anna @anna\.r/.test(t), 'scheda di chi ha invitato');
+  t = await C.body(); assert(/Ti ha invitato Anna Rossi/.test(t) && /Il tuo nome/.test(t), 'prima il nome');
+  await C.$eval('#friU', x => { x.value = 'Carla'; }); await C.click('#friSaveU'); await wait(900);
+  t = await C.body(); console.log('[invito]', t.slice(0, 200)); assert(/Ti ha invitato Anna Rossi Chiedi l.amicizia/.test(t), 'scheda di chi ha invitato');
   await C.click('.fr-inv [data-f="ask"]'); await wait(700);
   const uC = DB.users['carla@esempio.it'];
   assert(DB.am.some(x => x.da === uC && x.a === 'uA' && x.stato === 'attesa'), 'C chiede l\'amicizia ad A');
