@@ -167,6 +167,13 @@ async function doSync() {
 }
 
 /* ---------- accesso ---------- */
+var prov = null;                                       // provider attivi in Supabase (/auth/v1/settings): il pulsante Google compare solo se Google e' acceso
+async function providers() {
+  if (prov) return prov;
+  try { var j = await call('/auth/v1/settings'); prov = { google: !!(j && j.external && j.external.google) }; } catch (e) { return { google: false }; }
+  return prov;
+}
+function google() { location.href = CFG.url + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(home()); }
 function home() { return location.origin + location.pathname.replace(/[^/]*$/, ''); }   // dove torna il link dell'email
 async function sendCode(email) {
   await call('/auth/v1/otp?redirect_to=' + encodeURIComponent(home()), { method: 'POST', body: { email: email, create_user: true } });
@@ -180,7 +187,7 @@ async function fromLink() {
   var q = {}; h.split('&').forEach(function (kv) { var i = kv.indexOf('='); if (i > 0) q[decodeURIComponent(kv.slice(0, i))] = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' ')); });
   try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}   // i token non restano nell'indirizzo
   if (!q.access_token) {
-    NL.toast(q.error_code === 'otp_expired' ? 'Il link dell\'email è scaduto o già usato: chiedine uno nuovo.' : 'Accesso non riuscito: chiedi un\'altra email.');
+    NL.toast(q.error_code === 'otp_expired' ? 'Il link dell\'email è scaduto o già usato: chiedine uno nuovo.' : q.error === 'access_denied' && !q.error_code ? 'Accesso annullato.' : 'Accesso non riuscito: riprova.');
     setTimeout(open, 400); return;
   }
   var j = { access_token: q.access_token, refresh_token: q.refresh_token, expires_in: q.expires_in };
@@ -189,7 +196,8 @@ async function fromLink() {
     var u = await call('/auth/v1/user', { user: true });
     j.user = u; auth = null; setAuth(j);
   } catch (e) { auth = null; NL.toast('Accesso non riuscito: ' + e.message); return; }
-  try { if (NL.name()) await call('/rest/v1/profili?on_conflict=id', { method: 'POST', user: true, prefer: 'resolution=merge-duplicates,return=minimal', body: { id: auth.uid, nome: NL.name() } }); } catch (e) {}
+  var md = (j.user && j.user.user_metadata) || {}, nome = NL.name() || String(md.full_name || md.name || '').split(' ')[0].slice(0, 30);
+  try { if (nome) await call('/rest/v1/profili?on_conflict=id', { method: 'POST', user: true, prefer: 'resolution=merge-duplicates,return=minimal', body: { id: auth.uid, nome: nome } }); } catch (e) {}
   NL.toast('Sei entrato. Sincronizzo i libri…'); paint();
   await run(false); setTimeout(open, 300);
 }
@@ -227,6 +235,7 @@ function sheet() {
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var el = document.getElementById('accSheet'); if (el && !el.hidden) close(); } });
 async function open() {
   var el = sheet(); confirmAct = ''; el.hidden = false; copyInfo = await getCopy(); paintSheet();
+  if (!auth && !prov) { await providers(); paintSheet(); }
   var f = el.querySelector('input'); if (f) setTimeout(function () { f.focus(); }, 60);
 }
 function close() { var el = document.getElementById('accSheet'); if (el) el.hidden = true; }
@@ -236,9 +245,10 @@ function paintSheet() {
   if (!auth) {
     h += '<p class="msg">Con un account i tuoi libri si salvano anche online: li ritrovi su un altro telefono o tablet. ' +
       'Il telefono resta la copia principale; senza rete l\'app funziona come sempre.</p>';
+    if (step === 'email' && prov && prov.google) h += '<button class="btn primary acc-g" type="button" data-acc="google">Entra con Google</button><p class="acc-or">oppure con la tua email</p>';
     if (step === 'email') {
       h += '<form id="accFormE"><label class="field"><span>La tua email</span><input type="email" id="accMail" autocomplete="email" inputmode="email" enterkeyhint="send" required value="' + esc(mail) + '"></label>' +
-        '<p class="msg bad" id="accErr" hidden></p><button class="btn primary" type="submit" id="accSend">Mandami il codice</button></form>';
+        '<p class="msg bad" id="accErr" hidden></p><button class="btn' + (prov && prov.google ? '' : ' primary') + '" type="submit" id="accSend">Mandami l\'email</button></form>';
     } else {
       h += '<form id="accFormC"><p class="msg">Ti ho mandato un\'email a <b>' + esc(mail) + '</b> (guarda anche nella posta indesiderata). ' +
         '<b>Aprila su questo telefono e tocca il link</b> («Sign in», oppure «Confirm your mail» la prima volta): si riapre l\'app e sei dentro. ' +
@@ -284,9 +294,9 @@ document.addEventListener('submit', async function (e) {
   if (f.id === 'accFormE') {
     mail = document.getElementById('accMail').value.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { err('Scrivi un indirizzo email valido.'); return; }
-    var b = document.getElementById('accSend'); b.disabled = true; b.textContent = 'Mando il codice…';
+    var b = document.getElementById('accSend'); b.disabled = true; b.textContent = 'Mando l\'email…';
     try { await sendCode(mail); step = 'code'; paintSheet(); var c = document.getElementById('accCode'); if (c) c.focus(); }
-    catch (x) { b.disabled = false; b.textContent = 'Mandami il codice'; err(niceAuthErr(x)); }
+    catch (x) { b.disabled = false; b.textContent = 'Mandami l\'email'; err(niceAuthErr(x)); }
   } else if (f.id === 'accFormC') {
     var code = document.getElementById('accCode').value.replace(/\D/g, '');
     if (code.length !== 6) { err('Il codice ha 6 cifre.'); return; }
@@ -298,6 +308,7 @@ document.addEventListener('submit', async function (e) {
 async function onClick(e) {
   var b = e.target.closest && e.target.closest('[data-acc]'); if (!b) return;
   var a = b.dataset.acc;
+  if (a === 'google') { b.disabled = true; google(); return; }
   if (a === 'resend') { try { await sendCode(mail); NL.toast('Codice rimandato.'); } catch (x) { err(niceAuthErr(x)); } return; }
   if (a === 'other') { step = 'email'; paintSheet(); return; }
   if (a === 'sync') { run(true); return; }
