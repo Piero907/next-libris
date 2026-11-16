@@ -307,7 +307,7 @@ function paintSheet() {
         '<p class="msg bad" id="accErr" hidden></p><button class="btn primary" type="submit" id="accGo">Entra</button>' +
         '<p class="acc-links"><button class="link" type="button" data-acc="resend">Rimanda il codice</button> · <button class="link" type="button" data-acc="other">Usa un\'altra email</button></p></form>';
     }
-    h += '<p class="acc-small">I dati stanno su Supabase, in Europa (Francoforte). Solo tu li vedi. Puoi cancellarli quando vuoi, da qui.</p>';
+    h += '<p class="acc-small">I dati stanno su Supabase, in Europa (Francoforte). Solo tu li vedi. Puoi cancellarli quando vuoi, da qui. <a href="privacy.html" target="_blank" rel="noopener">Informativa sulla privacy</a></p>';
   } else {
     var st = busy ? 'Sincronizzo…' : lastErr ? lastErr : sync.when && sync.uid === auth.uid ? 'Ultima sincronizzazione ' + when(sync.when) + ' · ' + sync.n + (sync.n === 1 ? ' libro' : ' libri') + ' online' : 'Non ancora sincronizzato';
     h += '<p class="msg">Sei entrato come <b>' + esc(auth.email || '') + '</b>.</p><p class="acc-st' + (lastErr && !busy ? ' bad' : '') + '" id="accSt" aria-live="polite">' + esc(st) + '</p>' +
