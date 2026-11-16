@@ -26,7 +26,7 @@ Ultimo aggiornamento: **16/11/2026**, vera **99**, prova **99.3**.
 
 Il dettaglio di come si porta ogni cosa sta in CLAUDE.md («Lavoro in corso»).
 
-- **Portare nella vera la prova 99.2 e 99.3:** campanella delle notifiche (`011_notifiche.sql`) e ricerche condivise con l'archivio comune (`012_ricerche_archivio.sql`). Le migrazioni vanno applicate alla vera **in ordine**, poi tutte le prove e il confronto con la prova.
+- **Portare nella vera la prova 99.2-99.4:** campanella delle notifiche (`011_notifiche.sql`), ricerche condivise con l'archivio comune (`012_ricerche_archivio.sql`), «Presta chiave API e worker» con la grafica degli amici (`013_chiavi_quali.sql`). Le migrazioni vanno applicate alla vera **in ordine**, poi tutte le prove e il confronto con la prova.
 - **Da confermare (scelte fatte da Claude nella campanella):**
   - la richiesta d'amicizia compare solo nella campanella, non nel riquadro in cima;
   - nessuna notifica se si annulla o si cambia un regalo.

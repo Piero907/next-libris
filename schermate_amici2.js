@@ -26,9 +26,9 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/profili') { ['desideri', 'libreria'].forEach(k => { if (body[k] !== undefined) DB.prof[me][k] = body[k]; }); if (body.utente) Object.assign(DB.prof[me], { utente: body.utente, nome: body.utente }); return send(201); }
   if (p === '/rest/v1/rpc/libreria_di') {
     const o = body.amico; if (!friendsOk(me, o)) return send(400, { message: 'non amici' });
-    if (!DB.prof[o].libreria) return send(200, { visibili: false, totale: 0, libri: [] });
+    if (!DB.prof[o].libreria) return send(200, { visibili: false, totale: 0, comuni: 1, libri: [] });
     const l = Object.values(DB.rows).filter(x => x.utente === o && !x.cancellato && x.dati.w !== true && !x.dati.xs && !['p', 'q'].includes(x.dati.sk));
-    return send(200, { visibili: true, totale: l.length, libri: l.map(x => ({ id: x.id, t: x.dati.t, a: x.dati.a, i: x.dati.i, img: x.dati.img, rs: x.dati.rs, rt: x.dati.rt })) });
+    return send(200, { visibili: true, totale: l.length, comuni: 1, libri: l.map(x => ({ id: x.id, t: x.dati.t, a: x.dati.a, i: x.dati.i, img: x.dati.img, rs: x.dati.rs, rt: x.dati.rt })) });
   }
   if (p === '/rest/v1/rpc/miei_amici') return send(200, DB.am.filter(x => x.da === me || x.a === me).map(x => { const o = x.da === me ? x.a : x.da; return { id: o, utente: DB.prof[o].utente, nome: DB.prof[o].nome, stato: x.stato, verso: x.da === me ? 'inviata' : 'ricevuta', creato: x.creato }; }));
   if (p === '/rest/v1/rpc/desideri_di') {
@@ -66,7 +66,7 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/rpc/chi_ce_lha') return send(200, Object.values(DB.rows).filter(x => x.utente !== me && DB.prof[x.utente].libreria && friendsOk(me, x.utente) && (body.isbn || []).includes(x.dati.i) && x.dati.w !== true).map(x => ({ isbn: x.dati.i, amico: x.utente, utente: DB.prof[x.utente].utente, libro_id: x.id, fuori: !!x.dati.p })));
   if (p === '/rest/v1/rpc/presta_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); DB.keys.push({ da: me, a: body.a, gb_key: body.gb_key, sbn: body.sbn }); return send(204); }
   if (p === '/rest/v1/rpc/riprendi_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); return send(204); }
-  if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: '', sbn: '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key, sbn: k.sbn }))));
+  if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: k.gb_key ? 'si' : '', sbn: k.sbn ? 'si' : '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key, sbn: k.sbn }))));
   if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
   send(404, { message: 'finto: ' + p });
 }
@@ -114,7 +114,7 @@ DB.am.push({ da: 'u99', a: 'uA', stato: 'attesa', creato: now() }); DB.prof.u99 
     const A = await phone('uA', w, h, dark);
     const shot = async (n) => { await A.screenshot({ path: path.join(OUT, tag + '-' + n + '.png') }); };
     const side = async (n) => { const x = await A.evaluate(() => [...document.querySelectorAll('.sheet:not([hidden]) .sheet-in')].map(s => s.scrollWidth - s.clientWidth).concat([document.documentElement.scrollWidth - document.documentElement.clientWidth])); if (x.some(v => v > 0)) console.log('SCORRE DI LATO', tag, n, x); };
-    await A.evaluate(() => { window.NL.settings.gbKey = 'AIzaMia'; window.NL.saveSettings(); });
+    await A.evaluate(() => { window.NL.settings.gbKey = 'AIzaMia'; window.NL.settings.sbnUrl = 'https://sbn-mio.workers.dev'; window.NL.saveSettings(); });
     const mio = await A.add({ t: 'Il barone rampante', a: 'Italo Calvino', i: '9788804668015' });
     await A.evaluate(() => window.NLAmici.load(true)); await wait(900);
     await shot('1-pagina'); await side('1');
@@ -131,6 +131,9 @@ DB.am.push({ da: 'u99', a: 'uA', stato: 'attesa', creato: now() }); DB.prof.u99 
     await A.evaluate(() => window.NLAmici.guest('uB')); await wait(1200); await shot('9-libreria-amico'); await side('9');
     await A.evaluate(() => { const r = document.querySelector('#list .row'); if (r) r.querySelector('.sum') ? r.querySelector('.sum').click() : r.click(); }); await wait(600);
     await A.evaluate(() => { const r = document.querySelector('#list .row.open'); if (r) r.scrollIntoView(); }); await wait(200); await shot('10-scheda-amico'); await side('10');
+    await A.evaluate(() => window.scrollTo(0, 0)); await wait(200);
+    await A.click('#guestBar [data-g="key"]'); await wait(500); await shot('11-presta-chiave'); await side('11');
+    await A.evaluate(() => document.getElementById('keyNo').click()); await wait(200);
     await A.close();
   }
   await browser.close(); server.close();

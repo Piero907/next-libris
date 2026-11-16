@@ -5,7 +5,8 @@ const CFG = require("./_config");
 // B riceve la richiesta (avviso in cima) e tocca «Presta»: il prestito parte e A lo trova in Libreria («Prestato da Bruno»).
 // «Chi ce l'ha»: nella scheda di un desiderio di A compare «Ce l'hanno i tuoi amici: Bruno · Me lo presti?».
 // Consiglio: B condivide un libro e lo consiglia ad A dalla finestra di condivisione; A lo trova in Amici e lo mette nei desideri.
-// Chiave Google: A la condivide con B; B «Usala» (la usano tutti e due); A smette → B torna alle sue impostazioni.
+// Chiave Google: A la presta a B dalla finestra «Presta a Bruno»; B «Usala» (la usano tutti e due); A smette → B torna alle sue impostazioni.
+// Dalla libreria di B: «Presta chiave API e worker» apre la stessa finestra; A presta solo la chiave, poi riapre e la scelta è ricordata.
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -72,7 +73,7 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/rpc/chi_ce_lha') return send(200, Object.values(DB.rows).filter(x => x.utente !== me && DB.prof[x.utente].libreria && friendsOk(me, x.utente) && (body.isbn || []).includes(x.dati.i) && x.dati.w !== true).map(x => ({ isbn: x.dati.i, amico: x.utente, utente: DB.prof[x.utente].utente, libro_id: x.id, fuori: !!x.dati.p })));
   if (p === '/rest/v1/rpc/presta_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); DB.keys.push({ da: me, a: body.a, gb_key: body.gb_key, sbn: body.sbn }); return send(204); }
   if (p === '/rest/v1/rpc/riprendi_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); return send(204); }
-  if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: '', sbn: '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key, sbn: k.sbn }))));
+  if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: k.gb_key ? 'si' : '', sbn: k.sbn ? 'si' : '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key, sbn: k.sbn }))));
   if (p === '/rest/v1/rpc/mie_notifiche') return send(200, notifOf(me).map(x => Object.assign(x, { letta: !!DB.read[me + x.id] })));
   if (p === '/rest/v1/rpc/notifiche_lette') { notifOf(me).forEach(x => { DB.read[me + x.id] = 1; }); return send(204); }
   if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
@@ -207,17 +208,40 @@ const base = 'http://localhost:' + CFG.port(8304);
   // ---- chiave Google condivisa: la usano tutti e due ----
   await A.evaluate(() => { window.NL.settings.gbKey = 'AIzaChiaveDiAnna'; window.NL.saveSettings(); });
   await A.evaluate(() => window.NLAmici.open(true)); await wait(600);
-  await A.click('[data-f="keyshare"][data-id="uB"]'); await wait(500);
+  await A.click('[data-f="keyshare"][data-id="uB"]'); await wait(400);
+  assert(/Presta a Bruno/.test(await A.$eval('#keySheet', x => x.innerText)), 'finestra «Presta a Bruno»');
+  assert(await A.$eval('#keyGb', x => x.checked) && await A.$eval('#keySbn', x => x.disabled), 'chiave spuntata, worker non disponibile');
+  await A.screenshot({ path: CFG.OUT + '/amici-presta-chiave.png' });
+  await A.click('#keyGo'); await wait(500);
   await A.screenshot({ path: CFG.OUT + '/amici-privacy.png' });
+  assert(/Prestata: chiave API/.test(await A.$eval('#friBody', x => x.innerText)), 'accanto a Bruno: cosa gli presto');
   assert.strictEqual(DB.keys.length, 1); assert.strictEqual(await A.evaluate(() => window.NL.settings.gbKey), 'AIzaChiaveDiAnna', 'A la tiene');
   await B.evaluate(() => window.NLAmici.load(true)); await wait(600);
   await B.evaluate(() => window.NLAmici.open(true)); await wait(600);
   assert(/Anna condivide con te la sua chiave Google/.test(await B.$eval('#friBody', x => x.innerText)));
   await B.click('[data-f="keyuse"]'); await wait(500);
   assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), 'AIzaChiaveDiAnna', 'B la usa');
-  await A.click('[data-f="keyshare"][data-id="uB"]'); await wait(500); assert.strictEqual(DB.keys.length, 0, 'A smette di condividerla');
+  await A.click('[data-f="keyshare"][data-id="uB"]'); await wait(400);
+  await A.click('#keyGb'); await wait(100); assert.strictEqual(await A.$eval('#keyGo', x => x.textContent), 'Smetti di prestare');
+  await A.click('#keyGo'); await wait(500); assert.strictEqual(DB.keys.length, 0, 'A smette di condividerla');
   await B.evaluate(() => window.NLAmici.load(true)); await wait(600);
   assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), '', 'B torna alle sue impostazioni');
+  // ---- dalla libreria di Bruno: chiave e worker, si sceglie cosa prestare ----
+  await A.keyboard.press('Escape'); await wait(200);
+  await A.evaluate(() => { window.NL.settings.sbnUrl = 'https://sbn-anna.workers.dev'; window.NL.saveSettings(); });
+  await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
+  assert.strictEqual(await A.$eval('#guestBar [data-g="key"]', x => x.textContent), 'Presta chiave API e worker');
+  await A.click('#guestBar [data-g="key"]'); await wait(400);
+  assert(await A.$eval('#keyGb', x => x.checked) && await A.$eval('#keySbn', x => x.checked), 'all\'inizio tutte e due');
+  await A.click('#keySbn'); await A.click('#keyGo'); await wait(600);
+  assert.deepStrictEqual(DB.keys.map(k => [k.gb_key, k.sbn]), [['AIzaChiaveDiAnna', '']], 'solo la chiave');
+  assert.strictEqual(await A.$eval('#guestBar [data-g="key"]', x => x.textContent), '✓ Prestata: chiave API');
+  await A.click('#guestBar [data-g="key"]'); await wait(400);
+  assert(await A.$eval('#keyGb', x => x.checked) && !(await A.$eval('#keySbn', x => x.checked)), 'la scelta resta');
+  assert.strictEqual(await A.$eval('#keyGo', x => x.textContent), 'Salva');
+  assert(await A.evaluate(() => [...document.querySelectorAll('.sheet:not([hidden]) .sheet-in')].every(s => s.scrollWidth - s.clientWidth <= 0)), 'niente scorrimento di lato');
+  await A.keyboard.press('Escape'); await wait(200);
+  await A.evaluate(() => window.NL.guestExit()); await wait(400);
   assert.deepStrictEqual(errors, []);
   console.log('e2e104 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });
