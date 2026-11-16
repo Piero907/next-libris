@@ -142,7 +142,7 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 
 ## 8. Libri in lettura (chiesto il 15/11/2026: «dobbiamo lavorare ai libri in lettura»)
 
-**Richiesta di Piero:** segnare che bisogna lavorare sui libri «In lettura». Non ha ancora detto cosa vuole: quando lo riprende, chiedere prima che cosa non gli torna o cosa gli manca.
+**Richiesta di Piero:** segnare che bisogna lavorare sui libri «In lettura». Il 16/11/2026 ha aggiunto: **il libro o i libri in lettura al momento dovrebbero avere un ruolo più centrale nell'app** (non nascosti tra gli altri: visibili subito aprendo l'app). Non ha ancora detto cosa vuole: quando lo riprende, chiedere prima che cosa non gli torna o cosa gli manca.
 
 **Idee da proporre (nessuna costruita):**
 - un riquadro «Stai leggendo» in cima all'elenco (o in «Per te») con la copertina e un tocco per aprire la scheda;
@@ -164,3 +164,25 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - **filtri in alto a chip** (Da leggere, In lettura, Preferiti, In prestito) che si combinano, con il numero dei libri;
 - **«Mescola» / «Pesca un libro»:** una copertina a caso dalla libreria o dai «Da leggere»;
 - colori: sfondo della fila preso dal colore della copertina (già c'è `NL.hue`).
+
+## 10. Dall'autore: le sue opere e «suggerisci» (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** quando apri un autore (la finestra con il profilo di Wikipedia) ci dovrebbe essere l'opzione per **vedere le sue opere** o per **suggerire** cosa leggere di suo.
+
+**Idee da proporre (nessuna costruita):**
+- «Le sue opere»: elenco dei libri dell'autore (Open Library / Google Libri per autore, o Wikidata «autore di»), con segnati quelli che hai già (in libreria o nei desideri) e un tocco per metterli nei Desideri;
+- «Suggerisci»: dalla stessa lista, i più noti che non hai, in ordine di importanza (numero di edizioni, premi su Wikidata), come in «Cosa leggere dopo»;
+- si collega ai Suggerimenti già esistenti (`nextReads`, `pickNews` in lib.js).
+
+## 11. Cos'altro si può prendere dall'«universo wiki» (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** capire quali altri dati interessanti si possono estrarre da Wikipedia / Wikidata / Wikimedia.
+
+**Da studiare e proporre (nessuna costruita):**
+- **Wikidata sull'autore:** nascita e morte, nazionalità, lingua, movimento letterario, premi (Nobel, Strega…), altre opere; ritratto (già usato: anteprima di Wikipedia);
+- **Wikidata sull'opera** (non sull'edizione): anno della prima pubblicazione, lingua originale, titolo originale, genere, ambientazione (luogo e epoca), personaggi, serie e ordine, premi; «basato su» / film tratti (vedi punto 6);
+- **Wikipedia:** trama o riassunto dell'opera (voce del libro), in italiano;
+- **Wikimedia Commons:** copertine storiche di prime edizioni (solo libere), luoghi dell'ambientazione;
+- **Wikiquote:** citazioni famose dal libro o dall'autore, da proporre in «Citazioni e appunti»;
+- **Wikisource:** testo libero dei classici fuori diritti (link «Leggilo gratis»);
+- usi possibili: statistiche più ricche (secoli, nazionalità, lingue originali, premiati), mappa dei luoghi dei libri, linea del tempo; Wikidata non serve per cercare per ISBN (le edizioni ci sono poco).

@@ -11,7 +11,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
 const books = [
   { id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', c: 13, i: '9788845292613', gen: 'Narrativa', pg: '624', sh: 'Studio', rs: 'ok', rt: 5, rd: '2026-10-02', se: 'I grandi romanzi', sn: '3', n: 'Regalo di Anna', ds: 'Ultima settimana del novembre 1327: frate Guglielmo indaga.', dsf: 'google', qs: [{ x: 'Stat rosa', pg: '', d: 1, phs: [] }], ts: 10 },
   { id: 'r2', t: 'Baudolino', a: 'Umberto Eco', e: 'Bompiani', y: '2000', ts: 9, rs: 'da' },
-  { id: 'w1', t: 'Il pendolo di Foucault', a: 'Umberto Eco', e: 'Bompiani', y: '1988', w: true, ts: 8 }];
+  { id: 'w1', t: 'Il pendolo di Foucault', a: 'Umberto Eco', e: 'Bompiani', y: '1988', w: true, ts: 8 }].concat(Array.from({ length: 25 }, (_, i) => ({ id: 'f' + i, t: 'Riempitivo ' + i, a: 'Autore ' + i, ts: 100 + i, rs: 'da' })));   // libri piu' recenti: la rosa sta in fondo all'elenco
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
@@ -57,12 +57,11 @@ const books = [
   // Modifica: icona della matita in alto, sulla stessa riga
   const pen = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.acts-main .cv-editb'), f = e.querySelector('.acts-main [data-act="fav"]'); return p && Math.round(p.getBoundingClientRect().top) === Math.round(f.getBoundingClientRect().top) && getComputedStyle(p.querySelector('.al')).display === 'none'; }, card());
   assert(pen, 'matita in alto, solo icona');
-  // lettura e voto incolonnati accanto alla copertina, sotto casa editrice, anno, pagine (16/11/2026)
-  const rb = await page.evaluate(s => { const e = document.querySelector(s), r = e.querySelector('.cv-readbox'), m = e.querySelector('.cv-meta'); return { inHero: !!r && r.parentNode.classList.contains('cv-ht'), below: !!r && r.getBoundingClientRect().top >= m.getBoundingClientRect().bottom - 1, right: !!r && r.getBoundingClientRect().left > e.querySelector('.cv-cov').getBoundingClientRect().right }; }, card());
-  console.log('  lettura', JSON.stringify(rb)); assert(rb.inHero && rb.below && rb.right, 'lettura e voto sotto la riga dei dati, accanto alla copertina');
-  // «Letto il» sotto la descrizione e la nota «Regalo di Anna»
-  const rdt = await page.evaluate(s => { const e = document.querySelector(s), d = e.querySelector('.cv-rdate'), n = e.querySelector('.cv-note'), ds = e.querySelector('.cv-desc'); return { ok: !!d && !!d.querySelector('input[data-k="rd"]'), afterNote: !!d && !!n && n.nextElementSibling === d, belowDesc: !!d && d.getBoundingClientRect().top > ds.getBoundingClientRect().bottom }; }, card());
-  console.log('  letto il', JSON.stringify(rdt)); assert(rdt.ok && rdt.afterNote && rdt.belowDesc);
+  // «La tua lettura»: stato, stelle e data in un riquadro sotto la descrizione e la nota «Regalo di Anna» (16/11/2026)
+  const rl = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.cv-reading'), n = e.querySelector('.cv-note'), ds = e.querySelector('.cv-desc'), ht = e.querySelector('.cv-ht');
+    return { ok: !!p && /La tua lettura/.test(p.innerText) && !!p.querySelector('[data-act="rs"]') && !!p.querySelector('.stars') && !!p.querySelector('input[data-k="rd"]'), afterNote: !!p && n.nextElementSibling === p, belowDesc: !!p && p.getBoundingClientRect().top > ds.getBoundingClientRect().bottom, heroClean: !ht.querySelector('.read'),
+      starsDate: !!p && Math.abs(p.querySelector('.stars').getBoundingClientRect().top - p.querySelector('.f-rd').getBoundingClientRect().top) < 20 }; }, card());
+  console.log('  la tua lettura', JSON.stringify(rl)); assert(rl.ok && rl.afterNote && rl.belowDesc && rl.heroClean);
   await page.screenshot({ path: CFG.OUT + '/scheda_d_lettura.png' });
   // lettura modificabile dalla pagina
   assert(await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="ok"]').getAttribute('aria-pressed') === 'true', card()));
@@ -81,8 +80,11 @@ const books = [
   assert(await page.evaluate(s => { const e = document.querySelector(s); return !e.querySelector('.cv-page') && getComputedStyle(e.querySelector('.head')).display !== 'none' && !!e.querySelector('.cv-done'); }, card()));
   await page.evaluate(s => document.querySelector(s + ' .cv-done').click(), card()); await wait(300);
   assert(await page.evaluate(s => !!document.querySelector(s + ' .cv-page'), card()));
-  // un'etichetta e' un filtro: «Narrativa» mostra i libri di quel genere
-  await page.evaluate(s => document.querySelector(s + ' .cv-chips .fchip[data-f="gen"]').click(), card()); await wait(400);
+  // un'etichetta e' un filtro: «Narrativa» mostra i libri di quel genere; la pagina va in cima (prima tornava a meta' elenco, 16/11/2026)
+  await page.evaluate(s => document.querySelector(s).scrollIntoView({ block: 'center' }), card()); await wait(200);
+  console.log('  scroll prima', await page.evaluate(() => Math.round(scrollY)));
+  await page.evaluate(s => document.querySelector(s + ' .cv-chips .fchip[data-f="gen"]').click(), card()); await wait(700);
+  const y1 = await page.evaluate(() => Math.round(scrollY)); console.log('  scroll dopo', y1); assert(y1 < 5, 'in cima all\'elenco filtrato');
   const rows = await page.$$eval('#list [data-id]', e => e.map(x => x.dataset.id)); console.log('  filtro genere:', rows.join(','));
   assert.deepStrictEqual(rows, ['r1']);
   // la copertina (senza immagine) cerca o fa fotografare la copertina; con l'immagine si ingrandisce
@@ -93,6 +95,19 @@ const books = [
   await page.evaluate(s => document.querySelector(s + ' .cv-cov[data-act="zoom"]').click(), card()); await wait(400);
   assert(await page.evaluate(() => !document.querySelector('#lightbox').hidden), 'si ingrandisce');
   await page.keyboard.press('Escape'); await wait(300);
+  // PROVA TEMPORANEA: lettura e voto in cinque posizioni A-E, scelte in Opzioni › Aspetto (16/11/2026)
+  await page.evaluate(() => window.__app.setTab('lib')); await wait(200); await open();
+  await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
+  const rpo = await page.$$eval('#optReadPos input', e => e.map(x => x.value + (x.checked ? '*' : ''))); console.log('  proposte', rpo.join(' '));
+  assert.deepStrictEqual(rpo, ['a', 'b*', 'c', 'd', 'e']);
+  const where = { a: '.cv-ht .cv-readbox', b: '.cv-page > .cv-reading', c: '.cv-page > .cv-readbox.cv-strip', d: '.cv-covcol .stars', e: '.row > .cv-reading' };
+  for (const k of ['a', 'b', 'c', 'd', 'e']) {
+    await page.evaluate(k => { const i = document.querySelector('#optReadPos input[value="' + k + '"]'); i.checked = true; i.dispatchEvent(new Event('change', { bubbles: true })); }, k); await wait(300);
+    const ok = await page.evaluate((s, sel) => !!document.querySelector(s).querySelector(sel) && !!document.querySelector(s).querySelector('[data-act="rs"]'), card(), where[k]);   // qui il libro e' «In lettura»: niente data
+    assert(ok, 'proposta ' + k);
+  }
+  assert.strictEqual(await page.evaluate(() => localStorage.getItem('catalogo-libri-readpos')), 'e');
+  await page.evaluate(() => window.NLCard.readPos('b')); await page.evaluate(() => window.__app.closeOptions()); await wait(300);
   // nei Desideri: anche preferito e Presta, vendi o regala, come nella scheda normale
   await page.evaluate(() => window.__app.setTab('wish')); await wait(300);
   await page.evaluate(() => document.querySelector('#list .row[data-id="w1"] .sum').click()); await wait(400);

@@ -32,9 +32,13 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   let sum = await txt('#summary'); console.log('[A riepilogo]', sum);
   assert(/^13 libri · 1 in prestito$/.test(sum), 'riepilogo essenziale');
   assert(!(await vis('#fltLoan')), 'riga Prestati nascosta');
-  assert(await vis('#sync'));
+  assert(!(await vis('#sync')), '«Salvato su questo telefono» spento di predefinito (16/11/2026)');
   await page.click('#summary [data-sum="loan"]'); await wait(250);
   assert.deepStrictEqual(await page.$$eval('#list [data-id]', e => e.map(x => x.dataset.id)), ['k3']);
+  // il filtro usato si vede: «In prestito ×» sotto la ricerca (16/11/2026)
+  const lchip = await page.evaluate(() => { const c = document.querySelector('[data-clear="flt"]'); return c && c.getClientRects().length ? c.textContent : ''; }); console.log('[filtro prestiti]', lchip);
+  assert(/In prestito/.test(lchip), 'filtro «In prestito» visibile');
+  await page.screenshot({ path: CFG.OUT + '/layout_a_prestiti.png' });
   await page.click('#summary [data-sum="loan"]'); await wait(250);
   // avvisi sopra la ricerca, uno alla volta
   const pos = await page.evaluate(() => { const s = document.querySelector('#stick').getBoundingClientRect().top; return ['#nxBox', '#donRow', '#instCard'].map(k => { const e = document.querySelector(k); return e && !e.hidden ? Math.round(e.getBoundingClientRect().top - s) : null; }); });
@@ -92,17 +96,17 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   assert(await page.evaluate(() => !document.querySelector('#optLayout') && !/Disposizione dello schermo/.test(document.querySelector('#optSheet').innerText)), 'la scelta della disposizione non c\'e\' piu\'');
   assert(await page.evaluate(() => !document.querySelector('#layOne')), 'niente opzione «Avvisi in cima uno alla volta»: e\' sempre cosi\' (16/11/2026)');
   const sumOpts = await page.$$eval('.sum-opts input', e => e.map(x => x.id + (x.checked ? '*' : ''))); console.log('[riepilogo opzioni]', sumOpts.join(' '));
-  assert.deepStrictEqual(sumOpts, ['optSumEur', 'optSumLoan*', 'optSumGone', 'optShowSync*']);
+  assert.deepStrictEqual(sumOpts, ['optSumEur', 'optSumLoan*', 'optSumGone', 'optShowSync']);
   await page.screenshot({ path: CFG.OUT + '/layout_opzione.png' });
   await page.click('#optSumEur'); await page.click('#optSumGone'); await page.click('#optSumLoan'); await page.click('#optShowSync'); await wait(250);
   await page.evaluate(() => window.__app.closeOptions()); await wait(350); await page.evaluate(() => window.scrollTo(0, 0));
   sum = await txt('#summary'); console.log('[riepilogo cambiato]', sum);
   assert(/^13 libri · 130,00 € · 1 non più in libreria$/.test(sum));
   assert(await vis('#fltLoan'), 'senza «in prestito» nel riepilogo torna la riga Prestati');
-  assert(!(await vis('#sync')), 'Salvato nascosto');
+  assert(await vis('#sync'), 'Salvato acceso a mano');
   assert(await page.evaluate(() => !!document.querySelector('.lay-later')), 'avvisi sempre uno alla volta');
   const st = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
-  assert(st.sumEur === true && st.sumGone === true && st.sumLoan === false && st.showSync === false);
+  assert(st.sumEur === true && st.sumGone === true && st.sumLoan === false && st.showSync === true);
   // classico: come prima, avvisi al loro posto (sotto la ricerca)
   const pick = async v => { await page.evaluate(v => window.NLLayout.set(v), v); await wait(350); await page.evaluate(() => window.scrollTo(0, 0)); };   // la classica resta solo per le prove
   await pick('classico');
