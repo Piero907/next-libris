@@ -87,9 +87,9 @@ function doD(card, id) {
   /* stato, voto e data: una striscia a tutta larghezza subito sotto copertina e titolo, tra due righe sottili;
      stelle e «Letto il» sulla stessa riga quando c'e' posto (Piero ha scelto la C tra cinque proposte, 16/11/2026) */
   if (rd) {
-    var rdate = q(rd, '.f-rd'), stars = q(rd, '.stars');
-    if (stars) { var line = document.createElement('div'); line.className = 'cv-rline'; stars.parentNode.insertBefore(line, stars); line.appendChild(stars); if (rdate) line.appendChild(rdate); }
-    rd.classList.add('cv-strip');
+    rd.classList.add('cv-strip');                  // stato, poi i libricini con la parola
+    var rdf = q(rd, '.f-rd');                      // «Letto il …» in piccolo sotto casa editrice e anno, nello stesso stile (Piero, 16/11/2026)
+    if (rdf) { rdf.classList.add('cv-rdmeta'); var ht = q(v, '.cv-ht'), mt = q(ht, '.cv-meta'); ht.insertBefore(rdf, mt ? mt.nextSibling : null); }
     var hero = q(v, '.cv-hero'); hero.parentNode.insertBefore(rd, hero.nextSibling);
   }
   /* etichette-filtro: in fondo, prima di Presta e Cerca sul web */
@@ -137,6 +137,13 @@ function decorate(el) {
   });
 }
 function apply() { root.setAttribute('data-card', cur); NL.refresh(); }
+/* «Letto il»: la data scritta per esteso si aggiorna appena la scegli */
+function rdShow(e) {
+  var t = e.target; if (!t || t.getAttribute('data-k') !== 'rd') return;
+  var sh = t.parentNode && t.parentNode.querySelector('.rd-show'); if (!sh || !NL.rdLong) return;
+  sh.firstChild.nodeValue = NL.rdLong(t.value); sh.classList.toggle('none', !t.value);
+}
+document.addEventListener('input', rdShow, true); document.addEventListener('change', rdShow, true);
 NL.on('rows', decorate);
 root.setAttribute('data-card', cur);
 if (cur !== 'attuale') NL.refresh();

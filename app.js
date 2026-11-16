@@ -24,7 +24,7 @@ var ICON = {
   key: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>',
   x: '<path d="M6 6l12 12M18 6L6 18"/>',
   redo: '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>',
-  fav: '<path d="M7 3.5h10a1 1 0 0 1 1 1v16l-6-4-6 4v-16a1 1 0 0 1 1-1z"/>',
+  fav: '<path d="M12 3.3l2.7 5.5 6 .9-4.35 4.25 1.03 6-5.38-2.83-5.38 2.83 1.03-6L3.3 9.7l6-.9z"/>',   // stella (prima segnalibro: si confondeva, Piero 16/11/2026)
   share: '<circle cx="6" cy="12" r="2.5"/><circle cx="17.5" cy="5.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/><path d="M8.2 10.8l7.1-4.1M8.2 13.2l7.1 4.1"/>',
   pricetag: '<path d="M3.5 12V5a1.5 1.5 0 0 1 1.5-1.5h7l8.5 8.5a1.5 1.5 0 0 1 0 2.1l-6.4 6.4a1.5 1.5 0 0 1-2.1 0z"/><circle cx="8.2" cy="8.2" r="1.5"/>',
   grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/>',
@@ -181,11 +181,11 @@ function inTab(b) { return !!b.w === (tab === 'wish'); }
 function tabBooks() { return state.books.filter(inTab); }
 function blankBook(o) {
   var b = Object.assign({ id: newId(), t: '', a: '', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: Date.now(),
-    sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: tab === 'wish', rs: '', rt: 0, rd: '', cp: false, ck: '', nb: false, xs: '', xd: '', xa: '', fav: false, fr: '', fl: '', ds: '', dsf: '', dsl: '', dsn: 0, dsq: 0, se: '', sn: '', sq: '', qs: [] }, o || {});
+    sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: tab === 'wish', rs: '', rt: 0, rd: '', pp: '', ppd: '', cp: false, ck: '', nb: false, xs: '', xd: '', xa: '', fav: false, fr: '', fl: '', ds: '', dsf: '', dsl: '', dsn: 0, dsq: 0, se: '', sn: '', sq: '', qs: [] }, o || {});
   if (!b.w && !(o && o.rs != null)) b.rs = 'da';        // un libro appena entrato in libreria e' da leggere
   return b;
 }
-var FIELDS = ['id', 't', 'a', 'e', 'y', 'c', 'i', 'g', 'img', 'imgL', 'nf', 'ts', 'sh', 'n', 'gen', 'pg', 'p', 'pd', 'w', 'rs', 'rt', 'rd', 'cp', 'ck', 'nb', 'xs', 'xd', 'xa', 'fav', 'fr', 'fl', 'ds', 'dsf', 'dsl', 'dsn', 'dsq', 'se', 'sn', 'sq', 'qs'];
+var FIELDS = ['id', 't', 'a', 'e', 'y', 'c', 'i', 'g', 'img', 'imgL', 'nf', 'ts', 'sh', 'n', 'gen', 'pg', 'p', 'pd', 'w', 'rs', 'rt', 'rd', 'pp', 'ppd', 'cp', 'ck', 'nb', 'xs', 'xd', 'xa', 'fav', 'fr', 'fl', 'ds', 'dsf', 'dsl', 'dsn', 'dsq', 'se', 'sn', 'sq', 'qs'];
 function isBusy(b) { var st = (S[b.id] || {}).st; return st === 'queued' || st === 'reading' || st === 'lookup' || st === 'search'; }
 function cleanBook(x) {
   if (!x || typeof x !== 'object') return null;
@@ -208,6 +208,7 @@ function cleanBook(x) {
     rs: ['da', 'in', 'ok'].indexOf(x.rs) >= 0 ? x.rs : '',
     rt: Math.max(0, Math.min(5, parseInt(x.rt, 10) || 0)),
     rd: /^\d{4}-\d\d-\d\d$/.test(L.str(x.rd)) ? x.rd : '',
+    pp: String(L.str(x.pp)).replace(/\D/g, '').slice(0, 5), ppd: /^\d{4}-\d\d-\d\d$/.test(L.str(x.ppd)) ? x.ppd : '',   // segnalibro (16/11/2026)
     cp: !!x.cp,
     ck: /^\d{4}-\d\d-\d\d$/.test(L.str(x.ck)) ? x.ck : '',
     nb: !!x.nb,
@@ -281,6 +282,7 @@ function loadAll() {
     settings.syncOff = 1;
     settings.seenV = Number(s.seenV) || 0;                                         // ultima versione di cui si sono viste le novita'
     settings.wn2 = s.wn2 ? 1 : 0;
+    settings.shelfShut = s.shelfShut && typeof s.shelfShut === 'object' ? { now: s.shelfShut.now ? 1 : 0, all: s.shelfShut.all ? 1 : 0 } : {};   // sezioni dell'elenco chiuse
     oldApp = typeof s.look === 'string';                                             // impostazioni salvate da una versione precedente dell'app (non una prima installazione)                                                   // la pagina delle novita' funziona anche per chi aggiorna (dalla 96)
     settings.seenB = L.str(s.seenB).slice(0, 12);                                   // nella copia di prova: ultima prova vista («94.17»)
     settings.suggAuto = s.suggAuto !== false;                                       // «Da scoprire»: cerca da solo una volta a settimana
@@ -1260,8 +1262,14 @@ function onScanned(code) {
 /* ---------- «Ce l'ho già?»: controlla senza aggiungere ---------- */
 var checkCache = {}, resCode = '', resKind = '';
 function readLabel(b) {
-  if (b.rs === 'ok') return 'Letto' + (b.rt ? ' · ' + '★'.repeat(b.rt) : '');
-  return b.rs === 'in' ? 'In lettura' : b.rs === 'da' ? 'Da leggere' : '';
+  if (b.rs === 'ok') return 'Letto' + (b.rt ? ' · ' + L.rateWord(b.rt) : '');
+  if (b.rs === 'in') { var q = ppInfo(b); return 'In lettura' + (q.pct != null ? ' · ' + q.pct + '%' : q.p ? ' · pagina ' + q.p : ''); }
+  return b.rs === 'da' ? 'Da leggere' : '';
+}
+/* segnalibro: la pagina a cui sei arrivato (b.pp, con la data in b.ppd) e l'avanzamento sulle pagine del libro (Piero, 16/11/2026) */
+function ppInfo(b) {
+  var p = parseInt(b && b.pp, 10) || 0, tot = parseInt(b && b.pg, 10) || 0;
+  return { p: p, tot: tot, pct: p && tot ? Math.min(100, Math.round(p * 100 / tot)) : null };
 }
 function shelfLine(b) {
   return [b.a, b.sh ? 'Scaffale: ' + b.sh : '', readLabel(b)].filter(Boolean).join(' · ');
@@ -1470,7 +1478,7 @@ function summaryHTML(b, dups, status) {
   if (b.fav && !b.w) tags += '<span class="tag fav">Preferito</span>';
   tags += fromTag(b);
   if (b.g.length) tags += '<span class="tag warn">Da verificare</span>';
-  if (!b.w && (b.rs === 'in' || b.rs === 'ok')) tags += '<span class="tag read' + (b.rs === 'in' ? ' now' : '') + '">' + esc(readLabel(b)) + '</span>';
+  if (!b.w && (b.rs === 'in' || b.rs === 'ok')) { var qq = b.rs === 'in' ? ppInfo(b) : {}; tags += '<span class="tag read' + (b.rs === 'in' ? ' now' : '') + (qq.pct != null ? ' has-pp" style="--pp:' + qq.pct + '%' : '') + '">' + esc(readLabel(b)) + '</span>'; }
   tags += dupTag(dups && dups[b.id]);
   if (b.i && !L.toIsbn13(b.i)) tags += '<span class="tag bad">ISBN non valido</span>';
   else if (!b.t && b.i && !s.st && b.nf) tags += '<span class="tag warn">Non trovato</span>';
@@ -3502,18 +3510,31 @@ $('#allqSheet').addEventListener('click', function (e) {
   var c = e.target.closest('[data-copy]'); if (c) shareQuote(c.dataset.copy, +c.dataset.i);
 });
 /* stato di lettura, voto e data (solo Libreria) */
+var MESI_IT = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+function rdLong(v) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v || ''); return m ? (+m[3]) + ' ' + MESI_IT[+m[2] - 1] + ' ' + m[1] : 'aggiungi la data'; }   // «10 febbraio 2026»
+function ppHTML(b, d) {                            // «Sono a pagina [212] di 624 · 34%», con la barra
+  var q = ppInfo(b);
+  return '<div class="pp"><svg class="pp-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10a1 1 0 0 1 1 1v16l-6-4-6 4v-16a1 1 0 0 1 1-1z"/></svg>' +
+    '<label class="pp-l">Sono a pagina <input type="text" inputmode="numeric" pattern="[0-9]*" data-k="pp" value="' + (q.p || '') + '" placeholder="…" maxlength="5" aria-label="Pagina a cui sei arrivato"' + d + '></label>' +
+    (q.tot ? '<span class="pp-of">di ' + q.tot + '</span><span class="pp-pct">' + (q.pct != null ? q.pct + '%' : '') + '</span>' : '') +
+    (q.tot ? '<span class="pp-bar" aria-hidden="true"><i style="width:' + (q.pct || 0) + '%"></i></span>' : '') + '</div>';
+}
+var RD_CAL = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>';
+var RATE_BOOK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="pg" d="M3 6a9 9 0 0 1 9 0v13a9 9 0 0 0-9 0z"/><path class="pg" d="M12 6a9 9 0 0 1 9 0v13a9 9 0 0 0-9 0z"/></svg>';   // libro aperto (Piero: «era più bella l'icona con il libro aperto»)
 function readHTML(b, off) {
   if (b.w) return '';
   var d = off ? ' disabled' : '';
   var seg = [['da', 'Da leggere'], ['in', 'In lettura'], ['ok', 'Letto']].map(function (x) {
     return '<button type="button" data-act="rs" data-v="' + x[0] + '" aria-pressed="' + (b.rs === x[0]) + '"' + d + '>' + x[1] + '</button>';
   }).join('');
+  /* il voto: cinque libricini, con la parola sotto o accanto (Piero, 16/11/2026: le stelle si confondevano con il preferito) */
   var stars = [1, 2, 3, 4, 5].map(function (n) {
-    return '<button type="button" class="star' + (b.rt >= n ? ' on' : '') + '" data-act="rt" data-v="' + n + '" role="radio" aria-checked="' + (b.rt === n) + '" aria-label="' + n + (n === 1 ? ' stella' : ' stelle') + '"' + d + '>★</button>';
+    return '<button type="button" class="star bk' + (b.rt >= n ? ' on' : '') + '" data-act="rt" data-v="' + n + '" role="radio" aria-checked="' + (b.rt === n) + '" aria-label="' + n + (n === 1 ? ' libricino' : ' libricini') + ': ' + L.rateWord(n) + '"' + d + '>' + RATE_BOOK + '</button>';
   }).join('');
   return '<div class="read"><span class="lbl">Lettura</span><div class="seg" role="group" aria-label="Stato di lettura">' + seg + '</div>' +
-    '<div class="stars" role="radiogroup" aria-label="Voto">' + stars + '</div>' +
-    (b.rs === 'ok' ? '<label class="f f-rd"><span class="lbl">Letto il</span><input type="date" data-k="rd" id="rd-' + b.id + '" value="' + esc(b.rd || '') + '"' + d + '></label>' : '') + '</div>';
+    (b.rs === 'in' ? ppHTML(b, d) : '') +
+    '<div class="rate"><div class="stars" role="radiogroup" aria-label="Voto">' + stars + '</div><span class="rt-word' + (b.rt ? '' : ' none') + '">' + (b.rt ? L.rateWord(b.rt) : 'Dai un voto') + '</span></div>' +
+    (b.rs === 'ok' ? '<label class="f f-rd"><span class="lbl">Letto il</span><span class="rd-show' + (b.rd ? '' : ' none') + '">' + esc(rdLong(b.rd)) + RD_CAL + '</span><input type="date" data-k="rd" id="rd-' + b.id + '" value="' + esc(b.rd || '') + '"' + d + '></label>' : '') + '</div>';
 }
 /* «Tutti i libri di …» se dello stesso autore ce ne sono altri */
 function authorLinkHTML(b, ex) {
@@ -3676,14 +3697,18 @@ function wishEmptyHTML() {
 }
 /* vista copertine */
 function hue(s) { var h = 0; s = String(s || ''); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h % 360; }
+function ppCov(b) {                               // sotto l'autore: barra sottile e la percentuale in piccolo (la copertina resta libera, Piero 16/11/2026)
+  var q = !b.w && b.rs === 'in' ? ppInfo(b) : {};
+  return q.pct != null ? '<span class="pp-cov" title="Sei al ' + q.pct + '%"><span class="pp-ln"><i style="width:' + q.pct + '%"></i></span><span class="pp-n">' + q.pct + '%</span></span>' : '';
+}
 function coverHTML(b) {
   var s = S[b.id] || {}, img = bigImg(b);
   var badge = isBusy(b) ? '<span class="badge">…</span>' : b.p ? '<span class="badge loan">Prestato</span>' : b.g.length ? '<span class="badge warn">Da verificare</span>' : '';
-  var fav = b.fav && !b.w ? '<span class="ribbon" title="Preferito"><svg viewBox="0 0 20 30" aria-hidden="true"><path d="M1 0h18v28l-9-6.5L1 28z"/></svg></span>' : '';
+  var fav = b.fav && !b.w ? '<span class="ribbon fav-star" title="Preferito"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.3l2.7 5.5 6 .9-4.35 4.25 1.03 6-5.38-2.83-5.38 2.83 1.03-6L3.3 9.7l6-.9z"/></svg></span>' : '';   // stellina sulla copertina
   return '<button class="cover' + (fav ? ' is-fav' : '') + '" data-id="' + b.id + '" aria-label="' + esc([b.t || 'Senza titolo', b.a, fav ? 'preferito' : ''].filter(Boolean).join(', ')) + '">' +
     '<span class="art">' + (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' :
       '<span class="ph" style="--h:' + hue(b.t + b.a + b.i) + '"><b>' + esc(b.t || b.i || 'Senza titolo') + '</b><small>' + esc(b.a) + '</small></span>') + badge + fav + '</span>' +
-    '<span class="cap">' + esc(b.t || b.i || '…') + '</span><span class="cap2">' + esc(b.a) + '</span></button>';
+    '<span class="cap">' + esc(b.t || b.i || '…') + '</span><span class="cap2">' + esc(b.a) + '</span>' + ppCov(b) + '</button>';
 }
 function autosize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
 function autosizeAll(root) {
@@ -3747,9 +3772,26 @@ function renderList() {
       : '<p class="none">Nessun libro corrisponde ' + (activeCount() ? (q ? 'alla ricerca e ai filtri.' : 'ai filtri.') : 'alla ricerca.') + '</p><p><button class="btn" data-act="clearflt">' + (activeCount() ? (q ? 'Azzera ricerca e filtri' : 'Azzera i filtri') : 'Cancella la ricerca') + '</button></p>';
     return;
   }
-  if (settings.view === 'grid') { list.innerHTML = '<div class="grid">' + vis.map(coverHTML).join('') + '</div>'; paintSel(); return; }
+  /* i libri «In lettura» in cima, in una sezione che si apre e chiude; sotto gli altri (solo Libreria, ordine «Più recenti», senza ricerca ne' filtri) */
+  var now = tab === 'lib' && !q && !activeCount() && sortBy === 'recent' ? vis.filter(function (b) { return b.rs === 'in'; }) : [];   // con un altro ordine (voto, titolo…) vale l'ordine scelto
+  var parts = now.length ? [['now', 'In lettura', now], ['all', now.length < vis.length ? 'Gli altri libri' : '', vis.filter(function (b) { return b.rs !== 'in'; })]] : null;
+  var shelfOpen = function (k) { return !(settings.shelfShut || {})[k]; };
+  var shelf = function (k, title, books, inner) {
+    if (!books.length) return '';
+    var open = shelfOpen(k);
+    return '<section class="shelf shelf-' + k + '"><button type="button" class="shelf-h" data-shelf="' + k + '" aria-expanded="' + open + '" aria-controls="shelf-' + k + '">' +
+      (k === 'now' ? '<svg class="sh-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10a1 1 0 0 1 1 1v16l-6-4-6 4v-16a1 1 0 0 1 1-1z"/></svg>' : '') +
+      '<span>' + esc(title) + '</span><span class="sh-n">' + books.length + '</span><svg class="sh-c" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
+      '<div class="shelf-b" id="shelf-' + k + '"' + (open ? '' : ' hidden') + '>' + inner(books) + '</div></section>';
+  };
+  if (settings.view === 'grid') {
+    var gridOf = function (a) { return '<div class="grid">' + a.map(coverHTML).join('') + '</div>'; };
+    list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], gridOf); }).join('') : gridOf(vis);
+    paintSel(); return;
+  }
   var dups = computeDups();
-  list.innerHTML = vis.map(function (b) { return rowHTML(b, dups); }).join('');
+  var rowsOf = function (a) { return a.map(function (b) { return rowHTML(b, dups); }).join(''); };
+  list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], rowsOf); }).join('') : rowsOf(vis);
   emit('rows', list);                              // i moduli possono sistemare le schede appena disegnate
   autosizeAll(list);
   paintSel();
@@ -5628,7 +5670,7 @@ function openStats() {
     (st.gone ? tile(String(st.gone), 'non più in libreria', [st.goneBy.v ? st.goneBy.v + (st.goneBy.v === 1 ? ' venduto' : ' venduti') : '', st.goneBy.r ? st.goneBy.r + (st.goneBy.r === 1 ? ' regalato' : ' regalati') : '', st.goneBy.s ? st.goneBy.s + (st.goneBy.s === 1 ? ' smarrito' : ' smarriti') : ''].filter(Boolean).join(' · ')) : '') +
     (tab === 'lib' && (st.read || st.reading || st.toRead) ? tile(String(st.read), 'letti', [st.reading ? st.reading + ' in lettura' : '', st.toRead ? st.toRead + ' da leggere' : ''].filter(Boolean).join(' · ')) : '') +
     (st.pagesRead ? tile(nf.format(st.pagesRead), 'pagine lette') : '') +
-    (st.rated ? tile('★ ' + st.avgRating.toFixed(1).replace('.', ','), 'voto medio', 'su ' + st.rated + (st.rated === 1 ? ' libro' : ' libri')) : '') +
+    (st.rated ? tile(st.avgRating.toFixed(1).replace('.', ',') + ' su 5', 'voto medio: ' + L.rateWord(st.avgRating).toLowerCase(), 'su ' + st.rated + (st.rated === 1 ? ' libro' : ' libri')) : '') +
     (st.guess ? tile(String(st.guess), 'da verificare') : '');
   var loans = st.loans.length ? '<section class="st-sec"><h3>In prestito</h3><ul class="loans">' + st.loans.map(function (x) {
     return '<li><b>' + esc(x.p) + '</b> · ' + esc(x.t) + (x.pd ? ' <small>dal ' + esc(L.itDate(x.pd)) + ', ' + esc(L.agoText(Date.parse(x.pd))) + '</small>' : '') + '</li>';
@@ -5724,6 +5766,11 @@ list.addEventListener('input', function (e) {
   else if (k === 'c') { b.c = L.parseNum(el.value); }
   else if (k === 'i') { var w = el.value.replace(/[^\dXx]/g, '').toUpperCase(); if (w !== el.value) el.value = w; b.i = w; }
   else if (k === 'pg') { var pv = el.value.replace(/\D/g, '').slice(0, 5); if (pv !== el.value) el.value = pv; b.pg = pv; }
+  else if (k === 'pp') {                                // segnalibro: solo cifre; la barra e la percentuale si aggiornano mentre scrivi
+    var qv = el.value.replace(/\D/g, '').slice(0, 5); if (qv !== el.value) el.value = qv; b.pp = qv; b.ppd = qv ? today() : '';
+    var qi = ppInfo(b), box = el.closest('.pp');
+    if (box) { var pc = box.querySelector('.pp-pct'), br = box.querySelector('.pp-bar i'); if (pc) pc.textContent = qi.pct != null ? qi.pct + '%' : ''; if (br) br.style.width = (qi.pct || 0) + '%'; }
+  }
   else if (k === 'sn' || k === 'sq') { var sv = el.value.replace(/\D/g, '').slice(0, 3); if (sv !== el.value) el.value = sv; b[k] = sv; }
   else { b[k] = el.value.replace(/\s*[\r\n]+\s*/g, ' '); if (el.tagName === 'TEXTAREA') autosize(el); }
   if (b.g.indexOf(k) >= 0) {
@@ -5766,6 +5813,14 @@ list.addEventListener('keydown', function (e) {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && (((e.target.dataset.act === 'verify' || e.target.dataset.act === 'loan' || e.target.dataset.act === 'dup') && e.target.classList.contains('tag')) || (e.target.dataset.act === 'toggle' && e.target.classList.contains('sum')) || (e.target.dataset.act === 'zoom' && e.target.classList.contains('thumb')))) { e.preventDefault(); e.target.click(); return; }
   if (e.key === 'Enter' && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) { e.preventDefault(); e.target.blur(); }
 });
+list.addEventListener('click', function (e) {          // sezioni «In lettura» / «Gli altri libri»: si aprono e chiudono, e se lo ricorda
+  var sh = e.target.closest('.shelf-h'); if (!sh) return;
+  e.stopImmediatePropagation();
+  var k = sh.dataset.shelf, open = sh.getAttribute('aria-expanded') !== 'true';
+  sh.setAttribute('aria-expanded', open ? 'true' : 'false');
+  var body = document.getElementById('shelf-' + k); if (body) body.hidden = !open;
+  settings.shelfShut = settings.shelfShut || {}; if (open) delete settings.shelfShut[k]; else settings.shelfShut[k] = 1; saveSettings();
+}, true);
 list.addEventListener('click', function (e) {
   var cov = e.target.closest('.cover');
   if (cov) { openFromGrid(cov.dataset.id); return; }
@@ -6514,7 +6569,7 @@ window.NL = {
   icon: icon, setTab: function (t) { setTab(t); }, openMenu: function () { openDrawer('opt'); }, openSugg: function (t) { openSugg(t); },
   openQuotes: function () { openAllQuotes(); }, openStats: function () { openStats(); }, openExport: function () { openExport(); }, nQuotes: function () { return allQuotes().length; },
   updateStick: function () { updateStick(); }, summary: function () { updateSummary(); }, autosize: function (el) { autosizeAll(el); },
-  get: function (id) { return get(id); }, itDate: function (d) { return L.itDate(d); }, refreshRow: function (id) { refreshRow(id); },
+  rdLong: function (v) { return rdLong(v); }, get: function (id) { return get(id); }, itDate: function (d) { return L.itDate(d); }, refreshRow: function (id) { refreshRow(id); },
   fields: FIELDS, clean: function (x) { return cleanBook(x); }, stored: function () { return storable(); }, save: function () { touch(); }   // per la sincronizzazione (modulo social)
 };
 window.__ped = { st: function () { return ped; }, handles: function (o) { return pedHandles(o); }, stickers: function () { return pedStickers(); } };
