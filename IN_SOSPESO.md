@@ -256,6 +256,15 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 
 **Idea:** in Filtri › Libri, accanto a «Da verificare», la voce «Non trovati» (libri con `nf` e senza titolo, o tutti quelli con `nf`), con la pillola e la × sotto la ricerca come gli altri filtri; magari anche toccando l'etichetta «Non trovato».
 
+## 18. Quanti utenti regge un worker SBN e una chiave Google, e chiavi condivise tra amici (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** capire quanti utenti si possono «mantenere» con **un worker Cloudflare** e **una chiave API di Google Libri**, con un utilizzo normale; e se conviene un **sistema di condivisione delle chiavi tra amici**, magari con un **contatore**.
+
+**Da fare quando si riprende (nessuna cosa costruita):**
+- verificare i limiti di oggi (piano gratuito dei Worker di Cloudflare: richieste al giorno; Google Books API: richieste al giorno per progetto, e se si può chiedere di più) e misurare quante richieste fa l'app per libro aggiunto (scansione, ricerca, copertina, descrizione, suggerimenti, novità degli autori);
+- stimare: libri aggiunti al giorno da un utente «normale» → quanti utenti per worker e per chiave;
+- idee: chiave e worker **prestati a un amico** dalla finestra Amici (passano dal server, mai mostrati in chiaro), con un **contatore** delle richieste di oggi per chi la presta e un limite che si può scegliere; oppure un worker «della casa» per tutti, con il contatore e un tetto.
+
 ---
 
 ## Copia social — cose in sospeso (sessione social, 16/11/2026)

@@ -74,9 +74,11 @@ const R = (id, utente, stato, verso) => ({ id, utente, nome: utente, stato, vers
       { id: 'w2', t: 'Il nome della rosa', a: 'Umberto Eco', prenotato: 'io' },
       { id: 'w3', t: 'Lessico famigliare', a: 'Natalia Ginzburg', prenotato: 'Carla' } ] };
     SWAPS = [{ id: '11111111-1111-1111-1111-111111111111', da: 'd', a: 'u1', nome_da: 'Dario Esposito_lungo', nome_a: 'Piero R.', tipo: 'prestito', libro: { t: 'La coscienza di Zeno', a: 'Italo Svevo' }, stato: 'aperto', visto: false, creato: '2026-11-16T10:00:00Z' },
+             { id: '33333333-3333-3333-3333-333333333333', da: 'u1', a: 'd', nome_da: 'Piero R.', nome_a: 'Dario Esposito_lungo', tipo: 'prestito', libro: { t: 'Il sentiero dei nidi di ragno' }, stato: 'reso', visto: true, creato: '2026-11-14T10:00:00Z' },
              { id: '22222222-2222-2222-2222-222222222222', da: 'u1', a: 'd', nome_da: 'Piero R.', nome_a: 'Dario Esposito_lungo', tipo: 'regalo', libro: { t: 'Se una notte d\'inverno un viaggiatore' }, stato: 'aperto', visto: true, creato: '2026-11-15T10:00:00Z' }];
     p = await page(w, h, th);
     await shot(p, tag + '-8-avviso-prestito');
+    await p.evaluate(() => window.NLLayoutSwipe.next()); await wait(700); await shot(p, tag + '-8b-avviso-reso');
     await p.click('#btnFri'); await wait(600); await shot(p, tag + '-9-amici-interruttore');
     await p.click('[data-f="friend"][data-id="d"]'); await wait(700); await shot(p, tag + '-10-pagina-amico');
     await p.click('[data-f="back"]'); await wait(200); await p.keyboard.press('Escape'); await wait(200);

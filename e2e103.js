@@ -3,7 +3,8 @@ const CFG = require("./_config");
 // B accende «Gli amici vedono i miei desideri»; A apre la pagina di B, vede i desideri e «Te lo regalo io» (prenotazione);
 // A presta un libro a B scegliendolo tra gli amici in «Presta, vendi o regala»: dopo «Annulla» non parte niente, dopo «Salva» sì;
 // B lo trova subito nella sua Libreria con «Prestato da Anna» e l'avviso in cima; B tocca «Prestato da Anna» › Restituito:
-// da lui «Restituito ad Anna» (storico), da A il prestito sparisce; A regala a B un libro che era tra i desideri di B:
+// «da confermare» (B non chiude da solo); A riceve l'avviso: «Non ancora» → per B torna «Prestato da Anna»; di nuovo, A «Confermo»
+// → da B «Restituito ad Anna» (storico), da A il prestito sparisce; A regala a B un libro che era tra i desideri di B:
 // da B passa dai Desideri alla Libreria con «Regalato da Anna», la prenotazione sparisce; la pagina dell'amico non esce di lato a 360 px
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -49,7 +50,9 @@ function fake(req, res, body, url) {
     if (body.tipo === 'regalo') Object.keys(DB.pren).forEach(k => { const [o, l] = k.split('|'); const r = DB.rows[o + '|' + l]; if (o === body.a && DB.pren[k] === me && r && r.dati.i === body.libro.i) delete DB.pren[k]; });
     return send(200, id);
   }
-  if (p === '/rest/v1/rpc/chiudi_scambio') { const s = DB.sw.find(x => x.id === body.id && (x.da === me || x.a === me) && x.stato === 'aperto'); if (s) { s.stato = 'chiuso'; s.chiuso = now(); } return send(204); }
+  if (p === '/rest/v1/rpc/chiudi_scambio') { const s = DB.sw.find(x => x.id === body.id && x.da === me && x.stato !== 'chiuso'); if (s) { s.stato = 'chiuso'; s.chiuso = now(); } return send(204); }
+  if (p === '/rest/v1/rpc/segnala_reso') { const s = DB.sw.find(x => x.id === body.id && x.a === me && x.stato === 'aperto'); if (s) s.stato = 'reso'; return send(204); }
+  if (p === '/rest/v1/rpc/rifiuta_reso') { const s = DB.sw.find(x => x.id === body.id && x.da === me && x.stato === 'reso'); if (s) s.stato = 'aperto'; return send(204); }
   if (p === '/rest/v1/rpc/segna_visto') { const s = DB.sw.find(x => x.id === body.id && x.a === me); if (s) s.visto = true; return send(204); }
   if (p === '/rest/v1/rpc/miei_scambi') return send(200, DB.sw.filter(x => x.da === me || x.a === me).map(x => Object.assign({ nome_da: DB.prof[x.da].utente, nome_a: DB.prof[x.a].utente }, x)));
   if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
@@ -131,16 +134,30 @@ const base = 'http://localhost:' + CFG.port(8303);
   await B.evaluate(() => window.NLAmici.load(true)); await wait(500);
   assert.strictEqual((await B.evaluate(() => window.NL.books().filter(b => b.t === 'La coscienza di Zeno').length)), 1, 'una volta sola');
   await B.screenshot({ path: CFG.OUT + '/amici-ricevuto.png' });
-  // B restituisce
+  // B dice «Restituito»: da confermare, non si chiude da solo
+  const restituisci = async () => { await B.click('[data-id="' + bz.id + '"] [data-act="recv"]'); await wait(300); await B.click('#recvYes'); await wait(600); };
   await B.click('[data-id="' + bz.id + '"] [data-act="recv"]'); await wait(300);
-  assert(/Hai restituito «La coscienza di Zeno» ad Anna\?/.test(await B.$eval('#recvTxt', x => x.textContent)));
+  assert(/Hai restituito «La coscienza di Zeno» ad Anna\?/.test(await B.$eval('#recvTxt', x => x.textContent)) && /Anna dovrà confermare/.test(await B.$eval('#recvSub', x => x.textContent)));
   await B.click('#recvYes'); await wait(600);
+  assert.strictEqual(sw1.stato, 'reso', 'online: da confermare'); bz = await B.book("b.id==='" + bz.id + "'"); assert(bz.sk === 'q' && !bz.xs, 'da B: in attesa');
+  assert(/Restituito ad Anna · da confermare/.test(await B.$eval('[data-id="' + bz.id + '"]', x => x.innerText)));
+  // A: avviso; «Non ancora» → per B torna «Prestato da Anna»
+  await A.evaluate(() => window.NLAmici.load(true)); await wait(600);
+  assert(/Bruno dice di averti restituito «La coscienza di Zeno»/.test(await A.$eval('#friRet', x => x.hidden ? '' : x.innerText)), 'avviso per chi ha prestato');
+  await A.screenshot({ path: CFG.OUT + '/amici-reso.png' });
+  await A.click('#friRetNo'); await wait(500);
+  assert.strictEqual(sw1.stato, 'aperto'); assert(await A.$eval('#friRet', x => x.hidden), 'avviso tolto');
+  await B.evaluate(() => window.NLAmici.load(true)); await wait(600);
+  assert.strictEqual((await B.book("b.id==='" + bz.id + "'")).sk, 'p', 'da B: di nuovo «Prestato da Anna»');
+  // di nuovo; A conferma
+  await restituisci(); assert.strictEqual(sw1.stato, 'reso');
+  await A.evaluate(() => window.NLAmici.load(true)); await wait(600);
+  await A.click('#friRetYes'); await wait(600);
+  assert.strictEqual(sw1.stato, 'chiuso', 'chiuso da chi ha prestato');
+  const az = await A.book("b.id==='" + zeno + "'"); assert(!az.p && !az.sx, 'da A: non più in prestito');
+  await B.evaluate(() => window.NLAmici.load(true)); await wait(600);
   bz = await B.book("b.id==='" + bz.id + "'"); assert(bz.xs === 'b' && bz.xa === 'Anna', 'da B: restituito (storico)');
   assert(/Restituito ad Anna/.test(await B.$eval('[data-id="' + bz.id + '"]', x => x.innerText)));
-  assert.strictEqual(sw1.stato, 'chiuso', 'chiuso anche online');
-  // A: il prestito sparisce
-  await A.evaluate(() => window.NLAmici.load(true)); await wait(600);
-  const az = await A.book("b.id==='" + zeno + "'"); assert(!az.p && !az.sx, 'da A: non più in prestito');
   // ---- A regala a B il libro che B desiderava: da B passa dai Desideri alla Libreria, la prenotazione sparisce ----
   const rosaA = await A.add({ t: 'Il nome della rosa', a: 'Umberto Eco', i: '9788845292613' });
   await A.evaluate((id) => window.__app.openLoan(id, 'r'), rosaA); await wait(300);
