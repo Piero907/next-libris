@@ -1,4 +1,4 @@
--- Next Libris: relazioni e pulizia (16/11/2026, «mi raccomando ai controlli sulle relazioni delle tabelle»). DA APPLICARE (Supabase chiede conferma: ci sono delete).
+-- Next Libris: relazioni e pulizia (16/11/2026). APPLICATO alla prova (migrazione «relazioni_e_pulizia», confermata da Piero); prova: tutto bene.
 revoke all on function public.sono_amici(uuid, uuid) from public, anon, authenticated;   -- non deve dire a chiunque chi è amico di chi
 create index if not exists chiavi_a on public.chiavi (a);
 create index if not exists consigli_da on public.consigli (da);
