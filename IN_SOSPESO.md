@@ -4,7 +4,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui (va in «Fatti», in fondo, con una riga) e la novità va nel registro dell'app.
 
-**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **23**.
+**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **24**.
 
 Ultimo aggiornamento: **16/11/2026**, vera **99**, prova **99.3**.
 
@@ -12,7 +12,7 @@ Ultimo aggiornamento: **16/11/2026**, vera **99**, prova **99.3**.
 
 - **A. In attesa di Piero** (cose già fatte nella prova o da confermare)
 - **B. Da verificare sul telefono**
-- **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto
+- **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine
 - **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki · 12 nazionalità degli autori · 6 film dai libri
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
 - **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris
@@ -91,6 +91,10 @@ Cose fatte ma senza riscontro di Piero.
 - un pulsante «Scrivilo a mano» sempre visibile, già riempito con quello che ha letto.
 
 ---
+
+### 23. Collane raggruppate nella vista a copertine (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** nella visualizzazione a copertine, permettere di **raggruppare le collane** (serie). Nulla di costruito. **Prima di costruire, chiedere:** raggruppate sempre o con un interruttore; come si mostra il gruppo (una copertina sola con il numero dei volumi, o una pila che si apre); ordine dei volumi (numero del volume); vale anche nell'elenco o solo nelle copertine; libri della stessa collana con autori diversi.
 
 ## D. Wikipedia e Wikidata
 

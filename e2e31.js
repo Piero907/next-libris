@@ -24,29 +24,30 @@ const W = 'https://sbn-libri.piero.workers.dev', K = 'AIzaSyA1b2C3d4E5f6G7h8I9j0
     await p.goto(url, { waitUntil: 'load' }); await wait(400); return p;
   }
   const tap = (p, s) => p.$eval(s, e => e.click()), hid = (p, s) => p.$eval(s, e => e.hidden), txt = (p, s) => p.$eval(s, e => e.innerText.replace(/\s+/g, ' ').trim());
+  const link = async p => { await tap(p, '#svcBox [data-svc="lend"]'); await wait(300); await tap(p, '#kwBody [data-kw="link"]'); };   // Condivisione › Presta a un amico › Manda con un link (16/11/2026)
   const set = p => p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
   // 1) senza chiave né worker: pulsante disattivato
   let p = await open(BASE, {});
   await p.evaluate(() => window.__app.openOptions('share')); await wait(150);
-  assert(await p.$eval('#svcShareBtn', e => e.disabled)); assert(!(await hid(p, '#svcShareNone')));
+  assert.deepStrictEqual(await p.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc)), ['guide'], 'niente da prestare: solo la guida (16/11/2026)');
   await p.browserContext().close();
   // 2) chi invia
   p = await open(BASE, { name: 'Piero', sbnUrl: W, gbKey: K });
   await p.evaluate(() => window.__app.openOptions('share')); await wait(150);
-  await tap(p, '#svcShareBtn'); await wait(150);
+  await link(p); await wait(150);
   assert(!(await hid(p, '#svcSheet'))); console.log('[2 foglio]', await txt(p, '#svcWhat'), '|', (await txt(p, '.svc-warn')).slice(0, 60) + '…');
   await p.screenshot({ path: CFG.OUT + '/svc_send.png' });
   await tap(p, '#svcForm button[type="submit"]'); await wait(300);
   const sh = (await p.evaluate(() => window.__shared))[0]; console.log('[2 messaggio]', sh.text, '\n', sh.url.slice(0, 80) + '…');
   assert(sh.text.startsWith('Piero ti manda la chiave Google e il worker SBN per Next Libris')); assert(/#k=[zj][\w-]+$/.test(sh.url)); assert(!sh.text.includes(K));
-  const link = sh.url.split('#')[1];
+  const lnk = sh.url.split('#')[1];
   // solo il worker
-  await p.evaluate(() => window.__app.openOptions('share')); await wait(100); await tap(p, '#svcShareBtn'); await wait(100);
+  await p.evaluate(() => window.__app.openOptions('share')); await wait(100); await link(p); await wait(100);
   await p.$eval('#svcKeyOn', e => { e.checked = false; }); await tap(p, '#svcCopy'); await wait(300);
   const onlyW = (await p.evaluate(() => window.__copied))[0]; assert(onlyW.startsWith('Piero ti manda il worker SBN')); const linkW = onlyW.match(/#(k=[\w-]+)$/)[1];
   assert.deepStrictEqual(p.errors, []); await p.browserContext().close();
   // 3) chi riceve senza impostazioni: «Usali», poi Annulla e di nuovo
-  p = await open(BASE + '#' + link, { name: 'Anna' });
+  p = await open(BASE + '#' + lnk, { name: 'Anna' });
   assert(!(await hid(p, '#svcInSheet'))); console.log('[3 ricevuto]', await txt(p, '#svcInH'), '|', await txt(p, '#svcInList'));
   assert.strictEqual(await txt(p, '#svcInH'), 'Piero ti manda chiave Google e worker SBN'); assert.strictEqual(p.url(), BASE);
   await p.screenshot({ path: CFG.OUT + '/svc_in.png' });
@@ -57,7 +58,7 @@ const W = 'https://sbn-libri.piero.workers.dev', K = 'AIzaSyA1b2C3d4E5f6G7h8I9j0
   assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-saved'))), { sbn: [W], key: [K] });
   await p.browserContext().close();
   // 4) chi ha già i suoi: «Mettili tra i salvati» non cambia quelli in uso
-  p = await open(BASE + '#' + link, { sbnUrl: 'https://mio.anna.workers.dev', gbKey: 'AIzaSyANNAANNAANNAANNAANNAANNAANNAANNAAN' });
+  p = await open(BASE + '#' + lnk, { sbnUrl: 'https://mio.anna.workers.dev', gbKey: 'AIzaSyANNAANNAANNAANNAANNAANNAANNAANNAAN' });
   console.log('[4 lista]', await txt(p, '#svcInList')); assert((await txt(p, '#svcInList')).includes('al posto del tuo'));
   await tap(p, '#svcInLater'); await wait(150);
   st = await set(p); assert.strictEqual(st.sbnUrl, 'https://mio.anna.workers.dev');
