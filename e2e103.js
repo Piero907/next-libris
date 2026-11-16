@@ -1,5 +1,6 @@
 const CFG = require("./_config");
-// modulo «Amici»: desideri, prestiti e regali tra amici (Supabase finto). A (Anna) e B (Bruno) amici.
+// modulo «Amici»: libreria, desideri, prestiti e regali tra amici (Supabase finto). A (Anna) e B (Bruno) amici.
+// B accende «Gli amici vedono la mia libreria»: A la vede nella pagina di B (lettura e voto, «Ce l'hai anche tu»; mai le note);
 // B accende «Gli amici vedono i miei desideri»; A apre la pagina di B, vede i desideri e «Te lo regalo io» (prenotazione);
 // A presta un libro a B scegliendolo tra gli amici in «Presta, vendi o regala»: dopo «Annulla» non parte niente, dopo «Salva» sì;
 // B lo trova subito nella sua Libreria con «Prestato da Anna» e l'avviso in cima; B tocca «Prestato da Anna» › Restituito:
@@ -12,7 +13,7 @@ const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.wasm': 'application/wasm' };
 let clock = Date.parse('2026-11-16T10:00:00Z'); const now = () => new Date(clock += 1000).toISOString();
-const DB = { prof: { uA: { utente: 'Anna', nome: 'Anna', desideri: false }, uB: { utente: 'Bruno', nome: 'Bruno', desideri: false } },
+const DB = { prof: { uA: { utente: 'Anna', nome: 'Anna', desideri: false, libreria: false }, uB: { utente: 'Bruno', nome: 'Bruno', desideri: false, libreria: false } },
   am: [{ da: 'uA', a: 'uB', stato: 'amici', creato: now() }], rows: {}, sw: [], pren: {}, n: 0 };
 const uidOf = (req) => { const m = /Bearer AT-(\w+)/.exec(req.headers.authorization || ''); return m ? m[1] : null; };
 const friendsOk = (x, y) => DB.am.some(f => f.stato === 'amici' && ((f.da === x && f.a === y) || (f.da === y && f.a === x)));
@@ -28,8 +29,14 @@ function fake(req, res, body, url) {
     return send(200, Object.values(DB.rows).filter(x => x.utente === me && (!gt || x.aggiornato > gt)).map(x => ({ id: x.id, dati: x.dati, cancellato: x.cancellato, aggiornato: x.aggiornato })));
   }
   if (p === '/rest/v1/libri' && req.method === 'POST') { for (const x of body) DB.rows[me + '|' + x.id] = Object.assign({ utente: me, cancellato: false }, DB.rows[me + '|' + x.id] || {}, x, { aggiornato: now() }); return send(201); }
-  if (p === '/rest/v1/profili' && req.method === 'GET') { const pr = DB.prof[me]; return send(200, [{ utente: pr.utente, nome: pr.nome, desideri: pr.desideri }]); }
-  if (p === '/rest/v1/profili') { Object.assign(DB.prof[me], body.desideri !== undefined ? { desideri: body.desideri } : {}, body.utente ? { utente: body.utente, nome: body.utente } : {}); return send(201); }
+  if (p === '/rest/v1/profili' && req.method === 'GET') { const pr = DB.prof[me]; return send(200, [{ utente: pr.utente, nome: pr.nome, desideri: pr.desideri, libreria: pr.libreria }]); }
+  if (p === '/rest/v1/profili') { ['desideri', 'libreria'].forEach(k => { if (body[k] !== undefined) DB.prof[me][k] = body[k]; }); if (body.utente) Object.assign(DB.prof[me], { utente: body.utente, nome: body.utente }); return send(201); }
+  if (p === '/rest/v1/rpc/libreria_di') {
+    const o = body.amico; if (!friendsOk(me, o)) return send(400, { message: 'non amici' });
+    if (!DB.prof[o].libreria) return send(200, { visibili: false, totale: 0, libri: [] });
+    const l = Object.values(DB.rows).filter(x => x.utente === o && !x.cancellato && x.dati.w !== true && !x.dati.xs && !['p', 'q'].includes(x.dati.sk));
+    return send(200, { visibili: true, totale: l.length, libri: l.map(x => ({ id: x.id, t: x.dati.t, a: x.dati.a, i: x.dati.i, img: x.dati.img, rs: x.dati.rs, rt: x.dati.rt })) });
+  }
   if (p === '/rest/v1/rpc/miei_amici') return send(200, DB.am.filter(x => x.da === me || x.a === me).map(x => { const o = x.da === me ? x.a : x.da; return { id: o, utente: DB.prof[o].utente, nome: DB.prof[o].nome, stato: x.stato, verso: x.da === me ? 'inviata' : 'ricevuta', creato: x.creato }; }));
   if (p === '/rest/v1/rpc/desideri_di') {
     const o = body.amico; if (!friendsOk(me, o)) return send(400, { message: 'non amici' });
@@ -92,19 +99,25 @@ const base = 'http://localhost:' + CFG.port(8303);
   const B = await phone('B', 'uB', 360);
   await B.add({ t: 'Il nome della rosa', a: 'Umberto Eco', i: '9788845292613', w: true });
   await B.add({ t: 'Lessico famigliare', a: 'Natalia Ginzburg', w: true });
+  await B.add({ t: 'Il deserto dei Tartari', a: 'Dino Buzzati', i: '9788804668015', rs: 'ok', rt: 5, n: 'nota segreta' });
   await B.evaluate(() => window.NLSocial.run(false)); await wait(500);
   assert.strictEqual(Object.values(DB.rows).filter(r => r.utente === 'uB' && r.dati.w === true).length, 2, 'desideri di B online');
   await B.click('#btnFri'); await wait(700);
   assert(!(await B.$eval('#friWish', x => x.checked)), 'desideri nascosti di partenza');
   await B.click('#friWish'); await wait(500);
   assert.strictEqual(DB.prof.uB.desideri, true, 'B mostra i desideri');
+  assert(!(await B.$eval('#friLib', x => x.checked)), 'libreria nascosta di partenza');
+  await B.click('#friLib'); await wait(500); assert.strictEqual(DB.prof.uB.libreria, true, 'B mostra la libreria');
   await B.keyboard.press('Escape'); await wait(200);
   // ---- A: pagina di B, desideri, «Te lo regalo io» ----
   const A = await phone('A', 'uA');
+  await A.add({ t: 'Il deserto dei Tartari', a: 'Dino Buzzati', i: '9788804668015' });
   await A.click('#btnFri'); await wait(700);
   await A.click('[data-f="friend"]'); await wait(700);
   let t = await A.body(); console.log('[pagina di Bruno]', t.slice(0, 260));
   assert(/Bruno I suoi desideri/.test(t) && /Il nome della rosa/.test(t) && /Lessico famigliare/.test(t), 'A vede i desideri di B');
+  console.log('[libreria]', t.slice(t.indexOf('La sua libreria'), t.indexOf('La sua libreria') + 150));
+  assert(/La sua libreria 1 (\S )?Il deserto dei Tartari Dino Buzzati Letto · Capolavoro · Ce l.hai anche tu/.test(t), 'A vede la libreria di B'); assert(!/nota segreta/.test(t), 'mai le note');
   const rosa = Object.values(DB.rows).find(r => r.dati.i === '9788845292613').id;
   await A.click('[data-f="gift"][data-id="' + rosa + '"]'); await wait(600);
   assert.strictEqual(DB.pren['uB|' + rosa], 'uA', 'prenotato da A'); assert(/Lo regali tu/.test(await A.body()));

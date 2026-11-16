@@ -6,6 +6,8 @@ const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const OUT = path.join(CFG.OUT, 'schermate-amici'); fs.mkdirSync(OUT, { recursive: true });
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
+const LIB = { visibili: true, totale: 40, libri: Array.from({ length: 40 }, (_, k) => k === 0 ? { id: 'k0', t: 'Il barone rampante', a: 'Italo Calvino', i: '9788804668015', rs: 'ok', rt: 4 }
+  : k === 1 ? { id: 'k1', t: 'Una storia lunghissima con un titolo che non finisce mai, davvero mai', a: 'Autrice Con Un Nome Molto Lungo', rs: 'in' } : { id: 'k' + k, t: 'Libro numero ' + k, a: 'Autore ' + k }) };
 let ME = { utente: null, nome: '' }, LIST = [], FOUND = [], WISH = { visibili: true, libri: [] }, SWAPS = [];
 const srv = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
@@ -19,6 +21,7 @@ const srv = http.createServer((req, res) => {
       if (p === '/rest/v1/rpc/miei_amici') return res.end(JSON.stringify(LIST));
       if (p === '/rest/v1/rpc/cerca_utenti') return res.end(JSON.stringify(FOUND));
       if (p === '/rest/v1/rpc/desideri_di') return res.end(JSON.stringify(WISH));
+      if (p === '/rest/v1/rpc/libreria_di') return res.end(JSON.stringify(LIB));
       if (p === '/rest/v1/rpc/miei_scambi') return res.end(JSON.stringify(SWAPS));
       res.end('[]');
     });
@@ -80,7 +83,9 @@ const R = (id, utente, stato, verso) => ({ id, utente, nome: utente, stato, vers
     await shot(p, tag + '-8-avviso-prestito');
     await p.evaluate(() => window.NLLayoutSwipe.next()); await wait(700); await shot(p, tag + '-8b-avviso-reso');
     await p.click('#btnFri'); await wait(600); await shot(p, tag + '-9-amici-interruttore');
+    await p.evaluate(() => { const b = window.NL.clean({ t: 'Il barone rampante', a: 'Italo Calvino', i: '9788804668015' }); window.NL.books().push(b); });
     await p.click('[data-f="friend"][data-id="d"]'); await wait(700); await shot(p, tag + '-10-pagina-amico');
+    await p.evaluate(() => { const e = document.getElementById('friLibQ'); if (e) e.scrollIntoView(); }); await wait(200); await shot(p, tag + '-10b-libreria-amico');
     await p.click('[data-f="back"]'); await wait(200); await p.keyboard.press('Escape'); await wait(200);
     await p.evaluate(() => { const b = window.NL.books().find(x => x.sk === 'p'); if (b) window.__app.openLoan(window.NL.books()[1] ? window.NL.books()[1].id : b.id); });
     await p.evaluate(() => { const bk = window.NL.clean({ t: 'Il barone rampante', a: 'Italo Calvino' }); window.NL.books().push(bk); window.NL.refresh(); window.__app.openLoan(bk.id); }); await wait(500);
