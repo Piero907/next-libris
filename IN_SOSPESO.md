@@ -244,6 +244,18 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - **Le immagini restano il cuore** (Piero: «il bello degli ex-libris sono proprio le immagini»). Il codice non le sostituisce: è il **seme** da cui l'app **disegna** l'ex-libris (cornice, simbolo, ornamenti, colori, caratteri). Stesso codice = stessa immagine su ogni telefono: basta mandare il codice nel link (con il motto) e chi lo riceve vede l'ex-libris intero, senza spedire file pesanti. Per un ex-libris **importato** (una tua immagine) l'app ne fa una copia piccola da mandare a parte (per esempio come immagine su WhatsApp) e la lega al codice.
 - **Da collezionare come figurine/sticker** (Piero, 16/11/2026): un **album** degli ex-libris incontrati, con le caselle vuote da riempire e il contatore («12 ex-libris raccolti»); ogni ex-libris ha la sua scheda (di chi è, il motto, quando e con quale libro l'hai trovato); qualche **rarità** (forme o colori che escono di rado nel disegno casuale); piccoli traguardi («Il primo ex-libris», «5 amici lettori», «Un libro passato per 3 mani»); il proprio ex-libris si può «staccare» come sticker da condividere.
 
+## 16. Guida per il worker SBN e la chiave di Google Libri (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** migliorare la spiegazione per creare il **worker SBN** (Cloudflare) e la **chiave API di Google Libri**, così chi usa l'app ci riesce da solo.
+
+**Idee da proporre (nessuna costruita):** passi numerati con le schermate vere (o disegnini) dentro Impostazioni › Ricerca dei libri; testo pronto da copiare (codice del worker) con un pulsante «Copia»; un controllo «Prova la chiave / Prova il worker» che dice subito se funziona e cosa manca; spiegare in una riga a cosa servono (più libri trovati, meno limiti) e che sono gratuiti.
+
+## 17. Filtro per gli ISBN non trovati (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** un **filtro** per vedere solo i libri con il codice ISBN **non trovato** in nessuna banca dati (oggi hanno l'etichetta «Non trovato», campo `nf`, ma non c'è un filtro).
+
+**Idea:** in Filtri › Libri, accanto a «Da verificare», la voce «Non trovati» (libri con `nf` e senza titolo, o tutti quelli con `nf`), con la pillola e la × sotto la ricerca come gli altri filtri; magari anche toccando l'etichetta «Non trovato».
+
 ---
 
 ## Copia social — cose in sospeso (sessione social, 16/11/2026)
