@@ -2,7 +2,7 @@ const CFG = require("./_config");
 // copia social, modulo «Account e sincronizzazione» (social.js) con un Supabase finto sullo stesso server:
 // voce nel Menu, accesso con email e codice (codice sbagliato → messaggio), copia di sicurezza prima della prima sincronizzazione,
 // due telefoni con lo stesso account (libri che passano da uno all'altro, modifiche, cancellazioni «morbide» che lasciano i dati online),
-// nessun caricamento inutile quando non cambia niente, conflitto (vince il telefono che ha modificato), uscita, ripristino della copia
+// accesso dal link dell'email (token dopo il #, poi tolti dall'indirizzo; link scaduto → messaggio), nessun caricamento inutile quando non cambia niente, conflitto (vince il telefono che ha modificato), uscita, ripristino della copia
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -16,7 +16,7 @@ function fake(req, res, body, url) {
   const send = (st, j) => { res.writeHead(st, { 'Content-Type': 'application/json' }); res.end(j === undefined ? '' : JSON.stringify(j)); };
   const p = url.pathname.replace(/^\/finto/, ''), q = url.searchParams;
   if (req.headers.apikey !== 'chiave-finta') return send(401, { message: 'no api key' });
-  if (p === '/auth/v1/otp') { DB.otp++; return send(200, {}); }
+  if (p === '/auth/v1/otp') { DB.otp++; DB.redirect = q.get('redirect_to'); return send(200, {}); }
   if (p === '/auth/v1/verify') {
     if (body.token !== '123456') return send(403, { msg: 'Token has expired or is invalid' });
     const id = DB.users[body.email] || (DB.users[body.email] = 'u' + Object.keys(DB.users).length);
@@ -25,6 +25,7 @@ function fake(req, res, body, url) {
   if (p === '/auth/v1/token') { const id = String(body.refresh_token || '').slice(3); return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id } }); }
   if (p === '/auth/v1/logout') return send(204);
   const uid = uidOf(req); if (!uid) return send(401, { message: 'JWT' });
+  if (p === '/auth/v1/user') return send(200, { id: uid, email: Object.keys(DB.users).find(e => DB.users[e] === uid) });
   if (p === '/rest/v1/profili') return send(201);
   if (p === '/rest/v1/rpc/elimina_account') { Object.keys(DB.rows).filter(k => k.startsWith(uid + '|')).forEach(k => delete DB.rows[k]); return send(204); }
   if (p === '/rest/v1/libri' && req.method === 'GET') {
@@ -123,6 +124,19 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   console.log('[conflitto]', shA, '|', shB); assert(shA === 'Scaffale B' && shB === 'Scaffale B', 'alla fine uguali');
   // telefoni a posto: un altro giro non carica niente
   p0 = DB.posts; await A.sync(); await B.sync(); assert.strictEqual(DB.posts, p0, 'nessun caricamento a vuoto');
+  // ---- telefono C: entra dal link dell'email (il servizio gratuito di Supabase manda il link, non il codice) ----
+  assert.strictEqual(DB.redirect, base + '/next-libris-social/', 'il link dell\'email torna alla copia social');
+  const C = await phone('C');
+  await C.goto('about:blank');                                       // link scaduto: pagina aperta da zero; link buono: nella stessa scheda (hashchange)
+  await C.goto(base + '/next-libris-social/?vista=elenco#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired', { waitUntil: 'load' }); await wait(1200);
+  let tx = await C.evaluate(() => document.querySelector('.toast') ? document.querySelector('.toast').textContent : document.body.innerText);
+  console.log('[toast]', tx); assert(/link dell.email è scaduto/.test(tx), 'link scaduto: messaggio'); assert(!/error_code/.test(await C.evaluate(() => location.href)), 'indirizzo pulito');
+  await C.goto(base + '/next-libris-social/?vista=elenco#access_token=AT-' + DB.users['lettore@esempio.it'] + '&expires_at=9999999999&expires_in=3600&refresh_token=RT-' + DB.users['lettore@esempio.it'] + '&token_type=bearer&type=magiclink', { waitUntil: 'load' }); await wait(1800);
+  const cs = await C.st(); console.log('[C dal link]', JSON.stringify({ email: cs.auth && cs.auth.email, n: (await C.books()).length, url: await C.evaluate(() => location.href) }));
+  assert(cs.auth && cs.auth.email === 'lettore@esempio.it' && !cs.err, 'C entrato dal link');
+  assert.deepStrictEqual(await C.books(), ['9788806219352', '9788845292613'], 'C riceve i libri');
+  assert(!/access_token/.test(await C.evaluate(() => location.href)), 'i token non restano nell\'indirizzo');
+  assert(/Sei entrato come lettore@esempio\.it/.test(await C.$eval('#accBody', x => x.textContent)), 'finestra aperta da sola');
   // ripristino della copia di sicurezza su A (i due libri di prima)
   await A.evaluate(() => window.NLSocial.open()); await wait(400);
   await A.click('#accSheet summary'); await wait(150); await A.click('[data-acc="restore"]'); await wait(200);
