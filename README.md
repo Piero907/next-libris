@@ -186,7 +186,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e73.js | 8193 | Tre copie insieme (vera, prova, social): libri, impostazioni, database delle copertine e copie offline separati; etichetta SOCIAL blu; tema all'avvio letto dalla copia giusta; ogni service worker cancella solo le sue copie offline vecchie |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8194** e poi a salire, sempre attraverso `CFG.port()`.
+Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova: sessione della prova `e2e74`–`e2e99` con porte **8194–8299**, sessione social `e2e100`–`e2e199` con porte **8300–8399**, sempre attraverso `CFG.port()` (regole in CLAUDE.md).
 
 ## Materiali (`img/`)
 
