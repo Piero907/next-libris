@@ -6,7 +6,7 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
 ## Stato attuale (16/11/2026)
 - **Vera: versione 99.** Prova: **99.2** = vera + **campanella delle notifiche** (`notifiche.js`/`.css`, prova e2e105). Salvataggi: rami `salvataggio-v96`, `-v97`, `-v98` (tornare indietro solo se Piero lo chiede: `git push -f origin salvataggio-vNN:main`).
 - Solo due copie: **vera** (https://piero907.github.io/next-libris/, ramo `main`) e **prova** (repository `next-libris-prova`, codice nel ramo `prova`). La copia social non esiste più.
-- **Supabase**, piano gratuito, 2 progetti (il massimo), Francoforte: vera `fttdbqotjocjfjfcoyfv`, prova `amkrkvkylprjasccxmzo` (`PROGETTI` in social.js). Al 16/11/2026 i due database sono **identici** (funzioni, permessi, colonne, vincoli, indici, regole), **tranne `011_notifiche.sql`: solo nella prova** (tabella `notifiche` scritta dai trigger, `mie_notifiche`, `notifiche_lette`; prova SQL `prova_notifiche.sql`). Va applicata alla vera quando si porta la campanella.
+- **Supabase**, piano gratuito, 2 progetti (il massimo), Francoforte: vera `fttdbqotjocjfjfcoyfv`, prova `amkrkvkylprjasccxmzo` (`PROGETTI` in social.js). Al 16/11/2026 i due database sono **identici** (funzioni, permessi, colonne, vincoli, indici, regole), **tranne `011_notifiche.sql` e `012_ricerche_archivio.sql`: solo nella prova** (tabella `notifiche` scritta dai trigger, `mie_notifiche`, `notifiche_lette`; prova SQL `prova_notifiche.sql`). Va applicata alla vera quando si porta la campanella.
 
 ## Lavoro in corso (aggiornare a ogni passo: le sessioni si chiudono spesso)
 - **Campanella delle notifiche** (prova 99.2, 16/11/2026): fatta e pubblicata nella prova. **Si porta nella vera solo quando lo dice Piero.**
@@ -20,6 +20,7 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
   2. **Notifica nella campanella** quando una chiave arriva al limite: invita a crearne una propria; aprendola, guida con link e passaggi, **in evidenza che è gratis**.
   3. **Descrizione solo dalla prima ricerca**: se manca, «Descrizione non disponibile» e **nessun'altra richiesta**. Copertina grande senza la richiesta in più a Google.
   4. **Archivio comune per ISBN** (dati + descrizione, visibile a chi ha l'account): chi cerca un libro già cercato non usa Google.
+  - Fatto: database della prova (`supabase/012_ricerche_archivio.sql`, applicato con la correzione 012b già nel file; prova `prova_ricerche_archivio.sql` 19/19). Da fare: app (descrizioni, copertina, modulo `ricerche.js`, notifica «limite» e guida), prove, pubblicazione.
 
 ## Regole con Piero
 - **Annotare subito:** a ogni passo concluso aggiornare «Stato attuale» e «Lavoro in corso» qui (e fare push), così una sessione nuova riparte senza perdere niente.
