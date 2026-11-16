@@ -1,5 +1,5 @@
 /* Next Libris · modulo «Account e sincronizzazione» (copia social, 16/11/2026).
-   Account facoltativo con email e codice di 6 cifre (niente password); i libri si copiano su Supabase (Francoforte) e si
+   Account facoltativo con email e link (o codice di 6 cifre, con un SMTP proprio), niente password; i libri si copiano su Supabase (Francoforte) e si
    ritrovano su un altro telefono o tablet. Il telefono resta la copia principale: senza rete o senza account l'app va come sempre.
    - Solo REST (fetch), nessuna libreria: Auth (/auth/v1) e database (/rest/v1, tabella «libri», regole RLS: ognuno vede solo i suoi).
    - Sincronizzazione: per ogni libro si ricorda l'impronta dell'ultima versione sincronizzata (h). Prima si scaricano le righe
@@ -167,8 +167,31 @@ async function doSync() {
 }
 
 /* ---------- accesso ---------- */
+function home() { return location.origin + location.pathname.replace(/[^/]*$/, ''); }   // dove torna il link dell'email
 async function sendCode(email) {
-  await call('/auth/v1/otp', { method: 'POST', body: { email: email, create_user: true } });
+  await call('/auth/v1/otp?redirect_to=' + encodeURIComponent(home()), { method: 'POST', body: { email: email, create_user: true } });
+}
+/* Link dell'email («Sign in», o «Confirm your mail» la prima volta): Supabase riapre l'app con i token dopo il # dell'indirizzo.
+   Con il servizio email gratuito di Supabase i modelli non si cambiano, quindi arriva il link e non il codice (16/11/2026).
+   Su Android il link si apre in Chrome, che ha gli stessi dati dell'app installata: l'accesso vale anche li'. */
+async function fromLink() {
+  var h = location.hash.replace(/^#/, '');
+  if (!/(^|&)(access_token|error_code|error)=/.test(h)) return;
+  var q = {}; h.split('&').forEach(function (kv) { var i = kv.indexOf('='); if (i > 0) q[decodeURIComponent(kv.slice(0, i))] = decodeURIComponent(kv.slice(i + 1).replace(/\+/g, ' ')); });
+  try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}   // i token non restano nell'indirizzo
+  if (!q.access_token) {
+    NL.toast(q.error_code === 'otp_expired' ? 'Il link dell\'email è scaduto o già usato: chiedine uno nuovo.' : 'Accesso non riuscito: chiedi un\'altra email.');
+    setTimeout(open, 400); return;
+  }
+  var j = { access_token: q.access_token, refresh_token: q.refresh_token, expires_in: q.expires_in };
+  try {
+    auth = { at: q.access_token, rt: q.refresh_token, exp: Date.now() + (Number(q.expires_in) || 3600) * 1000 };
+    var u = await call('/auth/v1/user', { user: true });
+    j.user = u; auth = null; setAuth(j);
+  } catch (e) { auth = null; NL.toast('Accesso non riuscito: ' + e.message); return; }
+  try { if (NL.name()) await call('/rest/v1/profili?on_conflict=id', { method: 'POST', user: true, prefer: 'resolution=merge-duplicates,return=minimal', body: { id: auth.uid, nome: NL.name() } }); } catch (e) {}
+  NL.toast('Sei entrato. Sincronizzo i libri…'); paint();
+  await run(false); setTimeout(open, 300);
 }
 async function verify(email, code) {
   var j = await call('/auth/v1/verify', { method: 'POST', body: { type: 'email', email: email, token: code } });
@@ -217,7 +240,9 @@ function paintSheet() {
       h += '<form id="accFormE"><label class="field"><span>La tua email</span><input type="email" id="accMail" autocomplete="email" inputmode="email" enterkeyhint="send" required value="' + esc(mail) + '"></label>' +
         '<p class="msg bad" id="accErr" hidden></p><button class="btn primary" type="submit" id="accSend">Mandami il codice</button></form>';
     } else {
-      h += '<form id="accFormC"><p class="msg">Ti ho mandato un codice di 6 cifre a <b>' + esc(mail) + '</b>. Guarda anche nella posta indesiderata.</p>' +
+      h += '<form id="accFormC"><p class="msg">Ti ho mandato un\'email a <b>' + esc(mail) + '</b> (guarda anche nella posta indesiderata). ' +
+        '<b>Aprila su questo telefono e tocca il link</b> («Sign in», oppure «Confirm your mail» la prima volta): si riapre l\'app e sei dentro. ' +
+        'Se invece nell\'email c\'è un codice di 6 cifre, scrivilo qui.</p>' +
         '<label class="field"><span>Codice</span><input type="text" id="accCode" inputmode="numeric" autocomplete="one-time-code" enterkeyhint="done" maxlength="6" pattern="[0-9]{6}" required></label>' +
         '<p class="msg bad" id="accErr" hidden></p><button class="btn primary" type="submit" id="accGo">Entra</button>' +
         '<p class="acc-links"><button class="link" type="button" data-acc="resend">Rimanda il codice</button> · <button class="link" type="button" data-acc="other">Usa un\'altra email</button></p></form>';
@@ -248,7 +273,8 @@ function err(m) { var e = document.getElementById('accErr'); if (e) { e.textCont
 function niceAuthErr(e) {
   if (e.code === 'net') return e.message;
   if (/not authorized|not_authorized/i.test(e.message)) return 'Per ora i codici arrivano solo agli indirizzi autorizzati nel progetto (in prova). Usa l\'email del tuo account Supabase.';
-  if (e.code === 429 || /rate|seconds|after/i.test(e.message)) return 'Aspetta un minuto prima di chiedere un altro codice.';
+  if (/email rate limit|over_email_send_rate_limit/i.test(e.message)) return 'Il servizio email gratuito di Supabase manda al massimo 2 email all\'ora per tutta l\'app: riprova più tardi.';
+  if (e.code === 429 || /rate|seconds|after/i.test(e.message)) return 'Aspetta un minuto prima di chiedere un\'altra email.';
   if (e.code === 403 || e.code === 401 || /expired|invalid|token/i.test(e.message)) return 'Codice sbagliato o scaduto. Controlla o fatti mandare un codice nuovo.';
   return 'Non ci riesco (' + e.message + '). Riprova tra poco.';
 }
@@ -322,6 +348,7 @@ NL.on('menu', paintMenu);
 NL.on('saved', function () { schedule(4000); });
 window.addEventListener('online', function () { schedule(1000); });
 document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && auth && Date.now() - (sync.when || 0) > 60000) schedule(800); });
-if (auth) schedule(1500);
+if (/(access_token|error_code)=/.test(location.hash)) fromLink(); else if (auth) schedule(1500);
+window.addEventListener('hashchange', function () { if (/(access_token|error_code)=/.test(location.hash)) fromLink(); });   // link aperto nella stessa scheda dell'app
 window.NLSocial = { run: run, open: open, state: function () { return { auth: auth, sync: sync, busy: !!busy, err: lastErr }; }, hash: hash };   // per le prove
 })();
