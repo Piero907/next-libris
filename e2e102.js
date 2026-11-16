@@ -3,7 +3,7 @@ const CFG = require("./_config");
 // icona accanto all'ingranaggio con il numero delle richieste; un solo nome (quello dell'app = quello per gli amici: proposto,
 // già preso senza badare alle maiuscole → messaggio; cambiato nelle Impostazioni → anche per gli amici, se preso torna com'era);
 // ricerca per nome (da 3 lettere), richiesta, avviso in cima PRIMA degli altri avvisi (disposizione A, con «Installa»), accetta,
-// amici da tutte e due le parti, togli con conferma; finestra che non esce di lato a 360 px; link d'invito (…/?amico=Nome) senza
+// amici da tutte e due le parti, togli con conferma (dalla pagina dell'amico); finestra che non esce di lato a 360 px; link d'invito (…/?amico=Nome) senza
 // account: entra con Google, sceglie il nome e chiede l'amicizia a chi l'ha invitato; indirizzo pulito
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -153,6 +153,7 @@ const base = 'http://localhost:' + CFG.port(8302);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(500);
   t = await A.body(); assert(/I tuoi amici 1/.test(t) && /Bruno/.test(t) && !/Richieste che hai mandato/.test(t), 'A: amici');
   // togli con conferma
+  await A.click('[data-f="friend"]'); await wait(500);                       // «Togli» sta nella pagina dell'amico (16/11/2026)
   await A.click('[data-f="ask-drop"]'); await wait(200);
   assert(/Togli Bruno dagli amici\?/.test(await A.body()), 'conferma'); assert.strictEqual(DB.am.length, 1, 'non ancora tolto');
   await A.click('[data-f="drop"]'); await wait(700);

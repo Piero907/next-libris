@@ -1,0 +1,160 @@
+const CFG = require("./_config");
+// modulo «Amici»: desideri, prestiti e regali tra amici (Supabase finto). A (Anna) e B (Bruno) amici.
+// B accende «Gli amici vedono i miei desideri»; A apre la pagina di B, vede i desideri e «Te lo regalo io» (prenotazione);
+// A presta un libro a B scegliendolo tra gli amici in «Presta, vendi o regala»: dopo «Annulla» non parte niente, dopo «Salva» sì;
+// B lo trova subito nella sua Libreria con «Prestato da Anna» e l'avviso in cima; B tocca «Prestato da Anna» › Restituito:
+// da lui «Restituito ad Anna» (storico), da A il prestito sparisce; A regala a B un libro che era tra i desideri di B:
+// da B passa dai Desideri alla Libreria con «Regalato da Anna», la prenotazione sparisce; la pagina dell'amico non esce di lato a 360 px
+const puppeteer = require('puppeteer-core');
+const http = require('http'), fs = require('fs'), path = require('path');
+const assert = require('assert');
+const ROOT = CFG.APP;
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.wasm': 'application/wasm' };
+let clock = Date.parse('2026-11-16T10:00:00Z'); const now = () => new Date(clock += 1000).toISOString();
+const DB = { prof: { uA: { utente: 'Anna', nome: 'Anna', desideri: false }, uB: { utente: 'Bruno', nome: 'Bruno', desideri: false } },
+  am: [{ da: 'uA', a: 'uB', stato: 'amici', creato: now() }], rows: {}, sw: [], pren: {}, n: 0 };
+const uidOf = (req) => { const m = /Bearer AT-(\w+)/.exec(req.headers.authorization || ''); return m ? m[1] : null; };
+const friendsOk = (x, y) => DB.am.some(f => f.stato === 'amici' && ((f.da === x && f.a === y) || (f.da === y && f.a === x)));
+function fake(req, res, body, url) {
+  const send = (st, j) => { res.writeHead(st, { 'Content-Type': 'application/json' }); res.end(j === undefined ? '' : JSON.stringify(j)); };
+  const p = url.pathname.replace(/^\/finto/, ''), q = url.searchParams;
+  if (req.headers.apikey !== 'chiave-finta') return send(401, { message: 'no api key' });
+  if (p === '/auth/v1/settings') return send(200, { external: { google: true } });
+  if (p === '/auth/v1/token') { const id = String(body.refresh_token || '').slice(3); return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id } }); }
+  const me = uidOf(req); if (!me) return send(401, { message: 'JWT' });
+  if (p === '/rest/v1/libri' && req.method === 'GET') {
+    const gt = (q.get('aggiornato') || '').replace(/^gt\./, '');
+    return send(200, Object.values(DB.rows).filter(x => x.utente === me && (!gt || x.aggiornato > gt)).map(x => ({ id: x.id, dati: x.dati, cancellato: x.cancellato, aggiornato: x.aggiornato })));
+  }
+  if (p === '/rest/v1/libri' && req.method === 'POST') { for (const x of body) DB.rows[me + '|' + x.id] = Object.assign({ utente: me, cancellato: false }, DB.rows[me + '|' + x.id] || {}, x, { aggiornato: now() }); return send(201); }
+  if (p === '/rest/v1/profili' && req.method === 'GET') { const pr = DB.prof[me]; return send(200, [{ utente: pr.utente, nome: pr.nome, desideri: pr.desideri }]); }
+  if (p === '/rest/v1/profili') { Object.assign(DB.prof[me], body.desideri !== undefined ? { desideri: body.desideri } : {}, body.utente ? { utente: body.utente, nome: body.utente } : {}); return send(201); }
+  if (p === '/rest/v1/rpc/miei_amici') return send(200, DB.am.filter(x => x.da === me || x.a === me).map(x => { const o = x.da === me ? x.a : x.da; return { id: o, utente: DB.prof[o].utente, nome: DB.prof[o].nome, stato: x.stato, verso: x.da === me ? 'inviata' : 'ricevuta', creato: x.creato }; }));
+  if (p === '/rest/v1/rpc/desideri_di') {
+    const o = body.amico; if (!friendsOk(me, o)) return send(400, { message: 'non amici' });
+    if (!DB.prof[o].desideri) return send(200, { visibili: false, libri: [] });
+    return send(200, { visibili: true, libri: Object.values(DB.rows).filter(x => x.utente === o && !x.cancellato && x.dati.w === true).map(x => {
+      const pr = DB.pren[o + '|' + x.id]; return { id: x.id, t: x.dati.t, a: x.dati.a, i: x.dati.i, prenotato: !pr ? '' : pr === me ? 'io' : DB.prof[pr].utente }; }) });
+  }
+  if (p === '/rest/v1/rpc/prenota_regalo') {
+    const k = body.amico + '|' + body.libro;
+    if (!body.si) { if (DB.pren[k] === me) delete DB.pren[k]; return send(200, ''); }
+    if (DB.pren[k] && DB.pren[k] !== me) return send(400, { message: 'già prenotato' });
+    DB.pren[k] = me; return send(200, 'io');
+  }
+  if (p === '/rest/v1/rpc/crea_scambio') {
+    if (!friendsOk(me, body.a)) return send(400, { message: 'non amici' });
+    const id = '0000000' + (++DB.n) + '-0000-0000-0000-000000000000';
+    DB.sw.push({ id, da: me, a: body.a, tipo: body.tipo, libro: body.libro, libro_id: body.libro_id, stato: 'aperto', visto: false, creato: now(), chiuso: null });
+    if (body.tipo === 'regalo') Object.keys(DB.pren).forEach(k => { const [o, l] = k.split('|'); const r = DB.rows[o + '|' + l]; if (o === body.a && DB.pren[k] === me && r && r.dati.i === body.libro.i) delete DB.pren[k]; });
+    return send(200, id);
+  }
+  if (p === '/rest/v1/rpc/chiudi_scambio') { const s = DB.sw.find(x => x.id === body.id && (x.da === me || x.a === me) && x.stato === 'aperto'); if (s) { s.stato = 'chiuso'; s.chiuso = now(); } return send(204); }
+  if (p === '/rest/v1/rpc/segna_visto') { const s = DB.sw.find(x => x.id === body.id && x.a === me); if (s) s.visto = true; return send(204); }
+  if (p === '/rest/v1/rpc/miei_scambi') return send(200, DB.sw.filter(x => x.da === me || x.a === me).map(x => Object.assign({ nome_da: DB.prof[x.da].utente, nome_a: DB.prof[x.a].utente }, x)));
+  if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
+  send(404, { message: 'finto: ' + p });
+}
+const server = http.createServer((req, res) => {
+  const url = new URL(req.url, 'http://x');
+  if (url.pathname.startsWith('/finto/')) { let b = ''; req.on('data', c => b += c); req.on('end', () => { let j = {}; try { j = b ? JSON.parse(b) : {}; } catch (e) {} fake(req, res, j, url); }); return; }
+  const p = decodeURIComponent(url.pathname), m = p.match(/^\/next-libris-prova(\/.*)?$/);
+  if (!m) { res.writeHead(404); return res.end(); }
+  if (!m[1]) { res.writeHead(301, { Location: p + '/' }); return res.end(); }
+  const f = path.join(ROOT, m[1] === '/' ? '/index.html' : m[1]); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
+  res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' }); fs.createReadStream(f).pipe(res);
+}).listen(CFG.port(8303));
+const base = 'http://localhost:' + CFG.port(8303);
+(async () => {
+  const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
+  const errors = [];
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  async function phone(name, uid, w) {
+    const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
+    await page.setViewport({ width: w || 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    page.on('pageerror', e => errors.push(name + ': ' + e.message));
+    await page.evaluateOnNewDocument((u, id) => {
+      window.NL_SOCIAL = { url: u, key: 'chiave-finta', gClient: 'client-finto' };
+      if (!localStorage.getItem('prova:catalogo-libri-social-auth')) localStorage.setItem('prova:catalogo-libri-social-auth', JSON.stringify({ at: 'AT-' + id, rt: 'RT-' + id, exp: Date.now() + 3e6, uid: id, email: id + '@esempio.it' }));
+    }, base + '/finto', uid);
+    await page.setRequestInterception(true);
+    page.on('request', r => r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
+    await page.goto(base + '/next-libris-prova/?vista=elenco', { waitUntil: 'load' }); await wait(2200);
+    page.body = () => page.$eval('#friBody', x => x.innerText.replace(/\s+/g, ' '));
+    page.book = (pred) => page.evaluate((p) => { const f = new Function('b', 'return ' + p); const b = window.NL.books().find(f); return b ? JSON.parse(JSON.stringify(b)) : null; }, pred);
+    page.add = (o) => page.evaluate((o) => { const b = window.NL.clean(o); window.NL.books().unshift(b); window.NL.save(); window.NL.refresh(); return b.id; }, o);
+    return page;
+  }
+  // ---- B: due desideri (uno con ISBN), sincronizzati; accende «Gli amici vedono i miei desideri» ----
+  const B = await phone('B', 'uB', 360);
+  await B.add({ t: 'Il nome della rosa', a: 'Umberto Eco', i: '9788845292613', w: true });
+  await B.add({ t: 'Lessico famigliare', a: 'Natalia Ginzburg', w: true });
+  await B.evaluate(() => window.NLSocial.run(false)); await wait(500);
+  assert.strictEqual(Object.values(DB.rows).filter(r => r.utente === 'uB' && r.dati.w === true).length, 2, 'desideri di B online');
+  await B.click('#btnFri'); await wait(700);
+  assert(!(await B.$eval('#friWish', x => x.checked)), 'desideri nascosti di partenza');
+  await B.click('#friWish'); await wait(500);
+  assert.strictEqual(DB.prof.uB.desideri, true, 'B mostra i desideri');
+  await B.keyboard.press('Escape'); await wait(200);
+  // ---- A: pagina di B, desideri, «Te lo regalo io» ----
+  const A = await phone('A', 'uA');
+  await A.click('#btnFri'); await wait(700);
+  await A.click('[data-f="friend"]'); await wait(700);
+  let t = await A.body(); console.log('[pagina di Bruno]', t.slice(0, 260));
+  assert(/Bruno I suoi desideri/.test(t) && /Il nome della rosa/.test(t) && /Lessico famigliare/.test(t), 'A vede i desideri di B');
+  const rosa = Object.values(DB.rows).find(r => r.dati.i === '9788845292613').id;
+  await A.click('[data-f="gift"][data-id="' + rosa + '"]'); await wait(600);
+  assert.strictEqual(DB.pren['uB|' + rosa], 'uA', 'prenotato da A'); assert(/Lo regali tu/.test(await A.body()));
+  await A.screenshot({ path: CFG.OUT + '/amici-desideri.png' });
+  await A.keyboard.press('Escape'); await wait(200);
+  // ---- A presta un libro a B: prima «Annulla» (non parte niente), poi davvero ----
+  const zeno = await A.add({ t: 'La coscienza di Zeno', a: 'Italo Svevo', i: '9788807900891', c: 12 });
+  await A.evaluate((id) => window.__app.openLoan(id), zeno); await wait(400);
+  assert(await A.$eval('#loanFri', x => !x.hidden), 'amici da scegliere in «Presta»');
+  await A.click('#loanFri [data-u="Bruno"]'); await wait(200);
+  assert.strictEqual(await A.$eval('#loanWho', x => x.value), 'Bruno'); assert(/Bruno lo vedrà nella sua app/.test(await A.$eval('#loanFri', x => x.innerText)));
+  await A.screenshot({ path: CFG.OUT + '/amici-presta.png' });
+  await A.click('#loanSave'); await wait(400); await A.click('#toastBtn'); await wait(5000);
+  assert.strictEqual(DB.sw.length, 0, 'Annulla: nessun prestito partito');
+  await A.evaluate((id) => window.__app.openLoan(id), zeno); await wait(300);
+  await A.click('#loanFri [data-u="Bruno"]'); await A.click('#loanSave'); await wait(5200);
+  assert.strictEqual(DB.sw.length, 1, 'prestito partito'); const sw1 = DB.sw[0];
+  assert(sw1.tipo === 'prestito' && sw1.a === 'uB' && sw1.libro.t === 'La coscienza di Zeno' && sw1.libro.c === undefined, 'prestito ad B, senza prezzo');
+  assert.strictEqual((await A.book("b.id==='" + zeno + "'")).sx, sw1.id, 'A ricorda il prestito');
+  // ---- B: il libro compare nella sua Libreria con «Prestato da Anna» e l'avviso in cima ----
+  await B.evaluate(() => window.NLAmici.load(true)); await wait(800);
+  let bz = await B.book("b.sx==='" + sw1.id + "'"); console.log('[B ricevuto]', JSON.stringify(bz && { t: bz.t, w: bz.w, sk: bz.sk, sda: bz.sda }));
+  assert(bz && !bz.w && bz.sk === 'p' && bz.sda === 'Anna' && bz.i === '9788807900891', 'nella Libreria di B');
+  assert(sw1.visto, 'segnato come visto');
+  assert(/Anna ti ha prestato «La coscienza di Zeno»/.test(await B.$eval('#friGot', x => x.hidden ? '' : x.innerText)), 'avviso in cima');
+  assert(/Prestato da Anna/.test(await B.$eval('[data-id="' + bz.id + '"]', x => x.innerText)), 'etichetta sul libro');
+  await B.evaluate(() => window.NLAmici.load(true)); await wait(500);
+  assert.strictEqual((await B.evaluate(() => window.NL.books().filter(b => b.t === 'La coscienza di Zeno').length)), 1, 'una volta sola');
+  await B.screenshot({ path: CFG.OUT + '/amici-ricevuto.png' });
+  // B restituisce
+  await B.click('[data-id="' + bz.id + '"] [data-act="recv"]'); await wait(300);
+  assert(/Hai restituito «La coscienza di Zeno» ad Anna\?/.test(await B.$eval('#recvTxt', x => x.textContent)));
+  await B.click('#recvYes'); await wait(600);
+  bz = await B.book("b.id==='" + bz.id + "'"); assert(bz.xs === 'b' && bz.xa === 'Anna', 'da B: restituito (storico)');
+  assert(/Restituito ad Anna/.test(await B.$eval('[data-id="' + bz.id + '"]', x => x.innerText)));
+  assert.strictEqual(sw1.stato, 'chiuso', 'chiuso anche online');
+  // A: il prestito sparisce
+  await A.evaluate(() => window.NLAmici.load(true)); await wait(600);
+  const az = await A.book("b.id==='" + zeno + "'"); assert(!az.p && !az.sx, 'da A: non più in prestito');
+  // ---- A regala a B il libro che B desiderava: da B passa dai Desideri alla Libreria, la prenotazione sparisce ----
+  const rosaA = await A.add({ t: 'Il nome della rosa', a: 'Umberto Eco', i: '9788845292613' });
+  await A.evaluate((id) => window.__app.openLoan(id, 'r'), rosaA); await wait(300);
+  await A.click('#loanFri [data-u="Bruno"]'); await A.click('#loanSave'); await wait(5200);
+  const sw2 = DB.sw[1]; assert(sw2 && sw2.tipo === 'regalo', 'regalo partito'); assert(!DB.pren['uB|' + rosa], 'prenotazione tolta');
+  await B.evaluate(() => window.NLAmici.load(true)); await wait(800);
+  const br = await B.book("b.i==='9788845292613'");
+  assert(br && !br.w && br.sk === 'r' && br.sda === 'Anna', 'da B: dai Desideri alla Libreria, «Regalato da Anna»');
+  assert.strictEqual(await B.evaluate(() => window.NL.books().filter(b => b.i === '9788845292613').length), 1, 'nessun doppione');
+  // pagina dell'amico a 360 px: niente scorrimento di lato
+  await B.click('#btnFri'); await wait(600); await B.click('[data-f="friend"]'); await wait(700);
+  t = await B.body(); assert(/Ti ha regalato «Il nome della rosa»/.test(t) && /Anna non mostra i suoi desideri/.test(t), 'pagina di Anna vista da B');
+  const side = await B.evaluate(() => { const si = document.querySelector('#friSheet .sheet-in'); return si.scrollWidth - si.clientWidth; });
+  assert(side <= 0, 'la pagina dell\'amico non esce di lato (' + side + ')');
+  assert.deepStrictEqual(errors, []);
+  console.log('e2e103 OK'); await browser.close(); server.close();
+})().catch(e => { console.error('FAIL', e); process.exit(1); });

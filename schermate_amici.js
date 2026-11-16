@@ -6,7 +6,7 @@ const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const OUT = path.join(CFG.OUT, 'schermate-amici'); fs.mkdirSync(OUT, { recursive: true });
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-let ME = { utente: null, nome: '' }, LIST = [], FOUND = [];
+let ME = { utente: null, nome: '' }, LIST = [], FOUND = [], WISH = { visibili: true, libri: [] }, SWAPS = [];
 const srv = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
   if (u.pathname.startsWith('/finto/')) {
@@ -18,6 +18,8 @@ const srv = http.createServer((req, res) => {
       if (p === '/rest/v1/profili') return res.end(/Piero"/.test(b) ? '{"code":"23505","message":"duplicate key"}' : '');
       if (p === '/rest/v1/rpc/miei_amici') return res.end(JSON.stringify(LIST));
       if (p === '/rest/v1/rpc/cerca_utenti') return res.end(JSON.stringify(FOUND));
+      if (p === '/rest/v1/rpc/desideri_di') return res.end(JSON.stringify(WISH));
+      if (p === '/rest/v1/rpc/miei_scambi') return res.end(JSON.stringify(SWAPS));
       res.end('[]');
     });
   }
@@ -60,9 +62,30 @@ const R = (id, utente, stato, verso) => ({ id, utente, nome: utente, stato, vers
     await p.click('#btnFri'); await wait(700);
     await p.type('#friQ', 'fra'); await p.click('#friFormQ .btn'); await wait(500);
     await shot(p, tag + '-5-finestra');
-    await p.click('[data-f="ask-drop"]'); await wait(200);
+    await p.click('[data-f="friend"][data-id="c"]'); await wait(600); await p.click('[data-f="ask-drop"]'); await wait(200);
     const el = await p.$('#friSheet .sheet-in'); await p.evaluate(e => { e.scrollTop = e.scrollHeight; }, el); await wait(200); await shot(p, tag + '-6-togli');
-    await p.click('[data-f="cancel"]'); await p.click('[data-f="name"]'); await wait(300); await shot(p, tag + '-7-cambia-nome');
+    await p.click('[data-f="cancel"]'); await p.click('[data-f="back"]'); await wait(200); await p.click('[data-f="name"]'); await wait(300); await shot(p, tag + '-7-cambia-nome');
+    await p.close();
+    // 3) pagina di un amico (desideri con titoli lunghi e prenotazioni), «presta» con gli amici, «restituito?», avviso di un prestito ricevuto
+    ME = { utente: 'Piero R.', nome: 'Piero R.', desideri: true };
+    LIST = [R('d', 'Dario Esposito_lungo', 'amici', 'ricevuta'), R('c', 'Carla', 'amici', 'inviata')];
+    WISH = { visibili: true, libri: [
+      { id: 'w1', t: 'Cent\'anni di solitudine: edizione speciale con un titolo molto lungo', a: 'Gabriel García Márquez', img: '', prenotato: '' },
+      { id: 'w2', t: 'Il nome della rosa', a: 'Umberto Eco', prenotato: 'io' },
+      { id: 'w3', t: 'Lessico famigliare', a: 'Natalia Ginzburg', prenotato: 'Carla' } ] };
+    SWAPS = [{ id: '11111111-1111-1111-1111-111111111111', da: 'd', a: 'u1', nome_da: 'Dario Esposito_lungo', nome_a: 'Piero R.', tipo: 'prestito', libro: { t: 'La coscienza di Zeno', a: 'Italo Svevo' }, stato: 'aperto', visto: false, creato: '2026-11-16T10:00:00Z' },
+             { id: '22222222-2222-2222-2222-222222222222', da: 'u1', a: 'd', nome_da: 'Piero R.', nome_a: 'Dario Esposito_lungo', tipo: 'regalo', libro: { t: 'Se una notte d\'inverno un viaggiatore' }, stato: 'aperto', visto: true, creato: '2026-11-15T10:00:00Z' }];
+    p = await page(w, h, th);
+    await shot(p, tag + '-8-avviso-prestito');
+    await p.click('#btnFri'); await wait(600); await shot(p, tag + '-9-amici-interruttore');
+    await p.click('[data-f="friend"][data-id="d"]'); await wait(700); await shot(p, tag + '-10-pagina-amico');
+    await p.click('[data-f="back"]'); await wait(200); await p.keyboard.press('Escape'); await wait(200);
+    await p.evaluate(() => { const b = window.NL.books().find(x => x.sk === 'p'); if (b) window.__app.openLoan(window.NL.books()[1] ? window.NL.books()[1].id : b.id); });
+    await p.evaluate(() => { const bk = window.NL.clean({ t: 'Il barone rampante', a: 'Italo Calvino' }); window.NL.books().push(bk); window.NL.refresh(); window.__app.openLoan(bk.id); }); await wait(500);
+    await p.click('#loanFri [data-u="Carla"]'); await wait(300); await shot(p, tag + '-11-presta-amico');
+    await p.keyboard.press('Escape'); await wait(300);
+    await p.evaluate(() => { const b = window.NL.books().find(x => x.sk === 'p'); document.dispatchEvent(new Event('x')); if (b) document.querySelector('[data-id="' + b.id + '"] [data-act="recv"]') ? document.querySelector('[data-id="' + b.id + '"] [data-act="recv"]').click() : null; }); await wait(500);
+    await shot(p, tag + '-12-restituito');
     await p.close();
   }
   await b.close(); srv.close();
