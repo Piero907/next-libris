@@ -2,9 +2,9 @@ const CFG = require("./_config");
 // copia social, modulo «Account e sincronizzazione» (social.js) con un Supabase finto sullo stesso server:
 // voce nel Menu, accesso con email e codice (codice sbagliato → messaggio), copia di sicurezza prima della prima sincronizzazione,
 // due telefoni con lo stesso account (libri che passano da uno all'altro, modifiche, cancellazioni «morbide» che lasciano i dati online),
-// «Entra con Google» solo se acceso in Supabase (e ritorno con i token), accesso dal link dell'email (token dopo il #, poi tolti dall'indirizzo; link scaduto → messaggio), nessun caricamento inutile quando non cambia niente, conflitto (vince il telefono che ha modificato), uscita, ripristino della copia
+// «Entra con Google» solo se acceso in Supabase: pulsante ufficiale di Google con il Client ID (token alla pagina, nonce), altrimenti riserva via Supabase (ritorno con i token), accesso dal link dell'email (token dopo il #, poi tolti dall'indirizzo; link scaduto → messaggio), nessun caricamento inutile quando non cambia niente, conflitto (vince il telefono che ha modificato), uscita, ripristino della copia
 const puppeteer = require('puppeteer-core');
-const http = require('http'), fs = require('fs'), path = require('path');
+const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip', '.wasm': 'application/wasm' };
@@ -27,6 +27,13 @@ function fake(req, res, body, url) {
     if (body.token !== '123456') return send(403, { msg: 'Token has expired or is invalid' });
     const id = DB.users[body.email] || (DB.users[body.email] = 'u' + Object.keys(DB.users).length);
     return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id, email: body.email } });
+  }
+  if (p === '/auth/v1/token' && q.get('grant_type') === 'id_token') {      // token del pulsante ufficiale di Google: «IDT-email.impronta del nonce»
+    const m = /^IDT-([^.]+@[^.]+\.[a-z]+)\.([0-9a-f]{64})$/.exec(body.id_token || '');
+    if (body.provider !== 'google' || !m) return send(400, { msg: 'Bad ID token' });
+    if (crypto.createHash('sha256').update(String(body.nonce || '')).digest('hex') !== m[2]) return send(400, { msg: 'Nonces mismatch' });
+    const id = DB.users[m[1]] || (DB.users[m[1]] = 'u' + Object.keys(DB.users).length); DB.gisUser = id;
+    return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id, email: m[1], user_metadata: { full_name: 'Bruno Verdi' } } });
   }
   if (p === '/auth/v1/token') { const id = String(body.refresh_token || '').slice(3); return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id } }); }
   if (p === '/auth/v1/logout') return send(204);
@@ -68,13 +75,14 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
   const wait = ms => new Promise(r => setTimeout(r, ms));
-  async function phone(name) {                                       // un «telefono»: contesto separato, memoria tutta sua
+  const GIS = "window.google={accounts:{id:{initialize:function(o){window.__gis=o;},renderButton:function(el,opt){window.__gisOpt=opt;var b=document.createElement('button');b.type='button';b.id='gisFinto';b.textContent='Accedi con Google';b.onclick=function(){window.__gis.callback({credential:'IDT-bruno@esempio.it.'+window.__gis.nonce});};el.appendChild(b);}}}};";
+  async function phone(name, gClient, gisFail) {                              // un «telefono»: contesto separato, memoria tutta sua
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
     await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     page.on('pageerror', e => errors.push(name + ': ' + e.message));
-    await page.evaluateOnNewDocument((u) => { window.NL_SOCIAL = { url: u, key: 'chiave-finta' }; }, base + '/finto');
+    await page.evaluateOnNewDocument((u, g) => { window.NL_SOCIAL = { url: u, key: 'chiave-finta', gClient: g || '' }; }, base + '/finto', gClient || '');
     await page.setRequestInterception(true);
-    page.on('request', r => r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
+    page.on('request', r => r.url().startsWith('https://accounts.google.com/gsi/client') ? r.respond(gisFail ? { status: 404, body: '' } : { status: 200, contentType: 'text/javascript', body: GIS }) : r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
     await page.goto(base + '/next-libris-social/?vista=elenco', { waitUntil: 'load' }); await wait(800);
     page.books = () => page.evaluate(() => window.__app.state.books.map(b => b.i || b.t).sort());
     page.add = async (...l) => { await page.evaluate((x) => { window.__app.settings.price = false; x.forEach(i => window.__app.addIsbn(i)); }, l); await wait(900); };
@@ -145,9 +153,9 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   assert.deepStrictEqual(await C.books(), ['9788806219352', '9788845292613'], 'C riceve i libri');
   assert(!/access_token/.test(await C.evaluate(() => location.href)), 'i token non restano nell\'indirizzo');
   assert(/Sei entrato come lettore@esempio\.it/.test(await C.$eval('#accBody', x => x.textContent)), 'finestra aperta da sola');
-  // ---- telefono D: «Entra con Google» (acceso in Supabase) ----
+  // ---- telefono D: Google acceso, ma lo script di Google non arriva: pulsante di riserva (passa da Supabase e torna con i token) ----
   DB.google = true;
-  const D = await phone('D');
+  const D = await phone('D', 'client-finto.apps.googleusercontent.com', true);
   await D.add('9788807900891');
   await D.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await D.click('#goAcc'); await wait(600);
   const gb = await D.$eval('[data-acc="google"]', x => x.textContent); assert.strictEqual(gb, 'Entra con Google');
@@ -158,6 +166,19 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   assert(!/access_token|provider_token/.test(await D.evaluate(() => location.href)), 'token tolti dall\'indirizzo');
   assert.strictEqual(DB.prof[DB.gUser], 'Anna', 'nome dal profilo Google');
   assert.deepStrictEqual(rows('amica@gmail.example').map(r => r.dati.i), ['9788807900891'], 'i libri di D online, separati da quelli di A e B');
+  // ---- telefono E: pulsante ufficiale di Google (con il Client ID): token consegnato alla pagina, scambiato con Supabase col nonce ----
+  const E = await phone('E', 'client-finto.apps.googleusercontent.com');
+  await E.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await E.click('#goAcc'); await wait(900);
+  assert(await E.$('#accG #gisFinto'), 'pulsante ufficiale di Google nella finestra');
+  assert(!(await E.$('[data-acc="google"]')), 'niente pulsante di riserva');
+  const gi = await E.evaluate(() => ({ c: window.__gis.client_id, n: window.__gis.nonce, ux: window.__gis.ux_mode, loc: window.__gisOpt.locale }));
+  console.log('[pulsante Google]', JSON.stringify(gi));
+  assert(gi.c === 'client-finto.apps.googleusercontent.com' && /^[0-9a-f]{64}$/.test(gi.n) && gi.ux === 'popup' && gi.loc === 'it');
+  await E.click('#gisFinto'); await wait(1500);
+  const es = await E.st(); console.log('[E con il pulsante]', JSON.stringify({ email: es.auth && es.auth.email, nome: DB.prof && DB.prof[DB.gisUser], url: await E.evaluate(() => location.href) }));
+  assert(es.auth && es.auth.email === 'bruno@esempio.it' && !es.err, 'E entrato con il pulsante ufficiale (nonce giusto)');
+  assert.strictEqual(DB.prof[DB.gisUser], 'Bruno', 'nome dal profilo Google');
+  assert(/Sei entrato come bruno@esempio\.it/.test(await E.$eval('#accBody', x => x.textContent)), 'finestra aggiornata');
   // ripristino della copia di sicurezza su A (i due libri di prima)
   await A.evaluate(() => window.NLSocial.open()); await wait(400);
   await A.click('#accSheet summary'); await wait(150); await A.click('[data-acc="restore"]'); await wait(200);
