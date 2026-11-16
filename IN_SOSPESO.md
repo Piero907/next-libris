@@ -198,15 +198,24 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - Trimestre: «Hai viaggiato in N paesi» con le bandierine dei paesi letti nel trimestre;
 - Visualizzazioni: una mappa del mondo con i paesi colorati per numero di libri; filtro «Paese dell'autore» nel menu dei filtri.
 
-## 13. Piccola guida al primo avvio (chiesto il 16/11/2026, «in sospeso»)
+## 13. Guida di primo avvio (chiesto il 16/11/2026; piano concordato il 16/11/2026, «in sospeso»)
 
-**Richiesta di Piero:** una piccola guida con le funzioni più importanti: un PDF, oppure una breve dimostrazione che parte dopo l'installazione, al primo avvio.
+**Richiesta di Piero:** una guida che illustri le funzioni dell'app al primo avvio, da **aggiornare man mano** che le funzioni aumentano. Va fatta **prima** di portare nella versione vera le novità della prova (stella, libricini, «Letto il», schermi larghi), ma per ora resta in sospeso.
 
-**Idee da proporre (nessuna costruita):**
-- **Giro guidato al primo avvio** (4-6 schermate da scorrere, come il trimestre): Scansiona/Foto/Digita, la pagina del libro, filtri ed etichette, prestiti, Per te (suggerimenti, statistiche), backup. «Salta» sempre visibile; si riapre dal menu («Come si usa»);
-- **suggerimenti sul posto** la prima volta che si usa una cosa (un fumetto accanto al pulsante, una volta sola);
-- **PDF di una o due pagine** da scaricare o condividere (generato dall'app, come l'immagine del trimestre), utile da mandare a chi installa l'app con il link;
-- versione breve di LEGGIMI.txt dentro l'app, con le funzioni principali e i link alle sezioni.
+**Piano proposto (Piero d'accordo, da riprendere):**
+1. **Contenuto prima della forma:** sei schermate brevi, una per argomento, ognuna con un disegnino della parte di app, una o due frasi semplici e «Prova adesso» che apre la cosa vera:
+   1. Benvenuto: cos'è Next Libris (**niente frase sui «dati solo nel telefono»**: Piero dice che arriveranno gli account);
+   2. Aggiungere i libri: il **+** (Scansiona, Foto, Digita, Ce l'ho già?);
+   3. La pagina del libro: stato di lettura, libricini, stella del preferito, matita per modificare (e l'avanzamento della lettura, se arriva prima);
+   4. Trovare i libri: ricerca, filtri, etichette, Copertine/Elenco;
+   5. Prestiti e Desideri;
+   6. Per te: suggerimenti, statistiche, la tua stagione in libri; il backup.
+2. **Forma:** un giro da sfogliare col dito, come «La tua stagione in libri», con «Salta» sempre visibile. Compare alla prima apertura dopo l'installazione e si riapre dal menu («Come si usa»). Chi aggiorna non la vede da sola: per lui c'è «Cosa c'è di nuovo». Fumetti sui pulsanti e PDF: dopo, sulla stessa base.
+3. **Tenerla aggiornata:**
+   - un **modulo a parte** (`guida.js`/`guida.css`, solo `window.NL`) con l'elenco delle schermate e i testi;
+   - **un test** che per ogni schermata controlla che esista la parte di app di cui parla: se una funzione si sposta o sparisce, il test fallisce e ricorda di aggiornare la guida;
+   - **regola nelle note:** a ogni novità importante si decide se va nella guida («Cosa c'è di nuovo» racconta le novità, la guida descrive l'app com'è).
+4. **Ordine di lavoro:** prima i testi scritti in chat per Piero, poi la guida nella copia di prova, poi nella vera con il resto.
 
 ## 14. Libri ricevuti in prestito (chiesto il 16/11/2026, «in sospeso»)
 
