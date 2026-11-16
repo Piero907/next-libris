@@ -243,3 +243,13 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - Ogni libro può portare la sua «catena» di codici: chi l'ha scansionato per primo, a chi è passato (prestito, regalo), così si ricostruisce la storia del libro anche senza immagini.
 - **Le immagini restano il cuore** (Piero: «il bello degli ex-libris sono proprio le immagini»). Il codice non le sostituisce: è il **seme** da cui l'app **disegna** l'ex-libris (cornice, simbolo, ornamenti, colori, caratteri). Stesso codice = stessa immagine su ogni telefono: basta mandare il codice nel link (con il motto) e chi lo riceve vede l'ex-libris intero, senza spedire file pesanti. Per un ex-libris **importato** (una tua immagine) l'app ne fa una copia piccola da mandare a parte (per esempio come immagine su WhatsApp) e la lega al codice.
 - **Da collezionare come figurine/sticker** (Piero, 16/11/2026): un **album** degli ex-libris incontrati, con le caselle vuote da riempire e il contatore («12 ex-libris raccolti»); ogni ex-libris ha la sua scheda (di chi è, il motto, quando e con quale libro l'hai trovato); qualche **rarità** (forme o colori che escono di rado nel disegno casuale); piccoli traguardi («Il primo ex-libris», «5 amici lettori», «Un libro passato per 3 mani»); il proprio ex-libris si può «staccare» come sticker da condividere.
+
+---
+
+## Copia social — cose in sospeso (sessione social, 16/11/2026)
+
+Stato: Social 97.7. Account con «Accedi con Google» (funziona, provato da Piero sul telefono) e link dell'email; sincronizzazione dei libri su Supabase.
+- **Dominio proprio** (`nextlibris.it` o simile, 10–15 €/anno): serve perché nell'accesso con Google compaia «nextlibris» e non `piero907.github.io` (con FedCM il browser mostra sempre il dominio; il nome dell'app solo con la verifica del marchio, che chiede un dominio di proprietà). Piero deve controllare se è libero. Piano: prima la copia social su `social.nextlibris.it` (nel codice: riconoscere la copia anche dal nome del sito, non solo dal percorso), poi la versione vera con il **trasloco** (con l'account: sincronizza sul vecchio indirizzo, entra sul nuovo; senza: backup e ripristino).
+- **Email di accesso con Brevo:** in sospeso fino al dominio (con un mittente Gmail Brevo cambia l'indirizzo e le email finiscono spesso nello spam). Con il dominio: `accesso@nextlibris.it`, modelli con il codice di 6 cifre (testo pronto nella guida del progetto).
+- **Amicizie:** prossimo passo (richiesta, accetta/rifiuta, libreria visibile agli amici, avvisi dentro l'app e non via email, nomi dei prestiti mai mostrati).
+- **Titolare nella privacy:** provvisorio «Piero R., sviluppatore di Next Libris», da confermare con Piero.
