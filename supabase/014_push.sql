@@ -1,6 +1,6 @@
 -- Next Libris · 014: notifiche push con l'app chiusa (Web Push). 16/11/2026, prima nella prova.
 -- Scelte di Piero: push per tutti gli avvisi della campanella tranne «limite»; interruttore in Impostazioni (acceso di
--- partenza) e scelta dei tipi; orari di silenzio personalizzabili (di partenza 22-8): le notifiche di quelle ore restano
+-- partenza) e scelta dei tipi (amicizie, «Libri in prestito» = prestiti, regali, resi e «Me lo presti?», consigli, chiavi); orari di silenzio personalizzabili (di partenza 22-8): le notifiche di quelle ore restano
 -- in attesa e partono quando l'orario torna buono (non partono se nel frattempo sono state lette); dopo il silenzio,
 -- da 3 in su un solo riepilogo (lo decide la Edge Function «push»).
 --
@@ -34,8 +34,8 @@ revoke all on table public.push_iscrizioni from anon, authenticated;
 -- preferenze (uguali su tutti i telefoni dell'utente); senza riga valgono quelle di partenza
 create table public.push_preferenze (
   utente uuid primary key references auth.users (id) on delete cascade,
-  tipi text[] not null default '{amicizie,prestiti,richieste,consigli,chiavi}'
-    check (tipi <@ '{amicizie,prestiti,richieste,consigli,chiavi}'::text[]),
+  tipi text[] not null default '{amicizie,prestiti,consigli,chiavi}'
+    check (tipi <@ '{amicizie,prestiti,consigli,chiavi}'::text[]),
   silenzio_da smallint not null default 22 check (silenzio_da between 0 and 23),
   silenzio_a smallint not null default 8 check (silenzio_a between 0 and 23),   -- uguali = nessun silenzio
   fuso text not null default 'Europe/Rome' check (char_length(fuso) between 1 and 60),
@@ -54,8 +54,7 @@ create function public.push_gruppo(tipo text) returns text
 language sql immutable set search_path = '' as $$
   select case
     when tipo in ('amicizia', 'amico') then 'amicizie'
-    when tipo in ('prestito', 'regalo', 'reso', 'reso_ok', 'reso_no', 'chiuso') then 'prestiti'
-    when tipo in ('richiesta', 'richiesta_si', 'richiesta_no') then 'richieste'
+    when tipo in ('prestito', 'regalo', 'reso', 'reso_ok', 'reso_no', 'chiuso', 'richiesta', 'richiesta_si', 'richiesta_no') then 'prestiti'   -- «Libri in prestito»
     when tipo = 'consiglio' then 'consigli'
     when tipo = 'chiavi' then 'chiavi'
   end;
@@ -74,7 +73,7 @@ language sql stable security definer set search_path = '' as $$
   select n.* from public.notifiche n
   left join public.push_preferenze p on p.utente = n.utente
   where n.push = 'attesa' and not n.letta and n.creata > now() - interval '24 hours'
-    and public.push_gruppo(n.tipo) = any (coalesce(p.tipi, '{amicizie,prestiti,richieste,consigli,chiavi}'::text[]))
+    and public.push_gruppo(n.tipo) = any (coalesce(p.tipi, '{amicizie,prestiti,consigli,chiavi}'::text[]))
     and exists (select 1 from public.push_iscrizioni i where i.utente = n.utente)
     and not public.push_silenzio(coalesce(p.silenzio_da, 22::smallint), coalesce(p.silenzio_a, 8::smallint), coalesce(p.fuso, 'Europe/Rome'));
 $$;
@@ -113,7 +112,7 @@ begin
   where n.push = 'attesa' and (n.letta or n.creata <= now() - interval '24 hours' or public.push_gruppo(n.tipo) is null
     or not exists (select 1 from public.push_iscrizioni i where i.utente = n.utente)
     or public.push_gruppo(n.tipo) <> all (coalesce((select p.tipi from public.push_preferenze p where p.utente = n.utente),
-                                                   '{amicizie,prestiti,richieste,consigli,chiavi}'::text[])));
+                                                   '{amicizie,prestiti,consigli,chiavi}'::text[])));
   with prese as (
     update public.notifiche n set push = 'inviata'
     where n.id in (select x.id from public.push_pronte() x)
@@ -165,7 +164,7 @@ end $$;
 -- dall'app: le mie preferenze (con quelle di partenza se non le ho mai salvate)
 create function public.push_mie_preferenze() returns jsonb
 language sql stable security definer set search_path = '' as $$
-  select jsonb_build_object('tipi', coalesce(p.tipi, '{amicizie,prestiti,richieste,consigli,chiavi}'::text[]),
+  select jsonb_build_object('tipi', coalesce(p.tipi, '{amicizie,prestiti,consigli,chiavi}'::text[]),
     'silenzio_da', coalesce(p.silenzio_da, 22), 'silenzio_a', coalesce(p.silenzio_a, 8), 'fuso', coalesce(p.fuso, 'Europe/Rome'))
   from (select auth.uid() as me) m left join public.push_preferenze p on p.utente = m.me
   where m.me is not null;
@@ -175,11 +174,12 @@ $$;
 create function public.push_salva_preferenze(tipi text[], silenzio_da int, silenzio_a int, fuso text) returns void
 language plpgsql security definer set search_path = '' as $$
 declare me uuid := auth.uid(); f text := coalesce(nullif(push_salva_preferenze.fuso, ''), 'Europe/Rome');
+  t text[] := array(select distinct x from unnest(coalesce(push_salva_preferenze.tipi, '{}')) x where x = any ('{amicizie,prestiti,consigli,chiavi}'::text[]));
 begin
   if me is null then raise exception 'non autenticato'; end if;
   if not exists (select 1 from pg_catalog.pg_timezone_names z where z.name = f) then f := 'Europe/Rome'; end if;
   insert into public.push_preferenze (utente, tipi, silenzio_da, silenzio_a, fuso, aggiornata)
-    values (me, coalesce(push_salva_preferenze.tipi, '{}'), push_salva_preferenze.silenzio_da, push_salva_preferenze.silenzio_a, f, now())
+    values (me, t, push_salva_preferenze.silenzio_da, push_salva_preferenze.silenzio_a, f, now())
     on conflict (utente) do update set tipi = excluded.tipi, silenzio_da = excluded.silenzio_da,
       silenzio_a = excluded.silenzio_a, fuso = excluded.fuso, aggiornata = now();
 end $$;
