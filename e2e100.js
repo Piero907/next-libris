@@ -1,0 +1,140 @@
+const CFG = require("./_config");
+// copia social, modulo «Account e sincronizzazione» (social.js) con un Supabase finto sullo stesso server:
+// voce nel Menu, accesso con email e codice (codice sbagliato → messaggio), copia di sicurezza prima della prima sincronizzazione,
+// due telefoni con lo stesso account (libri che passano da uno all'altro, modifiche, cancellazioni «morbide» che lasciano i dati online),
+// nessun caricamento inutile quando non cambia niente, conflitto (vince il telefono che ha modificato), uscita, ripristino della copia
+const puppeteer = require('puppeteer-core');
+const http = require('http'), fs = require('fs'), path = require('path');
+const assert = require('assert');
+const ROOT = CFG.APP;
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip', '.wasm': 'application/wasm' };
+// ---- Supabase finto: utenti per email, righe per (utente, id), ora del server sempre crescente ----
+const DB = { users: {}, rows: {}, posts: 0, otp: 0 }; let clock = Date.parse('2026-11-16T10:00:00Z');
+const now = () => new Date(clock += 1000).toISOString();
+const uidOf = (req) => { const m = /Bearer AT-(\w+)/.exec(req.headers.authorization || ''); return m ? m[1] : null; };
+function fake(req, res, body, url) {
+  const send = (st, j) => { res.writeHead(st, { 'Content-Type': 'application/json' }); res.end(j === undefined ? '' : JSON.stringify(j)); };
+  const p = url.pathname.replace(/^\/finto/, ''), q = url.searchParams;
+  if (req.headers.apikey !== 'chiave-finta') return send(401, { message: 'no api key' });
+  if (p === '/auth/v1/otp') { DB.otp++; return send(200, {}); }
+  if (p === '/auth/v1/verify') {
+    if (body.token !== '123456') return send(403, { msg: 'Token has expired or is invalid' });
+    const id = DB.users[body.email] || (DB.users[body.email] = 'u' + Object.keys(DB.users).length);
+    return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id, email: body.email } });
+  }
+  if (p === '/auth/v1/token') { const id = String(body.refresh_token || '').slice(3); return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id } }); }
+  if (p === '/auth/v1/logout') return send(204);
+  const uid = uidOf(req); if (!uid) return send(401, { message: 'JWT' });
+  if (p === '/rest/v1/profili') return send(201);
+  if (p === '/rest/v1/rpc/elimina_account') { Object.keys(DB.rows).filter(k => k.startsWith(uid + '|')).forEach(k => delete DB.rows[k]); return send(204); }
+  if (p === '/rest/v1/libri' && req.method === 'GET') {
+    const gt = (q.get('aggiornato') || '').replace(/^gt\./, '');
+    let r = Object.values(DB.rows).filter(x => x.utente === uid && (!gt || x.aggiornato > gt)).sort((a, b) => a.aggiornato < b.aggiornato ? -1 : a.aggiornato > b.aggiornato ? 1 : a.id < b.id ? -1 : 1);
+    const off = +q.get('offset') || 0, lim = +q.get('limit') || 1000;
+    return send(200, r.slice(off, off + lim).map(x => ({ id: x.id, dati: x.dati, cancellato: x.cancellato, aggiornato: x.aggiornato })));
+  }
+  if (p === '/rest/v1/libri' && req.method === 'POST') {
+    DB.posts++;
+    for (const x of body) {
+      if (x.utente !== uid) return send(403, { message: 'new row violates row-level security policy' });
+      const k = uid + '|' + x.id, old = DB.rows[k] || { utente: uid, id: x.id, dati: {}, cancellato: false };
+      DB.rows[k] = Object.assign({}, old, x, { aggiornato: now() });
+    }
+    return send(201);
+  }
+  if (p === '/rest/v1/libri' && req.method === 'DELETE') { Object.keys(DB.rows).filter(k => k.startsWith(uid + '|')).forEach(k => delete DB.rows[k]); return send(204); }
+  send(404, { message: 'finto: ' + p });
+}
+const server = http.createServer((req, res) => {
+  const url = new URL(req.url, 'http://x');
+  if (url.pathname.startsWith('/finto/')) { let b = ''; req.on('data', c => b += c); req.on('end', () => { let j = {}; try { j = b ? JSON.parse(b) : {}; } catch (e) {} fake(req, res, j, url); }); return; }
+  const p = decodeURIComponent(url.pathname), m = p.match(/^\/next-libris-social(\/.*)?$/);
+  if (!m) { res.writeHead(404); return res.end(); }
+  if (!m[1]) { res.writeHead(301, { Location: p + '/' }); return res.end(); }
+  const f = path.join(ROOT, m[1] === '/' ? '/index.html' : m[1]); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
+  res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': 'no-cache' }); fs.createReadStream(f).pipe(res);
+}).listen(CFG.port(8300));
+const base = 'http://localhost:' + CFG.port(8300);
+const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users[email]);
+(async () => {
+  const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
+  const errors = [];
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  async function phone(name) {                                       // un «telefono»: contesto separato, memoria tutta sua
+    const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
+    await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    page.on('pageerror', e => errors.push(name + ': ' + e.message));
+    await page.evaluateOnNewDocument((u) => { window.NL_SOCIAL = { url: u, key: 'chiave-finta' }; }, base + '/finto');
+    await page.setRequestInterception(true);
+    page.on('request', r => r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
+    await page.goto(base + '/next-libris-social/?vista=elenco', { waitUntil: 'load' }); await wait(800);
+    page.books = () => page.evaluate(() => window.__app.state.books.map(b => b.i || b.t).sort());
+    page.add = async (...l) => { await page.evaluate((x) => { window.__app.settings.price = false; x.forEach(i => window.__app.addIsbn(i)); }, l); await wait(900); };
+    page.sync = () => page.evaluate(() => window.NLSocial.run(false));
+    page.st = () => page.evaluate(() => window.NLSocial.state());
+    return page;
+  }
+  async function login(page, email, code) {
+    await page.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
+    const t = await page.$eval('#goAcc', e => e.innerText); assert(/Account e sincronizzazione/.test(t) && /Salva i libri online/.test(t), 'voce nel Menu');
+    await page.click('#goAcc'); await wait(400);
+    assert(await page.$eval('#accSheet', e => !e.hidden));
+    await page.type('#accMail', email); await page.click('#accSend'); await wait(500);
+    await page.type('#accCode', code); await page.click('#accGo'); await wait(700);
+  }
+  // ---- telefono A: due libri, poi l'accesso (prima con il codice sbagliato) ----
+  const A = await phone('A');
+  await A.add('9788806219352', '9788804668015');
+  await login(A, 'Lettore@Esempio.it', '000000');
+  let e = await A.$eval('#accErr', x => x.hidden ? '' : x.textContent); console.log('[codice sbagliato]', e);
+  assert(/Codice sbagliato o scaduto/.test(e));
+  await A.$eval('#accCode', x => { x.value = ''; }); await A.type('#accCode', '123456'); await A.click('#accGo'); await wait(1500);
+  let s = await A.st(); assert(s.auth && s.auth.email === 'lettore@esempio.it' && !s.err, 'entrato');
+  assert.strictEqual(rows('lettore@esempio.it').length, 2, 'i due libri sono online');
+  const txt = await A.$eval('#accBody', x => x.textContent.replace(/\s+/g, ' ')); console.log('[finestra]', txt.slice(0, 200));
+  assert(/Sei entrato come lettore@esempio\.it/.test(txt) && /2 libri online/.test(txt) && /Ripristina la copia del .*\(2 libri\)/.test(txt), 'stato e copia di sicurezza');
+  await A.keyboard.press('Escape'); await wait(200); assert(await A.$eval('#accSheet', x => x.hidden), 'Indietro/Esc chiude');
+  // nessuna modifica: nessun caricamento
+  let p0 = DB.posts; await A.sync(); assert.strictEqual(DB.posts, p0, 'niente da caricare');
+  // modifica su A: si carica solo quel libro (anche da sola, dopo il salvataggio)
+  await A.evaluate(() => { const b = window.__app.state.books.find(x => x.i === '9788806219352'); b.rt = 4; b.n = 'nota da A'; window.NL.save(); }); await wait(5500);
+  let r1 = rows('lettore@esempio.it').find(x => x.id && x.dati.i === '9788806219352'); assert(r1.dati.rt === 4 && r1.dati.n === 'nota da A', 'modifica caricata da sola');
+  assert.strictEqual(DB.posts, p0 + 1, 'un solo caricamento');
+  // ---- telefono B: un suo libro, poi lo stesso account ----
+  const B = await phone('B');
+  await B.add('9788845292613');
+  await login(B, 'lettore@esempio.it', '123456'); await wait(1200);
+  console.log('[B dopo l\'accesso]', JSON.stringify(await B.books()));
+  assert.deepStrictEqual(await B.books(), ['9788804668015', '9788806219352', '9788845292613']);
+  assert(await B.evaluate(() => { const b = window.__app.state.books.find(x => x.i === '9788806219352'); return b.rt === 4 && b.n === 'nota da A'; }), 'B riceve anche la modifica');
+  assert.strictEqual(rows('lettore@esempio.it').length, 3);
+  await A.sync(); assert.deepStrictEqual(await A.books(), ['9788804668015', '9788806219352', '9788845292613'], 'A riceve il libro di B');
+  // cancellazione su B: online resta con «cancellato» e i dati; A lo perde
+  const gone = await B.evaluate(() => window.__app.state.books.find(x => x.i === '9788804668015').id);
+  await B.evaluate((id) => { const L = window.__app.state.books; L.splice(L.findIndex(x => x.id === id), 1); window.NL.save(); window.NL.refresh(); }, gone);
+  await B.sync();
+  const rg = rows('lettore@esempio.it').find(x => x.id === gone); assert(rg.cancellato === true && rg.dati.i === '9788804668015', 'cancellazione morbida: i dati restano online');
+  await A.sync(); assert.deepStrictEqual(await A.books(), ['9788806219352', '9788845292613'], 'A perde il libro cancellato');
+  // conflitto: A e B cambiano lo stesso libro senza sincronizzare; sincronizza prima A, poi B (vince chi ha modificato: B), poi A riceve
+  await A.evaluate(() => { const b = window.__app.state.books.find(x => x.i === '9788845292613'); b.sh = 'Scaffale A'; window.NL.save(); });
+  await B.evaluate(() => { const b = window.__app.state.books.find(x => x.i === '9788845292613'); b.sh = 'Scaffale B'; window.NL.save(); });
+  await A.sync(); await B.sync(); await A.sync();
+  const shA = await A.evaluate(() => window.__app.state.books.find(x => x.i === '9788845292613').sh), shB = await B.evaluate(() => window.__app.state.books.find(x => x.i === '9788845292613').sh);
+  console.log('[conflitto]', shA, '|', shB); assert(shA === 'Scaffale B' && shB === 'Scaffale B', 'alla fine uguali');
+  // telefoni a posto: un altro giro non carica niente
+  p0 = DB.posts; await A.sync(); await B.sync(); assert.strictEqual(DB.posts, p0, 'nessun caricamento a vuoto');
+  // ripristino della copia di sicurezza su A (i due libri di prima)
+  await A.evaluate(() => window.NLSocial.open()); await wait(400);
+  await A.click('#accSheet summary'); await wait(150); await A.click('[data-acc="restore"]'); await wait(200);
+  assert(/Rimetto i libri come erano/.test(await A.$eval('.acc-conf', x => x.innerText)));
+  await A.click('[data-acc="yes"]'); await wait(800);
+  console.log('[A dopo il ripristino]', JSON.stringify(await A.books()));
+  assert.deepStrictEqual(await A.books(), ['9788804668015', '9788806219352']);
+  // uscita: i libri restano sul telefono, la voce del Menu torna «Salva i libri online»
+  await A.click('#accSheet summary'); await A.click('[data-acc="logout"]'); await wait(150); await A.click('[data-acc="yes"]'); await wait(500);
+  s = await A.st(); assert(!s.auth, 'uscito'); assert.strictEqual((await A.books()).length, 2, 'i libri restano');
+  assert(/La tua email/.test(await A.$eval('#accBody', x => x.innerText)));
+  const keys = await A.evaluate(() => Object.keys(localStorage)); assert(keys.every(k => /^social:/.test(k)), 'solo chiavi della copia social');
+  assert.deepStrictEqual(errors, []);
+  console.log('e2e100 OK'); await browser.close(); server.close();
+})().catch(e => { console.error('FAIL', e); process.exit(1); });
