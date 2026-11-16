@@ -4,7 +4,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui (va in «Fatti», in fondo, con una riga) e la novità va nel registro dell'app.
 
-**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **27**.
+**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **28**.
 
 Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 
@@ -17,7 +17,7 @@ Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
 - **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo
 - **G. Guide:** 13 guida di primo avvio · 16 guida per il worker e la chiave
-- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste
+- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste · 27 verifica di sicurezza
 - **Fatti** (tolti dall'elenco)
 
 ---
@@ -310,6 +310,14 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 **Da fare quando lo chiede («davvero nascosti»):** le ricerche di chi usa la chiave di un amico passano da un servizio sul server (Edge Function di Supabase) che tiene chiave e worker e fa la richiesta al posto suo; il telefono riceve solo i risultati. Costi: ricerche un po' più lente, funzioni del piano gratuito (500.000 al mese, ~2-3 per libro), da contare con la simulazione degli utenti; serve anche per i suggerimenti e le novità degli autori. Si lega al contatore condiviso (012) e alla voce 18.
 
 ---
+
+### 27. Verifica di sicurezza (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** fare una **verifica di sicurezza** dell'app. Nulla fatto.
+
+**Prima di partire, chiedere:** su quale copia (prova, vera o tutte e due); fino a dove (solo controllo e rapporto, o anche correzioni nella prova).
+
+**Cosa guardare (proposta):** regole RLS e permessi di tutte le tabelle (anche `notifiche`, `ricerche`, `archivio`, `push_*`), funzioni `security definer` (controllo amicizia, limiti al giorno, `search_path`), `get_advisors` di sicurezza su tutte e due le copie; dati che il client manda (lunghezze, jsonb, testo dentro la pagina senza `esc()`, cioè XSS); chiave e worker prestati (voce 22); Edge Function `push` e segreti nel Vault; link d'invito e `#k=`; intestazioni e Content-Security-Policy possibili su GitHub Pages; worker Cloudflare (origine ammessa, abusi); dipendenze in `vendor/`.
 
 ## Fatti (tolti dall'elenco)
 
