@@ -15,7 +15,7 @@ var esc = NL.esc;
 var CFG = window.NL_SOCIAL || {                       // le prove automatiche mettono qui un server finto
   url: 'https://amkrkvkylprjasccxmzo.supabase.co',
   key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC',   // chiave pubblica: fatta per stare nell'app, i dati li proteggono le regole RLS
-  gClient: ''                                         // Client ID di Google (pubblico) per il pulsante ufficiale «Accedi con Google»
+  gClient: '393545993031-bu3r02vfe9ugup4vgo3f40idr52204ge.apps.googleusercontent.com'   // Client ID di Google (pubblico, progetto Google Cloud «Next Libris») per il pulsante ufficiale «Accedi con Google»
 };
 var K_AUTH = 'catalogo-libri-social-auth', K_SYNC = 'catalogo-libri-social-sync';   // NL.ls aggiunge da solo il prefisso della copia
 var MARGIN = 120000, PAGE = 1000, CHUNK = 200;
