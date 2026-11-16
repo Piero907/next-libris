@@ -2,7 +2,7 @@ const CFG = require("./_config");
 // copia social, modulo «Account e sincronizzazione» (social.js) con un Supabase finto sullo stesso server:
 // voce nel Menu, accesso con email e codice (codice sbagliato → messaggio), copia di sicurezza prima della prima sincronizzazione,
 // due telefoni con lo stesso account (libri che passano da uno all'altro, modifiche, cancellazioni «morbide» che lasciano i dati online),
-// accesso dal link dell'email (token dopo il #, poi tolti dall'indirizzo; link scaduto → messaggio), nessun caricamento inutile quando non cambia niente, conflitto (vince il telefono che ha modificato), uscita, ripristino della copia
+// «Entra con Google» solo se acceso in Supabase (e ritorno con i token), accesso dal link dell'email (token dopo il #, poi tolti dall'indirizzo; link scaduto → messaggio), nessun caricamento inutile quando non cambia niente, conflitto (vince il telefono che ha modificato), uscita, ripristino della copia
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -15,7 +15,13 @@ const uidOf = (req) => { const m = /Bearer AT-(\w+)/.exec(req.headers.authorizat
 function fake(req, res, body, url) {
   const send = (st, j) => { res.writeHead(st, { 'Content-Type': 'application/json' }); res.end(j === undefined ? '' : JSON.stringify(j)); };
   const p = url.pathname.replace(/^\/finto/, ''), q = url.searchParams;
+  if (p === '/auth/v1/authorize') {                                   // Google finto: crea l'utente e torna all'app con i token dopo il #
+    if (q.get('provider') !== 'google' || !DB.google) return send(400, { msg: 'Unsupported provider: provider is not enabled' });
+    const em = 'amica@gmail.example', id = DB.users[em] || (DB.users[em] = 'u' + Object.keys(DB.users).length); DB.gUser = id;
+    res.writeHead(302, { Location: q.get('redirect_to') + '#access_token=AT-' + id + '&expires_in=3600&provider_token=pt&refresh_token=RT-' + id + '&token_type=bearer' }); return res.end();
+  }
   if (req.headers.apikey !== 'chiave-finta') return send(401, { message: 'no api key' });
+  if (p === '/auth/v1/settings') return send(200, { external: { google: !!DB.google, email: true }, mailer_autoconfirm: false });
   if (p === '/auth/v1/otp') { DB.otp++; DB.redirect = q.get('redirect_to'); return send(200, {}); }
   if (p === '/auth/v1/verify') {
     if (body.token !== '123456') return send(403, { msg: 'Token has expired or is invalid' });
@@ -25,7 +31,8 @@ function fake(req, res, body, url) {
   if (p === '/auth/v1/token') { const id = String(body.refresh_token || '').slice(3); return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id } }); }
   if (p === '/auth/v1/logout') return send(204);
   const uid = uidOf(req); if (!uid) return send(401, { message: 'JWT' });
-  if (p === '/auth/v1/user') return send(200, { id: uid, email: Object.keys(DB.users).find(e => DB.users[e] === uid) });
+  if (p === '/auth/v1/user') return send(200, { id: uid, email: Object.keys(DB.users).find(e => DB.users[e] === uid), user_metadata: uid === DB.gUser ? { full_name: 'Anna Rossi' } : {} });
+  if (p === '/rest/v1/profili') { DB.prof = DB.prof || {}; DB.prof[uid] = body.nome; return send(201); }
   if (p === '/rest/v1/profili') return send(201);
   if (p === '/rest/v1/rpc/elimina_account') { Object.keys(DB.rows).filter(k => k.startsWith(uid + '|')).forEach(k => delete DB.rows[k]); return send(204); }
   if (p === '/rest/v1/libri' && req.method === 'GET') {
@@ -80,6 +87,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
     const t = await page.$eval('#goAcc', e => e.innerText); assert(/Account e sincronizzazione/.test(t) && /Salva i libri online/.test(t), 'voce nel Menu');
     await page.click('#goAcc'); await wait(400);
     assert(await page.$eval('#accSheet', e => !e.hidden));
+    assert(!(await page.$('[data-acc="google"]')), 'Google spento in Supabase: niente pulsante');
     await page.type('#accMail', email); await page.click('#accSend'); await wait(500);
     await page.type('#accCode', code); await page.click('#accGo'); await wait(700);
   }
@@ -137,6 +145,19 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   assert.deepStrictEqual(await C.books(), ['9788806219352', '9788845292613'], 'C riceve i libri');
   assert(!/access_token/.test(await C.evaluate(() => location.href)), 'i token non restano nell\'indirizzo');
   assert(/Sei entrato come lettore@esempio\.it/.test(await C.$eval('#accBody', x => x.textContent)), 'finestra aperta da sola');
+  // ---- telefono D: «Entra con Google» (acceso in Supabase) ----
+  DB.google = true;
+  const D = await phone('D');
+  await D.add('9788807900891');
+  await D.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await D.click('#goAcc'); await wait(600);
+  const gb = await D.$eval('[data-acc="google"]', x => x.textContent); assert.strictEqual(gb, 'Entra con Google');
+  assert(/oppure con la tua email/.test(await D.$eval('#accBody', x => x.textContent)));
+  await Promise.all([D.waitForNavigation({ waitUntil: 'load' }), D.click('[data-acc="google"]')]); await wait(1800);
+  const ds = await D.st(); console.log('[D con Google]', JSON.stringify({ email: ds.auth && ds.auth.email, url: await D.evaluate(() => location.href), nome: DB.prof && DB.prof[DB.gUser] }));
+  assert(ds.auth && ds.auth.email === 'amica@gmail.example' && !ds.err, 'D entrato con Google');
+  assert(!/access_token|provider_token/.test(await D.evaluate(() => location.href)), 'token tolti dall\'indirizzo');
+  assert.strictEqual(DB.prof[DB.gUser], 'Anna', 'nome dal profilo Google');
+  assert.deepStrictEqual(rows('amica@gmail.example').map(r => r.dati.i), ['9788807900891'], 'i libri di D online, separati da quelli di A e B');
   // ripristino della copia di sicurezza su A (i due libri di prima)
   await A.evaluate(() => window.NLSocial.open()); await wait(400);
   await A.click('#accSheet summary'); await wait(150); await A.click('[data-acc="restore"]'); await wait(200);
