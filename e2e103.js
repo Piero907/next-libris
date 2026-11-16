@@ -1,6 +1,7 @@
 const CFG = require("./_config");
 // modulo «Amici»: libreria, desideri, prestiti e regali tra amici (Supabase finto). A (Anna) e B (Bruno) amici.
-// B accende «Gli amici vedono la mia libreria»: A la vede nella pagina di B (lettura e voto, «Ce l'hai anche tu»; mai le note);
+// B accende «Gli amici vedono la mia libreria»: A tocca Bruno e la vede nella schermata principale (barra con libri in comune e letti di recente;
+// mai le note), nei suoi desideri apre la scheda e «Te lo regalo io», poi torna alla sua libreria intatta;
 // B accende «Gli amici vedono i miei desideri»; A apre la pagina di B, vede i desideri e «Te lo regalo io» (prenotazione);
 // A presta un libro a B scegliendolo tra gli amici in «Presta, vendi o regala»: dopo «Annulla» non parte niente, dopo «Salva» sì;
 // B lo trova subito nella sua Libreria con «Prestato da Anna» e l'avviso in cima; B tocca «Prestato da Anna» › Restituito:
@@ -109,20 +110,26 @@ const base = 'http://localhost:' + CFG.port(8303);
   assert(!(await B.$eval('#friLib', x => x.checked)), 'libreria nascosta di partenza');
   await B.click('#friLib'); await wait(500); assert.strictEqual(DB.prof.uB.libreria, true, 'B mostra la libreria');
   await B.keyboard.press('Escape'); await wait(200);
-  // ---- A: pagina di B, desideri, «Te lo regalo io» ----
+  // ---- A: tocca Bruno → la sua libreria nella schermata principale (sola lettura), desideri, «Te lo regalo io» ----
   const A = await phone('A', 'uA');
   await A.add({ t: 'Il deserto dei Tartari', a: 'Dino Buzzati', i: '9788804668015' });
   await A.click('#btnFri'); await wait(700);
-  await A.click('[data-f="friend"]'); await wait(700);
-  let t = await A.body(); console.log('[pagina di Bruno]', t.slice(0, 260));
-  assert(/Bruno I suoi desideri/.test(t) && /Il nome della rosa/.test(t) && /Lessico famigliare/.test(t), 'A vede i desideri di B');
-  console.log('[libreria]', t.slice(t.indexOf('La sua libreria'), t.indexOf('La sua libreria') + 150));
-  assert(/La sua libreria 1 (\S )?Il deserto dei Tartari Dino Buzzati Letto · Capolavoro · Ce l.hai anche tu/.test(t), 'A vede la libreria di B'); assert(!/nota segreta/.test(t), 'mai le note');
+  await A.click('[data-f="friend"]'); await wait(1200);
+  assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Bruno', 'libreria di Bruno aperta');
+  let t = await A.$eval('#guestBar', x => x.innerText.replace(/\s+/g, ' ')); console.log('[barra di Bruno]', t);
+  assert(/0 amici in comune · 1 libro in comune/.test(t) && /Letti di recente «Il deserto dei Tartari» Capolavoro/.test(t), 'barra in cima');
+  assert(/Libreria di Bruno/.test(await A.$eval('#owner', x => x.textContent)));
+  t = await A.$eval('#list', x => x.innerText.replace(/\s+/g, ' ')); assert(/Il deserto dei Tartari/.test(t) && !/nota segreta/.test(await A.evaluate(() => document.body.innerText)), 'la sua libreria, mai le note');
+  await A.evaluate(() => window.__app.setTab('wish')); await wait(400);
+  t = await A.$eval('#list', x => x.innerText.replace(/\s+/g, ' ')); assert(/Il nome della rosa/.test(t) && /Lessico famigliare/.test(t), 'i suoi desideri');
   const rosa = Object.values(DB.rows).find(r => r.dati.i === '9788845292613').id;
-  await A.click('[data-f="gift"][data-id="' + rosa + '"]'); await wait(600);
-  assert.strictEqual(DB.pren['uB|' + rosa], 'uA', 'prenotato da A'); assert(/Lo regali tu/.test(await A.body()));
+  await A.evaluate((id) => document.querySelector('[data-id="' + id + '"] .sum').click(), rosa); await wait(500);
+  await A.click('[data-id="' + rosa + '"] .cv-guest [data-g="gift"]'); await wait(700);
+  assert.strictEqual(DB.pren['uB|' + rosa], 'uA', 'prenotato da A'); assert(/Lo regali tu/.test(await A.$eval('[data-id="' + rosa + '"] .cv-guest', x => x.innerText)));
   await A.screenshot({ path: CFG.OUT + '/amici-desideri.png' });
-  await A.keyboard.press('Escape'); await wait(200);
+  await A.click('#guestBar [data-g="back"]'); await wait(500);
+  assert.strictEqual(await A.evaluate(() => window.NL.guest()), null, 'tornata alla sua libreria');
+  assert.deepStrictEqual(await A.evaluate(() => window.NL.books().map(b => b.t)), ['Il deserto dei Tartari'], 'i suoi libri, intatti');
   // ---- A presta un libro a B: prima «Annulla» (non parte niente), poi davvero ----
   const zeno = await A.add({ t: 'La coscienza di Zeno', a: 'Italo Svevo', i: '9788807900891', c: 12 });
   await A.evaluate((id) => window.__app.openLoan(id), zeno); await wait(400);
@@ -181,8 +188,8 @@ const base = 'http://localhost:' + CFG.port(8303);
   assert(br && !br.w && br.sk === 'r' && br.sda === 'Anna', 'da B: dai Desideri alla Libreria, «Regalato da Anna»');
   assert.strictEqual(await B.evaluate(() => window.NL.books().filter(b => b.i === '9788845292613').length), 1, 'nessun doppione');
   // pagina dell'amico a 360 px: niente scorrimento di lato
-  await B.click('#btnFri'); await wait(600); await B.click('[data-f="friend"]'); await wait(700);
-  t = await B.body(); assert(/Ti ha regalato «Il nome della rosa»/.test(t) && /Anna non mostra i suoi desideri/.test(t), 'pagina di Anna vista da B');
+  await B.evaluate(() => window.NLAmici.friend('uA')); await wait(700);
+  t = await B.body(); assert(/Ti ha regalato «Il nome della rosa»/.test(t) && /Guarda la sua libreria/.test(t), 'prestiti e regali con Anna, visti da B');
   const side = await B.evaluate(() => { const si = document.querySelector('#friSheet .sheet-in'); return si.scrollWidth - si.clientWidth; });
   assert(side <= 0, 'la pagina dell\'amico non esce di lato (' + side + ')');
   assert.deepStrictEqual(errors, []);

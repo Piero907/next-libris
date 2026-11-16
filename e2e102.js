@@ -153,7 +153,7 @@ const base = 'http://localhost:' + CFG.port(8302);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(500);
   t = await A.body(); assert(/I tuoi amici 1/.test(t) && /Bruno/.test(t) && !/Richieste che hai mandato/.test(t), 'A: amici');
   // togli con conferma
-  await A.click('[data-f="friend"]'); await wait(500);                       // «Togli» sta nella pagina dell'amico (16/11/2026)
+  await A.evaluate(() => window.NLAmici.friend('uB')); await wait(500);      // «Togli» sta in «Prestiti, regali e altro» (toccando l'amico si apre la sua libreria)
   await A.click('[data-f="ask-drop"]'); await wait(200);
   assert(/Togli Bruno dagli amici\?/.test(await A.body()), 'conferma'); assert.strictEqual(DB.am.length, 1, 'non ancora tolto');
   await A.click('[data-f="drop"]'); await wait(700);

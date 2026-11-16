@@ -1,0 +1,12 @@
+-- Next Libris: libreria dell'amico come la schermata principale, «Me lo presti?», consigli, chi ce l'ha, amici in comune (16/11/2026).
+-- Applicato al progetto della prova come migrazione «amici_libreria_completa». Il testo completo si recupera dal progetto con:
+--   select statements from supabase_migrations.schema_migrations where name in ('reso_da_confermare', 'amici_libreria_completa');
+-- (vale anche per 005). Contenuto:
+-- * libreria_di: in più e, y, pg, gen, se, sn, rd, pp (solo se in lettura), ts, «fuori» (in prestito, senza il nome) e «comuni» (amici in comune);
+--   mai note, citazioni, appunti, prezzi, scaffali, nomi dei prestiti.
+-- * desideri_di: in più e, y, pg, gen, se, sn, ts.
+-- * richieste (Me lo presti?): chiedi_prestito (solo ad amici con la libreria visibile, libro vero; una sola richiesta in attesa),
+--   rispondi_richiesta (solo il proprietario), annulla_richiesta (solo chi chiede), mie_richieste.
+-- * consigli: consiglia (solo ad amici, max 100 al giorno), miei_consigli (180 giorni), togli_consiglio.
+-- * chi_ce_lha(isbn[]): quali amici (con la libreria visibile) hanno quei libri, con l'id del loro libro e se è in prestito.
+-- Prova di sicurezza del 16/11/2026: 17 controlli, tutti bene.

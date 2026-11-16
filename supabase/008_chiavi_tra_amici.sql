@@ -1,0 +1,4 @@
+-- Next Libris: chiave Google e worker SBN condivisi tra amici (16/11/2026; Piero: «falli usare su tutti e due i telefoni»).
+-- Tabella chiavi (da, a, gb_key, sbn), nessuno la legge direttamente. presta_chiavi(a, gb_key, sbn) solo ad amici (on conflict on
+-- constraint chiavi_pkey), riprendi_chiavi(a), chiavi_mie(): a chi le condivido (senza ripeterle) e chi le condivide con me (solo se
+-- ancora amici). Applicato al progetto della prova («chiavi_tra_amici» + «chiavi_tra_amici_fix»); prova di sicurezza: tutto bene.
