@@ -14,7 +14,8 @@ var NL = window.NL; if (!NL) return;
 var esc = NL.esc;
 var CFG = window.NL_SOCIAL || {                       // le prove automatiche mettono qui un server finto
   url: 'https://amkrkvkylprjasccxmzo.supabase.co',
-  key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC'   // chiave pubblica: fatta per stare nell'app, i dati li proteggono le regole RLS
+  key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC',   // chiave pubblica: fatta per stare nell'app, i dati li proteggono le regole RLS
+  gClient: ''                                         // Client ID di Google (pubblico) per il pulsante ufficiale «Accedi con Google»
 };
 var K_AUTH = 'catalogo-libri-social-auth', K_SYNC = 'catalogo-libri-social-sync';   // NL.ls aggiunge da solo il prefisso della copia
 var MARGIN = 120000, PAGE = 1000, CHUNK = 200;
@@ -173,7 +174,55 @@ async function providers() {
   try { var j = await call('/auth/v1/settings'); prov = { google: !!(j && j.external && j.external.google) }; } catch (e) { return { google: false }; }
   return prov;
 }
-function google() { location.href = CFG.url + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(home()); }
+function google() { location.href = CFG.url + '/auth/v1/authorize?provider=google&redirect_to=' + encodeURIComponent(home()); }   // riserva: passa da supabase.co
+/* Pulsante ufficiale di Google (Google Identity Services, 16/11/2026): Google consegna il token direttamente a questa pagina,
+   quindi nella sua finestra compare il nostro sito e non l'indirizzo del progetto Supabase. Il token si scambia con Supabase
+   (grant_type=id_token) insieme al «nonce»: a Google va la sua impronta SHA-256, a Supabase il valore originale. */
+var gisP = null;
+function gisLoad() {
+  var G = function () { return window.google && window.google.accounts && window.google.accounts.id; };   // (attenzione: «google» qui e' la funzione di riserva)
+  if (G()) return Promise.resolve(G());
+  if (gisP) return gisP;
+  gisP = new Promise(function (res, rej) {
+    var sc = document.createElement('script'); sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true;
+    var t = setTimeout(function () { rej(new Error('timeout')); }, 10000);
+    sc.onload = function () { clearTimeout(t); G() ? res(G()) : rej(new Error('gsi')); };
+    sc.onerror = function () { clearTimeout(t); rej(new Error('gsi')); };
+    document.head.appendChild(sc);
+  });
+  gisP.catch(function () { gisP = null; });
+  return gisP;
+}
+async function makeNonce() {
+  var raw = btoa(String.fromCharCode.apply(null, crypto.getRandomValues(new Uint8Array(24))));
+  var d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+  return { raw: raw, hashed: Array.from(new Uint8Array(d)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('') };
+}
+async function gisButton() {
+  var slot = document.getElementById('accG'); if (!slot) return;
+  try {
+    var id = await gisLoad(), n = await makeNonce();
+    if (!document.body.contains(slot)) return;
+    id.initialize({ client_id: CFG.gClient, nonce: n.hashed, ux_mode: 'popup', itp_support: true, use_fedcm_for_prompt: true, auto_select: false,
+      callback: function (r) { gisDone(r, n.raw); } });
+    slot.innerHTML = '';
+    id.renderButton(slot, { type: 'standard', theme: 'outline', shape: 'pill', size: 'large', text: 'signin_with', locale: 'it', width: Math.min(400, slot.clientWidth || 300) });
+  } catch (e) {                                      // senza rete o script bloccato: resta il metodo di riserva
+    slot.innerHTML = '<button class="btn primary" type="button" data-acc="google">Entra con Google</button>';
+  }
+}
+async function gisDone(r, raw) {
+  if (!r || !r.credential) return;
+  try {
+    var j = await call('/auth/v1/token?grant_type=id_token', { method: 'POST', body: { provider: 'google', id_token: r.credential, nonce: raw } });
+    if (!j || !j.access_token) throw Err('risposta vuota', 'gis');
+    setAuth(j);
+  } catch (e) { err(e.code === 'net' ? e.message : 'Accesso con Google non riuscito (' + e.message + '). Riprova.'); return; }
+  var md = (j.user && j.user.user_metadata) || {}, nome = NL.name() || String(md.full_name || md.name || '').split(' ')[0].slice(0, 30);
+  try { if (nome) await call('/rest/v1/profili?on_conflict=id', { method: 'POST', user: true, prefer: 'resolution=merge-duplicates,return=minimal', body: { id: auth.uid, nome: nome } }); } catch (e) {}
+  NL.toast('Sei entrato. Sincronizzo i libri…'); paint();
+  await run(false);
+}
 function home() { return location.origin + location.pathname.replace(/[^/]*$/, ''); }   // dove torna il link dell'email
 async function sendCode(email) {
   await call('/auth/v1/otp?redirect_to=' + encodeURIComponent(home()), { method: 'POST', body: { email: email, create_user: true } });
@@ -245,7 +294,8 @@ function paintSheet() {
   if (!auth) {
     h += '<p class="msg">Con un account i tuoi libri si salvano anche online: li ritrovi su un altro telefono o tablet. ' +
       'Il telefono resta la copia principale; senza rete l\'app funziona come sempre.</p>';
-    if (step === 'email' && prov && prov.google) h += '<button class="btn primary acc-g" type="button" data-acc="google">Entra con Google</button><p class="acc-or">oppure con la tua email</p>';
+    if (step === 'email' && prov && prov.google && CFG.gClient) h += '<div class="acc-g" id="accG"></div>' +   // senza Client ID niente Google (la riserva mostrerebbe supabase.co)
+      '<p class="msg bad" id="accErr" hidden></p><p class="acc-or">oppure con la tua email</p>';
     if (step === 'email') {
       h += '<form id="accFormE"><label class="field"><span>La tua email</span><input type="email" id="accMail" autocomplete="email" inputmode="email" enterkeyhint="send" required value="' + esc(mail) + '"></label>' +
         '<p class="msg bad" id="accErr" hidden></p><button class="btn' + (prov && prov.google ? '' : ' primary') + '" type="submit" id="accSend">Mandami l\'email</button></form>';
@@ -278,6 +328,8 @@ function paintSheet() {
     }
   }
   body.innerHTML = h;
+  var errs = body.querySelectorAll('#accErr'); for (var i = 1; i < errs.length; i++) errs[i].remove();   // un solo riquadro d'errore
+  if (document.getElementById('accG')) gisButton();
 }
 function err(m) { var e = document.getElementById('accErr'); if (e) { e.textContent = m; e.hidden = !m; } }
 function niceAuthErr(e) {

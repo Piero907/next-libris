@@ -10,3 +10,4 @@
 .acc .acc-conf p{margin:0;font-size:15px}
 #goAcc.acc-on b::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#3B8A5A;margin-left:8px;vertical-align:middle}
 .acc .acc-or{margin:2px 0 -2px;text-align:center;font-size:13px;color:var(--muted)}
+.acc .acc-g{display:flex;justify-content:center;min-height:44px}
