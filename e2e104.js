@@ -73,9 +73,19 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/rpc/presta_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); DB.keys.push({ da: me, a: body.a, gb_key: body.gb_key, sbn: body.sbn }); return send(204); }
   if (p === '/rest/v1/rpc/riprendi_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); return send(204); }
   if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: '', sbn: '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key, sbn: k.sbn }))));
+  if (p === '/rest/v1/rpc/mie_notifiche') return send(200, notifOf(me).map(x => Object.assign(x, { letta: !!DB.read[me + x.id] })));
+  if (p === '/rest/v1/rpc/notifiche_lette') { notifOf(me).forEach(x => { DB.read[me + x.id] = 1; }); return send(204); }
   if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
   send(404, { message: 'finto: ' + p });
 }
+// notifiche come le scrivono i trigger (011_notifiche.sql): prestiti/regali ricevuti e consigli
+function notifOf(me) {
+  const nm = u => DB.prof[u].utente, n = [];
+  DB.sw.filter(x => x.a === me).forEach(x => n.push({ id: 'n-' + x.id, da: x.da, nome: nm(x.da), tipo: x.tipo, rif: x.id, titolo: (x.libro || {}).t || '', creata: x.creato }));
+  DB.tips.filter(x => x.a === me).forEach(x => n.push({ id: 'n-' + x.id, da: x.da, nome: nm(x.da), tipo: 'consiglio', rif: x.id, titolo: (x.libro || {}).t || '', creata: x.creato }));
+  return n.sort((a, b) => a.creata < b.creata ? 1 : -1);
+}
+DB.read = {};
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
   if (url.pathname.startsWith('/finto/')) { let b = ''; req.on('data', c => b += c); req.on('end', () => { let j = {}; try { j = b ? JSON.parse(b) : {}; } catch (e) {} fake(req, res, j, url); }); return; }
@@ -167,7 +177,12 @@ const base = 'http://localhost:' + CFG.port(8304);
   await B.evaluate((id) => { const L = window.NL.books(); L.splice(L.findIndex(b => b.id === id), 1); window.NL.save(); window.NL.refresh(); }, copia);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(800);
   assert(await A.evaluate(() => window.NL.books().some(b => b.sk === 'p' && b.sda === 'Bruno' && /Finzi/.test(b.t) && !b.w)), 'A lo trova in Libreria');
-  await A.click('#friGotGo'); await wait(600);
+  assert(!(await A.$('#friGot')), 'niente riquadro in cima: la novità è nella campanella');
+  assert.strictEqual(await A.$eval('#btnBellN', x => x.hidden ? '' : x.textContent), '1', 'campanella: 1 nuova');
+  await A.click('#btnBell'); await wait(500);
+  t = await A.$eval('#ntBody', x => x.innerText.replace(/\s+/g, ' ')); assert(/Bruno ti ha prestato «Il giardino dei Finzi-Contini»/.test(t), 'il prestito nella campanella: ' + t);
+  assert(await A.$eval('#btnBellN', x => x.hidden), 'aperta: segnate lette');
+  await A.click('#ntBody [data-n]'); await wait(600);
   const lid = await A.evaluate(() => window.NL.books().find(b => b.sk === 'p').id);
   assert(await A.$('.row.open[data-id="' + lid + '"]'), 'toccando l\'avviso si apre la scheda del libro');
   assert(/L.ho restituito/.test(await A.$eval('.row.open[data-id="' + lid + '"]', x => x.innerText)), 'pulsante «L\'ho restituito»');
@@ -179,7 +194,10 @@ const base = 'http://localhost:' + CFG.port(8304);
   assert.strictEqual(DB.tips.length, 1, 'consigliato');
   await wait(200);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(600);
-  assert(/Bruno ti consiglia «Il giardino dei Finzi-Contini»/.test(await A.$eval('#friTip', x => x.hidden ? '' : x.innerText)), 'avviso del consiglio');
+  assert(!(await A.$('#friTip')), 'niente riquadro del consiglio');
+  await A.click('#btnBell'); await wait(500);
+  assert(/Bruno ti consiglia «Il giardino dei Finzi-Contini»/.test(await A.$eval('#ntBody .nt-new', x => x.innerText)), 'consiglio nella campanella, evidenziato');
+  await A.keyboard.press('Escape'); await wait(200);
   await A.click('#btnFri'); await wait(600);
   t = await A.$eval('#friBody', x => x.innerText.replace(/\s+/g, ' ')); assert(/Consigliati dagli amici 1/.test(t), 'tra i consigliati');
   assert(/Bruno 0 amici in comune · 1 libro in comune/.test(t), 'numeri accanto all\'amico');

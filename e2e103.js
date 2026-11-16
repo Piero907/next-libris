@@ -149,7 +149,7 @@ const base = 'http://localhost:' + CFG.port(8303);
   let bz = await B.book("b.sx==='" + sw1.id + "'"); console.log('[B ricevuto]', JSON.stringify(bz && { t: bz.t, w: bz.w, sk: bz.sk, sda: bz.sda }));
   assert(bz && !bz.w && bz.sk === 'p' && bz.sda === 'Anna' && bz.i === '9788807900891', 'nella Libreria di B');
   assert(sw1.visto, 'segnato come visto');
-  assert(/Anna ti ha prestato «La coscienza di Zeno»/.test(await B.$eval('#friGot', x => x.hidden ? '' : x.innerText)), 'avviso in cima');
+  assert(!(await B.$('#friGot')), 'niente riquadro in cima: il prestito arriva nella campanella');
   assert(/Prestato da Anna/.test(await B.$eval('[data-id="' + bz.id + '"]', x => x.innerText)), 'etichetta sul libro');
   await B.evaluate(() => window.NLAmici.load(true)); await wait(500);
   assert.strictEqual((await B.evaluate(() => window.NL.books().filter(b => b.t === 'La coscienza di Zeno').length)), 1, 'una volta sola');

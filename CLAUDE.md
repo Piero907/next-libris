@@ -4,9 +4,9 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
 **Altri file, da aprire solo quando servono:** `STORIA.md` (storia e motivi delle scelte fino alla v99: cercare con grep), `IN_SOSPESO.md` (idee in attesa: aprirlo solo se Piero ne chiede una), `README.md` (come girano le prove), `supabase/` (SQL del database).
 
 ## Stato attuale (16/11/2026)
-- **Vera: versione 99.** Prova: **99.1**, uguale alla vera. Salvataggi: rami `salvataggio-v96`, `-v97`, `-v98` (tornare indietro solo se Piero lo chiede: `git push -f origin salvataggio-vNN:main`).
+- **Vera: versione 99.** Prova: **99.2** = vera + **campanella delle notifiche** (`notifiche.js`/`.css`, prova e2e105). Salvataggi: rami `salvataggio-v96`, `-v97`, `-v98` (tornare indietro solo se Piero lo chiede: `git push -f origin salvataggio-vNN:main`).
 - Solo due copie: **vera** (https://piero907.github.io/next-libris/, ramo `main`) e **prova** (repository `next-libris-prova`, codice nel ramo `prova`). La copia social non esiste più.
-- **Supabase**, piano gratuito, 2 progetti (il massimo), Francoforte: vera `fttdbqotjocjfjfcoyfv`, prova `amkrkvkylprjasccxmzo` (`PROGETTI` in social.js). Al 16/11/2026 i due database sono **identici** (funzioni, permessi, colonne, vincoli, indici, regole).
+- **Supabase**, piano gratuito, 2 progetti (il massimo), Francoforte: vera `fttdbqotjocjfjfcoyfv`, prova `amkrkvkylprjasccxmzo` (`PROGETTI` in social.js). Al 16/11/2026 i due database sono **identici** (funzioni, permessi, colonne, vincoli, indici, regole), **tranne `011_notifiche.sql`: solo nella prova** (tabella `notifiche` scritta dai trigger, `mie_notifiche`, `notifiche_lette`; prova SQL `prova_notifiche.sql`). Va applicata alla vera quando si porta la campanella.
 
 ## Regole con Piero
 - **Lingua:** sempre italiano, semplice e concreto.
@@ -23,7 +23,7 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
 - **Cartelle:** app in `next-libris` (ramo `prova`), prove in `prove`, copia pubblicata della prova in `next-libris-prova`.
 - **Prova:** `node esegui.js --veloce eNN …` (1-2 min), poi `APP_DIR=… PROVA_DIR=… ATTRIBUZIONE="…" python3 pubblica_prova.py "nota per Piero"` (numero V.n automatico, `REGISTRO_PROVA.md`). Nota con la novità in `**grassetto**`.
 - **Vera:** `node esegui.js` completo (~10 min; e2e27 fallisce sempre qui: mancano le foto in `/tmp/pb`). Poi: ramo `salvataggio-v<vecchia>` da `origin/main`; in `REGISTRO_MODIFICHE.md` in cima `## Versione N · gg/mm/aaaa` con **2-6 righe `> **Titolo** frase`** (mostrate in «Cosa c'è di nuovo») e i dettagli in `- `, solo le cose davvero portate, come stato finale; `LEGGIMI.txt` se serve; `main` avanza **solo con unione veloce** di `prova`; `APP_DIR=… python3 nuova_versione.py N "nota"`; push; poi `prova` = `main` e `pubblica_prova.py` (riparte da N.1).
-- **Moduli:** le novità grandi stanno in file propri (`NOME.js`/`.css`) agganciati a `window.NL` (`NL.on/emit`); righe in `index.html` e `SHELL` di `sw.js` con `// modulo:`; lista `MODULES` in `pubblica_prova.py`. Moduli attuali: wrap, layout, schede, social (account), amici.
+- **Moduli:** le novità grandi stanno in file propri (`NOME.js`/`.css`) agganciati a `window.NL` (`NL.on/emit`); righe in `index.html` e `SHELL` di `sw.js` con `// modulo:`; lista `MODULES` in `pubblica_prova.py`. Moduli attuali: wrap, layout, schede, social (account), amici, notifiche (campanella, solo nella prova).
 - **Prove nuove:** una per ogni novità, numero libero dopo l'ultima (`e2e104`), porta con `CFG.port()`.
 
 ## Scelte da non disfare senza chiedere
@@ -33,3 +33,4 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
 - Donazioni PayPal `PieroRagusa907` (2, 3, 5 €, Altro), riga dopo 5 accessi, riquadro ogni 50 libri.
 - Account: solo «Accedi con Google» (`CFG.email = false`); il telefono resta la copia principale; niente Realtime né email (limiti del piano gratuito).
 - Amici: amicizia reciproca, un solo nome (`profili.utente`), desideri e libreria visibili solo se scelto, mai citazioni o appunti; libreria dell'amico solo da leggere (modalità ospite: `guestEnter`/`guestExit`, si salvano e sincronizzano solo i propri libri); il reso lo conferma chi presta; libri prestati o ricevuti mai uniti come doppioni; condividere prima dentro l'app, il link dopo; elenchi con ricerca (non pillole) per 20-30 amici; avvisi alla riapertura e ogni ~3 min.
+- Notifiche (scelte di Piero del 16/11/2026): campanella accanto ad Amici per tutte le novità (amicizie, prestiti e regali, resi, «Me lo presti?», consigli, chiavi); icona Amici senza numero; in cima restano solo «Me lo presti?» e il reso da confermare; «letto» sul server (tabella `notifiche`, 30 giorni); niente push per ora.
