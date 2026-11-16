@@ -4,7 +4,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui (va in «Fatti», in fondo, con una riga) e la novità va nel registro dell'app.
 
-**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **20**.
+**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **23**.
 
 Ultimo aggiornamento: **16/11/2026**, vera **99**, prova **99.3**.
 
@@ -17,7 +17,7 @@ Ultimo aggiornamento: **16/11/2026**, vera **99**, prova **99.3**.
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
 - **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris
 - **G. Guide:** 13 guida di primo avvio · 16 guida per il worker e la chiave
-- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy
+- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste
 - **Fatti** (tolti dall'elenco)
 
 ---
@@ -26,7 +26,7 @@ Ultimo aggiornamento: **16/11/2026**, vera **99**, prova **99.3**.
 
 Il dettaglio di come si porta ogni cosa sta in CLAUDE.md («Lavoro in corso»).
 
-- **Portare nella vera la prova 99.2-99.4:** campanella delle notifiche (`011_notifiche.sql`), ricerche condivise con l'archivio comune (`012_ricerche_archivio.sql`), «Presta chiave API e worker» con la grafica degli amici (`013_chiavi_quali.sql`). Le migrazioni vanno applicate alla vera **in ordine**, poi tutte le prove e il confronto con la prova.
+- **Portare nella vera la prova 99.2-99.5:** campanella delle notifiche (`011_notifiche.sql`), ricerche condivise con l'archivio comune (`012_ricerche_archivio.sql`), «Presta chiave API e worker» con la grafica degli amici (`013_chiavi_quali.sql`), chiavi prestate nascoste e menu «Info e condivisione». Le migrazioni vanno applicate alla vera **in ordine**, poi tutte le prove e il confronto con la prova.
 - **Da confermare (scelte fatte da Claude nella campanella):**
   - la richiesta d'amicizia compare solo nella campanella, non nel riquadro in cima;
   - nessuna notifica se si annulla o si cambia un regalo.
@@ -274,6 +274,14 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 - **Dominio proprio** (`nextlibris.it` o simile, 10–15 € l'anno): serve perché nell'accesso con Google compaia «nextlibris» e non `piero907.github.io` (il nome dell'app si mostra solo con la verifica del marchio, che chiede un dominio di proprietà). Piero deve controllare se è libero. Piano: prima la prova sul nuovo indirizzo (nel codice: riconoscere la copia anche dal nome del sito, non solo dal percorso), poi la vera con il **trasloco** (con l'account: sincronizza sul vecchio indirizzo, entra sul nuovo; senza: backup e ripristino). Attenzione: cambiando dominio cambiano i dati del browser (`localStorage`, IndexedDB).
 - **Email di accesso con Brevo:** ferma fino al dominio (con un mittente Gmail finiscono spesso nello spam). Con il dominio: `accesso@nextlibris.it`, modelli con il codice di 6 cifre (testo pronto in `claude/guida-accesso-google-brevo.md` del progetto claude.ai).
 - **Titolare nella privacy:** vedi la parte A.
+
+### 22. Chiave e worker prestati davvero nascosti (chiesto il 16/11/2026)
+
+**Richiesta di Piero:** chi riceve chiave API e worker da un amico non deve poterli vedere né passare ad altri.
+
+**Già fatto (prova 99.5):** nascosti nell'app (niente campo in Impostazioni › Ricerca, niente salvati, backup o link). Restano però sul telefono di chi li usa: una persona esperta li legge con gli strumenti del browser.
+
+**Da fare quando lo chiede («davvero nascosti»):** le ricerche di chi usa la chiave di un amico passano da un servizio sul server (Edge Function di Supabase) che tiene chiave e worker e fa la richiesta al posto suo; il telefono riceve solo i risultati. Costi: ricerche un po' più lente, funzioni del piano gratuito (500.000 al mese, ~2-3 per libro), da contare con la simulazione degli utenti; serve anche per i suggerimenti e le novità degli autori. Si lega al contatore condiviso (012) e alla voce 18.
 
 ---
 

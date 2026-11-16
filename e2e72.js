@@ -47,7 +47,8 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   await page.click('#goSettings'); await wait(400);
   m = await menu(); console.log('[2 aperte]', m.rows.join(' '));
   assert(m.setOpen && m.exp === 'true');
-  assert.deepStrictEqual(m.rows.filter(k => ['look', 'search', 'cards', 'share', 'app'].includes(k)), ['look', 'search', 'cards', 'share', 'app']);
+  assert.deepStrictEqual(m.rows.filter(k => ['look', 'search', 'cards', 'share', 'app'].includes(k)), ['look', 'search', 'cards']);   // condivisione e installazione in «Info e condivisione» (16/11/2026, e2e107)
+  assert(m.rows.indexOf('goSettings') < m.rows.indexOf('goInfo') && m.rows.indexOf('goInfo') < m.rows.indexOf('donMenu'), 'Info e condivisione tra Impostazioni e Sostieni');
   await page.screenshot({ path: CFG.OUT + '/menu_impostazioni.png' });
   // entro in Aspetto e torno indietro con la freccetta: restano aperte
   await page.click('#drawerOpts [data-sec="look"]'); await wait(400);
