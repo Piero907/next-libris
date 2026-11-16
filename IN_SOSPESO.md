@@ -258,6 +258,8 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 
 ## 18. Quanti utenti regge un worker SBN e una chiave Google, e chiavi condivise tra amici (chiesto il 16/11/2026, «in sospeso»)
 
+**Fatto in parte (prova 98.7):** la condivisione semplice tra amici (in Amici: condividi la chiave e il worker, l'amico li usa, smetti quando vuoi; li usate tutti e due). Restano da fare: i conti su quanti utenti reggono e il **contatore**.
+
 **Richiesta di Piero:** capire quanti utenti si possono «mantenere» con **un worker Cloudflare** e **una chiave API di Google Libri**, con un utilizzo normale; e se conviene un **sistema di condivisione delle chiavi tra amici**, magari con un **contatore**.
 
 **Da fare quando si riprende (nessuna cosa costruita):**
