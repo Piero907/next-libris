@@ -65,6 +65,16 @@ APP_DIR=/percorso/copia node esegui.js
 - **Pubblicarla:** `python3 pubblica_prova.py "nota"`. Copia l'app in `../next-libris-prova` (o in `PROVA_DIR`), mette il manifest da prova («Next Libris (prova)», colore diverso), fa il commit e il push. Le righe di attribuzione dei commit si passano in `ATTRIBUZIONE`.
 - **Flusso concordato con Piero:** ogni novità va prima nella copia di prova. Quando lui dice che va bene, si porta nella versione vera (numero di versione, registro, prove, come sempre).
 
+## Copia social (dal 16/11/2026)
+
+- **Cos'è:** una terza copia dell'app per costruire **account e amicizie** senza toccare la versione vera né la copia di prova. Il codice sta nel ramo **`social`** di `Piero907/next-libris`; la copia pubblicata nel repository `Piero907/next-libris-social` (GitHub Pages: https://piero907.github.io/next-libris-social/).
+- **Dati separati:** nel ramo `social` il riconoscimento della copia è generale (`COPIA` in app.js, sw.js e nello script in testa a index.html): dall'indirizzo `…/next-libris-NOME/` viene il prefisso `NOME:` per localStorage, il database `NOME-catalogo-libri` e le copie offline `NOME-catalogo-libri-vN`. La prova resta identica (`prova:`…). Etichetta **SOCIAL** blu. La prova e2e73 controlla le tre copie insieme.
+  - Finché questo cambiamento non arriva su `main`, il service worker della versione vera cancella le copie offline della social quando si aggiorna (non i dati: la social riscarica i suoi file).
+- **Preparazione (una volta):** `git -C ../next-libris worktree add ../next-libris-ramo-social social` e il clone di `next-libris-social` accanto.
+- **Pubblicarla:** `python3 pubblica_social.py "nota"`. Controlla che in `../next-libris-ramo-social` (o `SOCIAL_SRC`) ci sia il ramo `social`, copia l'app in `../next-libris-social` (o `SOCIAL_DIR`) con il manifest da social («Next Libris (social)», blu), aggiunge la voce a `REGISTRO_SOCIAL.md` («Social V.n»), fa il commit e il push. Copia anche i moduli `social.js`/`social.css` quando ci saranno.
+- **Restare allineati:** le novità della versione vera si portano nel ramo social spesso (`git merge main` nel ramo `social`), non solo alla fine. Il codice social va il più possibile in un **modulo** (`social.js`, `social.css`, solo `window.NL`), così `app.js` cambia poco e le fusioni restano semplici.
+- **Portarla nella versione vera:** quando Piero dice che va bene, si fonde il ramo `social` in `main` (pull request), con il solito flusso: prima la copia di prova, poi la versione vera.
+
 ## Flusso di lavoro per ogni nuova versione
 
 1. Modificare i file dell'app (`app.js`, `index.html`, `style.css`, `lib.js`, `sw.js`…) in una copia di lavoro.
@@ -173,9 +183,10 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e70.js | 8190 | Dopo un aggiornamento: «Aggiornato in questa versione» con le novità delle versioni nuove (prima quelle in grassetto), una volta sola, non alla prima apertura; «Tutte le novità» apre il registro. La versione per la prova è in e2e62 |
 | e2e71.js | 8191 | Modulo «Scheda aperta del libro» (schede.js/.css): Pagina del libro è quella dell'app, sezione tolta dalle Opzioni (Classica solo su localhost, con `NLCard.set`); nei Desideri anche preferito e Presta, vendi o regala. Icone in alto su una riga con la matita, descrizione in 3 righe con freccetta, lettura modificabile, autore che apre la sua finestra, etichette-filtro in fondo, copertina che si ingrandisce, Presta e Cerca sul web in fondo |
 | e2e72.js | 8192 | Menu laterale riordinato: «La tua libreria» (Sistema l'elenco, Backup con la data dell'ultimo), «Impostazioni» chiuse finché non le apri (Aspetto, Ricerca, Schede e prezzo, Condivisione, App), Sostieni e versione in fondo; l'ingranaggio le apre già aperte; tornando da una voce restano aperte; Aspetto (tema, colori, caratteri vicini), «Aggiunta dei libri» (prezzo, suoni, fotocamera, luce; tolte le altre opzioni), «Installazione sul telefono» |
+| e2e73.js | 8193 | Tre copie insieme (vera, prova, social): libri, impostazioni, database delle copertine e copie offline separati; etichetta SOCIAL blu; tema all'avvio letto dalla copia giusta; ogni service worker cancella solo le sue copie offline vecchie |
 | e2e61.js | 8181 | obiettivo con la luce: tre obiettivi finti (anteriore, grandangolare senza luce, principale), scelta e memoria; senza luce o luce «morta» niente pulsanti; diagnosi in Opzioni › App; «Prova la luce» Sì/No (modo «lie» come il Galaxy A32); Sostieni in evidenza |
 
-Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8193** e poi a salire, sempre attraverso `CFG.port()`.
+Le porte si ripetono tra prove diverse: due prove con la stessa porta non girano mai insieme sullo stesso slot (la seconda della coppia usa porta + 1000). Per una prova nuova usare **8194** e poi a salire, sempre attraverso `CFG.port()`.
 
 ## Materiali (`img/`)
 
