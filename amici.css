@@ -137,3 +137,4 @@ html.guest #list .row.g-noread :is(.cv-strip,.read){display:none}
 .fri .fr-optlink{justify-self:start;text-align:left;font-size:14px}
 .opt-fri{display:grid;gap:6px;margin:6px 0}
 .opt-fri .hint{margin:0}
+#loanFri .fr-pick-list{max-height:176px}   /* in «Presta, vendi o regala» l'elenco non spinge troppo in basso «Dal giorno» e i pulsanti */
