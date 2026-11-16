@@ -61,6 +61,7 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/rpc/rifiuta_reso') { const s = DB.sw.find(x => x.id === body.id && x.da === me && x.stato === 'reso'); if (s) s.stato = 'aperto'; return send(204); }
   if (p === '/rest/v1/rpc/segna_visto') { const s = DB.sw.find(x => x.id === body.id && x.a === me); if (s) s.visto = true; return send(204); }
   if (p === '/rest/v1/rpc/miei_scambi') return send(200, DB.sw.filter(x => x.da === me || x.a === me).map(x => Object.assign({ nome_da: DB.prof[x.da].utente, nome_a: DB.prof[x.a].utente }, x)));
+  if (p === '/rest/v1/rpc/amici_numeri') return send(200, me === 'uA' ? [{ id: 'uB', comuni: 0, libri: 1 }] : []);
   if (p === '/rest/v1/rpc/chiedi_prestito') { if (!friendsOk(me, body.amico)) return send(400, { message: 'non amici' }); const r = { id: 'r' + (++DB.n) + '000000-0000-0000-0000-000000000000', da: me, a: body.amico, libro_id: body.libro_id, libro: { t: DB.rows[body.amico + '|' + body.libro_id].dati.t }, stato: 'attesa', creato: now() }; DB.rq.push(r); return send(200, r.id); }
   if (p === '/rest/v1/rpc/rispondi_richiesta') { const r = DB.rq.find(x => x.id === body.id && x.a === me && x.stato === 'attesa'); if (r) r.stato = body.si ? 'accettata' : 'rifiutata'; return send(204); }
   if (p === '/rest/v1/rpc/annulla_richiesta') { DB.rq = DB.rq.filter(x => !(x.id === body.id && x.da === me)); return send(204); }
@@ -162,22 +163,27 @@ const base = 'http://localhost:' + CFG.port(8304);
   assert(await A.evaluate(() => window.NL.books().some(b => b.sk === 'p' && b.sda === 'Bruno' && /Finzi/.test(b.t) && !b.w)), 'A lo trova in Libreria');
   // ---- consiglio: B lo consiglia ad A dalla condivisione ----
   await B.evaluate((id) => window.__app.openShare([window.NL.get(id)], { kind: 'book' }), bDue); await wait(400);
-  await B.click('#shareFri [data-u="uA"]'); await wait(600);
+  assert(await B.$eval('#shareExt', x => !x.open), 'il link è in seconda fila');
+  await B.screenshot({ path: CFG.OUT + '/amici-condividi.png' });
+  await B.click('#shareFriBox [data-share="uA"]'); await B.click('#shareAppGo'); await wait(700);
   assert.strictEqual(DB.tips.length, 1, 'consigliato');
-  await B.keyboard.press('Escape'); await wait(300);
+  await wait(200);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(600);
   assert(/Bruno ti consiglia «Il giardino dei Finzi-Contini»/.test(await A.$eval('#friTip', x => x.hidden ? '' : x.innerText)), 'avviso del consiglio');
   await A.click('#btnFri'); await wait(600);
   t = await A.$eval('#friBody', x => x.innerText.replace(/\s+/g, ' ')); assert(/Consigliati dagli amici 1/.test(t), 'tra i consigliati');
+  assert(/Bruno 0 amici in comune · 1 libro in comune/.test(t), 'numeri accanto all\'amico');
+  await A.screenshot({ path: CFG.OUT + '/amici-finestra.png' });
   await A.click('[data-f="tipdrop"]'); await wait(500); assert.strictEqual(DB.tips.length, 0, 'tolto');
   await A.keyboard.press('Escape'); await wait(200);
   // ---- chiave Google condivisa: la usano tutti e due ----
   await A.evaluate(() => { window.NL.settings.gbKey = 'AIzaChiaveDiAnna'; window.NL.saveSettings(); });
-  await A.click('#btnFri'); await wait(600);
+  await A.evaluate(() => window.NLAmici.open(true)); await wait(600);
   await A.click('[data-f="keyshare"][data-id="uB"]'); await wait(500);
+  await A.screenshot({ path: CFG.OUT + '/amici-privacy.png' });
   assert.strictEqual(DB.keys.length, 1); assert.strictEqual(await A.evaluate(() => window.NL.settings.gbKey), 'AIzaChiaveDiAnna', 'A la tiene');
   await B.evaluate(() => window.NLAmici.load(true)); await wait(600);
-  await B.click('#btnFri'); await wait(600);
+  await B.evaluate(() => window.NLAmici.open(true)); await wait(600);
   assert(/Anna condivide con te la sua chiave Google/.test(await B.$eval('#friBody', x => x.innerText)));
   await B.click('[data-f="keyuse"]'); await wait(500);
   assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), 'AIzaChiaveDiAnna', 'B la usa');

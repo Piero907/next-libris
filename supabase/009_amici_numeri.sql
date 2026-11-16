@@ -1,0 +1,1 @@
+-- Next Libris: amici_numeri() (16/11/2026): per ogni amico, amici in comune e libri in comune (stesso ISBN, solo se mostra la libreria). Applicato alla prova (migrazione «amici_numeri»).

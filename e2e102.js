@@ -98,10 +98,10 @@ const base = 'http://localhost:' + CFG.port(8302);
   await A.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
   const menu = await A.evaluate(() => { const o = document.getElementById('drawerOpts'); return { heads: [...o.querySelectorAll('h3')].filter(h => h.getClientRects().length).map(h => h.textContent),
     m: [...document.getElementById('friMenu').children].map(x => x.id), after: document.getElementById('friMenuH').previousElementSibling.classList.contains('dmain'),
-    acc: document.getElementById('goAcc').previousElementSibling.dataset.sec, fri: document.getElementById('goFriTxt').textContent }; });
+    acc: document.getElementById('goAcc').parentNode.id, fri: document.getElementById('goFriTxt').textContent }; });
   console.log('[menu]', JSON.stringify(menu));
   assert.deepStrictEqual(menu.heads, ['Amici', 'La tua libreria']); assert(menu.after && menu.m.join() === 'goFri,goInv', 'Amici subito dopo Filtri/Statistiche');
-  assert.strictEqual(menu.acc, 'export', 'Account e sincronizzazione in «La tua libreria», dopo il backup');
+  assert.strictEqual(menu.acc, 'setList', 'Account e sincronizzazione sotto Impostazioni');
   assert(/Scegli il nome/.test(menu.fri), 'senza nome il Menu lo chiede');
   await A.evaluate(() => window.__app.closeDrawer()); await wait(300);
   await A.click('#btnFri'); await wait(700);
@@ -111,7 +111,8 @@ const base = 'http://localhost:' + CFG.port(8302);
   await A.$eval('#friU', x => { x.value = '  Anna  R. '; }); await A.click('#friSaveU'); await wait(700);
   assert.strictEqual(DB.prof.uA.utente, 'Anna R.', 'nome salvato com\'è scritto (spazi in più tolti)');
   assert.strictEqual(await A.evaluate(() => window.NL.name()), 'Anna R.', 'è anche il nome dell\'app');
-  t = await A.body(); assert(/Il tuo nome Anna R\./.test(t) && /Ancora nessuno/.test(t), 'profilo e nessun amico');
+  t = await A.body(); assert(/Ancora nessuno/.test(t), 'nessun amico');
+  await A.click('[data-f="opts"]'); await wait(300); assert(/Il tuo nome Anna R\./.test(await A.body()), 'il nome sta in «Amici e privacy»'); await A.click('[data-f="optsback"]'); await wait(200);
   // nome cambiato nelle Impostazioni: vale anche per gli amici; se è preso torna com'era
   await A.evaluate(() => window.NL.setName('Anna Rossi')); await wait(600);
   assert.strictEqual(DB.prof.uA.utente, 'Anna Rossi', 'nome dell\'app → nome per gli amici');
@@ -141,7 +142,7 @@ const base = 'http://localhost:' + CFG.port(8302);
   await B.evaluate(() => window.__app.closeDrawer()); await wait(300);
   await B.click('#friNoteGo'); await wait(900);
   assert(await B.$eval('#friNote', x => x.hidden), 'avviso visto: sparisce');
-  t = await B.body(); assert(/Richieste per te 1/.test(t) && /Anna Rossi/.test(t));
+  t = await B.body(); assert(/Vogliono essere tuoi amici 1/.test(t) && /Anna Rossi/.test(t));
   const side = await B.evaluate(() => { const si = document.querySelector('#friSheet .sheet-in'); return si.scrollWidth - si.clientWidth; });
   assert(side <= 0, 'la finestra non esce di lato a 360 px (' + side + ')');
   await B.screenshot({ path: CFG.OUT + '/amici-richiesta.png' });

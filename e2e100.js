@@ -93,7 +93,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
     return page;
   }
   async function login(page, email, code) {
-    await page.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
+    await page.evaluate(() => { window.__app.openDrawer('opt'); const s = document.getElementById('setList'); if (s && s.hidden) document.getElementById('goSettings').click(); }); await wait(400);
     const t = await page.$eval('#goAcc', e => e.innerText); assert(/Account e sincronizzazione/.test(t) && /Salva i libri online/.test(t), 'voce nel Menu');
     await page.click('#goAcc'); await wait(400);
     assert(await page.$eval('#accSheet', e => !e.hidden));
@@ -160,7 +160,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   DB.google = true;
   const D = await phone('D', 'client-finto.apps.googleusercontent.com', true);
   await D.add('9788807900891');
-  await D.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await D.click('#goAcc'); await wait(600);
+  await D.evaluate(() => { window.__app.openDrawer('opt'); const s = document.getElementById('setList'); if (s && s.hidden) document.getElementById('goSettings').click(); }); await wait(400); await D.click('#goAcc'); await wait(600);
   const gb = await D.$eval('[data-acc="google"]', x => x.textContent); assert.strictEqual(gb, 'Entra con Google');
   assert(/oppure con la tua email/.test(await D.$eval('#accBody', x => x.textContent)));
   await Promise.all([D.waitForNavigation({ waitUntil: 'load' }), D.click('[data-acc="google"]')]); await wait(1800);
@@ -171,7 +171,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   assert.deepStrictEqual(rows('amica@gmail.example').map(r => r.dati.i), ['9788807900891'], 'i libri di D online, separati da quelli di A e B');
   // ---- telefono E: pulsante ufficiale di Google (con il Client ID): token consegnato alla pagina, scambiato con Supabase col nonce ----
   const E = await phone('E', 'client-finto.apps.googleusercontent.com');
-  await E.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await E.click('#goAcc'); await wait(900);
+  await E.evaluate(() => { window.__app.openDrawer('opt'); const s = document.getElementById('setList'); if (s && s.hidden) document.getElementById('goSettings').click(); }); await wait(400); await E.click('#goAcc'); await wait(900);
   await E.screenshot({ path: CFG.OUT + '/account-fuori.png' });
   assert(await E.$('#accG #gisFinto'), 'pulsante ufficiale di Google nella finestra');
   assert(!(await E.$('[data-acc="google"]')), 'niente pulsante di riserva');
@@ -185,14 +185,14 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   assert(/Sei entrato come bruno@esempio\.it/.test(await E.$eval('#accBody', x => x.textContent)), 'finestra aggiornata');
   // ---- telefono F: email spenta (come nell'app vera dal 16/11/2026): solo «Accedi con Google», niente campo email ----
   const F = await phone('F', 'client-finto.apps.googleusercontent.com', false, true);
-  await F.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await F.click('#goAcc'); await wait(900);
+  await F.evaluate(() => { window.__app.openDrawer('opt'); const s = document.getElementById('setList'); if (s && s.hidden) document.getElementById('goSettings').click(); }); await wait(400); await F.click('#goAcc'); await wait(900);
   let ft = await F.$eval('#accBody', x => x.textContent); await F.screenshot({ path: CFG.OUT + '/account-solo-google.png' });
   assert(await F.$('#accG #gisFinto'), 'F: pulsante di Google'); assert(!(await F.$('#accMail')) && !(await F.$('#accSend')), 'F: niente campo email');
   assert(!/oppure con la tua email/.test(ft), 'F: niente «oppure con la tua email»');
   // ---- telefono G: email spenta e Google spento in Supabase: messaggio, nessun pulsante ----
   DB.google = false;
   const G = await phone('G', 'client-finto.apps.googleusercontent.com', false, true);
-  await G.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await G.click('#goAcc'); await wait(900);
+  await G.evaluate(() => { window.__app.openDrawer('opt'); const s = document.getElementById('setList'); if (s && s.hidden) document.getElementById('goSettings').click(); }); await wait(400); await G.click('#goAcc'); await wait(900);
   assert(/L.accesso per ora non è attivo/.test(await G.$eval('#accBody', x => x.textContent)) && !(await G.$('#accMail')) && !(await G.$('#accG')), 'G: messaggio, niente pulsanti');
   DB.google = true;
   // ripristino della copia di sicurezza su A (i due libri di prima)
