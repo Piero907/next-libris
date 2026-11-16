@@ -197,3 +197,13 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - Statistiche: «Da quali paesi vengono i tuoi autori» (barre per paese, toccando si filtra), percentuale di autori italiani/stranieri, continenti;
 - Trimestre: «Hai viaggiato in N paesi» con le bandierine dei paesi letti nel trimestre;
 - Visualizzazioni: una mappa del mondo con i paesi colorati per numero di libri; filtro «Paese dell'autore» nel menu dei filtri.
+
+## 13. Piccola guida al primo avvio (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** una piccola guida con le funzioni più importanti: un PDF, oppure una breve dimostrazione che parte dopo l'installazione, al primo avvio.
+
+**Idee da proporre (nessuna costruita):**
+- **Giro guidato al primo avvio** (4-6 schermate da scorrere, come il trimestre): Scansiona/Foto/Digita, la pagina del libro, filtri ed etichette, prestiti, Per te (suggerimenti, statistiche), backup. «Salta» sempre visibile; si riapre dal menu («Come si usa»);
+- **suggerimenti sul posto** la prima volta che si usa una cosa (un fumetto accanto al pulsante, una volta sola);
+- **PDF di una o due pagine** da scaricare o condividere (generato dall'app, come l'immagine del trimestre), utile da mandare a chi installa l'app con il link;
+- versione breve di LEGGIMI.txt dentro l'app, con le funzioni principali e i link alle sezioni.
