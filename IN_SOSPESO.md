@@ -207,3 +207,13 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - **suggerimenti sul posto** la prima volta che si usa una cosa (un fumetto accanto al pulsante, una volta sola);
 - **PDF di una o due pagine** da scaricare o condividere (generato dall'app, come l'immagine del trimestre), utile da mandare a chi installa l'app con il link;
 - versione breve di LEGGIMI.txt dentro l'app, con le funzioni principali e i link alle sezioni.
+
+## 14. Libri ricevuti in prestito (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** una sezione per i libri che **ricevi** in prestito (oggi l'app segna solo quelli che presti tu). Quando presti un libro, poter **mandare un messaggio WhatsApp**: chi lo riceve lo aggiunge alla sua app con l'etichetta **«Prestato da …»**. Con un **avviso dopo un mese** di prestito ricevuto (come per i libri prestati).
+
+**Idee da proporre (nessuna costruita):**
+- nuovo stato del libro «Ricevuto in prestito da …» (con la data), filtro e pillola «Ricevuti in prestito», riga nel riepilogo in alto («2 ricevuti in prestito»), fuori dal conteggio e dal valore della libreria;
+- in «Presta, vendi o regala», dopo «Presta»: «Avvisa con WhatsApp» apre WhatsApp con un messaggio già scritto (titolo, autore e un **link** all'app con i dati del libro, per esempio `…/next-libris/#ricevi=ISBN&da=Piero`); chi tocca il link apre Next Libris, che propone «Aggiungi come ricevuto in prestito da Piero» (se non ha l'app, il link porta all'installazione). Niente server: tutto passa nel link;
+- avviso in cima dopo 30 giorni («Hai il libro di Anna da un mese: restituito?») con «Restituito» che lo toglie o lo sposta nello storico;
+- restituzione: chi presta può segnare «Restituito» e mandare a sua volta un messaggio, se serve.
