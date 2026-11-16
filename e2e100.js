@@ -2,6 +2,7 @@ const CFG = require("./_config");
 // copia social, modulo «Account e sincronizzazione» (social.js) con un Supabase finto sullo stesso server:
 // voce nel Menu, accesso con email e codice (codice sbagliato → messaggio), copia di sicurezza prima della prima sincronizzazione,
 // due telefoni con lo stesso account (libri che passano da uno all'altro, modifiche, cancellazioni «morbide» che lasciano i dati online),
+// email spenta (CFG.email falso, come nell'app vera): solo Google, oppure un messaggio se Google è spento,
 // «Entra con Google» solo se acceso in Supabase: pulsante ufficiale di Google con il Client ID (token alla pagina, nonce), altrimenti riserva via Supabase (ritorno con i token), accesso dal link dell'email (token dopo il #, poi tolti dall'indirizzo; link scaduto → messaggio), nessun caricamento inutile quando non cambia niente, conflitto (vince il telefono che ha modificato), uscita, ripristino della copia
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
@@ -76,11 +77,11 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   const errors = [];
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const GIS = "window.google={accounts:{id:{initialize:function(o){window.__gis=o;},renderButton:function(el,opt){window.__gisOpt=opt;var b=document.createElement('button');b.type='button';b.id='gisFinto';b.textContent='Accedi con Google';b.onclick=function(){window.__gis.callback({credential:'IDT-bruno@esempio.it.'+window.__gis.nonce});};el.appendChild(b);}}}};";
-  async function phone(name, gClient, gisFail) {                              // un «telefono»: contesto separato, memoria tutta sua
+  async function phone(name, gClient, gisFail, noEmail) {                              // un «telefono»: contesto separato, memoria tutta sua
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
     await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     page.on('pageerror', e => errors.push(name + ': ' + e.message));
-    await page.evaluateOnNewDocument((u, g) => { window.NL_SOCIAL = { url: u, key: 'chiave-finta', gClient: g || '' }; }, base + '/finto', gClient || '');
+    await page.evaluateOnNewDocument((u, g, em) => { window.NL_SOCIAL = { url: u, key: 'chiave-finta', gClient: g || '', email: em }; }, base + '/finto', gClient || '', !noEmail);   // l'email nell'app vera e' spenta (CFG.email); qui si accende per provare il codice che resta
     await page.setRequestInterception(true);
     page.on('request', r => r.url().startsWith('https://accounts.google.com/gsi/client') ? r.respond(gisFail ? { status: 404, body: '' } : { status: 200, contentType: 'text/javascript', body: GIS }) : r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
     await page.goto(base + '/next-libris-social/?vista=elenco', { waitUntil: 'load' }); await wait(800);
@@ -181,6 +182,18 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   assert(es.auth && es.auth.email === 'bruno@esempio.it' && !es.err, 'E entrato con il pulsante ufficiale (nonce giusto)');
   assert.strictEqual(DB.prof[DB.gisUser], 'Bruno', 'nome dal profilo Google');
   assert(/Sei entrato come bruno@esempio\.it/.test(await E.$eval('#accBody', x => x.textContent)), 'finestra aggiornata');
+  // ---- telefono F: email spenta (come nell'app vera dal 16/11/2026): solo «Accedi con Google», niente campo email ----
+  const F = await phone('F', 'client-finto.apps.googleusercontent.com', false, true);
+  await F.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await F.click('#goAcc'); await wait(900);
+  let ft = await F.$eval('#accBody', x => x.textContent); await F.screenshot({ path: CFG.OUT + '/account-solo-google.png' });
+  assert(await F.$('#accG #gisFinto'), 'F: pulsante di Google'); assert(!(await F.$('#accMail')) && !(await F.$('#accSend')), 'F: niente campo email');
+  assert(!/oppure con la tua email/.test(ft), 'F: niente «oppure con la tua email»');
+  // ---- telefono G: email spenta e Google spento in Supabase: messaggio, nessun pulsante ----
+  DB.google = false;
+  const G = await phone('G', 'client-finto.apps.googleusercontent.com', false, true);
+  await G.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await G.click('#goAcc'); await wait(900);
+  assert(/L.accesso per ora non è attivo/.test(await G.$eval('#accBody', x => x.textContent)) && !(await G.$('#accMail')) && !(await G.$('#accG')), 'G: messaggio, niente pulsanti');
+  DB.google = true;
   // ripristino della copia di sicurezza su A (i due libri di prima)
   await A.evaluate(() => window.NLSocial.open()); await wait(400);
   await A.click('#accSheet summary'); await wait(150); await A.click('[data-acc="restore"]'); await wait(200);
