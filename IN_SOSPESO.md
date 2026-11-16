@@ -28,7 +28,7 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 
 ---
 
-## 2. «Il tuo anno in libri» (wrap stile Spotify)
+## 2. «Il tuo anno in libri» (wrap stile Spotify) — FATTO: «Il tuo trimestre in libri» nella 95, «La tua stagione in libri» nella 96
 
 **Ripreso il 15/11/2026:** Piero l'ha chiesto **ogni tre mesi**, opzionale (predefinito sì) e facile da togliere. Fatto come modulo `wrap.js`/`wrap.css` nella copia di prova (prova e2e64). Resta da decidere se portarlo nella versione vera. Sotto, l'idea di partenza.
 
