@@ -13,6 +13,7 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
   - Per portarla: applicare `supabase/011_notifiche.sql` al progetto vero (`fttdbqotjocjfjfcoyfv`; il file è già la versione finale: nella prova c'era anche la correzione `011b`, compresa nel file), rifare `prova_notifiche.sql` (finisce con un errore voluto che mostra l'esito e annulla tutto), `get_advisors`, confronto con la prova; poi la procedura «Vera» qui sotto (e2e102-105 già aggiornate).
   - Scelte fatte da Claude, **da confermare con Piero**: anche la richiesta d'amicizia è solo nella campanella (niente riquadro in cima); notifica a chi aveva il libro se chi presta segna «Restituito», nessuna se si annulla o cambia un regalo.
   - Possibili seguiti (solo se li chiede): notifiche push con l'app chiusa (Web Push + Edge Function).
+- **Simulazione utenti** (16/11/2026, fatta): documento `claude/simulazione-utenti.md` nel progetto claude.ai, conti in `simulazione_utenti.py`. Con chiave Google e worker «della casa»: il muro è Google (1.000/giorno: ~140 ricerche per 50 libri → 6-7 nuovi al giorno, ~430 utenti misti); poi Supabase (spazio ~2.550 dopo un anno, traffico ~6.600). **Il contatore Google è per telefono: con una chiave condivisa non protegge.** 8 proposte nel documento, **nessuna costruita**: si fanno solo se Piero le chiede.
 
 ## Regole con Piero
 - **Annotare subito:** a ogni passo concluso aggiornare «Stato attuale» e «Lavoro in corso» qui (e fare push), così una sessione nuova riparte senza perdere niente.
