@@ -33,7 +33,8 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   // dal Menu (barra in basso): impostazioni chiuse
   await page.click('#layNav [data-l="menu"]'); await wait(450);
   let m = await menu(); console.log('[1 menu]', JSON.stringify(m));
-  assert.deepStrictEqual(m.heads, ['La tua libreria']);
+  assert.deepStrictEqual(m.heads, ['La tua libreria', 'Account e amici']);   // «Account e amici» (social.js, amici.js) dal 16/11/2026
+  assert(m.rows.indexOf('export') < m.rows.indexOf('goAcc') && m.rows.indexOf('goAcc') < m.rows.indexOf('goFri') && m.rows.indexOf('goFri') < m.rows.indexOf('goSettings'), 'ordine: libreria, account e amici, impostazioni');
   assert(!m.setOpen && m.exp === 'false', 'impostazioni chiuse');
   for (const k of ['look', 'search', 'cards', 'share', 'app']) assert(!m.rows.includes(k), k + ' nascosta');
   assert(m.rows.includes('fix') && m.rows.includes('export') && m.rows.includes('goSettings') && m.rows.includes('donMenu'));

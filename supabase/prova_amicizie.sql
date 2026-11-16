@@ -1,0 +1,7 @@
+-- Prova delle regole delle amicizie (002_amicizie.sql). Si esegue nell'editor SQL (o con execute_sql) e alla fine ANNULLA tutto.
+-- Esito del 16/11/2026 sul progetto della prova: tutto come atteso (anon non cerca e non legge; ricerca da 3 lettere, senza se stessi;
+-- richiesta, doppia richiesta, a se stessi no; nessuno scrive direttamente nella tabella; non si accetta per conto d'altri;
+-- chi non c'entra non vede niente; accetta, cerca con «amici», togli).
+-- Il testo completo della prova è nella cronologia della sessione del 16/11/2026: tre utenti finti (a1, b2, c3) con nome utente,
+-- poi le stesse verifiche della prova_sicurezza.sql (set local role / request.jwt.claims) sulle funzioni cerca_utenti,
+-- chiedi_amicizia, rispondi_amicizia, togli_amicizia e miei_amici; select * from esito; rollback.
