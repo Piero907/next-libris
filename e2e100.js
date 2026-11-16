@@ -110,6 +110,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   assert.strictEqual(rows('lettore@esempio.it').length, 2, 'i due libri sono online');
   const txt = await A.$eval('#accBody', x => x.textContent.replace(/\s+/g, ' ')); console.log('[finestra]', txt.slice(0, 200));
   assert(/Sei entrato come lettore@esempio\.it/.test(txt) && /2 libri online/.test(txt) && /Ripristina la copia del .*\(2 libri\)/.test(txt), 'stato e copia di sicurezza');
+  await A.screenshot({ path: CFG.OUT + '/account-dentro.png' });
   await A.keyboard.press('Escape'); await wait(200); assert(await A.$eval('#accSheet', x => x.hidden), 'Indietro/Esc chiude');
   // nessuna modifica: nessun caricamento
   let p0 = DB.posts; await A.sync(); assert.strictEqual(DB.posts, p0, 'niente da caricare');
@@ -169,6 +170,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   // ---- telefono E: pulsante ufficiale di Google (con il Client ID): token consegnato alla pagina, scambiato con Supabase col nonce ----
   const E = await phone('E', 'client-finto.apps.googleusercontent.com');
   await E.evaluate(() => window.__app.openDrawer('opt')); await wait(400); await E.click('#goAcc'); await wait(900);
+  await E.screenshot({ path: CFG.OUT + '/account-fuori.png' });
   assert(await E.$('#accG #gisFinto'), 'pulsante ufficiale di Google nella finestra');
   assert(!(await E.$('[data-acc="google"]')), 'niente pulsante di riserva');
   const gi = await E.evaluate(() => ({ c: window.__gis.client_id, n: window.__gis.nonce, ux: window.__gis.ux_mode, loc: window.__gisOpt.locale }));
