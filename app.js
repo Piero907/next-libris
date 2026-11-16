@@ -4804,16 +4804,17 @@ $('#lookReset').addEventListener('click', function () {
 /* ---------- versione: quale stai usando e se ce n'e' una piu' nuova ---------- */
 var latestVer = null, verChecking = null;
 var BUILD = { t: '', n: '', note: '' };   // la copia di prova lo riempie a ogni pubblicazione (pubblica_prova.py): ora, numero («94.9») e nota
-function verNewer(j) { return !!(j && (j.v > APP_VERSION.v || (PROVA && BUILD.t && j.build && j.build !== BUILD.t))); }
+function verNewer(j) { return !!(j && (j.v > APP_VERSION.v || (COPIA && BUILD.t && j.build && j.build !== BUILD.t))); }   // copie parallele (prova, social): anche a parita' di versione, con il timbro della pubblicazione
+function copiaDi() { return PROVA ? 'della prova' : 'della copia ' + COPIA; }
 function buildText(b) { var m = /^(\d{4})-(\d\d)-(\d\d) (\d\d:\d\d)$/.exec(b || ''); return m ? m[3] + '/' + m[2] + ' alle ' + m[4] : b; }
 function itLongDate(d) { try { return new Date(d + 'T12:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }); } catch (e) { return d; } }
 function renderVersion() {
   $('#verNum').textContent = 'Versione ' + APP_VERSION.v;
-  $('#verDate').textContent = 'del ' + itLongDate(APP_VERSION.date) + (PROVA && BUILD.t ? ' · prova ' + (BUILD.n ? BUILD.n + ' ' : '') + 'del ' + buildText(BUILD.t) : '');
-  $('#verNote').textContent = PROVA && BUILD.note ? 'Ultime novità della prova: ' + BUILD.note : 'Ultime novità: ' + APP_VERSION.note;
+  $('#verDate').textContent = 'del ' + itLongDate(APP_VERSION.date) + (COPIA && BUILD.t ? ' · ' + COPIA + ' ' + (BUILD.n ? BUILD.n + ' ' : '') + 'del ' + buildText(BUILD.t) : '');
+  $('#verNote').textContent = COPIA && BUILD.note ? 'Ultime novità ' + copiaDi() + ': ' + BUILD.note : 'Ultime novità: ' + APP_VERSION.note;
   var st = $('#verState'), up = $('#verUpdate');
   if (verNewer(latestVer)) {
-    st.textContent = latestVer.v > APP_VERSION.v ? 'È disponibile la versione ' + latestVer.v + ' del ' + itLongDate(latestVer.date) + '.' : 'C\'è un aggiornamento della prova' + (latestVer.prova ? ' (' + latestVer.prova + ', del ' : ' (del ') + buildText(latestVer.build) + ').';
+    st.textContent = latestVer.v > APP_VERSION.v ? 'È disponibile la versione ' + latestVer.v + ' del ' + itLongDate(latestVer.date) + '.' : 'C\'è un aggiornamento ' + copiaDi() + ((latestVer.copia || latestVer.prova) ? ' (' + (latestVer.copia || latestVer.prova) + ', del ' : ' (del ') + buildText(latestVer.build) + ').';
     st.className = 'ver-state new'; up.hidden = false;
   } else if (latestVer) { st.textContent = '✓ È l\'ultima versione.'; st.className = 'ver-state ok'; up.hidden = true; }
   else if (navigator.onLine === false) { st.textContent = 'Senza rete: non posso controllare se ce n\'è una più nuova.'; st.className = 'ver-state'; up.hidden = true; }
@@ -4824,7 +4825,7 @@ function checkVersion() {
   if (navigator.onLine === false) { renderVersion(); return Promise.resolve(null); }
   if (verChecking) return verChecking;
   verChecking = fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
-    if (j && j.v) latestVer = { v: +j.v, date: String(j.date || ''), note: String(j.note || ''), build: String(j.build || ''), prova: String(j.prova || '') };
+    if (j && j.v) latestVer = { v: +j.v, date: String(j.date || ''), note: String(j.note || ''), build: String(j.build || ''), prova: String(j.prova || ''), copia: String(j.copia || '') };
     return latestVer;
   }).catch(function () { return null; }).then(function (x) { verChecking = null; renderVersion(); return x; });
   return verChecking;
@@ -6470,7 +6471,7 @@ updateInstallUi();
 setTimeout(function () {
   checkVersion().then(function (j) {
     if (j && j.v > APP_VERSION.v) notice('È disponibile la versione ' + j.v + ' dell\'app (stai usando la ' + APP_VERSION.v + ').', 'Aggiorna adesso', updateNow);
-    else if (verNewer(j)) notice('C\'è un aggiornamento della copia di prova' + (j.prova ? ' (' + j.prova + ', del ' : ' (del ') + buildText(j.build) + ').', 'Aggiorna adesso', updateNow);
+    else if (verNewer(j)) notice('C\'è un aggiornamento ' + (PROVA ? 'della copia di prova' : 'della copia ' + COPIA) + ((j.copia || j.prova) ? ' (' + (j.copia || j.prova) + ', del ' : ' (del ') + buildText(j.build) + ').', 'Aggiorna adesso', updateNow);
   });
 }, 2500);
 confirmLearnedPublishers();
