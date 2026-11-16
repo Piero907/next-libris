@@ -267,6 +267,12 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - stimare: libri aggiunti al giorno da un utente «normale» → quanti utenti per worker e per chiave;
 - idee: chiave e worker **prestati a un amico** dalla finestra Amici (passano dal server, mai mostrati in chiaro), con un **contatore** delle richieste di oggi per chi la presta e un limite che si può scegliere; oppure un worker «della casa» per tutti, con il contatore e un tetto.
 
+## 19. «Foto» del + anche per il codice scritto, e vedere cosa sta leggendo (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** dal **+**, la modalità **Foto della copertina** dovrebbe saper riconoscere anche il **codice ISBN scritto** (le cifre stampate sopra o sotto il codice a barre): il tasto diventerebbe **«Foto della copertina o del codice a barre»**. In questa modalità (lettura del codice scritto) vedere **cosa sta leggendo la fotocamera**, per capire se vale la pena aspettare o se conviene scriverlo a mano.
+
+**Idee da proporre (nessuna costruita):** nella foto, dopo la copertina cercare anche una riga «ISBN 978…» o 13 cifre con la cifra di controllo giusta (il lettore del testo c'è già); durante la lettura dal vivo del codice scritto, una striscia sotto l'inquadratura con le cifre lette man mano (in grigio quelle incerte, in verde quando il codice è valido), più un pulsante «Scrivilo a mano» sempre visibile, già riempito con quello che ha letto.
+
 ---
 
 ## Copia social — cose in sospeso (sessione social, 16/11/2026)
