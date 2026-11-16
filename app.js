@@ -281,6 +281,7 @@ function loadAll() {
     settings.syncOff = 1;
     settings.seenV = Number(s.seenV) || 0;                                         // ultima versione di cui si sono viste le novita'
     settings.wn2 = s.wn2 ? 1 : 0;
+    settings.shelfShut = s.shelfShut && typeof s.shelfShut === 'object' ? { now: s.shelfShut.now ? 1 : 0, all: s.shelfShut.all ? 1 : 0 } : {};   // sezioni dell'elenco chiuse
     oldApp = typeof s.look === 'string';                                             // impostazioni salvate da una versione precedente dell'app (non una prima installazione)                                                   // la pagina delle novita' funziona anche per chi aggiorna (dalla 96)
     settings.seenB = L.str(s.seenB).slice(0, 12);                                   // nella copia di prova: ultima prova vista («94.17»)
     settings.suggAuto = s.suggAuto !== false;                                       // «Da scoprire»: cerca da solo una volta a settimana
@@ -3767,9 +3768,26 @@ function renderList() {
       : '<p class="none">Nessun libro corrisponde ' + (activeCount() ? (q ? 'alla ricerca e ai filtri.' : 'ai filtri.') : 'alla ricerca.') + '</p><p><button class="btn" data-act="clearflt">' + (activeCount() ? (q ? 'Azzera ricerca e filtri' : 'Azzera i filtri') : 'Cancella la ricerca') + '</button></p>';
     return;
   }
-  if (settings.view === 'grid') { list.innerHTML = '<div class="grid">' + vis.map(coverHTML).join('') + '</div>'; paintSel(); return; }
+  /* i libri «In lettura» in cima, in una sezione che si apre e chiude; sotto gli altri (solo Libreria, ordine «Più recenti», senza ricerca ne' filtri) */
+  var now = tab === 'lib' && !q && !activeCount() && sortBy === 'recent' ? vis.filter(function (b) { return b.rs === 'in'; }) : [];   // con un altro ordine (voto, titolo…) vale l'ordine scelto
+  var parts = now.length ? [['now', 'In lettura', now], ['all', now.length < vis.length ? 'Gli altri libri' : '', vis.filter(function (b) { return b.rs !== 'in'; })]] : null;
+  var shelfOpen = function (k) { return !(settings.shelfShut || {})[k]; };
+  var shelf = function (k, title, books, inner) {
+    if (!books.length) return '';
+    var open = shelfOpen(k);
+    return '<section class="shelf shelf-' + k + '"><button type="button" class="shelf-h" data-shelf="' + k + '" aria-expanded="' + open + '" aria-controls="shelf-' + k + '">' +
+      (k === 'now' ? '<svg class="sh-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3.5h10a1 1 0 0 1 1 1v16l-6-4-6 4v-16a1 1 0 0 1 1-1z"/></svg>' : '') +
+      '<span>' + esc(title) + '</span><span class="sh-n">' + books.length + '</span><svg class="sh-c" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
+      '<div class="shelf-b" id="shelf-' + k + '"' + (open ? '' : ' hidden') + '>' + inner(books) + '</div></section>';
+  };
+  if (settings.view === 'grid') {
+    var gridOf = function (a) { return '<div class="grid">' + a.map(coverHTML).join('') + '</div>'; };
+    list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], gridOf); }).join('') : gridOf(vis);
+    paintSel(); return;
+  }
   var dups = computeDups();
-  list.innerHTML = vis.map(function (b) { return rowHTML(b, dups); }).join('');
+  var rowsOf = function (a) { return a.map(function (b) { return rowHTML(b, dups); }).join(''); };
+  list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], rowsOf); }).join('') : rowsOf(vis);
   emit('rows', list);                              // i moduli possono sistemare le schede appena disegnate
   autosizeAll(list);
   paintSel();
@@ -5790,6 +5808,14 @@ list.addEventListener('keydown', function (e) {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset && (((e.target.dataset.act === 'verify' || e.target.dataset.act === 'loan' || e.target.dataset.act === 'dup') && e.target.classList.contains('tag')) || (e.target.dataset.act === 'toggle' && e.target.classList.contains('sum')) || (e.target.dataset.act === 'zoom' && e.target.classList.contains('thumb')))) { e.preventDefault(); e.target.click(); return; }
   if (e.key === 'Enter' && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT')) { e.preventDefault(); e.target.blur(); }
 });
+list.addEventListener('click', function (e) {          // sezioni «In lettura» / «Gli altri libri»: si aprono e chiudono, e se lo ricorda
+  var sh = e.target.closest('.shelf-h'); if (!sh) return;
+  e.stopImmediatePropagation();
+  var k = sh.dataset.shelf, open = sh.getAttribute('aria-expanded') !== 'true';
+  sh.setAttribute('aria-expanded', open ? 'true' : 'false');
+  var body = document.getElementById('shelf-' + k); if (body) body.hidden = !open;
+  settings.shelfShut = settings.shelfShut || {}; if (open) delete settings.shelfShut[k]; else settings.shelfShut[k] = 1; saveSettings();
+}, true);
 list.addEventListener('click', function (e) {
   var cov = e.target.closest('.cover');
   if (cov) { openFromGrid(cov.dataset.id); return; }
