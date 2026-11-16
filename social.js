@@ -1,4 +1,4 @@
-/* Next Libris · modulo «Account e sincronizzazione» (copia social, 16/11/2026).
+/* Next Libris · modulo «Account e sincronizzazione» (16/11/2026; attivo solo nelle copie con un progetto Supabase: PROGETTI).
    Account facoltativo con «Accedi con Google» (l'accesso con l'email e' spento dal 16/11/2026: CFG.email, vedi sotto), niente password; i libri si copiano su Supabase (Francoforte) e si
    ritrovano su un altro telefono o tablet. Il telefono resta la copia principale: senza rete o senza account l'app va come sempre.
    - Solo REST (fetch), nessuna libreria: Auth (/auth/v1) e database (/rest/v1, tabella «libri», regole RLS: ognuno vede solo i suoi).
@@ -12,9 +12,19 @@
 'use strict';
 var NL = window.NL; if (!NL) return;
 var esc = NL.esc;
-var CFG = window.NL_SOCIAL || {                       // le prove automatiche mettono qui un server finto
-  url: 'https://amkrkvkylprjasccxmzo.supabase.co',
-  key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC',   // chiave pubblica: fatta per stare nell'app, i dati li proteggono le regole RLS
+/* Un progetto Supabase per copia, cosi' i libri delle copie non si mescolano nello stesso account (16/11/2026):
+   - copia social: progetto «next-libris-social»;
+   - versione vera: un suo progetto (ancora da creare, vedi la guida «accesso Google e Brevo»): finche' manca, niente voce nel Menu;
+   - copia di prova: nessun progetto (il piano gratuito ne permette 2): l'account si prova nella copia social. */
+var PROGETTI = {
+  social: { url: 'https://amkrkvkylprjasccxmzo.supabase.co', key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC' },
+  '': null
+};
+var P = PROGETTI[NL.COPIA];
+if (!window.NL_SOCIAL && !P) return;                 // le prove automatiche mettono in NL_SOCIAL un server finto
+var CFG = window.NL_SOCIAL || {
+  url: P.url,
+  key: P.key,   // chiave pubblica: fatta per stare nell'app, i dati li proteggono le regole RLS
   gClient: '393545993031-bu3r02vfe9ugup4vgo3f40idr52204ge.apps.googleusercontent.com',   // Client ID di Google (pubblico, progetto Google Cloud «Next Libris») per il pulsante ufficiale «Accedi con Google»
   email: false   // accesso con l'email nascosto (16/11/2026): il servizio gratuito di Supabase manda 2 email all'ora e solo ai membri del progetto. Il codice resta; si riaccende con un SMTP proprio
 };
