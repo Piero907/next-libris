@@ -15,6 +15,12 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
   - Possibili seguiti (solo se li chiede): notifiche push con l'app chiusa (Web Push + Edge Function).
 - **Simulazione utenti** (16/11/2026, fatta): documento `claude/simulazione-utenti.md` nel progetto claude.ai, conti in `simulazione_utenti.py`. Con chiave Google e worker «della casa»: il muro è Google (1.000/giorno: ~140 ricerche per 50 libri → 6-7 nuovi al giorno, ~430 utenti misti); poi Supabase (spazio ~2.550 dopo un anno, traffico ~6.600). **Il contatore Google è per telefono: con una chiave condivisa non protegge.** 8 proposte nel documento, **nessuna costruita**: si fanno solo se Piero le chiede.
 
+- **Ricerche condivise e archivio** (chiesto il 16/11/2026, IN CORSO nella prova), scelte di Piero:
+  1. **Contatore condiviso su Supabase** per chi usa la stessa chiave Google o lo stesso worker (conto del giorno per hash della chiave/indirizzo); soglie come oggi ma condivise (700: niente copertine grandi/suggerimenti/novità; 950: solo Open Library e SBN).
+  2. **Notifica nella campanella** quando una chiave arriva al limite: invita a crearne una propria; aprendola, guida con link e passaggi, **in evidenza che è gratis**.
+  3. **Descrizione solo dalla prima ricerca**: se manca, «Descrizione non disponibile» e **nessun'altra richiesta**. Copertina grande senza la richiesta in più a Google.
+  4. **Archivio comune per ISBN** (dati + descrizione, visibile a chi ha l'account): chi cerca un libro già cercato non usa Google.
+
 ## Regole con Piero
 - **Annotare subito:** a ogni passo concluso aggiornare «Stato attuale» e «Lavoro in corso» qui (e fare push), così una sessione nuova riparte senza perdere niente.
 - **Lingua:** sempre italiano, semplice e concreto.
