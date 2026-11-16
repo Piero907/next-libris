@@ -4,7 +4,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui (va in «Fatti», in fondo, con una riga) e la novità va nel registro dell'app.
 
-**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **28**.
+**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **29**.
 
 Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 
@@ -15,7 +15,7 @@ Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 - **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine
 - **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki · 12 nazionalità degli autori · 6 film dai libri
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
-- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo
+- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo
 - **G. Guide:** 13 guida di primo avvio · 16 guida per il worker e la chiave
 - **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste · 27 verifica di sicurezza
 - **Fatti** (tolti dall'elenco)
@@ -219,6 +219,14 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 **Richiesta di Piero:** poter **condividere dei libri accompagnandoli con del testo** (un messaggio scritto da chi manda). Nulla di costruito.
 
 **Prima di costruire, chiedere:** un libro alla volta o più libri insieme; solo verso amici dentro l'app («Manda a un amico», tabella `consigli`) o anche nel link esterno; lunghezza massima del testo; dove lo legge chi riceve (campanella, push, scheda del consiglio). Si collega alla chat (25): decidere se è una cosa sola.
+
+### 28. Foto del profilo, poi l'ex-libris (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** prima la **foto del profilo**, **dopo** l'ex-libris (voce 15). Nulla di costruito.
+
+**Prima di costruire, chiedere:** foto dalla galleria o dalla fotocamera, con ritaglio tondo; in alternativa l'immagine dell'account Google (che arriva già con l'accesso) o le iniziali colorate come oggi; dove si vede (elenco amici, striscia dell'amico, campanella, richieste); chi la vede (solo gli amici o anche chi ti cerca per nome).
+
+**Limiti e note:** oggi non ci sono file online (Storage di Supabase 1 GB, 50 MB a file): la foto va rimpicciolita sul telefono (es. 256×256 WebP, ~15-25 kB) prima di salvarla; con poche centinaia di utenti è poco spazio. Regole di accesso sul file (solo amici) o una cartella pubblica con nomi non indovinabili: da decidere. Va scritto in privacy.html. L'ex-libris (15) può usare lo stesso sistema per le immagini.
 
 ## G. Guide
 
