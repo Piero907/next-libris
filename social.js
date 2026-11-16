@@ -1,0 +1,327 @@
+/* Next Libris · modulo «Account e sincronizzazione» (copia social, 16/11/2026).
+   Account facoltativo con email e codice di 6 cifre (niente password); i libri si copiano su Supabase (Francoforte) e si
+   ritrovano su un altro telefono o tablet. Il telefono resta la copia principale: senza rete o senza account l'app va come sempre.
+   - Solo REST (fetch), nessuna libreria: Auth (/auth/v1) e database (/rest/v1, tabella «libri», regole RLS: ognuno vede solo i suoi).
+   - Sincronizzazione: per ogni libro si ricorda l'impronta dell'ultima versione sincronizzata (h). Prima si scaricano le righe
+     cambiate online dall'ultima volta (con 2 minuti di margine), poi si caricano i libri cambiati qui. Se un libro e' cambiato in
+     tutti e due i posti vince questo telefono, tranne alla prima sincronizzazione del telefono (vince la copia online).
+   - I libri cancellati online non spariscono: restano con «cancellato» (si possono recuperare). Prima della prima sincronizzazione
+     l'app salva da sola una copia dei libri sul telefono, ripristinabile da qui.
+   Usa solo window.NL (attacco in fondo ad app.js). */
+(function () {
+'use strict';
+var NL = window.NL; if (!NL) return;
+var esc = NL.esc;
+var CFG = window.NL_SOCIAL || {                       // le prove automatiche mettono qui un server finto
+  url: 'https://amkrkvkylprjasccxmzo.supabase.co',
+  key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC'   // chiave pubblica: fatta per stare nell'app, i dati li proteggono le regole RLS
+};
+var K_AUTH = 'catalogo-libri-social-auth', K_SYNC = 'catalogo-libri-social-sync';   // NL.ls aggiunge da solo il prefisso della copia
+var MARGIN = 120000, PAGE = 1000, CHUNK = 200;
+
+/* ---------- memoria ---------- */
+function rd(k) { try { return JSON.parse(NL.ls.get(k) || 'null'); } catch (e) { return null; } }
+function wr(k, v) { NL.ls.set(k, v == null ? '' : JSON.stringify(v)); }
+var auth = rd(K_AUTH);                                // { at, rt, exp, uid, email }
+if (!auth || !auth.rt || !auth.uid) auth = null;
+var sync = rd(K_SYNC) || {};                          // { uid, last, h: { id: impronta }, when, n }
+function saveSync() { wr(K_SYNC, sync); }
+
+/* ---------- impronta di un libro (stessi campi e stesso ordine su ogni telefono) ---------- */
+function hash(b) {
+  var s = JSON.stringify(NL.fields.map(function (k) { return b[k] === undefined ? null : b[k]; }));
+  var h = 0x811c9dc5;
+  for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h.toString(36) + '.' + s.length.toString(36);
+}
+
+/* ---------- rete ---------- */
+function Err(msg, code) { var e = new Error(msg); e.code = code; return e; }
+async function call(path, opt) {
+  opt = opt || {};
+  var h = { apikey: CFG.key, 'Content-Type': 'application/json' };
+  if (opt.user) h.Authorization = 'Bearer ' + (await token());
+  if (opt.prefer) h.Prefer = opt.prefer;
+  var r;
+  try { r = await fetch(CFG.url + path, { method: opt.method || 'GET', headers: h, body: opt.body ? JSON.stringify(opt.body) : undefined, cache: 'no-store' }); }
+  catch (e) { throw Err('Senza rete: riprovo quando torna.', 'net'); }
+  var txt = await r.text(), j = null;
+  try { j = txt ? JSON.parse(txt) : null; } catch (e) {}
+  if (!r.ok) {
+    var m = (j && (j.msg || j.message || j.error_description || j.error)) || ('errore ' + r.status);
+    if (r.status === 401 && opt.user) throw Err('Accesso scaduto: rientra con la tua email.', 'auth');
+    throw Err(String(m), r.status);
+  }
+  return j;
+}
+async function token() {
+  if (!auth) throw Err('Non sei entrato.', 'auth');
+  if (auth.exp && Date.now() < auth.exp - 60000) return auth.at;
+  var j;
+  try { j = await call('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: auth.rt } }); }
+  catch (e) { if (e.code !== 'net') { logoutLocal(); throw Err('Accesso scaduto: rientra con la tua email.', 'auth'); } throw e; }
+  setAuth(j);
+  return auth.at;
+}
+function setAuth(j) {
+  auth = { at: j.access_token, rt: j.refresh_token, exp: Date.now() + (Number(j.expires_in) || 3600) * 1000,
+    uid: (j.user && j.user.id) || (auth && auth.uid), email: (j.user && j.user.email) || (auth && auth.email) || '' };
+  wr(K_AUTH, auth);
+}
+function logoutLocal() { auth = null; wr(K_AUTH, null); paint(); }
+
+/* ---------- copia di sicurezza sul telefono (IndexedDB, prima della prima sincronizzazione) ---------- */
+function idb() {
+  return new Promise(function (res, rej) {
+    if (!window.indexedDB) { rej(new Error('IndexedDB')); return; }
+    var r = indexedDB.open((NL.COPIA ? NL.COPIA + '-' : '') + 'catalogo-libri-social', 1);
+    r.onupgradeneeded = function () { r.result.createObjectStore('copie'); };
+    r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); };
+  });
+}
+async function putCopy(books) {
+  var db = await idb();
+  await new Promise(function (res, rej) { var tx = db.transaction('copie', 'readwrite'); tx.objectStore('copie').put({ when: Date.now(), books: books }, 'prima'); tx.oncomplete = res; tx.onerror = function () { rej(tx.error); }; });
+}
+async function getCopy() {
+  try {
+    var db = await idb();
+    return await new Promise(function (res) { var q = db.transaction('copie').objectStore('copie').get('prima'); q.onsuccess = function () { res(q.result || null); }; q.onerror = function () { res(null); }; });
+  } catch (e) { return null; }
+}
+
+/* ---------- sincronizzazione ---------- */
+var busy = null, again = false, lastErr = '', tAuto = null;
+function schedule(ms) { if (!auth) return; clearTimeout(tAuto); tAuto = setTimeout(function () { run(false); }, ms); }
+async function run(manual) {
+  if (!auth) return false;
+  if (busy) { again = true; return busy; }
+  busy = (async function () {
+    try { await doSync(); lastErr = ''; if (manual) NL.toast('Libri sincronizzati.'); return true; }
+    catch (e) { lastErr = e.message || 'errore'; if (manual || e.code !== 'net') NL.toast(lastErr); return false; }
+    finally { busy = null; paint(); if (again) { again = false; schedule(1500); } }
+  })();
+  paint();
+  return busy;
+}
+async function pullRows(since) {
+  var out = [], off = 0;
+  for (;;) {
+    var q = '/rest/v1/libri?select=id,dati,cancellato,aggiornato&order=aggiornato.asc,id.asc&limit=' + PAGE + '&offset=' + off +
+      (since ? '&aggiornato=gt.' + encodeURIComponent(since) : '');
+    var rows = await call(q, { user: true }) || [];
+    out = out.concat(rows);
+    if (rows.length < PAGE) return out;
+    off += PAGE;
+  }
+}
+async function doSync() {
+  await token();
+  var uid = auth.uid, first = sync.uid !== uid;
+  if (first) {
+    try { await putCopy(NL.stored()); } catch (e) { throw Err('Non riesco a salvare la copia di sicurezza sul telefono: sincronizzazione ferma.', 'copy'); }
+    sync = { uid: uid, last: '', h: {}, when: 0, n: 0 };
+  }
+  var books = NL.books(), byId = {};
+  books.forEach(function (b) { byId[b.id] = b; });
+  // 1) scarico quello che e' cambiato online
+  var since = sync.last ? new Date(Date.parse(sync.last) - MARGIN).toISOString() : '';
+  var rows = await pullRows(since), changed = 0, maxT = sync.last || '';
+  rows.forEach(function (r) {
+    if (r.aggiornato > maxT) maxT = r.aggiornato;
+    var known = sync.h[r.id], lb = byId[r.id];
+    var remote = r.cancellato ? null : NL.clean(Object.assign({}, r.dati, { id: r.id }));
+    var rh = remote ? hash(remote) : 'X';
+    if (rh === known) return;                                         // e' la versione che conosco gia'
+    var lh = lb ? hash(lb) : (known !== undefined ? 'X' : undefined);
+    if (lh === rh) { sync.h[r.id] = rh; return; }                      // uguali: basta ricordarlo
+    var localChanged = known === undefined ? false : lh !== known;    // prima volta che vedo questo libro: vince la copia online
+    if (localChanged) return;                                          // cambiato anche qui: vince questo telefono (lo carico dopo)
+    if (!remote) { if (lb) { books.splice(books.indexOf(lb), 1); delete byId[r.id]; changed++; } }
+    else if (lb) { books[books.indexOf(lb)] = remote; byId[r.id] = remote; changed++; }
+    else { books.push(remote); byId[r.id] = remote; changed++; }
+    sync.h[r.id] = rh;
+  });
+  sync.last = maxT;
+  if (changed) { NL.save(); NL.refresh(); }
+  // 2) carico quello che e' cambiato qui
+  var up = [], hs = {};
+  NL.stored().forEach(function (b) { var h = hash(b); if (sync.h[b.id] !== h) { up.push({ utente: uid, id: b.id, dati: b, cancellato: false }); hs[b.id] = h; } });
+  var gone = Object.keys(sync.h).filter(function (id) { return sync.h[id] !== 'X' && !byId[id]; })
+    .map(function (id) { return { utente: uid, id: id, cancellato: true }; });   // senza «dati»: online resta l'ultima versione, recuperabile
+  for (var i = 0; i < up.length; i += CHUNK) {
+    var part = up.slice(i, i + CHUNK);
+    await call('/rest/v1/libri?on_conflict=utente,id', { method: 'POST', user: true, prefer: 'resolution=merge-duplicates,return=minimal', body: part });
+    part.forEach(function (x) { sync.h[x.id] = hs[x.id]; });
+    saveSync();
+  }
+  for (var j = 0; j < gone.length; j += CHUNK) {
+    var g = gone.slice(j, j + CHUNK);
+    await call('/rest/v1/libri?on_conflict=utente,id', { method: 'POST', user: true, prefer: 'resolution=merge-duplicates,return=minimal', body: g });
+    g.forEach(function (x) { sync.h[x.id] = 'X'; });
+    saveSync();
+  }
+  sync.when = Date.now();
+  sync.n = Object.keys(sync.h).filter(function (id) { return sync.h[id] !== 'X'; }).length;
+  saveSync();
+}
+
+/* ---------- accesso ---------- */
+async function sendCode(email) {
+  await call('/auth/v1/otp', { method: 'POST', body: { email: email, create_user: true } });
+}
+async function verify(email, code) {
+  var j = await call('/auth/v1/verify', { method: 'POST', body: { type: 'email', email: email, token: code } });
+  if (!j || !j.access_token) throw Err('Codice non valido.', 'code');
+  setAuth(j);
+  try { if (NL.name()) await call('/rest/v1/profili?on_conflict=id', { method: 'POST', user: true, prefer: 'resolution=merge-duplicates,return=minimal', body: { id: auth.uid, nome: NL.name() } }); } catch (e) {}
+}
+async function logout() {
+  try { await call('/auth/v1/logout', { method: 'POST', user: true }); } catch (e) {}
+  logoutLocal();
+}
+
+/* ---------- finestra «Account e sincronizzazione» ---------- */
+var step = 'email', mail = '', confirmAct = '', copyInfo = null;
+function when(t) {
+  if (!t) return '';
+  var d = new Date(t), now = new Date(), hm = d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  return d.toDateString() === now.toDateString() ? 'oggi alle ' + hm : 'il ' + d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long' }) + ' alle ' + hm;
+}
+function sheet() {
+  var el = document.getElementById('accSheet');
+  if (el) return el;
+  el = document.createElement('div'); el.className = 'sheet acc'; el.id = 'accSheet'; el.hidden = true;
+  el.innerHTML = '<div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="accH"><h2 id="accH">Account e sincronizzazione</h2><div id="accBody"></div>' +
+    '<div class="row-btns"><button class="btn" type="button" id="accClose">Chiudi</button></div></div>';
+  document.body.appendChild(el);
+  el.addEventListener('click', function (e) { if (e.target === el) close(); });
+  el.querySelector('#accClose').addEventListener('click', close);
+  el.addEventListener('submit', function (e) { e.preventDefault(); });
+  el.addEventListener('click', onClick);
+  return el;
+}
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var el = document.getElementById('accSheet'); if (el && !el.hidden) close(); } });
+async function open() {
+  var el = sheet(); confirmAct = ''; el.hidden = false; copyInfo = await getCopy(); paintSheet();
+  var f = el.querySelector('input'); if (f) setTimeout(function () { f.focus(); }, 60);
+}
+function close() { var el = document.getElementById('accSheet'); if (el) el.hidden = true; }
+function paintSheet() {
+  var body = document.getElementById('accBody'); if (!body || document.getElementById('accSheet').hidden) return;
+  var h = '';
+  if (!auth) {
+    h += '<p class="msg">Con un account i tuoi libri si salvano anche online: li ritrovi su un altro telefono o tablet. ' +
+      'Il telefono resta la copia principale; senza rete l\'app funziona come sempre.</p>';
+    if (step === 'email') {
+      h += '<form id="accFormE"><label class="field"><span>La tua email</span><input type="email" id="accMail" autocomplete="email" inputmode="email" enterkeyhint="send" required value="' + esc(mail) + '"></label>' +
+        '<p class="msg bad" id="accErr" hidden></p><button class="btn primary" type="submit" id="accSend">Mandami il codice</button></form>';
+    } else {
+      h += '<form id="accFormC"><p class="msg">Ti ho mandato un codice di 6 cifre a <b>' + esc(mail) + '</b>. Guarda anche nella posta indesiderata.</p>' +
+        '<label class="field"><span>Codice</span><input type="text" id="accCode" inputmode="numeric" autocomplete="one-time-code" enterkeyhint="done" maxlength="6" pattern="[0-9]{6}" required></label>' +
+        '<p class="msg bad" id="accErr" hidden></p><button class="btn primary" type="submit" id="accGo">Entra</button>' +
+        '<p class="acc-links"><button class="link" type="button" data-acc="resend">Rimanda il codice</button> · <button class="link" type="button" data-acc="other">Usa un\'altra email</button></p></form>';
+    }
+    h += '<p class="acc-small">I dati stanno su Supabase, in Europa (Francoforte). Solo tu li vedi. Puoi cancellarli quando vuoi, da qui.</p>';
+  } else {
+    var st = busy ? 'Sincronizzo…' : lastErr ? lastErr : sync.when && sync.uid === auth.uid ? 'Ultima sincronizzazione ' + when(sync.when) + ' · ' + sync.n + (sync.n === 1 ? ' libro' : ' libri') + ' online' : 'Non ancora sincronizzato';
+    h += '<p class="msg">Sei entrato come <b>' + esc(auth.email || '') + '</b>.</p><p class="acc-st' + (lastErr && !busy ? ' bad' : '') + '" id="accSt" aria-live="polite">' + esc(st) + '</p>' +
+      '<button class="btn primary" type="button" data-acc="sync"' + (busy ? ' disabled' : '') + '>Sincronizza adesso</button>' +
+      '<p class="acc-small">Le copertine e le foto scattate da te restano su questo telefono (per ora non si sincronizzano).</p>' +
+      '<details class="acc-more"><summary>Altre azioni</summary><div class="acc-acts">' +
+      '<button class="btn" type="button" data-acc="logout">Esci da questo telefono</button>' +
+      (copyInfo ? '<button class="btn" type="button" data-acc="restore">Ripristina la copia del ' + esc(new Date(copyInfo.when).toLocaleDateString('it-IT')) + ' (' + copyInfo.books.length + ' libri)</button>' : '') +
+      '<button class="btn" type="button" data-acc="wipe">Cancella i miei libri online</button>' +
+      '<button class="btn" type="button" data-acc="delete">Elimina l\'account</button></div></details>';
+    if (confirmAct) {
+      var q = { wipe: 'Cancello tutti i tuoi libri online? Su questo telefono restano. Gli altri telefoni non si sincronizzano più finché non risincronizzi.',
+        delete: 'Elimino l\'account e tutti i libri online? Su questo telefono i libri restano. Non si può annullare.',
+        restore: 'Rimetto i libri come erano nella copia? I libri aggiunti dopo spariscono da questo telefono (e, sincronizzando, anche online).',
+        logout: 'Esco? I libri restano su questo telefono; online restano finché non li cancelli.' }[confirmAct];
+      h += '<div class="acc-conf" role="alertdialog"><p>' + esc(q) + '</p><div class="row-btns"><button class="btn" type="button" data-acc="no">Annulla</button>' +
+        '<button class="btn primary" type="button" data-acc="yes">Sì</button></div></div>';
+    }
+  }
+  body.innerHTML = h;
+}
+function err(m) { var e = document.getElementById('accErr'); if (e) { e.textContent = m; e.hidden = !m; } }
+function niceAuthErr(e) {
+  if (e.code === 'net') return e.message;
+  if (/not authorized|not_authorized/i.test(e.message)) return 'Per ora i codici arrivano solo agli indirizzi autorizzati nel progetto (in prova). Usa l\'email del tuo account Supabase.';
+  if (e.code === 429 || /rate|seconds|after/i.test(e.message)) return 'Aspetta un minuto prima di chiedere un altro codice.';
+  if (e.code === 403 || e.code === 401 || /expired|invalid|token/i.test(e.message)) return 'Codice sbagliato o scaduto. Controlla o fatti mandare un codice nuovo.';
+  return 'Non ci riesco (' + e.message + '). Riprova tra poco.';
+}
+document.addEventListener('submit', async function (e) {
+  var f = e.target; if (!f || !f.closest || !f.closest('#accSheet')) return;
+  e.preventDefault();
+  if (f.id === 'accFormE') {
+    mail = document.getElementById('accMail').value.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { err('Scrivi un indirizzo email valido.'); return; }
+    var b = document.getElementById('accSend'); b.disabled = true; b.textContent = 'Mando il codice…';
+    try { await sendCode(mail); step = 'code'; paintSheet(); var c = document.getElementById('accCode'); if (c) c.focus(); }
+    catch (x) { b.disabled = false; b.textContent = 'Mandami il codice'; err(niceAuthErr(x)); }
+  } else if (f.id === 'accFormC') {
+    var code = document.getElementById('accCode').value.replace(/\D/g, '');
+    if (code.length !== 6) { err('Il codice ha 6 cifre.'); return; }
+    var g = document.getElementById('accGo'); g.disabled = true; g.textContent = 'Controllo…';
+    try { await verify(mail, code); step = 'email'; NL.toast('Sei entrato. Sincronizzo i libri…'); paint(); run(false).then(function () { copyInfo = null; getCopy().then(function (c) { copyInfo = c; paintSheet(); }); }); }
+    catch (x) { g.disabled = false; g.textContent = 'Entra'; err(niceAuthErr(x)); }
+  }
+}, true);
+async function onClick(e) {
+  var b = e.target.closest && e.target.closest('[data-acc]'); if (!b) return;
+  var a = b.dataset.acc;
+  if (a === 'resend') { try { await sendCode(mail); NL.toast('Codice rimandato.'); } catch (x) { err(niceAuthErr(x)); } return; }
+  if (a === 'other') { step = 'email'; paintSheet(); return; }
+  if (a === 'sync') { run(true); return; }
+  if (a === 'logout' || a === 'wipe' || a === 'delete' || a === 'restore') { confirmAct = a; paintSheet(); return; }
+  if (a === 'no') { confirmAct = ''; paintSheet(); return; }
+  if (a !== 'yes') return;
+  var act = confirmAct; confirmAct = ''; paintSheet();
+  try {
+    if (act === 'logout') { await logout(); NL.toast('Sei uscito. I libri restano su questo telefono.'); }
+    else if (act === 'wipe') {
+      await call('/rest/v1/libri?utente=eq.' + encodeURIComponent(auth.uid), { method: 'DELETE', user: true, prefer: 'return=minimal' });
+      sync = {}; saveSync(); NL.toast('Libri online cancellati. Su questo telefono restano.');
+    } else if (act === 'delete') {
+      await call('/rest/v1/rpc/elimina_account', { method: 'POST', user: true, body: {} });
+      sync = {}; saveSync(); logoutLocal(); NL.toast('Account eliminato. I libri restano su questo telefono.');
+    } else if (act === 'restore') {
+      var c = await getCopy(); if (!c) return;
+      var books = NL.books(); books.splice.apply(books, [0, books.length].concat(c.books.map(NL.clean).filter(Boolean)));
+      NL.save(); NL.refresh(); NL.toast('Libri ripristinati dalla copia.'); schedule(1500);
+    }
+  } catch (x) { NL.toast(x.message); }
+  paint();
+}
+
+/* ---------- voce nel Menu ---------- */
+function paint() {
+  var b = document.getElementById('goAcc');
+  if (b) {
+    var t = !auth ? 'Salva i libri online e ritrovali su un altro telefono' : busy ? 'Sincronizzo…' : lastErr ? lastErr :
+      sync.when && sync.uid === auth.uid ? 'Sincronizzato ' + when(sync.when) : 'Entrato come ' + (auth.email || '');
+    document.getElementById('goAccTxt').textContent = t;
+    b.classList.toggle('acc-on', !!auth);
+  }
+  paintSheet();
+}
+function paintMenu() {
+  var b = document.getElementById('goAcc');
+  if (!b) {
+    var after = document.querySelector('#drawerOpts .dopt[data-sec="export"]'); if (!after) return;
+    b = document.createElement('button'); b.type = 'button'; b.id = 'goAcc'; b.className = 'dopt dgo';
+    b.innerHTML = '<span><b>Account e sincronizzazione</b><small id="goAccTxt"></small></span><span class="n" aria-hidden="true">›</span>';
+    after.parentNode.insertBefore(b, after.nextSibling);
+    b.addEventListener('click', function () { NL.closeDrawer(); setTimeout(open, 60); });
+  }
+  paint();
+}
+NL.on('menu', paintMenu);
+NL.on('saved', function () { schedule(4000); });
+window.addEventListener('online', function () { schedule(1000); });
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && auth && Date.now() - (sync.when || 0) > 60000) schedule(800); });
+if (auth) schedule(1500);
+window.NLSocial = { run: run, open: open, state: function () { return { auth: auth, sync: sync, busy: !!busy, err: lastErr }; }, hash: hash };   // per le prove
+})();

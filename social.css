@@ -1,0 +1,11 @@
+/* Next Libris · modulo «Account e sincronizzazione» (copia social) */
+.acc .acc-small{margin:0;font-size:13px;color:var(--muted);line-height:1.4}
+.acc .acc-st{margin:0;font-size:14px;color:var(--muted)}
+.acc .acc-st.bad{color:#B4472A}
+.acc .acc-links{margin:4px 0 0;font-size:14px;color:var(--muted)}
+.acc form{display:grid;gap:10px}
+.acc .acc-more summary{cursor:pointer;color:var(--muted);font-size:14px;padding:6px 0}
+.acc .acc-acts{display:grid;gap:8px;margin-top:6px}
+.acc .acc-conf{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface2);display:grid;gap:8px}
+.acc .acc-conf p{margin:0;font-size:15px}
+#goAcc.acc-on b::after{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:#3B8A5A;margin-left:8px;vertical-align:middle}
