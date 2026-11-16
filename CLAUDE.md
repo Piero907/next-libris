@@ -4,9 +4,9 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
 **Altri file, da aprire solo quando servono:** `STORIA.md` (storia e motivi delle scelte fino alla v99: cercare con grep), `IN_SOSPESO.md` (idee in attesa: aprirlo solo se Piero ne chiede una), `README.md` (come girano le prove), `supabase/` (SQL del database).
 
 ## Stato attuale (16/11/2026)
-- **Vera: versione 99.** Prova: **99.2** = vera + **campanella delle notifiche** (`notifiche.js`/`.css`, prova e2e105). Salvataggi: rami `salvataggio-v96`, `-v97`, `-v98` (tornare indietro solo se Piero lo chiede: `git push -f origin salvataggio-vNN:main`).
+- **Vera: versione 99.** Prova: **99.3** = vera + **campanella delle notifiche** (`notifiche.js`/`.css`, e2e105) + **ricerche condivise e archivio comune** (`ricerche.js`/`.css`, e2e106; descrizioni e copertina in app.js). Salvataggi: rami `salvataggio-v96`, `-v97`, `-v98` (tornare indietro solo se Piero lo chiede: `git push -f origin salvataggio-vNN:main`).
 - Solo due copie: **vera** (https://piero907.github.io/next-libris/, ramo `main`) e **prova** (repository `next-libris-prova`, codice nel ramo `prova`). La copia social non esiste più.
-- **Supabase**, piano gratuito, 2 progetti (il massimo), Francoforte: vera `fttdbqotjocjfjfcoyfv`, prova `amkrkvkylprjasccxmzo` (`PROGETTI` in social.js). Al 16/11/2026 i due database sono **identici** (funzioni, permessi, colonne, vincoli, indici, regole), **tranne `011_notifiche.sql` e `012_ricerche_archivio.sql`: solo nella prova** (tabella `notifiche` scritta dai trigger, `mie_notifiche`, `notifiche_lette`; prova SQL `prova_notifiche.sql`). Va applicata alla vera quando si porta la campanella.
+- **Supabase**, piano gratuito, 2 progetti (il massimo), Francoforte: vera `fttdbqotjocjfjfcoyfv`, prova `amkrkvkylprjasccxmzo` (`PROGETTI` in social.js). Al 16/11/2026 i due database sono **identici** (funzioni, permessi, colonne, vincoli, indici, regole), **tranne `011_notifiche.sql` e `012_ricerche_archivio.sql`: solo nella prova** (tabella `notifiche` scritta dai trigger, `mie_notifiche`, `notifiche_lette`; tabelle `ricerche` e `archivio`, `conta_ricerche`, `da_archivio`, `archivia`; prove SQL `prova_notifiche.sql`, `prova_ricerche_archivio.sql`). Vanno applicate alla vera, in ordine, quando si portano queste novità.
 
 ## Lavoro in corso (aggiornare a ogni passo: le sessioni si chiudono spesso)
 - **Campanella delle notifiche** (prova 99.2, 16/11/2026): fatta e pubblicata nella prova. **Si porta nella vera solo quando lo dice Piero.**
@@ -15,12 +15,13 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
   - Possibili seguiti (solo se li chiede): notifiche push con l'app chiusa (Web Push + Edge Function).
 - **Simulazione utenti** (16/11/2026, fatta): documento `claude/simulazione-utenti.md` nel progetto claude.ai, conti in `simulazione_utenti.py`. Con chiave Google e worker «della casa»: il muro è Google (1.000/giorno: ~140 ricerche per 50 libri → 6-7 nuovi al giorno, ~430 utenti misti); poi Supabase (spazio ~2.550 dopo un anno, traffico ~6.600). **Il contatore Google è per telefono: con una chiave condivisa non protegge.** 8 proposte nel documento, **nessuna costruita**: si fanno solo se Piero le chiede.
 
-- **Ricerche condivise e archivio** (chiesto il 16/11/2026, IN CORSO nella prova), scelte di Piero:
+- **Ricerche condivise e archivio** (prova 99.3, 16/11/2026, FATTO nella prova; nella vera solo quando lo dice Piero), scelte di Piero:
   1. **Contatore condiviso su Supabase** per chi usa la stessa chiave Google o lo stesso worker (conto del giorno per hash della chiave/indirizzo); soglie come oggi ma condivise (700: niente copertine grandi/suggerimenti/novità; 950: solo Open Library e SBN).
   2. **Notifica nella campanella** quando una chiave arriva al limite: invita a crearne una propria; aprendola, guida con link e passaggi, **in evidenza che è gratis**.
   3. **Descrizione solo dalla prima ricerca**: se manca, «Descrizione non disponibile» e **nessun'altra richiesta**. Copertina grande senza la richiesta in più a Google.
   4. **Archivio comune per ISBN** (dati + descrizione, visibile a chi ha l'account): chi cerca un libro già cercato non usa Google.
-  - Fatto: database della prova (`supabase/012_ricerche_archivio.sql`, applicato con la correzione 012b già nel file; prova `prova_ricerche_archivio.sql` 19/19). Da fare: app (descrizioni, copertina, modulo `ricerche.js`, notifica «limite» e guida), prove, pubblicazione.
+  - Fatto: database (`012_ricerche_archivio.sql`, con la correzione 012b già nel file; prova SQL 19/19), app e modulo `ricerche.js` (contatore a gruppi di ~10 ricerche o 3 s, letto con gli amici; archivio prima di Google; notifica «limite» a 950 con il nome di chi presta; guida `#kgSheet`), `findIsbn()` in app.js, descrizioni senza nuove richieste (tolto «Scarica tutte le descrizioni»), copertina grande con zoom=0/3 dello stesso indirizzo. Prove: e2e106 nuova; e2e8, e2e34, e2e35, e2e45 aggiornate. Pubblicata come prova 99.3.
+  - Note: il worker si ferma a 95.000 (nessuna notifica); senza account resta tutto come prima (contatore sul telefono, niente archivio).
 
 ## Regole con Piero
 - **Annotare subito:** a ogni passo concluso aggiornare «Stato attuale» e «Lavoro in corso» qui (e fare push), così una sessione nuova riparte senza perdere niente.
@@ -38,8 +39,8 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
 - **Cartelle:** app in `next-libris` (ramo `prova`), prove in `prove`, copia pubblicata della prova in `next-libris-prova`.
 - **Prova:** `node esegui.js --veloce eNN …` (1-2 min), poi `APP_DIR=… PROVA_DIR=… ATTRIBUZIONE="…" python3 pubblica_prova.py "nota per Piero"` (numero V.n automatico, `REGISTRO_PROVA.md`). Nota con la novità in `**grassetto**`.
 - **Vera:** `node esegui.js` completo (~10 min; e2e27 fallisce sempre qui: mancano le foto in `/tmp/pb`). Poi: ramo `salvataggio-v<vecchia>` da `origin/main`; in `REGISTRO_MODIFICHE.md` in cima `## Versione N · gg/mm/aaaa` con **2-6 righe `> **Titolo** frase`** (mostrate in «Cosa c'è di nuovo») e i dettagli in `- `, solo le cose davvero portate, come stato finale; `LEGGIMI.txt` se serve; `main` avanza **solo con unione veloce** di `prova`; `APP_DIR=… python3 nuova_versione.py N "nota"`; push; poi `prova` = `main` e `pubblica_prova.py` (riparte da N.1).
-- **Moduli:** le novità grandi stanno in file propri (`NOME.js`/`.css`) agganciati a `window.NL` (`NL.on/emit`); righe in `index.html` e `SHELL` di `sw.js` con `// modulo:`; lista `MODULES` in `pubblica_prova.py`. Moduli attuali: wrap, layout, schede, social (account), amici, notifiche (campanella, solo nella prova).
-- **Prove nuove:** una per ogni novità, numero libero dopo l'ultima (`e2e104`), porta con `CFG.port()`.
+- **Moduli:** le novità grandi stanno in file propri (`NOME.js`/`.css`) agganciati a `window.NL` (`NL.on/emit`); righe in `index.html` e `SHELL` di `sw.js` con `// modulo:`; lista `MODULES` in `pubblica_prova.py`. Moduli attuali: wrap, layout, schede, social (account), amici, notifiche (campanella) e ricerche (contatore e archivio): gli ultimi due solo nella prova.
+- **Prove nuove:** una per ogni novità, numero libero dopo l'ultima (`e2e107`), porta con `CFG.port()`.
 
 ## Scelte da non disfare senza chiedere
 - Toast brevi (4 s con «Annulla»); conferma prima di eliminare. Prezzo chiesto a mano dopo ogni libro, senza lettura dalla fotocamera. Fotocamera posteriore. Due volte Indietro per uscire; una scheda aperta alla volta.

@@ -64,14 +64,8 @@ let hits = [];
 
   // A) la ricerca trova le parole della descrizione
   await setQ('abbazia'); assert.deepStrictEqual(await rows(), ['rosa']); console.log('[A ricerca nella descrizione] ok'); await setQ('');
-  // B) tutte le descrizioni
-  hits = []; await click('#btnDescAll');
-  await page.waitForFunction(() => window.__app.state.books.filter(b => !b.w).every(b => b.ds || b.dsn), { timeout: 30000 }); await wait(500);
-  await page.waitForFunction(() => /Trovat/.test(document.querySelector('#toastTxt').textContent), { timeout: 10000 });
-  const tB = await toastTxt(); console.log('[B tutte]', tB, '|', hits.length, 'richieste'); assert(/Trovata 1 descrizione su 6 libri/.test(tB), tB);
-  assert((await book('pend')).ds.startsWith('Tre redattori') && (await book('hp1')).dsn > 0 && (await book('rosa')).ds.includes('abbazia'));
-  await click('#btnDescAll'); await wait(300); assert((await toastTxt()).includes('ci sono già tutte'));
-  await setQ('casa editrice milanese'); assert.deepStrictEqual(await rows(), ['pend']); await setQ('');
+  // B) «Scarica tutte le descrizioni» non c'è più (16/11/2026: la descrizione arriva solo con la prima ricerca)
+  assert(!(await page.$('#btnDescAll')), 'pulsante tolto');
   // C) obiettivo di lettura
   await click('#btnStats'); await wait(200);
   let g = await page.$eval('#statsBody .goal', e => e.textContent); console.log('[C senza obiettivo]', g.slice(0, 80)); assert(g.includes('Finora ne hai letto 1'));

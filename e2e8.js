@@ -31,7 +31,7 @@ let apiCalls = [];
       if (id === 'AAA' || id === 'CCC') return r.respond(json({ volumeInfo: { imageLinks: { thumbnail: gimg(id, 1), medium: 'http://books.google.com/books/content?id=' + id + '&printsec=frontcover&img=1&zoom=3&edge=curl&source=gbs_api' } } }));
       return r.respond(json({ volumeInfo: { imageLinks: { thumbnail: gimg(id, 1) } } })); }
     if (u.includes('googleapis.com/books/v1/volumes?')) return r.respond(json({ items: [{ id: 'CCC', volumeInfo: { title: 'Sostiene Pereira', authors: ['Antonio Tabucchi'], publishedDate: '1994', industryIdentifiers: [{ type: 'ISBN_13', identifier: '9788807881213' }], imageLinks: { thumbnail: gimg('CCC', 1) } } }] }));
-    if (u.includes('/books/content?id=') && u.includes('zoom=3')) return r.respond(jpg('g_big.jpg'));
+    if (/\/books\/content\?id=(AAA|CCC)&/.test(u) && u.includes('zoom=3')) return r.respond(jpg('g_big.jpg'));   // solo questi hanno la versione grande (16/11/2026: si prova lo stesso indirizzo con zoom=0 e 3, senza /volumes/)
     if (u.includes('/books/content?id=')) return r.respond(jpg('g_small.jpg'));
     if (u.includes('covers.openlibrary.org/b/isbn/9788804668015')) return r.respond(jpg('ol_big.jpg'));
     if (u.includes('covers.openlibrary.org')) return r.respond({ status: 404, body: 'nf' });
@@ -45,12 +45,13 @@ let apiCalls = [];
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
   const book = id => page.evaluate(i => { const b = window.__app.state.books.find(x => x.id === i); return b && { img: b.img, imgL: b.imgL }; }, id);
 
-  // 1) copertina grande ufficiale di Google (scheda completa del volume): si vede e viene ricordata
+  // 1) copertina grande di Google (stesso indirizzo, zoom più alto, senza chiedere alle API): si vede e viene ricordata
   await click('#list .row[data-id="g1"] .sum-img');
   await page.waitForFunction(() => document.querySelector('#lbImg').naturalWidth === 800, { timeout: 8000 });
   let s = await lb(); console.log('[1]', JSON.stringify(s));
   assert(s.src.includes('zoom=3') && !s.src.includes('edge=curl') && s.note === '' && s.photo === 'Usa una mia foto' && s.reset === '');
   assert((await book('g1')).imgL.includes('zoom=3'));
+  assert.strictEqual(apiCalls.length, 0, 'nessuna richiesta /volumes/ alle API di Google');
   await click('#lbClose'); await wait(200);
   // riaperta: niente nuova richiesta a Google
   const n0 = apiCalls.length; await click('#list .row[data-id="g1"] .sum-img'); await wait(400);
