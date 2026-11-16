@@ -62,17 +62,22 @@ const books = [
     return { ok: !!p && !!p.querySelector('[data-act="rs"]') && !!st && !!d, afterHero: !!p && hero.nextElementSibling === p, aboveDesc: !!p && p.getBoundingClientRect().bottom <= ds.getBoundingClientRect().top + 1, full: !!p && Math.abs(p.getBoundingClientRect().width - e.querySelector('.cv-page').getBoundingClientRect().width) < 2,
       dateBelow: !!st && !!d && d.getBoundingClientRect().top >= st.getBoundingClientRect().bottom - 1 }; }, card());
   console.log('  striscia', JSON.stringify(rl)); assert(rl.ok && rl.afterHero && rl.aboveDesc && rl.full && rl.dateBelow);
-  // voto a libricini con la parola (16/11/2026): disposizione A al centro con la parola sotto, B a sinistra con la parola a destra
+  // voto a libricini con la parola (16/11/2026)
   const rw = await page.evaluate(s => { const e = document.querySelector(s); return { bk: e.querySelectorAll('.cv-readbox .star.bk svg').length, on: e.querySelectorAll('.cv-readbox .star.bk.on').length, w: e.querySelector('.cv-readbox .rt-word').textContent, lbl: e.querySelector('.cv-readbox .star.bk[data-v="5"]').getAttribute('aria-label') }; }, card());
   console.log('  libricini', JSON.stringify(rw)); assert(rw.bk === 5 && rw.on === 5 && rw.w === 'Capolavoro' && rw.lbl === '5 libricini: Capolavoro');
-  const layRt = async k => { await page.evaluate(k => document.documentElement.setAttribute('data-rtp', k), k); await wait(150); return page.evaluate(s => { const e = document.querySelector(s), st = e.querySelector('.cv-readbox .stars').getBoundingClientRect(), w = e.querySelector('.cv-readbox .rt-word').getBoundingClientRect(), box = e.querySelector('.cv-readbox').getBoundingClientRect(); return { below: w.top >= st.bottom - 1, right: w.left >= st.right - 1, centered: Math.abs((st.left + st.right) / 2 - (box.left + box.right) / 2) < 4 }; }, card()); };
-  const la = await layRt("a"), lb = await layRt("b"); console.log('  A', JSON.stringify(la), 'B', JSON.stringify(lb));
-  assert(la.below && la.centered && lb.right && !lb.centered);
+  // una riga sola, al centro della striscia: libricini (libro aperto) e parola a destra; «Letto il» sotto (16/11/2026)
+  const one = await page.evaluate(s => { const e = document.querySelector(s), st = e.querySelector('.cv-readbox .stars').getBoundingClientRect(), w = e.querySelector('.cv-readbox .rt-word').getBoundingClientRect(), box = e.querySelector('.cv-readbox').getBoundingClientRect(), mid = (st.left + w.right) / 2;
+    return { right: w.left >= st.right - 1, sameRow: Math.abs((st.top + st.bottom) / 2 - (w.top + w.bottom) / 2) < 6, centered: Math.abs(mid - (box.left + box.right) / 2) < 6, pages: e.querySelectorAll('.cv-readbox .star.bk svg .pg').length }; }, card());
+  console.log('  riga', JSON.stringify(one)); assert(one.right && one.sameRow && one.centered && one.pages === 10);
+  // «Letto il 2 ottobre 2026»: la data per esteso in una pillola; toccandola si apre il calendario (campo data invisibile sopra)
+  const rdv = await page.evaluate(s => { const e = document.querySelector(s), sh = e.querySelector('.cv-readbox .rd-show'), inp = e.querySelector('.cv-readbox input[data-k="rd"]'), a = sh.getBoundingClientRect(), b = inp.getBoundingClientRect(); return { t: sh.textContent, cover: b.left <= a.left + 1 && b.right >= a.right - 1, op: getComputedStyle(inp).opacity }; }, card());
+  console.log('  letto il', JSON.stringify(rdv)); assert(rdv.t === '2 ottobre 2026' && rdv.cover && rdv.op === '0');
+  await page.evaluate(s => { const i = document.querySelector(s + ' .cv-readbox input[data-k="rd"]'); i.value = '2026-03-05'; i.dispatchEvent(new Event('input', { bubbles: true })); i.dispatchEvent(new Event('change', { bubbles: true })); }, card()); await wait(300);
+  assert.strictEqual(await page.evaluate(s => document.querySelector(s + ' .cv-readbox .rd-show').textContent, card()), '5 marzo 2026');
+  assert.strictEqual(await page.evaluate(() => window.__app.state.books.find(b => b.id === 'r1').rd), '2026-03-05');
   await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
-  assert.deepStrictEqual(await page.$$eval('#optRtPos input', e => e.map(x => x.value + (x.checked ? '*' : ''))), ['a*', 'b']);
-  await page.evaluate(() => { const i = document.querySelector('#optRtPos input[value="b"]'); i.checked = true; i.dispatchEvent(new Event('change', { bubbles: true })); }); await wait(150);
-  assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.rtp + localStorage.getItem('catalogo-libri-rtpos')), 'bb');
-  await page.evaluate(() => { const i = document.querySelector('#optRtPos input[value="a"]'); i.checked = true; i.dispatchEvent(new Event('change', { bubbles: true })); }); await page.evaluate(() => window.__app.closeOptions()); await wait(300);
+  assert(await page.evaluate(() => !document.querySelector('#optRtPos')), 'scelta temporanea tolta');
+  await page.evaluate(() => window.__app.closeOptions()); await wait(300);
   await page.screenshot({ path: CFG.OUT + '/scheda_d_lettura.png' });
   // lettura modificabile dalla pagina
   assert(await page.evaluate(s => document.querySelector(s + ' .cv-page [data-act="rs"][data-v="ok"]').getAttribute('aria-pressed') === 'true', card()));
