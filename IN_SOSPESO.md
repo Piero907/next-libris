@@ -4,9 +4,9 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui (va in «Fatti», in fondo, con una riga) e la novità va nel registro dell'app.
 
-**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **24**.
+**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **27**.
 
-Ultimo aggiornamento: **16/11/2026**, vera **99**, prova **99.3**.
+Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 
 ## Indice
 
@@ -15,7 +15,7 @@ Ultimo aggiornamento: **16/11/2026**, vera **99**, prova **99.3**.
 - **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine
 - **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki · 12 nazionalità degli autori · 6 film dai libri
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
-- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris
+- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo
 - **G. Guide:** 13 guida di primo avvio · 16 guida per il worker e la chiave
 - **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste
 - **Fatti** (tolti dall'elenco)
@@ -197,6 +197,28 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 - **sul libro:** la «storia» con gli ex-libris di chi l'ha avuto (regalato da…, prestato a…), come i timbri di un passaporto; una «catena» di codici ricostruisce i passaggi anche senza immagini.
 
 ---
+
+### 24. Data di nascita e avviso per il compleanno degli amici (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** aggiungere la **data di nascita**, così **10 giorni prima del compleanno di un amico** arriva una notifica che porta alla sua **lista dei desideri**. Nulla di costruito.
+
+**Prima di costruire, chiedere:** solo giorno e mese o anche l'anno (per la privacy basta giorno e mese); dove si inserisce (Impostazioni › Amici e privacy, o alla prima entrata con l'account) e se è facoltativa; se gli amici la vedono (e se si può nascondere); avviso solo se l'amico ha i desideri visibili o comunque; solo campanella o anche push (nuovo tipo «Compleanni» nelle preferenze); un secondo avviso il giorno stesso?
+
+**Note tecniche:** colonna in `profili` (es. `nascita` come «mm-gg»), lavoro giornaliero con pg_cron (c'è già nella prova, `push-attese`) che scrive in `notifiche` un tipo nuovo `compleanno`; tocco → libreria dell'amico sui Desideri. Va scritto in privacy.html.
+
+### 25. Chat tra amici (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** un **sistema di chat**. Nulla di costruito.
+
+**Prima di costruire, chiedere:** solo tra amici e uno a uno, o anche gruppi; messaggi legati ai libri (es. da una scheda) o liberi; quanto tempo si tengono i messaggi; avvisi nella campanella e con le push; foto o solo testo.
+
+**Limiti da tenere presenti (piano gratuito di Supabase):** Realtime 200 connessioni e 2 milioni di messaggi al mese (oggi niente Realtime: gli avvisi arrivano alla riapertura, ogni ~3 minuti e con le push); spazio 500 MB in tutto. Senza Realtime la chat non sarebbe «in diretta»: si potrebbe controllare più spesso solo con la chat aperta.
+
+### 26. Condividere libri con un testo (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** poter **condividere dei libri accompagnandoli con del testo** (un messaggio scritto da chi manda). Nulla di costruito.
+
+**Prima di costruire, chiedere:** un libro alla volta o più libri insieme; solo verso amici dentro l'app («Manda a un amico», tabella `consigli`) o anche nel link esterno; lunghezza massima del testo; dove lo legge chi riceve (campanella, push, scheda del consiglio). Si collega alla chat (25): decidere se è una cosa sola.
 
 ## G. Guide
 
