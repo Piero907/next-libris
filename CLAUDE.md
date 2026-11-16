@@ -24,6 +24,7 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
   - Note: il worker si ferma a 95.000 (nessuna notifica); senza account resta tutto come prima (contatore sul telefono, niente archivio).
 
 ## Regole con Piero
+- **Conversazione lunga:** quando la conversazione diventa lunga (molti lavori di fila, tante schermate o prove), **avvisare Piero** e proporre di aprirne una nuova: prima aggiornare CLAUDE.md, così si riparte da lì (richiesta di Piero del 16/11/2026).
 - **Annotare subito:** a ogni passo concluso aggiornare «Stato attuale» e «Lavoro in corso» qui (e fare push), così una sessione nuova riparte senza perdere niente.
 - **Lingua:** sempre italiano, semplice e concreto.
 - **Domande prima, non dopo:** se una richiesta non è chiara o ha più strade, chiedere **subito**, prima di scrivere codice (meglio con AskUserQuestion, opzioni concrete). Non chiedere quando la strada è ovvia.
