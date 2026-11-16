@@ -217,3 +217,14 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - in «Presta, vendi o regala», dopo «Presta»: «Avvisa con WhatsApp» apre WhatsApp con un messaggio già scritto (titolo, autore e un **link** all'app con i dati del libro, per esempio `…/next-libris/#ricevi=ISBN&da=Piero`); chi tocca il link apre Next Libris, che propone «Aggiungi come ricevuto in prestito da Piero» (se non ha l'app, il link porta all'installazione). Niente server: tutto passa nel link;
 - avviso in cima dopo 30 giorni («Hai il libro di Anna da un mese: restituito?») con «Restituito» che lo toglie o lo sposta nello storico;
 - restituzione: chi presta può segnare «Restituito» e mandare a sua volta un messaggio, se serve.
+
+## 15. Ex-libris personale, da scambiare (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** ognuno ha il suo **ex-libris**, importato (una sua immagine) o **generato a caso**, con **motto e immagine**. Quando si **presta o si riceve** un libro ci si scambia l'ex-libris. Una sezione mostra **il proprio ex-libris** e **quali e quanti altri** ex-libris si sono incontrati. Se un libro è stato **regalato**, mandandolo si passa anche il suo ex-libris (il libro porta con sé la sua storia).
+
+**Idee da proporre (nessuna costruita):**
+- **Il tuo ex-libris** (nel menu, vicino a Condivisione): nome, motto, un'immagine (importata o generata: cornice, iniziali, un simbolo — libro, albero, gufo, nave… — e i colori, con «Rigenera» per cambiarlo); salvato nel telefono, finisce nel backup;
+- **lo scambio passa nel messaggio** del prestito (si lega al punto 14): il link WhatsApp porta anche l'ex-libris in forma compatta (motto, simbolo, colori: niente immagini pesanti nel link; un'immagine importata si condivide a parte o si riduce);
+- **la collezione**: «Ex-libris incontrati: 7», con la griglia degli ex-libris, chi sono, quando e con quale libro li hai incontrati;
+- **sul libro**: nella pagina del libro, la «storia» con gli ex-libris di chi l'ha avuto (regalato da…, prestato a…), come i timbri di un passaporto;
+- niente server: tutto viaggia nei link e resta nei telefoni.

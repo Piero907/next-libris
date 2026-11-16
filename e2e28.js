@@ -54,9 +54,9 @@ const BOOKS = [
   await p.evaluate(() => window.__app.closeDrawer()); await wait(350);
   assert.strictEqual(await p.$$eval('#list .row', r => r.length), 2);
   assert(!(await hid(p, '#btnShareWish')), 'con un filtro compare «Condividi la lista»');
-  // vista Copertine: segnalibro giallo in alto a destra solo sui preferiti
+  // vista Copertine: stellina gialla in alto a destra solo sui preferiti (fino alla 96 un segnalibro)
   await tap(p, '#btnView'); await wait(200);
-  const rib = await p.$$eval('#list .cover', a => a.map(c => { const r = c.querySelector('.ribbon'); if (!r) return c.dataset.id; const A = c.querySelector('.art').getBoundingClientRect(), R = r.getBoundingClientRect(); return c.dataset.id + ':' + (R.right <= A.right && A.right - R.right < 20 && R.top - A.top < 4 ? 'altodx' : 'fuori') + ':' + getComputedStyle(r.querySelector('path')).fill; }));
+  const rib = await p.$$eval('#list .cover', a => a.map(c => { const r = c.querySelector('.ribbon'); if (!r) return c.dataset.id; const A = c.querySelector('.art').getBoundingClientRect(), R = r.getBoundingClientRect(); return c.dataset.id + ':' + (R.right <= A.right && A.right - R.right < 20 && R.top - A.top < 10 && Math.abs(R.width - R.height) < 1 ? 'altodx' : 'fuori') + ':' + getComputedStyle(r.querySelector('path')).fill; }));
   console.log('[1 copertine]', rib.join(' '));
   assert.deepStrictEqual(rib.sort(), ['b1:altodx:rgb(244, 196, 48)', 'b2:altodx:rgb(244, 196, 48)']);
   await p.evaluate(() => document.querySelector('#drawerReset').click()); await wait(150);
