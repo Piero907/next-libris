@@ -7,7 +7,7 @@ const assert = require('assert');
 const ROOT = CFG.APP;
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
 const V = JSON.parse(fs.readFileSync(path.join(ROOT, 'version.json'), 'utf8')).v;
-const REG = '# Registro\n\nIntro.\n\n## Versione ' + V + ' · oggi\n- Correzione piccola.\n- **Novità grande**: descritta.\n  - **Sotto-novità** importante.\n- Ritocco.\n\n## Versione ' + (V - 1) + ' · ieri\n- **Novità di ieri**.\n\n## Versione ' + (V - 2) + ' · prima\n- Vecchia.\n';
+const REG = '# Registro\n\nIntro.\n\n## Versione ' + V + ' · oggi\n> **Prima cosa** detta in parole semplici.\n> **Seconda cosa** anche questa.\n- Correzione piccola.\n- **Novità grande**: descritta.\n  - **Sotto-novità** importante.\n- Ritocco.\n\n## Versione ' + (V - 1) + ' · ieri\n- **Novità di ieri**.\n\n## Versione ' + (V - 2) + ' · prima\n- Vecchia.\n';
 const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; if (p === '/REGISTRO_MODIFICHE.md') { res.writeHead(200, { 'Content-Type': MIME['.md'] }); return res.end(REG); } const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8190));
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -26,8 +26,9 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   assert(await shown(), 'pagina delle novità');
   const w = await page.evaluate(() => ({ h: document.querySelector('#wnH').textContent, sub: document.querySelector('#wnSub').textContent, li: [...document.querySelectorAll('#wnList li')].map(x => x.textContent) }));
   console.log('[2]', JSON.stringify(w));
-  assert.strictEqual(w.h, 'Aggiornato in questa versione'); assert(new RegExp('^Versione ' + V + ' · 5 novità$').test(w.sub));
-  assert.deepStrictEqual(w.li, ['Novità grande: descritta.', 'Sotto-novità importante.', 'Novità di ieri.', 'Correzione piccola.', 'Ritocco.'], 'prima le novità in grassetto; niente della versione già vista');
+  // per tutti, in parole semplici (16/11/2026): le righe «In breve» (>) della versione; dove mancano, solo i titoli in grassetto
+  assert.strictEqual(w.h, 'Cosa c\'è di nuovo'); assert.strictEqual(w.sub, 'Versione ' + V + ': ecco cosa cambia per te.');
+  assert.deepStrictEqual(w.li, ['Prima cosa detta in parole semplici.', 'Seconda cosa anche questa.', 'Novità di ieri'], 'In breve, poi i titoli; niente della versione già vista');
   assert(await page.evaluate(() => !!document.querySelector('#wnList li b')), 'grassetto');
   const pos = await page.evaluate(() => { const r = document.querySelector('#wnSheet .sheet-in').getBoundingClientRect(); return { top: Math.round(r.top), bottom: Math.round(innerHeight - r.bottom) }; });
   console.log('  posizione', JSON.stringify(pos)); assert(Math.abs(pos.top - pos.bottom) <= 4 && pos.top > 40, 'al centro');
@@ -35,6 +36,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   // «Tutte le novità» apre il registro
   await page.click('#wnAll'); await wait(600);
   assert(!(await shown()) && await page.evaluate(() => !document.querySelector('#logSheet').hidden));
+  const lg = await page.$eval('#logBody', e => e.innerText); assert(/Correzione piccola/.test(lg) && !/parole semplici/.test(lg), 'nel registro i dettagli, senza «In breve»');
   await page.evaluate(() => document.querySelector('#logClose').click()); await wait(300);
   // 3) una volta sola: riaprendo non ricompare
   await page.evaluate(() => { window.__ok = 1; window.__app.settings.seenV && localStorage.setItem('catalogo-libri-set', JSON.stringify(window.__app.settings)); });
@@ -54,11 +56,11 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
     if (r.on) { await p.evaluate(() => document.querySelector('#wnClose').click()); await wait(200); await p.reload({ waitUntil: 'load' }); await wait(1500); again = await p.evaluate(() => !document.querySelector('#wnSheet').hidden); }
     await ctx.close(); return Object.assign(r, { again });
   };
-  const base = { swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9 };
+  const base = { look: 'nuovo', swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9 };
   const r4 = await fresh(base); console.log('[4 aggiornata dalla 94]', r4.sub, '| di nuovo:', r4.again, JSON.stringify({ v: r4.st.seenV, w: r4.st.wn2 }));
-  assert(r4.on && new RegExp('^Versione ' + V).test(r4.sub) && r4.li.includes('Novità grande: descritta.') && r4.again === false && r4.st.seenV === V && r4.st.wn2 === 1);
+  assert(r4.on && new RegExp('^Versione ' + V).test(r4.sub) && r4.li.includes('Prima cosa detta in parole semplici.') && r4.again === false && r4.st.seenV === V && r4.st.wn2 === 1);
   const r5 = await fresh(Object.assign({ seenV: V }, base)); console.log('[5 gia\' alla ' + V + ' senza pagina]', r5.sub, '| di nuovo:', r5.again);
-  assert(r5.on && r5.li.includes('Novità grande: descritta.') && r5.again === false);
+  assert(r5.on && r5.li.includes('Prima cosa detta in parole semplici.') && r5.again === false);
   const r6 = await fresh(Object.assign({ seenV: V, wn2: 1 }, base)); console.log('[6 gia\' vista]', r6.on);
   assert(!r6.on);
   assert.deepStrictEqual(errors, []);

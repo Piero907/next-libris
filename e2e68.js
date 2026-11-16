@@ -20,7 +20,11 @@ const books = Array.from({ length: 8 }, (_, i) => ({ id: 'z' + i, t: 'Libro ' + 
   await page.reload({ waitUntil: 'load' }); await wait(3200);
   const st = () => page.evaluate(() => ({ alert: !!document.querySelector('#summary .sum-alert'), label: (document.querySelector('#summary .sum-alert') || {}).ariaLabel || '', notice: !document.querySelector('#notice').hidden, nx: !document.querySelector('#nxBox').hidden, sum: document.querySelector('#summary').innerText }));
   let s = await st(); console.log('[1 avvio]', JSON.stringify(s));
-  assert(s.notice && s.nx && !s.alert, 'avvisi aperti, niente triangolo');
+  assert(s.notice && s.nx && s.alert && /Vai ai 2 avvisi/.test(s.label), 'avvisi aperti: il triangolo c\'e\' gia\' (16/11/2026)');
+  // toccato con gli avvisi aperti: la pagina va in cima e l'avviso lampeggia
+  await page.evaluate(() => window.scrollTo(0, 400)); await wait(100);
+  await page.click('#summary .sum-alert').catch(() => page.evaluate(() => document.querySelector('#summary .sum-alert').click())); await wait(450);
+  assert(await page.evaluate(() => !!document.querySelector('#notice.flash, #nxBox.flash')), 'lampeggia');
   // chiudo il prestito: compare il triangolo accanto a «1 in prestito»
   await page.click('#noticeX'); await wait(200);
   s = await st(); console.log('[2 chiuso prestito]', JSON.stringify(s)); assert(!s.notice && s.alert && /1 in prestito/.test(s.sum) && /Riapri l'avviso chiuso/.test(s.label));
@@ -32,7 +36,7 @@ const books = Array.from({ length: 8 }, (_, i) => ({ id: 'z' + i, t: 'Libro ' + 
   await page.screenshot({ path: CFG.OUT + '/triangolo.png' });
   // il triangolo li riapre tutti
   await page.click('#summary .sum-alert'); await wait(400);
-  s = await st(); console.log('[3 riaperti]', JSON.stringify(s)); assert(s.notice && s.nx && !s.alert);
+  s = await st(); console.log('[3 riaperti]', JSON.stringify(s)); assert(s.notice && s.nx && s.alert && /Vai ai 2 avvisi/.test(s.label));
   assert(/Anna ha/.test(await page.$eval('#notice', e => e.innerText)));
   // nei Desideri niente triangolo
   await page.click('#noticeX'); await wait(200); assert((await st()).alert);

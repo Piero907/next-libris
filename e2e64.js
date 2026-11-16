@@ -1,6 +1,6 @@
 const CFG = require("./_config");
-// Modulo «Il tuo trimestre in libri» (wrap.js + wrap.css): invito in cima all'elenco nel primo mese del trimestre nuovo,
-// schermate a storie (avanti/indietro, barre), numeri del trimestre, trimestre prima, immagine, menu, opzione in Aspetto (predefinito sì),
+// Modulo «La tua stagione in libri» (fino al 16/11/2026 trimestre) (wrap.js + wrap.css): invito in cima all'elenco nel primo mese della stagione nuova,
+// schermate a storie (avanti/indietro, barre), numeri della stagione, stagione prima, immagine, menu, opzione in Aspetto (predefinito sì),
 // Esc e Indietro chiudono; e l'app senza il modulo (file assenti) funziona uguale
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -16,17 +16,17 @@ const books = [
   { id: 'c', t: 'Il cane di terracotta', a: 'Andrea Camilleri', rs: 'ok', rd: '2026-08-20', pg: '200', gen: 'Gialli', rt: 3, ts: T('2025-01-01') },
   { id: 'd', t: 'Letto in primavera', a: 'X Y', rs: 'ok', rd: '2026-05-01', pg: '100', ts: T('2025-01-01') },
   ...[1, 2, 3, 4].map(i => ({ id: 'n' + i, t: 'Nuovo ' + i, a: 'Autore ' + i, c: 10 + i, ts: T('2026-08-1' + i), rs: 'da' })),
-  { id: 'p', t: 'Prestato', a: 'Z', p: 'Anna', pd: '2026-09-01', ts: T('2024-01-01'), rs: 'da' },
-  { id: 'w', t: 'Desiderio', a: 'W', w: true, ts: T('2026-09-02') },
+  { id: 'p', t: 'Prestato', a: 'Z', p: 'Anna', pd: '2026-08-25', ts: T('2024-01-01'), rs: 'da' },
+  { id: 'w', t: 'Desiderio', a: 'W', w: true, ts: T('2026-08-26') },
 ];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  // orologio finto: 5 ottobre 2026, nel primo mese del trimestre nuovo
+  // orologio finto: 15 settembre 2026, nel primo mese dell'autunno (stagioni dal 16/11/2026: l'estate e' giugno-agosto)
   await page.evaluateOnNewDocument(() => {
-    const off = Date.parse('2026-10-05T10:00:00') - Date.now(), RD = Date;
+    const off = Date.parse('2026-09-15T10:00:00') - Date.now(), RD = Date;
     class FD extends RD { constructor(...a) { if (a.length) super(...a); else super(RD.now() + off); } static now() { return RD.now() + off; } }
     window.Date = FD;
   });
@@ -38,7 +38,7 @@ const books = [
   // 1) invito in cima
   assert(!(await hid('#wrapAsk')), 'invito visibile');
   const ask = await txt('#wrapAsk'); console.log('[1 invito]', ask);
-  assert(/La tua estate in libri: è pronto/.test(ask) && /luglio – settembre 2026 · 3 libri letti/.test(ask));
+  assert(/La tua estate in libri: è pronto/.test(ask) && /giugno – agosto 2026 · 3 libri letti/.test(ask));
   await page.screenshot({ path: CFG.OUT + '/wrap_invito.png' });
   // 2) storie
   await page.click('#wrapAskGo'); await wait(500);
@@ -65,28 +65,28 @@ const books = [
   assert(img.w === 1080 && img.h === 1350 && img.u > 20000);
   await page.click('[data-w="share"]'); await wait(800);
   console.log('  condividi:', await txt('#toast'));
-  // rivedi -> prima schermata; trimestre prima
+  // rivedi -> prima schermata; stagione prima
   await page.click('[data-w="again"]'); await wait(200);
   assert(/La tua estate/.test(await txt('#wStage')));
   await page.click('[data-w="older"]'); await wait(250);
   const sp = await txt('#wStage'); console.log('[3 prima]', sp.slice(0, 90));
-  assert(/aprile – giugno 2026/.test(sp) && /La tua primavera/.test(sp));
-  await page.click('[data-w="newer"]'); await wait(200); assert(/luglio – settembre/.test(await txt('#wStage')));
+  assert(/marzo – maggio 2026/.test(sp) && /La tua primavera/.test(sp));
+  await page.click('[data-w="newer"]'); await wait(200); assert(/giugno – agosto/.test(await txt('#wStage')));
   // 4) Esc chiude, l'invito non torna
   await page.keyboard.press('Escape'); await wait(300);
   assert(await hid('#wrap')); assert(await hid('#wrapAsk'), 'già visto');
-  assert.strictEqual(JSON.parse(await page.evaluate(() => localStorage.getItem('catalogo-libri-wrap'))).seen, '2026-T3');
+  assert.strictEqual(JSON.parse(await page.evaluate(() => localStorage.getItem('catalogo-libri-wrap'))).seen, '2026-S3');
   // 5) dal menu; Indietro chiude
   await page.evaluate(() => window.__app.openDrawer('opt')); await wait(350);
   assert(!(await hid('#goWrap'))); const gw = await txt('#goWrap'); console.log('[5 menu]', gw);
-  assert(/Il tuo trimestre in libri/.test(gw) && /luglio – settembre 2026/.test(gw));
+  assert(/La tua stagione in libri/.test(gw) && /giugno – agosto 2026/.test(gw));
   await page.screenshot({ path: CFG.OUT + '/wrap_menu.png' });
   await page.click('#goWrap'); await wait(600);
   assert(!(await hid('#wrap')) && !(await page.evaluate(() => document.body.classList.contains('drawer-open'))));
   await page.evaluate(() => history.back()); await wait(400);
   assert(await hid('#wrap'), 'Indietro chiude');
   // tema scuro: il fondo resta scuro anche se il colore della palette e' chiaro
-  await page.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); window.NLWrap.open('2026-T3'); }); await wait(300);
+  await page.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); window.NLWrap.open('2026-S3'); }); await wait(300);
   const base = await page.$eval('#wrap', e => e.style.getPropertyValue('--w-base')); console.log('  fondo scuro:', base);
   const lum = parseInt(base.slice(1, 3), 16) * .2126 + parseInt(base.slice(3, 5), 16) * .7152 + parseInt(base.slice(5, 7), 16) * .0722;
   assert(lum < 110, 'testo bianco leggibile');
@@ -94,7 +94,7 @@ const books = [
   await page.evaluate(() => { window.NLWrap.close(); document.documentElement.setAttribute('data-theme', 'light'); }); await wait(300);
   // 6) opzione in Aspetto (predefinito sì); spenta: niente menu
   await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
-  assert(await page.$eval('#optWrap', e => e.checked)); assert(/Riepilogo ogni tre mesi/.test(await page.$eval('#optWrap', e => e.closest('label').innerText)));
+  assert(await page.$eval('#optWrap', e => e.checked)); assert(/Riepilogo di ogni stagione/.test(await page.$eval('#optWrap', e => e.closest('label').innerText)));
   await page.click('#optWrap'); await wait(200);
   assert.strictEqual(JSON.parse(await page.evaluate(() => localStorage.getItem('catalogo-libri-wrap'))).on, false);
   await page.evaluate(() => window.__app.closeOptions()); await wait(300);

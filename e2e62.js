@@ -79,7 +79,7 @@ const server = http.createServer((req, res) => {
   await page.goto(provaUrl, { waitUntil: 'load' }); await wait(1800);
   const wn = await page.evaluate(() => ({ on: !document.querySelector('#wnSheet').hidden, sub: document.querySelector('#wnSub').textContent, li: [...document.querySelectorAll('#wnList li')].map(x => x.textContent) }));
   console.log('[novità della prova]', JSON.stringify(wn));
-  assert(wn.on && /^Prova 94\.8 · 1 novità$/.test(wn.sub) && wn.li.join() === '4 avvisi di prova');
+  assert(wn.on && wn.sub === 'Prova 94.8: ecco cosa cambia per te.' && wn.li.join() === '4 avvisi di prova');
   await page.click('#wnClose'); await wait(200);
   await page.evaluate(() => window.__app.closeDrawer()); await wait(300);
   await page.goto('http://localhost:' + CFG.port(8182) + '/next-libris/?vista=elenco', { waitUntil: 'load' }); await wait(3200);
