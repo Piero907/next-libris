@@ -1,5 +1,5 @@
 /* Next Libris · modulo «Account e sincronizzazione» (copia social, 16/11/2026).
-   Account facoltativo con email e link (o codice di 6 cifre, con un SMTP proprio), niente password; i libri si copiano su Supabase (Francoforte) e si
+   Account facoltativo con «Accedi con Google» (l'accesso con l'email e' spento dal 16/11/2026: CFG.email, vedi sotto), niente password; i libri si copiano su Supabase (Francoforte) e si
    ritrovano su un altro telefono o tablet. Il telefono resta la copia principale: senza rete o senza account l'app va come sempre.
    - Solo REST (fetch), nessuna libreria: Auth (/auth/v1) e database (/rest/v1, tabella «libri», regole RLS: ognuno vede solo i suoi).
    - Sincronizzazione: per ogni libro si ricorda l'impronta dell'ultima versione sincronizzata (h). Prima si scaricano le righe
@@ -15,8 +15,10 @@ var esc = NL.esc;
 var CFG = window.NL_SOCIAL || {                       // le prove automatiche mettono qui un server finto
   url: 'https://amkrkvkylprjasccxmzo.supabase.co',
   key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC',   // chiave pubblica: fatta per stare nell'app, i dati li proteggono le regole RLS
-  gClient: '393545993031-bu3r02vfe9ugup4vgo3f40idr52204ge.apps.googleusercontent.com'   // Client ID di Google (pubblico, progetto Google Cloud «Next Libris») per il pulsante ufficiale «Accedi con Google»
+  gClient: '393545993031-bu3r02vfe9ugup4vgo3f40idr52204ge.apps.googleusercontent.com',   // Client ID di Google (pubblico, progetto Google Cloud «Next Libris») per il pulsante ufficiale «Accedi con Google»
+  email: false   // accesso con l'email nascosto (16/11/2026): il servizio gratuito di Supabase manda 2 email all'ora e solo ai membri del progetto. Il codice resta; si riaccende con un SMTP proprio
 };
+var EMAIL = !!CFG.email;
 var K_AUTH = 'catalogo-libri-social-auth', K_SYNC = 'catalogo-libri-social-sync';   // NL.ls aggiunge da solo il prefisso della copia
 var MARGIN = 120000, PAGE = 1000, CHUNK = 200;
 
@@ -50,7 +52,7 @@ async function call(path, opt) {
   try { j = txt ? JSON.parse(txt) : null; } catch (e) {}
   if (!r.ok) {
     var m = (j && (j.msg || j.message || j.error_description || j.error)) || ('errore ' + r.status);
-    if (r.status === 401 && opt.user) throw Err('Accesso scaduto: rientra con la tua email.', 'auth');
+    if (r.status === 401 && opt.user) throw Err('Accesso scaduto: entra di nuovo da Menu › Account.', 'auth');
     throw Err(String(m), r.status);
   }
   return j;
@@ -60,7 +62,7 @@ async function token() {
   if (auth.exp && Date.now() < auth.exp - 60000) return auth.at;
   var j;
   try { j = await call('/auth/v1/token?grant_type=refresh_token', { method: 'POST', body: { refresh_token: auth.rt } }); }
-  catch (e) { if (e.code !== 'net') { logoutLocal(); throw Err('Accesso scaduto: rientra con la tua email.', 'auth'); } throw e; }
+  catch (e) { if (e.code !== 'net') { logoutLocal(); throw Err('Accesso scaduto: entra di nuovo da Menu › Account.', 'auth'); } throw e; }
   setAuth(j);
   return auth.at;
 }
@@ -294,9 +296,13 @@ function paintSheet() {
   if (!auth) {
     h += '<p class="msg">Con un account i tuoi libri si salvano anche online: li ritrovi su un altro telefono o tablet. ' +
       'Il telefono resta la copia principale; senza rete l\'app funziona come sempre.</p>';
-    if (step === 'email' && prov && prov.google && CFG.gClient) h += '<div class="acc-g" id="accG"></div>' +   // senza Client ID niente Google (la riserva mostrerebbe supabase.co)
-      '<p class="msg bad" id="accErr" hidden></p><p class="acc-or">oppure con la tua email</p>';
-    if (step === 'email') {
+    var gOn = prov && prov.google && CFG.gClient;    // senza Client ID niente Google (la riserva mostrerebbe supabase.co)
+    if (!EMAIL) step = 'email';
+    if (step === 'email' && gOn) h += '<div class="acc-g" id="accG"></div>' +
+      '<p class="msg bad" id="accErr" hidden></p>' + (EMAIL ? '<p class="acc-or">oppure con la tua email</p>' : '');
+    if (!EMAIL) {
+      if (!gOn) h += '<p class="msg' + (prov ? '' : ' bad') + '" id="accOff">' + (prov ? 'L\'accesso per ora non è attivo. Riprova più tardi.' : 'Per entrare serve la connessione a internet.') + '</p>';
+    } else if (step === 'email') {
       h += '<form id="accFormE"><label class="field"><span>La tua email</span><input type="email" id="accMail" autocomplete="email" inputmode="email" enterkeyhint="send" required value="' + esc(mail) + '"></label>' +
         '<p class="msg bad" id="accErr" hidden></p><button class="btn' + (prov && prov.google ? '' : ' primary') + '" type="submit" id="accSend">Mandami l\'email</button></form>';
     } else {
