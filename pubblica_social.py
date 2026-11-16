@@ -12,7 +12,7 @@ note = [a.strip() for a in sys.argv[1:] if a.strip()] or ['aggiornamento']
 assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository della copia social: ' + DST
 ramo = subprocess.run(['git', '-C', APP, 'rev-parse', '--abbrev-ref', 'HEAD'], capture_output=True, text=True).stdout.strip()
 assert ramo == 'social', 'in ' + APP + ' deve esserci il ramo «social», non «' + ramo + '»'
-FILES = ['index.html', 'app.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt', '.nojekyll', 'cloudflare-sbn-worker.js']
+FILES = ['index.html', 'app.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt', '.nojekyll', 'cloudflare-sbn-worker.js', 'privacy.html']
 DIRS = ['icons', 'vendor']
 MODULES = ['wrap.js', 'wrap.css', 'layout.js', 'layout.css', 'schede.js', 'schede.css', 'social.js', 'social.css']   # moduli: se non ci sono piu' nel ramo, spariscono anche qui
 for f in FILES + MODULES:
