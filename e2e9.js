@@ -89,7 +89,7 @@ let net = 'ok', sbnHits = 0;
   assert(await page.$('#list .row[data-id="eco1"] input[data-k="rd"]'));
   await page.screenshot({ path: CFG.OUT + '/s_read.png' });
   await click('#list .row[data-id="eco1"] .chev-btn'); await wait(100);
-  assert((await page.$eval('#list .row[data-id="eco1"] .sum', e => e.innerText)).includes('Letto · ★★★★'));
+  assert((await page.$eval('#list .row[data-id="eco1"] .sum', e => e.innerText)).includes('Letto · Bellissimo'));   // il voto a parole (libricini, 16/11/2026)
   await click('#list .row[data-id="eco2"] .sum'); await wait(100);
   await click('#list .row[data-id="eco2"] [data-act="rs"][data-v="da"]'); await wait(100);
   await click('#list .row[data-id="eco2"] [data-act="rs"][data-v="da"]'); await wait(100);     // di nuovo: tolto
@@ -106,7 +106,7 @@ let net = 'ok', sbnHits = 0;
   await page.select('#sort', 'recent');
   await click('#btnStats'); await wait(150);
   const stx = await page.$eval('#statsBody', e => e.innerText.replace(/\s+/g, ' ')); console.log('[4 statistiche]', stx.slice(0, 200));
-  assert(stx.includes('letti') && stx.includes('★ 4,0') && stx.includes('1 in lettura'));
+  assert(stx.includes('letti') && stx.includes('4,0 su 5') && stx.includes('voto medio: bellissimo') && stx.includes('1 in lettura'));
   await click('#statsClose');
 
   // ---- 7a) tutti i libri dello stesso autore
