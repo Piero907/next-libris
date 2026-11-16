@@ -186,3 +186,14 @@ Ultimo aggiornamento: 15/11/2026, app alla versione 94 (copia di prova più avan
 - **Wikiquote:** citazioni famose dal libro o dall'autore, da proporre in «Citazioni e appunti»;
 - **Wikisource:** testo libero dei classici fuori diritti (link «Leggilo gratis»);
 - usi possibili: statistiche più ricche (secoli, nazionalità, lingue originali, premiati), mappa dei luoghi dei libri, linea del tempo; Wikidata non serve per cercare per ISBN (le edizioni ci sono poco).
+
+## 12. Nazionalità degli autori (chiesto il 16/11/2026, «in sospeso»)
+
+**Richiesta di Piero:** se abbiamo la nazionalità degli autori, usarla nelle **statistiche**, nel **trimestre (wrap)** e nelle **visualizzazioni**.
+
+**Da dove:** Wikidata (proprietà «cittadinanza» P27, «luogo di nascita» P19, lingua P1412), raggiungibile dalla voce di Wikipedia dell'autore che l'app già trova (`auLookup`); da salvare una volta per autore (cache locale), non a ogni apertura. Si lega al punto 11.
+
+**Idee da proporre (nessuna costruita):**
+- Statistiche: «Da quali paesi vengono i tuoi autori» (barre per paese, toccando si filtra), percentuale di autori italiani/stranieri, continenti;
+- Trimestre: «Hai viaggiato in N paesi» con le bandierine dei paesi letti nel trimestre;
+- Visualizzazioni: una mappa del mondo con i paesi colorati per numero di libri; filtro «Paese dell'autore» nel menu dei filtri.
