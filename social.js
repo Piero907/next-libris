@@ -1,4 +1,4 @@
-/* Next Libris · modulo «Account e sincronizzazione» (16/11/2026; attivo solo nelle copie con un progetto Supabase: PROGETTI).
+/* Next Libris · modulo «Account e sincronizzazione» (16/11/2026; attivo solo dove c'e' un progetto Supabase: PROGETTI, oggi la copia di prova).
    Account facoltativo con «Accedi con Google» (l'accesso con l'email e' spento dal 16/11/2026: CFG.email, vedi sotto), niente password; i libri si copiano su Supabase (Francoforte) e si
    ritrovano su un altro telefono o tablet. Il telefono resta la copia principale: senza rete o senza account l'app va come sempre.
    - Solo REST (fetch), nessuna libreria: Auth (/auth/v1) e database (/rest/v1, tabella «libri», regole RLS: ognuno vede solo i suoi).
@@ -13,13 +13,11 @@
 var NL = window.NL; if (!NL) return;
 var esc = NL.esc;
 /* Un progetto Supabase per copia, cosi' i libri delle copie non si mescolano nello stesso account (16/11/2026):
-   - copia social: progetto «next-libris-social»;
-   - versione vera: un suo progetto (ancora da creare, vedi la guida «accesso Google e Brevo»): finche' manca, niente voce nel Menu;
-   - copia di prova: nessun progetto (il piano gratuito ne permette 2): l'account si prova nella copia social. */
-var PROGETTI = {
-  social: { url: 'https://amkrkvkylprjasccxmzo.supabase.co', key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC' },
-  '': null
-};
+   - copia di prova: progetto «next-libris-social» (dal 16/11/2026 la copia social non si usa piu': account e amicizie si provano nella prova);
+   - versione vera: un suo progetto (ancora da creare, vedi la guida «accesso Google e Brevo»): finche' manca, niente voce nel Menu.
+   Il piano gratuito di Supabase permette 2 progetti: prova + vera. */
+var SB_PROVA = { url: 'https://amkrkvkylprjasccxmzo.supabase.co', key: 'sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC' };
+var PROGETTI = { prova: SB_PROVA, social: SB_PROVA, '': null };
 var P = PROGETTI[NL.COPIA];
 if (!window.NL_SOCIAL && !P) return;                 // le prove automatiche mettono in NL_SOCIAL un server finto
 var CFG = window.NL_SOCIAL || {
