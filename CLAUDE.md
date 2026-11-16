@@ -8,7 +8,14 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
 - Solo due copie: **vera** (https://piero907.github.io/next-libris/, ramo `main`) e **prova** (repository `next-libris-prova`, codice nel ramo `prova`). La copia social non esiste più.
 - **Supabase**, piano gratuito, 2 progetti (il massimo), Francoforte: vera `fttdbqotjocjfjfcoyfv`, prova `amkrkvkylprjasccxmzo` (`PROGETTI` in social.js). Al 16/11/2026 i due database sono **identici** (funzioni, permessi, colonne, vincoli, indici, regole), **tranne `011_notifiche.sql`: solo nella prova** (tabella `notifiche` scritta dai trigger, `mie_notifiche`, `notifiche_lette`; prova SQL `prova_notifiche.sql`). Va applicata alla vera quando si porta la campanella.
 
+## Lavoro in corso (aggiornare a ogni passo: le sessioni si chiudono spesso)
+- **Campanella delle notifiche** (prova 99.2, 16/11/2026): fatta e pubblicata nella prova. **Si porta nella vera solo quando lo dice Piero.**
+  - Per portarla: applicare `supabase/011_notifiche.sql` al progetto vero (`fttdbqotjocjfjfcoyfv`; il file è già la versione finale: nella prova c'era anche la correzione `011b`, compresa nel file), rifare `prova_notifiche.sql` (finisce con un errore voluto che mostra l'esito e annulla tutto), `get_advisors`, confronto con la prova; poi la procedura «Vera» qui sotto (e2e102-105 già aggiornate).
+  - Scelte fatte da Claude, **da confermare con Piero**: anche la richiesta d'amicizia è solo nella campanella (niente riquadro in cima); notifica a chi aveva il libro se chi presta segna «Restituito», nessuna se si annulla o cambia un regalo.
+  - Possibili seguiti (solo se li chiede): notifiche push con l'app chiusa (Web Push + Edge Function).
+
 ## Regole con Piero
+- **Annotare subito:** a ogni passo concluso aggiornare «Stato attuale» e «Lavoro in corso» qui (e fare push), così una sessione nuova riparte senza perdere niente.
 - **Lingua:** sempre italiano, semplice e concreto.
 - **Domande prima, non dopo:** se una richiesta non è chiara o ha più strade, chiedere **subito**, prima di scrivere codice (meglio con AskUserQuestion, opzioni concrete). Non chiedere quando la strada è ovvia.
 - **Risparmiare risorse** (l'uso settimanale è già alto): poche azioni, niente esplorazioni larghe del codice (grep mirati), prove veloci in prova, schermate solo per finestre nuove o cambiate, documenti del progetto claude.ai aggiornati solo a ogni versione vera.
