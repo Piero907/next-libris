@@ -310,8 +310,8 @@ function paintSheet() {
     h += '<p class="acc-small">I dati stanno su Supabase, in Europa (Francoforte). Solo tu li vedi. Puoi cancellarli quando vuoi, da qui. <a href="privacy.html" target="_blank" rel="noopener">Informativa sulla privacy</a></p>';
   } else {
     var st = busy ? 'Sincronizzo…' : lastErr ? lastErr : sync.when && sync.uid === auth.uid ? 'Ultima sincronizzazione ' + when(sync.when) + ' · ' + sync.n + (sync.n === 1 ? ' libro' : ' libri') + ' online' : 'Non ancora sincronizzato';
-    h += '<p class="msg">Sei entrato come <b>' + esc(auth.email || '') + '</b>.</p><p class="acc-st' + (lastErr && !busy ? ' bad' : '') + '" id="accSt" aria-live="polite">' + esc(st) + '</p>' +
-      '<button class="btn primary" type="button" data-acc="sync"' + (busy ? ' disabled' : '') + '>Sincronizza adesso</button>' +
+    h += '<div class="acc-card"><p class="acc-who">Sei entrato come <b>' + esc(auth.email || '') + '</b></p><p class="acc-st' + (lastErr && !busy ? ' bad' : sync.when ? ' ok' : '') + '" id="accSt" aria-live="polite">' + esc(st) + '</p></div>' +
+      '<button class="btn primary" type="button" data-acc="sync"' + (busy ? ' disabled' : '') + '>' + (busy ? 'Sincronizzo…' : 'Sincronizza adesso') + '</button>' +
       '<p class="acc-small">Le copertine e le foto scattate da te restano su questo telefono (per ora non si sincronizzano).</p>' +
       '<details class="acc-more"><summary>Altre azioni</summary><div class="acc-acts">' +
       '<button class="btn" type="button" data-acc="logout">Esci da questo telefono</button>' +
