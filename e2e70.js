@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const shown = () => page.evaluate(() => !document.querySelector('#wnSheet').hidden);
-  // 1) prima apertura: niente pagina, ma si ricorda la versione
+  // 1) prima apertura (nessun libro): niente pagina, ma si ricorda la versione
   await page.goto('http://localhost:' + CFG.port(8190) + '/?vista=elenco', { waitUntil: 'load' }); await wait(1800);
   assert(!(await shown()), 'prima apertura: niente');
   assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).seenV), V);
@@ -40,6 +40,27 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   await page.evaluate(() => { window.__ok = 1; window.__app.settings.seenV && localStorage.setItem('catalogo-libri-set', JSON.stringify(window.__app.settings)); });
   await page.reload({ waitUntil: 'load' }); await wait(1800);
   assert(!(await shown()), 'una volta sola');
+  // 4) chi aggiorna da una versione senza questa pagina (niente seenV, ma ha i suoi libri): la pagina compare (nella 95 non compariva, 16/11/2026)
+  // 5) chi e' gia' passato alla 95 senza vederla (seenV registrato in silenzio, senza wn2): la vede una volta, con le novita' dalla 95
+  // 6) chi l'ha gia' vista (wn2): niente
+  const fresh = async (set) => {
+    const ctx = await browser.createBrowserContext(); const p = await ctx.newPage();
+    await p.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    p.on('pageerror', e => errors.push(e.message));
+    await p.evaluateOnNewDocument(st => { if (!localStorage.getItem('catalogo-libri-set')) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: [{ id: 'z1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 1 }], updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify(st)); } }, set);
+    await p.goto('http://localhost:' + CFG.port(8190) + '/?vista=elenco', { waitUntil: 'load' }); await wait(1800);
+    const r = await p.evaluate(() => ({ on: !document.querySelector('#wnSheet').hidden, sub: document.querySelector('#wnSub').textContent, li: [...document.querySelectorAll('#wnList li')].map(x => x.textContent), st: JSON.parse(localStorage.getItem('catalogo-libri-set')) }));
+    let again = null;
+    if (r.on) { await p.evaluate(() => document.querySelector('#wnClose').click()); await wait(200); await p.reload({ waitUntil: 'load' }); await wait(1500); again = await p.evaluate(() => !document.querySelector('#wnSheet').hidden); }
+    await ctx.close(); return Object.assign(r, { again });
+  };
+  const base = { swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9 };
+  const r4 = await fresh(base); console.log('[4 aggiornata dalla 94]', r4.sub, '| di nuovo:', r4.again, JSON.stringify({ v: r4.st.seenV, w: r4.st.wn2 }));
+  assert(r4.on && new RegExp('^Versione ' + V).test(r4.sub) && r4.li.includes('Novità grande: descritta.') && r4.again === false && r4.st.seenV === V && r4.st.wn2 === 1);
+  const r5 = await fresh(Object.assign({ seenV: V }, base)); console.log('[5 gia\' alla ' + V + ' senza pagina]', r5.sub, '| di nuovo:', r5.again);
+  assert(r5.on && r5.li.includes('Novità grande: descritta.') && r5.again === false);
+  const r6 = await fresh(Object.assign({ seenV: V, wn2: 1 }, base)); console.log('[6 gia\' vista]', r6.on);
+  assert(!r6.on);
   assert.deepStrictEqual(errors, []);
   console.log('e2e70 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });
