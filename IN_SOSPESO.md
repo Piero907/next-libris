@@ -17,7 +17,7 @@ Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
 - **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo
 - **G. Guide:** 13 guida di primo avvio · 16 guida per il worker e la chiave
-- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste · 27 verifica di sicurezza · 29 indirizzo nextlibris.github.io
+- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste · 27 verifica di sicurezza
 - **Fatti** (tolti dall'elenco)
 
 ---
@@ -327,16 +327,6 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 
 **Cosa guardare (proposta):** regole RLS e permessi di tutte le tabelle (anche `notifiche`, `ricerche`, `archivio`, `push_*`), funzioni `security definer` (controllo amicizia, limiti al giorno, `search_path`), `get_advisors` di sicurezza su tutte e due le copie; dati che il client manda (lunghezze, jsonb, testo dentro la pagina senza `esc()`, cioè XSS); chiave e worker prestati (voce 22); Edge Function `push` e segreti nel Vault; link d'invito e `#k=`; intestazioni e Content-Security-Policy possibili su GitHub Pages; worker Cloudflare (origine ammessa, abusi); dipendenze in `vendor/`.
 
-### 29. Indirizzo nextlibris.github.io al posto di piero907.github.io (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** passare a **nextlibris.github.io**, prima **verificando se si può fare**. Nulla fatto.
-
-**Da verificare (appunti, non ancora controllati sul web):** serve un account o un'organizzazione GitHub di nome `nextlibris` (gratis, se il nome è libero); i repository si trasferiscono lì (o si copiano). GitHub Pages non porta con sé il vecchio indirizzo: su piero907.github.io va lasciata una pagina che rimanda al nuovo.
-
-**Attenzione, il punto delicato:** i libri stanno nel telefono **legati all'indirizzo** (localStorage e IndexedDB): con l'indirizzo nuovo il telefono vede un'app vuota. Chi ha l'account li ritrova con la sincronizzazione (non le copertine e le foto, che oggi non si sincronizzano); chi non l'ha deve passare dal backup. Va pensato un passaggio guidato (es. la vecchia pagina che propone «Porta i tuoi libri» prima di rimandare). Anche l'app installata va reinstallata.
-
-**Da cambiare:** Google Cloud (origini e Branding: home, privacy, domini), Supabase (Site URL e Redirect URLs nei due progetti), worker Cloudflare (origine ammessa), indirizzi nel codice, privacy.html, manifest, link d'invito già mandati (`?amico=`), documenti del progetto. Le prove usano `/next-libris-prova/`.
-
 ### 30. Versioni accessibili per chi non distingue i colori (chiesto il 17/11/2026)
 
 **Richiesta di Piero:** versioni dell'app adatte ai daltonici, prima **verificando se si può fare**. Nulla fatto.
@@ -350,3 +340,4 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 - **4. Da verificare sul telefono:** spostato nella parte B.
 - **Amicizie** (dalla copia social): fatte, nella vera dalla 99.
 - **18. Contatore e archivio:** fatti nella prova 99.3; il resto è sopra.
+- **29. Indirizzo nextlibris.github.io:** fatto con la versione 100 (17/11/2026), con il trasloco dal vecchio indirizzo.
