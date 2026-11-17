@@ -39,7 +39,7 @@ do $$ declare t int; begin
   t := public.conta_ricerche('s:' || repeat('b', 64), 3);
   insert into esito values ('B: worker a parte', t || ' (3)');
   -- archivio
-  perform public.archivia('9788806219352', '{"t":"Il Gattopardo","a":"Tomasi di Lampedusa","e":"Feltrinelli","y":"2015","img":"https://x/c.jpg","ds":"Sicilia","n":"nota privata","p":"Anna","c":12}');
+  perform public.archivia('9788806219352', '{"t":"Il Gattopardo","a":"Tomasi di Lampedusa","e":"Feltrinelli","y":"2015","img":"https://covers.openlibrary.org/b/id/1-M.jpg","ds":"Sicilia","n":"nota privata","p":"Anna","c":12}');
   insert into esito values ('B: archivio, solo i campi pubblici', (select string_agg(k, ',' order by k) from jsonb_object_keys(public.da_archivio('9788806219352')) k) || ' (a,ds,e,img,t,y)');
   perform public.archivia('9788806219352', '{"t":"Titolo sbagliato","pg":"320","img":"http://non-sicuro"}');
   insert into esito values ('B: non cambia i dati già salvati, aggiunge le pagine', (public.da_archivio('9788806219352') ->> 't') || ' / ' || (public.da_archivio('9788806219352') ->> 'pg') || ' (Il Gattopardo / 320)');
