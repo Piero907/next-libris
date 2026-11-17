@@ -5,7 +5,7 @@ const H = require('./_harness');
 // 1) «Ordina» e «Raggruppa» in una riga sotto la ricerca, sempre in vista (non più nella barra dei filtri);
 // 2) Espandi tutto / Comprimi tutto anche con filtri o ricerca;
 // 3) autori per cognome anche nei gruppi; «Neruda, Pablo» di predefinito (preferenza in Aspetto); cognome corretto a mano in «Chi è»;
-// 4) libreria di un amico: solo «Libreria di Anna» in testata, amici in comune, Sta leggendo, Letti, «Prestiti, regali e altro»,
+// 4) libreria di un amico: solo «Libreria di Anna» in testata, amici in comune, Sta leggendo, Letti (via «Prestiti, regali e altro», 17/11/2026),
 //    poi i tasti; via «‹ La tua libreria»; chiave solo se prestata; niente «Novità dei tuoi autori».
 // Con SCHERMATE=cartella: schermata principale e libreria dell'amico.
 const puppeteer = require('puppeteer-core');
@@ -102,7 +102,7 @@ const books = [
     back: !!document.querySelector('#guestBar .gb-back'), key: !!(document.getElementById('guestKey') && !document.getElementById('guestKey').hidden), sort: !!document.getElementById('sortBar').offsetParent }));
   console.log('[4 amico]', JSON.stringify(gb));
   assert.strictEqual(gb.meta, 'Libreria di Anna');
-  assert.deepStrictEqual(gb.order.slice(0, 5), ['gb-num', 'gb-line', 'gb-line', 'gb-top', 'gb-tabs']);
+  assert.deepStrictEqual(gb.order.slice(0, 4), ['gb-num', 'gb-line', 'gb-line', 'gb-tabs']);   // via «Prestiti, regali e altro» (17/11/2026)
   assert(!gb.back && !gb.key && gb.sort, 'via «La tua libreria», niente chiave, riga Ordina · Raggruppa');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-412.png') });
   await p.click('#guestBar [data-t="wish"]'); await wait(400);

@@ -113,7 +113,7 @@ let net = 'ok', sbnHits = 0;
   assert.strictEqual(link, 'Umberto Eco 2');
   await click('#list .row[data-id="eco1"] .fchip[data-f="a"]'); await wait(150);
   assert.deepStrictEqual((await rows()).sort(), ['eco1', 'eco2']);
-  assert((await page.$eval('#activeFlt', e => e.innerText)).includes('Autore: Umberto Eco'));
+  assert((await page.$eval('#activeFlt', e => e.innerText)).includes('Autore: Eco, Umberto'));   // cognome prima nei filtri (102.3)
   await click('#activeFlt [data-clear="aut"]'); await wait(100);
 
   // ---- 5) catalogo SBN: indirizzo nelle opzioni, editore/anno/pagine/genere da SBN

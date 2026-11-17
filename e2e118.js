@@ -71,7 +71,7 @@ const hits = { wd: 0, cm: 0 };
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('prova:catalogo-libri-aufoto')));
   console.log('[salvate]', JSON.stringify(saved));
   assert(/330px-Antonio_Tabucchi/.test(saved['antonio tabucchi'][0]), 'foto di Tabucchi salvata');
-  assert(saved['italo calvino'][0] === '' && !saved['dino buzzati'] && saved['~v'] === 2, 'Calvino senza foto, Buzzati non salvato (errore), segno della pulizia');
+  assert(saved['italo calvino'][0] === '' && !saved['dino buzzati'] && saved['~v'] === 3, 'Calvino senza foto, Buzzati non salvato (errore), segno della pulizia');
 
   // 4) «Chi è» mostra la stessa foto
   await p.evaluate(() => document.querySelector('.gcard[aria-label^="Tabucchi"]').click()); await wait(300);

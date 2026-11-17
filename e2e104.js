@@ -39,6 +39,7 @@ function fake(req, res, body, url) {
     const l = Object.values(DB.rows).filter(x => x.utente === o && !x.cancellato && x.dati.w !== true && !x.dati.xs && !['p', 'q'].includes(x.dati.sk));
     return send(200, { visibili: true, totale: l.length, libri: l.map(x => ({ id: x.id, t: x.dati.t, a: x.dati.a, i: x.dati.i, img: x.dati.img, rs: x.dati.rs, rt: x.dati.rt })) });
   }
+  if (p === '/rest/v1/rpc/togli_amicizia') { DB.am = DB.am.filter(x => !((x.da === me && x.a === body.altro) || (x.da === body.altro && x.a === me))); return send(204); }
   if (p === '/rest/v1/rpc/miei_amici') return send(200, DB.am.filter(x => x.da === me || x.a === me).map(x => { const o = x.da === me ? x.a : x.da; return { id: o, utente: DB.prof[o].utente, nome: DB.prof[o].nome, stato: x.stato, verso: x.da === me ? 'inviata' : 'ricevuta', creato: x.creato }; }));
   if (p === '/rest/v1/rpc/desideri_di') {
     const o = body.amico; if (!friendsOk(me, o)) return send(400, { message: 'non amici' });
@@ -189,7 +190,7 @@ const base = 'http://localhost:' + CFG.port(8304);
   await A.click('#ntBody [data-n]'); await wait(600);
   const lid = await A.evaluate(() => window.NL.books().find(b => b.sk === 'p').id);
   assert(await A.$('.row.open[data-id="' + lid + '"]'), 'toccando l\'avviso si apre la scheda del libro');
-  assert(/L.ho restituito/.test(await A.$eval('.row.open[data-id="' + lid + '"]', x => x.innerText)), 'pulsante «L\'ho restituito»');
+  assert(/Restituiscilo/.test(await A.$eval('.row.open[data-id="' + lid + '"]', x => x.innerText)), 'pulsante «Restituiscilo»');
   // ---- consiglio: B lo consiglia ad A dalla condivisione ----
   await B.evaluate((id) => window.__app.openShare([window.NL.get(id)], { kind: 'book' }), bDue); await wait(400);
   assert(await B.$eval('#shareExt', x => !x.open), 'il link è in seconda fila');
@@ -233,21 +234,35 @@ const base = 'http://localhost:' + CFG.port(8304);
   await A.keyboard.press('Escape'); await wait(200);
   await A.evaluate(() => { window.NL.settings.sbnUrl = 'https://sbn-anna.workers.dev'; window.NL.saveSettings(); });
   await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
-  assert(await A.$eval('#guestKey', x => x.hidden).catch(() => true), 'icona solo se prestate (17/11/2026 notte)');
-  await A.evaluate(() => window.NLAmici.friend('uB')); await wait(600); await A.click('[data-f="keyshare"][data-id="uB"]'); await wait(400);
+  assert(await A.$eval('#guestKey', x => !x.hidden && !x.classList.contains('on') && /^Presta la tua chiave Google o il worker a Bruno$/.test(x.getAttribute('aria-label'))), 'icona sempre (hai chiave e worker), spenta (17/11/2026)');
+  // icona ⇄ (17/11/2026): via «Prestiti, regali e altro», la storia tra voi in una finestra
+  assert(!(await A.$('#guestBar .gb-more')), 'via «Prestiti, regali e altro»');
+  assert(await A.$eval('#guestSwap', x => !x.hidden && /Prestiti e regali tra te e Bruno/.test(x.getAttribute('aria-label'))), 'icona ⇄: tra voi c\'è un prestito');
+  await A.click('#guestSwap'); await wait(300);
+  t = await A.$eval('#swapSheet', x => x.innerText.replace(/\s+/g, ' '));
+  console.log('[storia]', t);
+  assert(/Tra te e Bruno/.test(t) && /In corso/.test(t) && /Già restituiti e regali/.test(t) && /Finzi-Contini/.test(t), 'finestra della storia');
+  await A.click('#swapClose'); await wait(200);
+  await A.click('#guestKey'); await wait(400);   // il tocco sull'icona apre la scelta (17/11/2026)
   assert(await A.$eval('#keyGb', x => x.checked) && await A.$eval('#keySbn', x => x.checked), 'all\'inizio tutte e due');
   await A.click('#keySbn'); await A.click('#keyGo'); await wait(600);
   assert.deepStrictEqual(DB.keys.map(k => [k.gb_key, k.sbn]), [['AIzaChiaveDiAnna', '']], 'solo la chiave');
   assert.match(await A.$eval('#guestKey', x => x.getAttribute('aria-label') + (x.classList.contains('on') ? ' ✓' : '')), /^Prestata: chiave API a .* ✓$/);
-  assert.match(await A.$eval('#friBody', x => x.innerText), /Prestata: chiave API\s*Cambia/, 'in «Prestiti, regali e altro»');
-  await A.evaluate(() => { document.getElementById('friSheet').hidden = true; });
   if (process.env.SCHERMATE) await A.screenshot({ path: require('path').join(process.env.SCHERMATE, 'amico-chiave.png') });
   await A.click('#guestKey'); await wait(400);
   assert(await A.$eval('#keyGb', x => x.checked) && !(await A.$eval('#keySbn', x => x.checked)), 'la scelta resta');
   assert.strictEqual(await A.$eval('#keyGo', x => x.textContent), 'Salva');
   assert(await A.evaluate(() => [...document.querySelectorAll('.sheet:not([hidden]) .sheet-in')].every(s => s.scrollWidth - s.clientWidth <= 0)), 'niente scorrimento di lato');
   await A.keyboard.press('Escape'); await wait(200);
-  await A.evaluate(() => window.NL.guestExit()); await wait(400);
+  // togli dagli amici: icona nella sua libreria, poi la conferma (17/11/2026)
+  const icos = await A.$$eval('#guestIcos > button:not([hidden])', x => x.map(b => b.id));
+  assert.deepStrictEqual(icos, ['guestSwap', 'guestKey', 'guestDrop'], 'tre icone, in ordine');
+  assert(await A.evaluate(() => { const m = document.querySelector('header.top .top-meta'), r = document.createRange(); r.selectNodeContents(m.firstChild); const t = r.getBoundingClientRect(), b = document.getElementById('guestIcos').getBoundingClientRect(); return t.right <= b.left; }), 'il nome non va sotto le icone');
+  await A.click('#guestDrop'); await wait(300);
+  assert.strictEqual(await A.$eval('#dropH', x => x.textContent), 'Togli Bruno dagli amici?');
+  await A.click('#dropNo'); await wait(200); assert(await A.$eval('#dropSheet', x => x.hidden) && DB.am.length === 1, 'Annulla: resta amico');
+  await A.click('#guestDrop'); await wait(300); await A.click('#dropGo'); await wait(900);
+  assert(DB.am.length === 0 && await A.evaluate(() => !window.NL.guest()), 'tolto, e si torna alla propria libreria');
   assert.deepStrictEqual(errors, []);
   console.log('e2e104 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });
