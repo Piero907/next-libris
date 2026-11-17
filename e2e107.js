@@ -71,7 +71,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     const cfg = await P.evaluate(() => window.NL.backupCfg());
     assert.strictEqual(cfg.gbKey, 'AIzaMiaVecchia000000', 'nel backup la mia chiave'); assert.strictEqual(cfg.sbnUrl, '', 'nel backup nessun worker (era di Anna)');
     assert(!JSON.stringify(cfg).includes('AIzaDiAnna') && !JSON.stringify(cfg).includes('sbn-anna'), 'nel backup niente di Anna');
-    await P.evaluate(() => window.NL.openOptions('share')); await wait(400);
+    await P.evaluate(() => window.NL.openOptions('search')); await wait(400);   // chiave e worker in Ricerca dei libri (17/11/2026)
     assert((await P.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc))).includes('lend'), 'la mia chiave si può ancora mandare');
     await P.click('#svcBox [data-svc="lend"]'); await wait(500); await P.click('#kwBody [data-kw="link"]'); await wait(300);   // Condivisione › Presta a un amico › Manda con un link (16/11/2026)
     const what = await P.$eval('#svcWhat', x => x.textContent); assert(/AIzaMi/.test(what) && !/AIzaDi|sbn-anna/.test(what), 'nel link solo la mia: ' + what);
@@ -80,7 +80,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     // ---- menu: «Info e condivisione» ----
     await P.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
     assert(await P.$eval('#infoList', x => x.hidden), 'chiusa all\'inizio');
-    assert(/Info e condivisione/.test(await P.$eval('#drawerOpts', x => x.innerText)));
+    assert(/Info e aiuto/.test(await P.$eval('#drawerOpts', x => x.innerText)));
     assert(!(await P.$('#setList [data-sec="share"]')) && !(await P.$('#setList [data-sec="app"]')), 'tolte da Impostazioni');
     await P.click('#goInfo'); await wait(400);
     const items = await P.$$eval('#infoList .dopt b', xs => xs.map(x => x.textContent));

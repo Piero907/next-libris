@@ -32,7 +32,7 @@ const assert = require('assert');
   assert(await drawerOpen()); assert(await vis('#drawerOpts')); assert(!(await vis('#drawerFilters'))); assert(!(await vis('#drawerFoot')));
   console.log('[1 voci]', await page.$$eval('#drawerOpts .dopt b', e => e.map(x => x.textContent).join(' | ')));
   await page.screenshot({ path: CFG.OUT + '/s_menu_opts.png' });
-  // 2) voce -> pagina; «‹» torna al menu; Indietro chiude tutto
+  // 2) voce -> pagina; «‹» torna al menu; Indietro torna al menu (17/11/2026), poi Indietro lo chiude
   await page.click('#drawerOpts [data-sec="search"]'); await wait(350);
   assert(!(await drawerOpen())); assert(await vis('#optSheet')); assert(await vis('#gbKey')); assert(!(await vis('#optPrice')));
   console.log('[2 titolo]', await page.$eval('#optH', e => e.textContent), '|', await page.$eval('#gbCount', e => e.textContent));
@@ -42,6 +42,8 @@ const assert = require('assert');
   await page.click('#drawerOpts [data-sec="fix"]'); await wait(350);
   assert(await vis('#btnMergeDups')); console.log('[2 sistema]', await page.$eval('#optH', e => e.textContent));
   await page.screenshot({ path: CFG.OUT + '/s_opt_fix.png' });
+  await page.goBack(); await wait(400);
+  assert(!(await vis('#optSheet'))); assert(await drawerOpen());
   await page.goBack(); await wait(400);
   assert(!(await vis('#optSheet'))); assert(!(await drawerOpen())); assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8143) + '/?vista=elenco');
   // le impostazioni funzionano ancora

@@ -98,10 +98,10 @@ const base = 'http://localhost:' + CFG.port(8308);
   assert.deepStrictEqual(sv.tipi, ['amicizie', 'prestiti', 'chiavi'], 'tipi scelti salvati');
   assert(sv.silenzio_da === 22 && sv.silenzio_a === 8 && sv.fuso, 'silenzio 22-8 e fuso');
   assert(await A.$eval('#puAsk', x => x.hidden), 'riga sparita');
-  // menu: «Notifiche» ultima sotto Impostazioni
+  // menu: «Notifiche» sotto Impostazioni, dopo Account e Amici e privacy, prima di Ricerca (17/11/2026)
   await A.evaluate(() => window.__app.openDrawer()); await wait(500);
   await A.click('#goSettings'); await wait(400);
-  assert.strictEqual(await A.$eval('#setList', x => x.lastElementChild.id), 'goPush', 'Notifiche ultima sotto Impostazioni');
+  assert.strictEqual(await A.$eval('#goPush', x => x.nextElementSibling && x.nextElementSibling.dataset.sec), 'search', 'Notifiche prima di Ricerca dei libri');
   assert(/Attive · silenzio 22-8/.test(await A.$eval('#goPushTxt', x => x.textContent)), 'sottotitolo: attive');
   await A.click('#goPush'); await wait(800);
   assert.strictEqual(await A.$eval('#optH', x => x.textContent), 'Notifiche', 'si apre la sezione');

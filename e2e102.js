@@ -100,9 +100,9 @@ const base = 'http://localhost:' + CFG.port(8302);
     m: [...document.getElementById('friMenu').children].map(x => x.id), after: document.getElementById('friMenuH').previousElementSibling.classList.contains('dmain'),
     acc: document.getElementById('goAcc').parentNode.id, fri: document.getElementById('goFriTxt').textContent }; });
   console.log('[menu]', JSON.stringify(menu));
-  assert.deepStrictEqual(menu.heads, ['Amici', 'La tua libreria']); assert(menu.after && menu.m.join() === 'goFri,goInv', 'Amici subito dopo Filtri/Statistiche');
+  assert.deepStrictEqual(menu.heads, ['Amici', 'La tua libreria']); assert(menu.after && menu.m.join() === 'goFri', 'Amici subito dopo Filtri/Statistiche («Invita» nella finestra Amici, 17/11/2026)');
   assert.strictEqual(menu.acc, 'setList', 'Account e sincronizzazione sotto Impostazioni');
-  assert(/Scegli il nome/.test(menu.fri), 'senza nome il Menu lo chiede');
+  assert(/Scegli il tuo nome/.test(menu.fri), 'senza nome il Menu lo chiede');
   await A.evaluate(() => window.__app.closeDrawer()); await wait(300);
   await A.click('#btnFri'); await wait(700);
   assert.strictEqual(await A.$eval('#friU', x => x.value), 'Anna', 'il nome proposto è quello dell\'app');

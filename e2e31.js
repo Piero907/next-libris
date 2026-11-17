@@ -24,16 +24,16 @@ const W = 'https://sbn-libri.piero.workers.dev', K = 'AIzaSyA1b2C3d4E5f6G7h8I9j0
     await p.goto(url, { waitUntil: 'load' }); await wait(400); return p;
   }
   const tap = (p, s) => p.$eval(s, e => e.click()), hid = (p, s) => p.$eval(s, e => e.hidden), txt = (p, s) => p.$eval(s, e => e.innerText.replace(/\s+/g, ' ').trim());
-  const link = async p => { await tap(p, '#svcBox [data-svc="lend"]'); await wait(300); await tap(p, '#kwBody [data-kw="link"]'); };   // Condivisione › Presta a un amico › Manda con un link (16/11/2026)
+  const link = async p => { await tap(p, '#svcBox [data-svc="lend"]'); await wait(300); await tap(p, '#kwBody [data-kw="link"]'); };   // Ricerca dei libri › Con gli amici › Presta a un amico › Manda con un link (17/11/2026)
   const set = p => p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
   // 1) senza chiave né worker: pulsante disattivato
   let p = await open(BASE, {});
-  await p.evaluate(() => window.__app.openOptions('share')); await wait(150);
+  await p.evaluate(() => window.__app.openOptions('search')); await wait(150);
   assert.deepStrictEqual(await p.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc)), ['guide'], 'niente da prestare: solo la guida (16/11/2026)');
   await p.browserContext().close();
   // 2) chi invia
   p = await open(BASE, { name: 'Piero', sbnUrl: W, gbKey: K });
-  await p.evaluate(() => window.__app.openOptions('share')); await wait(150);
+  await p.evaluate(() => window.__app.openOptions('search')); await wait(150);
   await link(p); await wait(150);
   assert(!(await hid(p, '#svcSheet'))); console.log('[2 foglio]', await txt(p, '#svcWhat'), '|', (await txt(p, '.svc-warn')).slice(0, 60) + '…');
   await p.screenshot({ path: CFG.OUT + '/svc_send.png' });
@@ -42,7 +42,7 @@ const W = 'https://sbn-libri.piero.workers.dev', K = 'AIzaSyA1b2C3d4E5f6G7h8I9j0
   assert(sh.text.startsWith('Piero ti manda la chiave Google e il worker SBN per Next Libris')); assert(/#k=[zj][\w-]+$/.test(sh.url)); assert(!sh.text.includes(K));
   const lnk = sh.url.split('#')[1];
   // solo il worker
-  await p.evaluate(() => window.__app.openOptions('share')); await wait(100); await link(p); await wait(100);
+  await p.evaluate(() => window.__app.openOptions('search')); await wait(100); await link(p); await wait(100);
   await p.$eval('#svcKeyOn', e => { e.checked = false; }); await tap(p, '#svcCopy'); await wait(300);
   const onlyW = (await p.evaluate(() => window.__copied))[0]; assert(onlyW.startsWith('Piero ti manda il worker SBN')); const linkW = onlyW.match(/#(k=[\w-]+)$/)[1];
   assert.deepStrictEqual(p.errors, []); await p.browserContext().close();

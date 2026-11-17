@@ -128,9 +128,10 @@ const base = 'http://localhost:' + CFG.port(8309);
   // ---- Anna: chiave e worker suoi ----
   const A = await phone('A', 'uA', 360);
   await A.evaluate((k) => { const s = window.NL.settings; s.gbKey = k; s.sbnUrl = 'https://anna.workers.dev'; s.name = 'Anna'; window.NL.saveSettings(); }, KEY);
-  await A.evaluate(() => window.__app.openOptions('share')); await wait(600);
+  await A.evaluate(() => window.__app.openOptions('search')); await wait(600);   // chiave e worker in Ricerca dei libri (17/11/2026)
   assert.deepStrictEqual(await A.svc(), ['lend'], 'Anna: solo «Presta a un amico»');
   console.log('[Anna]', await A.txt('#svcBox'));
+  await A.evaluate(() => window.__app.openOptions('share')); await wait(300);
   assert(/I preferiti di Anna Maria Bellini/.test(await A.txt('#optNameHint')), 'esempio con il suo nome');
   assert(!(await A.$('#svcShareBtn')) && !(await A.$('#optFriKeys')), 'via i due pulsanti di prima');
   await A.shot('109-1-condivisione-anna-360');
@@ -181,7 +182,7 @@ const base = 'http://localhost:' + CFG.port(8309);
   for (const [w, dark] of [[360, false], [412, true]]) {
     const tag = w + (dark ? '-scuro' : '');
     const B = await phone('B' + w, 'uB', w, dark);
-    await B.evaluate(() => { window.NL.settings.name = 'Bruno'; window.NL.saveSettings(); window.__app.openOptions('share'); }); await wait(900);
+    await B.evaluate(() => { window.NL.settings.name = 'Bruno'; window.NL.saveSettings(); window.__app.openOptions('search'); }); await wait(900);
     console.log('[Bruno ' + tag + ']', await B.txt('#svcBox'));
     assert.deepStrictEqual(await B.svc(), ['offer', 'guide'], 'Bruno: offerta di Anna e guida');
     assert(/Anna Maria Bellini ti presta chiave Google e worker/.test(await B.txt('#svcBox')));

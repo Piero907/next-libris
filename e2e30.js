@@ -50,12 +50,12 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   console.log('[2 scuro]', await p.$eval('#splash', e => getComputedStyle(e).backgroundColor + ' | ' + e.innerText.replace(/\s+/g, ' ')));
   assert.strictEqual(await p.$eval('#splash', e => getComputedStyle(e).backgroundColor), 'rgb(36, 86, 63)'); await p.screenshot({ path: CFG.OUT + '/splash_dark.png' });
   assert.strictEqual(await p.$eval('#splashWho', e => e.textContent), 'Libreria di Piero');
-  await wait(1300); console.log('[2 testata]', await p.$eval('#owner', e => e.innerText)); assert.strictEqual(await p.$eval('#owner', e => e.innerText), 'Libreria di Piero');
+  await wait(1300); console.log('[2 testata]', await p.$eval('#owner', e => e.innerText)); assert.strictEqual(await p.$eval('#owner', e => e.innerText), 'Piero');   // testata su una riga: «Piero · N libri» (17/11/2026)
   await p.screenshot({ path: CFG.OUT + '/owner.png', clip: { x: 0, y: 0, width: 390, height: 180 } });
   // cambiare nome aggiorna la testata
   await p.evaluate(() => window.__app.openOptions('share')); await wait(150);
   await p.$eval('#optName', e => { e.value = 'Anna'; e.dispatchEvent(new Event('change')); }); await wait(100);
-  assert.strictEqual(await p.$eval('#owner', e => e.innerText), 'Libreria di Anna');
+  assert.strictEqual(await p.$eval('#owner', e => e.innerText), 'Anna');
   await p.browserContext().close();
   p = await open(false); await wait(50);
   const b = await p.$eval('#splash', e => getComputedStyle(e).display).catch(() => 'rimossa');

@@ -34,11 +34,11 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   await page.click('#layNav [data-l="menu"]'); await wait(450);
   let m = await menu(); console.log('[1 menu]', JSON.stringify(m));
   assert.deepStrictEqual(m.heads, ['Amici', 'La tua libreria']);   // parte «Amici» (amici.js) dal 16/11/2026, subito sotto Filtri/Statistiche
-  assert(m.rows.indexOf('goFri') < m.rows.indexOf('goInv') && m.rows.indexOf('goInv') < m.rows.indexOf('fix') && m.rows.indexOf('export') < m.rows.indexOf('goSettings'), 'ordine: amici, libreria (con account), impostazioni');
+  assert(m.rows.indexOf('goFri') >= 0 && m.rows.indexOf('goInv') < 0 && m.rows.indexOf('goFri') < m.rows.indexOf('fix') && m.rows.indexOf('export') < m.rows.indexOf('goSettings'), 'ordine: amici, libreria (con account), impostazioni');
   assert(!m.setOpen && m.exp === 'false', 'impostazioni chiuse');
   for (const k of ['look', 'search', 'cards', 'share', 'app']) assert(!m.rows.includes(k), k + ' nascosta');
   assert(m.rows.includes('fix') && m.rows.includes('export') && m.rows.includes('goSettings') && m.rows.includes('donMenu'));
-  assert(m.rows.indexOf('export') < m.rows.indexOf('goSettings') && m.rows.indexOf('goSettings') < m.rows.indexOf('donMenu'), 'ordine: libreria, impostazioni, sostieni');
+  assert(m.rows.indexOf('export') < m.rows.indexOf('donMenu') && m.rows.indexOf('donMenu') < m.rows.indexOf('goSettings'), 'ordine: libreria, sostieni, impostazioni (17/11/2026)');
   assert(/Ultimo backup: 15\/11\/2026/.test(m.bk), 'data del backup dentro la voce Backup');
   assert(await vis('#verBox'), 'versione in fondo');
   assert(await page.evaluate(() => document.querySelector('#donMenu').compareDocumentPosition(document.querySelector('#verBox')) & Node.DOCUMENT_POSITION_FOLLOWING), 'Sostieni sopra la versione');
@@ -47,8 +47,8 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   await page.click('#goSettings'); await wait(400);
   m = await menu(); console.log('[2 aperte]', m.rows.join(' '));
   assert(m.setOpen && m.exp === 'true');
-  assert.deepStrictEqual(m.rows.filter(k => ['look', 'search', 'cards', 'share', 'app'].includes(k)), ['look', 'search', 'cards']);   // condivisione e installazione in «Info e condivisione» (16/11/2026, e2e107)
-  assert(m.rows.indexOf('goSettings') < m.rows.indexOf('goInfo') && m.rows.indexOf('goInfo') < m.rows.indexOf('donMenu'), 'Info e condivisione tra Impostazioni e Sostieni');
+  assert.deepStrictEqual(m.rows.filter(k => ['look', 'search', 'cards', 'share', 'app'].includes(k)), ['search', 'cards', 'look']);   // ordine d'uso; condivisione e installazione in «Info e aiuto» (17/11/2026, e2e112)
+  assert(m.rows.indexOf('donMenu') < m.rows.indexOf('goSettings') && m.rows.indexOf('goSettings') < m.rows.indexOf('goInfo'), 'Sostieni, poi Impostazioni, poi Info e aiuto');
   await page.screenshot({ path: CFG.OUT + '/menu_impostazioni.png' });
   // entro in Aspetto e torno indietro con la freccetta: restano aperte
   await page.click('#drawerOpts [data-sec="look"]'); await wait(400);
