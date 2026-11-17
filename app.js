@@ -1552,10 +1552,11 @@ function visible() {
   if (edFlt) a = a.filter(function (b) { return facetKey(b.e) === edFlt; });
   if (readFlt && tab === 'lib') a = a.filter(function (b) { return readFlt === 'no' ? !b.rs : b.rs === readFlt; });
   if (flt === 'loan') {
-    return a.filter(function (b) { return b.p; }).sort(function (x, y) { return (x.pd || '9') < (y.pd || '9') ? -1 : (x.pd || '9') > (y.pd || '9') ? 1 : cmpFor('titolo')(x, y); });
+    return a.filter(isLoan).sort(function (x, y) { return (x.pd || '9') < (y.pd || '9') ? -1 : (x.pd || '9') > (y.pd || '9') ? 1 : cmpFor('titolo')(x, y); });
   }
   return a.sort(cmpFor(sortBy));
 }
+function isLoan(b) { return !!b.p || ((b.sk === 'p' || b.sk === 'q') && !b.xs); }   // prestato da te, o ricevuto da un amico (Piero, 17/11/2026)
 function cmpFor(k) {
   var byTitle = function (x, y) { return coll.compare(L.sortKeyTitle(x.t) || '~', L.sortKeyTitle(y.t) || '~'); };
   var byAuthor = function (x, y) { return coll.compare(L.sortKeyAuthor(x.a, settings.auCut) || '~', L.sortKeyAuthor(y.a, settings.auCut) || '~'); };
@@ -1591,7 +1592,7 @@ function flagsHTML(b, dups) {
     '<button type="button" class="btn sm ret-btn" data-act="returned">È tornato: segna restituito</button>';
   o += goneTag(b);
   o += recvTag(b);
-  if (b.sk === 'p' && !b.xs) o += '<button type="button" class="btn sm ret-btn" data-act="recv">L\'ho restituito</button>';
+  if (b.sk === 'p' && !b.xs) o += '<button type="button" class="btn sm ret-btn" data-act="recv">Restituiscilo</button>';   // tasto vero, pieno (Piero, 17/11/2026)
   o += fromTag(b);
   if (b.g.length) o += '<span class="tag warn tap" data-act="verify" role="button" tabindex="0" title="Dati dedotti (dalla copertina o dal codice ISBN): controllali, potrebbero non coincidere con il tuo libro. Toccalo quando hai controllato.">Da verificare ✓</span>';
   o += dupTag(dups && dups[b.id]);
@@ -2613,12 +2614,23 @@ async function auLookup(name) {
     }
     if (!r) r = direct || other;                        // nessuno scrittore: la voce col suo nome (fotografo, cuoco…) o il primo trovato
   }
-  if (r && !r.img && r.qid) {                           // la voce italiana senza foto (Antonio Tabucchi, 17/11/2026): la foto di Wikidata
-    try { r.img = await auWdImg(r.qid); } catch (e) { r.retry = true; }   // senza rete: non si salva «senza foto», si riprova
+  if (r && !r.img) {                                    // il riassunto da' solo le foto libere: quella caricata solo su it.wikipedia (Ennio Flaiano, 17/11/2026)
+    try { r.img = await auPageImg(r.title); } catch (e) { if (!(e && e.status)) r.retry = true; }   // senza rete: non si salva «senza foto», si riprova
+  }
+  if (r && !r.img && !r.retry && r.qid) {               // la voce italiana senza foto (Antonio Tabucchi, 17/11/2026): la foto di Wikidata
+    try { r.img = await auWdImg(r.qid); } catch (e) { r.retry = true; }
   }
   if (r && r.retry) return r;
   auCache[name] = r || { none: true };
   return auCache[name];
+}
+/* foto della voce di it.wikipedia di qualunque licenza (le foto «di pubblico dominio in Italia» stanno solo li', non su Commons) */
+async function auPageImg(title) {
+  if (!title) return '';
+  var j = await L.getJson(fetch, 'https://it.wikipedia.org/w/api.php?action=query&format=json&origin=*&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=330&pilicense=any&titles=' + encodeURIComponent(title), { waits: [], timeout: 8000 });
+  var pg = (j && j.query && j.query.pages) || {}, u = '';
+  Object.keys(pg).forEach(function (k) { var t = pg[k] && pg[k].thumbnail && pg[k].thumbnail.source; if (!u && typeof t === 'string' && /^https:\/\/upload\.wikimedia\.org\//.test(t)) u = t; });
+  return u;
 }
 /* foto della persona su Wikidata (proprieta' P18) e la sua miniatura su Commons: 2 richieste, solo per chi non ha la foto su it.wikipedia */
 async function auWdImg(qid) {
@@ -2659,7 +2671,7 @@ async function openAuthor(id, name) {
 }
 function auPic(src, name) {                        // foto dell'autore da Wikipedia (Commons); se non c'e' o non si carica, niente riquadro
   var f = $('#auPic'), im = f.querySelector('img');
-  f.hidden = true; f.classList.remove('big'); im.removeAttribute('src');
+  f.hidden = true; im.removeAttribute('src');
   if (!src) return;
   im.onload = function () { if (auNow && auNow.name === name) f.hidden = false; };
   im.onerror = function () { f.hidden = true; };
@@ -2697,7 +2709,14 @@ document.addEventListener('click', function (e) {
 });
 function closeAuthor() { $('#auSheet').hidden = true; auNow = null; }
 $('#auClose').addEventListener('click', closeAuthor);
-$('#auPic').addEventListener('click', function () { var f = $('#auPic'), on = !f.classList.contains('big'); f.classList.toggle('big', on); f.setAttribute('aria-label', on ? 'Rimpicciolisci la foto' : 'Ingrandisci la foto'); });
+/* tocco sulla foto dell'autore: a tutto schermo nel visore delle foto, piu' nitida (Piero, 17/11/2026); se la grande non c'e', la piccola */
+function auBig(src) { return /^https:\/\/upload\.wikimedia\.org\/.+\/thumb\//.test(src) ? src.replace(/\/\d+px-([^\/]+)$/, '/960px-$1') : src; }
+$('#auPic').addEventListener('click', function () {
+  var im = $('#auPic img'), src = im.getAttribute('src'); if (!src || !auNow) return;
+  var big = auBig(src), ph = $('#phImg');
+  openPh(big, auNow.name); $('#phView').classList.add('au');
+  if (big !== src) ph.onerror = function () { ph.onerror = null; ph.src = src; };
+});
 $('#auSheet').addEventListener('click', function (e) { if (e.target === e.currentTarget) closeAuthor(); });
 $('#auWeb').addEventListener('click', function () { if (auNow) window.open('https://www.google.com/search?q=' + encodeURIComponent(auNow.name + ' scrittore'), '_blank', 'noopener'); });
 $('#auMine').addEventListener('click', function () { if (!auNow) return; var n = auNow.name; closeAuthor(); applyFacet('a', L.norm(n), n); });
@@ -3049,7 +3068,7 @@ function openPh(src, cap, many) {
 }
 function closePh(fromPop) {
   if ($('#phView').hidden) return;
-  $('#phView').hidden = true; $('#phImg').removeAttribute('src');
+  $('#phView').hidden = true; $('#phView').classList.remove('au'); $('#phImg').onerror = null; $('#phImg').removeAttribute('src');
   if (phPushed && !fromPop) { phPushed = false; try { history.back(); } catch (e) { nlErr(e); } }
 }
 $('#phClose').addEventListener('click', function () { closePh(false); });
@@ -3906,6 +3925,7 @@ function renderList() {
       : '<p class="none">Nessun libro corrisponde ' + (activeCount() ? (q ? 'alla ricerca e ai filtri.' : 'ai filtri.') : 'alla ricerca.') + '</p><p><button class="btn" data-act="clearflt">' + (activeCount() ? (q ? 'Azzera ricerca e filtri' : 'Azzera i filtri') : 'Cancella la ricerca') + '</button></p>';
     return;
   }
+  if (flt === 'loan' && tab === 'lib') { renderLoans(list, vis); return; }
   var g = grpMode();
   if (g) { renderGroups(list, vis, g); return; }
   /* i libri «In lettura» in cima, in una sezione che si apre e chiude; sotto gli altri (solo Libreria, ordine «Più recenti», senza ricerca ne' filtri) */
@@ -3930,6 +3950,26 @@ function renderList() {
   list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], rowsOf); }).join('') : rowsOf(vis);
   emit('rows', list);                              // i moduli possono sistemare le schede appena disegnate
   autosizeAll(list);
+  paintSel();
+}
+/* «N in prestito» toccato (Piero, 17/11/2026): «Prestati a» (i tuoi) e «Prestati da» (ricevuti dagli amici), dentro un gruppo per persona;
+   sezioni che si aprono e chiudono come «In lettura» (aperte di partenza, se lo ricorda); dentro, dai prestiti piu' vecchi */
+function loanKey(n) { return L.norm(n).replace(/[^a-z0-9]+/g, '-').slice(0, 40) || 'x'; }
+function renderLoans(list, vis) {
+  var grid = settings.view === 'grid', dups = grid ? null : computeDups();
+  var inner = function (a) { return grid ? '<div class="grid">' + a.map(coverHTML).join('') + '</div>' : a.map(function (b) { return rowHTML(b, dups); }).join(''); };
+  var sec = function (k, cls, title, n, body) {
+    var open = !(settings.shelfShut || {})[k];
+    return '<section class="shelf grp' + cls + ' shelf-' + k + '"><button type="button" class="shelf-h" data-shelf="' + k + '" aria-expanded="' + open + '" aria-controls="shelf-' + k + '">' +
+      '<span class="sh-t">' + esc(title) + '</span><span class="sh-n">' + n + '</span><svg class="sh-c" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
+      '<div class="shelf-b" id="shelf-' + k + '"' + (open ? '' : ' hidden') + '>' + body + '</div></section>';
+  };
+  var parts = [['lo-a', 'Prestati a', vis.filter(function (b) { return b.p; }), function (b) { return b.p; }],
+    ['lo-da', 'Prestati da', vis.filter(function (b) { return !b.p && b.sda; }), function (b) { return b.sda; }]];
+  list.innerHTML = '<div class="loan-groups">' + parts.filter(function (x) { return x[2].length; }).map(function (x) {
+    return sec(x[0], '', x[1], x[2].length, groupBy(x[2], x[3], '?').map(function (pp) { return sec(x[0] + '-' + loanKey(pp[1]), ' grp-sub', pp[1], pp[2].length, inner(pp[2])); }).join(''));
+  }).join('') + '</div>';
+  if (!grid) { emit('rows', list); autosizeAll(list); }
   paintSel();
 }
 /* ---- Raggruppa per (Piero, 17/11/2026; nuovo modo 17/11 sera): autore, genere, genere e poi autore, lettura; nelle copertine e nell'elenco.
@@ -3973,9 +4013,9 @@ function aufMap() {
   if (!aufo) {
     try { aufo = JSON.parse(ls.get(AUF_LS) || '{}'); } catch (e) { nlErr(e); }
     if (!aufo || typeof aufo !== 'object') aufo = {};
-    if (aufo['~v'] !== 2) {                              // 17/11/2026: prima si guardava solo it.wikipedia, i vecchi «senza foto» si ricercano (anche Wikidata)
+    if (aufo['~v'] !== 3) {                              // 17/11/2026: i vecchi «senza foto» si ricercano (v2: anche Wikidata; v3: anche le foto non libere di it.wikipedia, Flaiano)
       Object.keys(aufo).forEach(function (k) { if (!Array.isArray(aufo[k]) || !aufo[k][0]) delete aufo[k]; });
-      aufo['~v'] = 2;
+      aufo['~v'] = 3;
       try { ls.set(AUF_LS, JSON.stringify(aufo)); } catch (e) { nlErr(e); }
     }
   }
@@ -4209,7 +4249,7 @@ function updateSummary() {
   var gone = all.length - done.length;
   var total = done.reduce(function (a, b) { return a + (b.c || 0); }, 0);
   var g = all.filter(function (b) { return b.g.length; }).length;
-  var loans = tab === 'lib' ? done.filter(function (b) { return b.p; }).length : 0;
+  var loans = tab === 'lib' ? done.filter(isLoan).length : 0;
   var n = done.length;
   $('#summary').innerHTML = tab === 'wish'
     ? (n ? '<b>' + n + '</b> da comprare · <b>' + esc(eur(total)) + '</b>' : 'Nessun libro da comprare')
@@ -6697,8 +6737,8 @@ $('#fltLoan').addEventListener('click', function () {
   if (on) toast(allLoansText());
 });
 function allLoansText() {
-  var n = state.books.filter(function (b) { return !b.w && b.p; }).length;
-  return n ? (n === 1 ? '1 libro in prestito.' : n + ' libri in prestito, dai più vecchi.') + (document.querySelector('#fltLoan') && document.querySelector('#fltLoan').offsetParent ? ' Tocca di nuovo «Prestati» per vederli tutti.' : ' Tocca di nuovo «in prestito» per vederli tutti.') : 'Nessun libro in prestito.';
+  var n = state.books.filter(function (b) { return !b.w && !b.xs && isLoan(b); }).length;
+  return n ? (n === 1 ? '1 libro in prestito.' : n + ' libri in prestito: prestati a e prestati da, per persona.') + (document.querySelector('#fltLoan') && document.querySelector('#fltLoan').offsetParent ? ' Tocca di nuovo «Prestati» per vederli tutti.' : ' Tocca di nuovo «in prestito» per vederli tutti.') : 'Nessun libro in prestito.';
 }
 $('#tabLib').addEventListener('click', function () { if (guest) guestExit(true); setTab('lib'); });   // Libreria e Desideri: sempre i tuoi (Piero, 17/11/2026 sera)
 $('#tabWish').addEventListener('click', function () { if (guest) guestExit(true); setTab('wish'); });
