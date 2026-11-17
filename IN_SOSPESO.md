@@ -337,6 +337,12 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 
 **Da cambiare:** Google Cloud (origini e Branding: home, privacy, domini), Supabase (Site URL e Redirect URLs nei due progetti), worker Cloudflare (origine ammessa), indirizzi nel codice, privacy.html, manifest, link d'invito già mandati (`?amico=`), documenti del progetto. Le prove usano `/next-libris-prova/`.
 
+### 30. Versioni accessibili per chi non distingue i colori (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** versioni dell'app adatte ai daltonici, prima **verificando se si può fare**. Nulla fatto.
+
+**Appunti per la verifica (non ancora controllati):** l'app ha già Aspetto › tema e colori, quindi una scelta in più («Colori per daltonici») si aggancia lì. Da controllare: dove il colore da solo porta un significato (pallino della sincronizzazione verde/arancio, avvisi ⚠, prestiti, «da verificare», interruttori acceso/spento, grafici delle Statistiche e della stagione in libri); per ognuno serve anche un segno o una parola, non solo il colore. Provare i colori con un simulatore (protanopia, deuteranopia, tritanopia) e il contrasto WCAG.
+
 ## Fatti (tolti dall'elenco)
 
 - **1. Fotocamera e luce:** fotocamera del telefono (v90), controllo dell'obiettivo (v91), «Prova la luce» (v92). Restano solo le verifiche nella parte B.
