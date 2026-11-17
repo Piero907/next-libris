@@ -43,20 +43,19 @@ const APP = 'http://localhost:' + CFG.port(8314);
   assert.strictEqual(c.inline, 0, 'nessuno script scritto nella pagina'); assert.deepStrictEqual(c.attr, [], 'nessun onload/onerror/onclick nell\'HTML');
   const pwn = await page.evaluate(() => { const s = document.createElement('script'); s.textContent = 'window.__pwn = 1'; document.head.appendChild(s);
     const d = document.createElement('div'); d.innerHTML = '<img src="x" onerror="window.__pwn2 = 1">'; document.body.appendChild(d);
-    return new Promise(r => setTimeout(() => r([window.__pwn, window.__pwn2]), 300)); });
-  assert.deepStrictEqual(pwn, [undefined, undefined], 'script e onerror aggiunti da fuori bloccati');
-  H.csp.splice(0, H.csp.length);   // quei due blocchi erano voluti
+    return new Promise(r => setTimeout(() => r([typeof window.__pwn, typeof window.__pwn2]), 300)); });
+  assert.deepStrictEqual(pwn, ['undefined', 'undefined'], 'script e onerror aggiunti da fuori bloccati');
+  await H.sleep(300); H.csp.splice(0, H.csp.length);   // quei due blocchi erano voluti
 
   // 3) data-rm: l'immagine che non si carica sparisce
   const rm = await page.evaluate(() => new Promise(r => { const i = document.createElement('img'); i.setAttribute('data-rm', ''); i.id = 'rmProva'; i.src = '/non-c-e.png'; document.body.appendChild(i); setTimeout(() => r(!!document.getElementById('rmProva')), 600); }));
   assert.strictEqual(rm, false, 'immagine rotta tolta');
 
   // 4) registro degli errori nella mail di Contatti
-  const mail = await page.evaluate(() => { window.nlErr(new Error('errore di prova')); window.nlErr(new Error('errore di prova')); setTimeout(() => { throw new Error('errore non preso'); }, 0);
+  const mail = await page.evaluate(() => { window.nlErr(new Error('errore di prova')); window.nlErr(new Error('errore di prova')); window.dispatchEvent(new ErrorEvent('error', { error: new Error('errore non preso'), message: 'errore non preso' })); window.dispatchEvent(new PromiseRejectionEvent('unhandledrejection', { promise: Promise.resolve(), reason: new Error('promessa rifiutata') }));
     return new Promise(r => setTimeout(() => r(decodeURIComponent(window.NL.contactURL())), 100)); });
   console.log('[mail]', mail.split('---')[1].replace(/\n/g, ' | ').slice(0, 260));
-  assert(/Ultimi errori:/.test(mail) && /errore di prova \(×2\)/.test(mail) && /errore non preso/.test(mail), 'errori in fondo alla mail');
-  errors.splice(errors.indexOf('errore non preso'), 1);
+  assert(/Ultimi errori:/.test(mail) && /errore di prova \(×2\)/.test(mail) && /errore non preso/.test(mail) && /promessa rifiutata/.test(mail), 'errori in fondo alla mail');
 
   // 5) dentro la cornice di un altro sito: solo il link
   const p2 = await browser.newPage();

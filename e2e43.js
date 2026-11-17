@@ -110,6 +110,8 @@ const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: 
     const pix = (fx, fy) => page.evaluate((fx, fy) => { const c = document.querySelector('#pedCanvas'); const d = c.getContext('2d').getImageData(Math.round(c.width * fx), Math.round(c.height * fy), 1, 1).data; return [d[0], d[1], d[2]]; }, fx, fy);
     const tap = async (fx, fy) => { const r = await page.$eval('#pedCanvas', e => { const b = e.getBoundingClientRect(); return { x: b.left, y: b.top, w: b.width, h: b.height }; }); await page.mouse.click(r.x + r.w * fx, r.y + r.h * fy); await wait(80); };
     const white = p => p[0] > 235 && p[1] > 235 && p[2] > 235;
+    // il punto più rosso vicino a (fx, fy): al centro di un'etichetta ci sono le lettere bianche (17/11/2026, caratteri veri al posto di quelli di riserva)
+    const redNear = async (fx, fy) => { let b = [0, 255, 255]; for (const dx of [-0.04, -0.02, 0, 0.02, 0.04]) for (const dy of [-0.012, 0, 0.012]) { const q = await pix(fx + dx, fy + dy); if (q[0] - q[1] > b[0] - b[1]) b = q; } return b; };
     // 1) gomma: cancella meta' dell'evidenziatore
     await drag(0.1, 0.75, 0.9, 0.75);
     assert(!white(await pix(0.3, 0.75)) && !white(await pix(0.7, 0.75)));
@@ -123,7 +125,8 @@ const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: 
     await page.screenshot({ path: CFG.OUT + '/ped_stk_tray.png' });
     await tap(0.25, 0.35);
     await click('#pedStk [data-l="Importante"]'); await tap(0.7, 0.35);
-    const e1 = await pix(0.25, 0.35), l1 = await pix(0.7, 0.35); console.log('[adesivi] emoticon', e1, 'etichetta', l1);
+    const e1 = await pix(0.25, 0.35);
+    const l1 = await redNear(0.7, 0.35); console.log('[adesivi] emoticon', e1, 'etichetta', l1);
     assert(!white(e1), 'emoticon disegnata'); assert(l1[0] > 170 && l1[1] < 90 && l1[2] < 110, 'etichetta rossa');
     // 3) piu' grande, poi sposto l'etichetta
     const before = await page.evaluate(() => 0);
@@ -132,7 +135,7 @@ const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: 
     await page.mouse.move(r.x + r.w * 0.7, r.y + r.h * 0.35); await page.mouse.down();
     for (let i = 1; i <= 8; i++) await page.mouse.move(r.x + r.w * 0.7, r.y + r.h * (0.35 + 0.25 * i / 8));
     await page.mouse.up(); await wait(100);
-    const l2 = await pix(0.7, 0.35), l3 = await pix(0.7, 0.6); console.log('[spostata] prima', l2, 'dopo', l3);
+    const l2 = await redNear(0.7, 0.35), l3 = await redNear(0.7, 0.6); console.log('[spostata] prima', l2, 'dopo', l3);
     assert(l3[0] > 170 && l3[1] < 90, 'etichetta nel nuovo posto'); assert(!(l2[0] > 170 && l2[1] < 90 && l2[2] < 110), 'non piu\' nel vecchio');
     await page.screenshot({ path: CFG.OUT + '/ped_stk.png' });
     // 4) la gomma toglie l'adesivo con un tocco; «↶» lo rimette
@@ -142,7 +145,8 @@ const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: 
     // 5) Fatto: la foto salvata ha segni e adesivi
     await click('#pedDone');
     await page.waitForFunction(() => document.querySelector('#ped').hidden && document.querySelectorAll('#quoteThumbs li').length === 1, { timeout: 10000 });
-    const t1 = await thumbColor(0, 0.3, 0.75), t2 = await thumbColor(0, 0.7, 0.6), t3 = await thumbColor(0, 0.75, 0.75);
+    const t1 = await thumbColor(0, 0.3, 0.75), t3 = await thumbColor(0, 0.75, 0.75);
+    let t2 = [0, 255, 255]; for (const dx of [-0.04, -0.02, 0, 0.02, 0.04]) for (const dy of [-0.012, 0, 0.012]) { const q = await thumbColor(0, 0.7 + dx, 0.6 + dy); if (q[0] - q[1] > t2[0] - t2[1]) t2 = q; }   // come redNear, sulla miniatura
     console.log('[salvata] evidenziato', t1, 'etichetta', t2, 'cancellato', t3);
     assert(t1[2] < 200 && t2[0] > 170 && t2[1] < 100 && t3[2] > 225);
     await click('#quoteCancel');

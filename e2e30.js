@@ -36,7 +36,7 @@ const server = H.serve(CFG.port(8147), ROOT);
   assert.strictEqual(await p.$eval('#owner', e => e.textContent), 'Scrivi il tuo nome'); assert.strictEqual(s0.bg, 'rgb(36, 86, 63)');
   assert.strictEqual(await p.$eval('meta[name="theme-color"]', m => m.content), '#24563F', 'barra in alto verde durante l\'apertura');
   assert.strictEqual(await p.$eval('#splash b', e => getComputedStyle(e).color), 'rgb(244, 241, 232)');
-  assert.strictEqual(await p.$eval('link[href*="fonts.googleapis.com/css2"]:not(noscript link)', l => l.media), 'print', 'i caratteri di Google non bloccano (internet bloccato nel test)'); assert(s0.w === 390 && s0.h === 844);
+  assert(!(await p.$('link[href*="fonts.googleapis.com"]')), 'caratteri dall\'app, non da Google (17/11/2026)'); assert(s0.w === 390 && s0.h === 844);
   await p.screenshot({ path: CFG.OUT + '/splash.png' });
 
   assert.strictEqual(await p.$eval('#splash', e => getComputedStyle(e).zIndex), '10000');
