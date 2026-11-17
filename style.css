@@ -1769,3 +1769,21 @@ html[data-look="nuovo"] .gc-face.sm .gc-ph::before,html[data-look="nuovo"] .gc-f
 .au-cut .link{font-size:14px;padding:0 0 0 4px;min-height:0}
 .au-cut .auc-opts{margin:6px 0 0;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
 .au-cut .auc-auto{display:block;margin:4px 10px 6px;padding:0}
+/* dimensione delle copertine (giro 1, 18/11/2026): N per riga sul telefono, stessa grandezza sugli schermi larghi; due dita sulle copertine */
+@media (max-width:699px){ body.cols #list .grid{grid-template-columns:repeat(var(--cols),minmax(0,1fr))} }
+@media (min-width:700px){ body.cols #list .grid{grid-template-columns:repeat(auto-fill,minmax(calc(600px / var(--cols)),1fr))} }
+body.cols-sm #list .grid{gap:12px 8px}
+body.cols-sm #list .cover .cap{font-size:12px}
+body.cols-sm #list .cover .ph{padding:6px 5px}
+body.cols-sm #list .cover .ph b{font-size:12px}
+body.cols-sm #list .cover .ph small{font-size:10.5px}
+body.cols-sm #list .cover .badge{left:3px;bottom:3px;font-size:10px;padding:1px 5px}
+body.gridview #list{touch-action:pan-x pan-y}
+.cols-row{display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--muted)}
+.cols-row input{flex:1;min-width:0;accent-color:var(--accent);height:32px}
+/* serie e copie accorpate (giro 1, 18/11/2026): una copertina «a pila» con il bollino del numero; nell'elenco una riga che si apre */
+.pcard .art{box-shadow:4px -4px 0 -1px var(--bg),4px -4px 0 0 var(--line)}
+#list .prow{gap:12px;min-height:0;margin:0 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.pk-img{flex:none;overflow:visible;box-shadow:3px -3px 0 -1px var(--surface),3px -3px 0 0 var(--line)}
+.pk-img img{border-radius:4px}
+#list .prow+.pk-panel{margin:-4px 0 10px;padding:8px 8px 10px}

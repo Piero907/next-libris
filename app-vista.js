@@ -11,13 +11,14 @@ function visible() {
   if (flt === 'guess') a = a.filter(function (b) { return b.g.length; });
   if (flt === 'gone') a = a.filter(function (b) { return b.xs; });
   if (flt === 'notmine' && guest) a = a.filter(function (b) { return !isMine(b); });
+  if (flt === 'common' && guest) a = a.filter(isMine);   // libreria di un amico: «In comune», i libri che avete tutti e due (giro 1, 18/11/2026)
   if (flt === 'fav') a = a.filter(function (b) { return b.fav; });
   if (flt === 'qs') a = a.filter(function (b) { return b.qs && b.qs.length; });
   if (frFlt) a = a.filter(function (b) { return b.fr === frFlt; });
   if (flt === 'dup') { var dm = L.analyzeDups(dupPool()); a = a.filter(function (b) { return dm[b.id]; }); }
   if (shFlt) a = a.filter(function (b) { return facetKey(b.sh) === shFlt; });
   if (genFlt) a = a.filter(function (b) { return facetKey(b.gen) === genFlt; });
-  if (autFlt) a = a.filter(function (b) { return authorsOf(b).some(function (n) { return L.norm(n) === autFlt; }); });
+  if (autFlt) a = a.filter(function (b) { return authorsOf(b).some(function (n) { return auKey(n) === autFlt; }); });   // autori simili insieme (giro 1)
   if (edFlt) a = a.filter(function (b) { return facetKey(b.e) === edFlt; });
   if (readFlt && tab === 'lib') a = a.filter(function (b) { return readFlt === 'no' ? !b.rs : b.rs === readFlt; });
   if (flt === 'loan') {
@@ -117,7 +118,8 @@ function summaryHTML(b, dups, status) {
   tags += recvTag(b);
   if (b.fav && !b.w) tags += '<span class="tag fav">Preferito</span>';
   tags += fromTag(b);
-  if (b.g.length) tags += '<span class="tag warn">Da verificare</span>';
+  /* «Da verificare» nella riga chiusa: un tocco e' verificato, senza aprire la scheda (giro 1, 18/11/2026); da amico solo da leggere */
+  if (b.g.length) tags += guest ? '<span class="tag warn">Da verificare</span>' : '<span class="tag warn tap" data-act="verify" role="button" tabindex="0" title="Dati dedotti: toccalo quando hai controllato">Da verificare ✓</span>';
   if (!b.w && (b.rs === 'in' || b.rs === 'ok')) { var qq = b.rs === 'in' ? ppInfo(b) : {}; tags += '<span class="tag read' + (b.rs === 'in' ? ' now' : '') + (qq.pct != null ? ' has-pp" style="--pp:' + qq.pct + '%' : '') + '">' + esc(readLabel(b)) + '</span>'; }
   tags += dupTag(dups && dups[b.id]);
   if (b.i && !L.toIsbn13(b.i)) tags += '<span class="tag bad">ISBN non valido</span>';

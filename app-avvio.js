@@ -66,12 +66,12 @@ function grpToggle(h, open) {                          // apre o chiude un grupp
   var key = h.dataset.gk, gb = document.getElementById(h.getAttribute('aria-controls'));
   h.setAttribute('aria-expanded', open ? 'true' : 'false'); h.classList.toggle('on', open);
   if (gb) { gb.hidden = !open; if (open) { gcPlace(gb); aufWatch(gb); } }
-  if ($('#list').classList.contains('grp-exp')) { if (open) delete grpShutX[key]; else grpShutX[key] = 1; return; }
+  if ($('#list').classList.contains('grp-exp') && !h.dataset.pk) { if (open) delete grpShutX[key]; else grpShutX[key] = 1; return; }   // serie e copie: sempre ricordate
   if (open) settings.grpOpen[key] = 1; else delete settings.grpOpen[key];
   saveSettings();
 }
 list.addEventListener('click', function (e) {          // gruppi a copertine o a righe, riquadro dei libri, Espandi / Comprimi tutto
-  var x = e.target.closest('.gcard, .grow, .gp-x, [data-gx], .gp-who'); if (!x || selOn) return;
+  var x = e.target.closest('.gcard, .grow, .gp-x, [data-gx], .gp-who'); if (!x || (selOn && !/^p:/.test(x.dataset.gk || ''))) return;   // in selezione si aprono serie e copie (giro 1)
   e.stopImmediatePropagation();
   if (x.dataset.gx) {
     var on = x.dataset.gx === '1'; grpShutX = {};
@@ -398,7 +398,7 @@ window.addEventListener('keydown', function (e) {
   }
 }, true);
 pickSync();
-$('#sort').addEventListener('change', function (e) { sortBy = e.target.value; renderList(); });
+$('#sort').addEventListener('change', function (e) { sortBy = e.target.value; if (!guest && SORTS.indexOf(sortBy) >= 0) { settings.sortBy = sortBy; saveSettings(); } renderList(); });   // l'ultimo ordine resta (giro 1)
 $('#grp').addEventListener('change', function (e) { settings.grp = GRP_TXT[e.target.value] ? e.target.value : ''; saveSettings(); renderList(); if (drawerOpen) { updateDrawerFoot(); renderDrawer(); } });
 $('#fltGuess').addEventListener('click', function () { flt = flt === 'guess' ? '' : 'guess'; collapseCards(); updateSummary(); renderList(); });
 $('#fltLoan').addEventListener('click', function () {
@@ -417,7 +417,9 @@ $('#tabLib').addEventListener('click', function () { if (guest) guestExit(true);
 $('#tabWish').addEventListener('click', function () { if (guest) guestExit(true); setTab('wish'); });
 $('#btnView').addEventListener('click', function () {
   gridRet = null;
-  setView(settings.view === 'grid' ? 'list' : 'grid'); renderList();
+  setView(settings.view === 'grid' ? 'list' : 'grid');
+  if (!guest) { settings.viewDef = settings.view; saveSettings(); }   // l'app ricorda l'ultima vista (giro 1, 18/11/2026)
+  renderList();
 });
 $('#btnCheck').addEventListener('click', function () { startScan('check'); });
 $('#btnStats').addEventListener('click', openStats);
@@ -868,6 +870,7 @@ $('#scanSound').addEventListener('click', function () { setSound(settings.sound 
   if (m) settings.view = m[1] === 'elenco' ? 'list' : 'grid';
 })();
 setView(settings.view);
+applyCols();
 loadQuota();
 applyLook(false);
 updateInstallUi();

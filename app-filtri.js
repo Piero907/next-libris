@@ -6,7 +6,7 @@
 /* ---------- pannello Filtri (a sinistra): si apre dal pulsante o trascinando il pollice dal bordo sinistro verso destra ---------- */
 var NONE = '\u0001';
 var READ_TXT = { da: 'Da leggere', in: 'In lettura', ok: 'Letti', no: 'Non indicato' };
-var FLT_TXT = { notmine: 'Che non hai', qs: 'Con citazioni', fav: 'Preferiti', loan: 'In prestito', gone: 'Venduti e regalati', guess: 'Da verificare', dup: 'Copie e doppioni' };
+var FLT_TXT = { notmine: 'Che non hai', common: 'In comune', qs: 'Con citazioni', fav: 'Preferiti', loan: 'In prestito', gone: 'Venduti e regalati', guess: 'Da verificare', dup: 'Copie e doppioni' };
 function facetKey(s) { var k = L.norm(String(s || '').trim().replace(/\s+/g, ' ')); return k || NONE; }
 /* scaffali o generi del tab corrente: chiave normalizzata, nome piu' usato, quanti libri */
 function facets(field) {
@@ -432,7 +432,7 @@ async function loadPrivacy() {
 }
 function closeOptions(fromPop) {
   if (!optOpen) return;
-  $('#optSheet').hidden = true; optOpen = false;
+  $('#optSheet').hidden = true; optOpen = false; emit('optclose');   // i moduli si aggiornano (icona della chiave, giro 1)
   if (optPushed && !fromPop) { optPushed = false; try { history.back(); } catch (e) { nlErr(e); } }
   else optPushed = false;
 }
@@ -646,3 +646,43 @@ function dupMerge() {
   closeDup(); renderList(); touch(); updateSummary();
   toast('Unito in un solo libro.', { label: 'Annulla', fn: function () { state.books = JSON.parse(snapshot).map(cleanBook).filter(Boolean); renderList(); touch(); updateSummary(); } });
 }
+/* ---- dimensione delle copertine (giro 1, 18/11/2026; scelta di Piero: due dita sulle copertine + cursore in Aspetto, 2-5 per riga, ricordata).
+   settings.cols 0 = come prima (le colonne vengono da sole, sul telefono di solito 3). Sul telefono N per riga; su schermi larghi
+   la stessa proporzione (piu' copertine per riga, ma grandi uguali). ---- */
+function colsNow() {
+  if (settings.cols) return settings.cols;
+  var g = document.querySelector('#list .grid'), n = g && g.offsetParent ? getComputedStyle(g).gridTemplateColumns.split(' ').filter(Boolean).length : 0;
+  return Math.max(2, Math.min(5, n || 3));
+}
+function applyCols() {
+  var c = settings.cols;
+  document.body.classList.toggle('cols', !!c); document.body.classList.toggle('cols-sm', c >= 4);
+  if (c) document.body.style.setProperty('--cols', c); else document.body.style.removeProperty('--cols');
+  var r = $('#optCols'); if (r) { r.value = colsNow(); $('#optColsTxt').textContent = r.value + ' copertine per riga sul telefono.'; }
+}
+function setCols(n) {
+  n = Math.max(2, Math.min(5, Math.round(n))); if (n === settings.cols) return false;
+  settings.cols = n; saveSettings(); applyCols();
+  var l = $('#list'); if (l) gcPlace(l);
+  return true;
+}
+$('#optCols').addEventListener('input', function (e) { setCols(Number(e.target.value)); });
+if (window.MutationObserver) new MutationObserver(function () { if (!$('#optSheet').hidden) applyCols(); }).observe($('#optSheet'), { attributes: true, attributeFilter: ['hidden'] });   // Aspetto: il cursore mostra quante sono adesso
+(function () {                                   // due dita sulle copertine: allarga = piu' grandi (meno per riga), stringi = piu' piccole
+  var list = $('#list'), d0 = 0, c0 = 0, moved = false;
+  function dist(t) { return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY) || 1; }
+  list.addEventListener('touchstart', function (e) {
+    if (e.touches.length === 2 && settings.view === 'grid' && !selOn) { d0 = dist(e.touches); c0 = colsNow(); moved = false; }
+  }, { passive: true });
+  list.addEventListener('touchmove', function (e) {
+    if (!d0 || e.touches.length !== 2) return;
+    e.preventDefault();
+    var r = dist(e.touches) / d0, n = c0 - Math.round(Math.log(r) / Math.log(1.4));
+    if (setCols(n)) moved = true;
+  }, { passive: false });
+  list.addEventListener('touchend', function (e) {
+    if (!d0 || e.touches.length >= 2) return;
+    d0 = 0; if (moved) toast(settings.cols + ' copertine per riga.');
+  }, { passive: true });
+  list.addEventListener('touchcancel', function () { d0 = 0; }, { passive: true });
+})();

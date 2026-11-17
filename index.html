@@ -587,7 +587,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         <div class="seg seg-au">
           <label><input type="radio" name="auInv" value="1"><span>Neruda, Pablo</span></label><label><input type="radio" name="auInv" value="0"><span>Pablo Neruda</span></label>
         </div>
-        <p class="hint">Come si leggono i nomi in «Raggruppa: Autore» e nei filtri. L'ordine è sempre per cognome. Se un cognome è diviso male (García Márquez), si corregge nella finestra dell'autore, «Chi è».</p>
+        <p class="hint">Come si leggono i nomi in «Raggruppa: Autore» e nei filtri. L'ordine è sempre per cognome. Se un cognome è diviso male (García Márquez), si corregge nella finestra dell'autore, «Info Autore».</p>
       </fieldset>
       <div id="lookNew">
         <fieldset class="choice">
@@ -608,12 +608,11 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
         </fieldset>
         <button class="btn" id="lookReset" type="button">Torna all'aspetto predefinito</button>
       </div>
-      <fieldset class="choice">
-        <legend>All'apertura mostra</legend>
-        <div class="seg seg-view">
-          <label><input type="radio" name="viewDef" value="grid"><span>Copertine</span></label><label><input type="radio" name="viewDef" value="list"><span>Elenco</span></label>
-        </div>
-        <p class="hint">Copertine è il predefinito. Il pulsante «Elenco» / «Copertine» sopra i libri cambia la vista solo fino alla prossima apertura.</p>
+      <fieldset class="choice cols-opt">
+        <legend>Dimensione delle copertine</legend>
+        <div class="cols-row"><span aria-hidden="true">Grandi</span><input type="range" id="optCols" min="2" max="5" step="1" aria-describedby="optColsTxt"><span aria-hidden="true">Piccole</span></div>
+        <p class="hint" id="optColsTxt"></p>
+        <p class="hint">Anche con due dita sulle copertine: allarga per ingrandirle, stringi per rimpicciolirle. L'app ricorda l'ultima vista che hai usato: copertine o elenco, ordine, raggruppamento e dimensione.</p>
       </fieldset>
       <fieldset class="choice sum-opts">
         <legend>Riepilogo in alto</legend>

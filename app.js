@@ -151,6 +151,7 @@ var PALS = { inchiostro: ['#EDF0F5', '#10141D'], bordeaux: ['#F2EFEE', '#161112'
 var FONTS_T = ['literata', 'garamond', 'playfair', 'lora', 'merriweather', 'montserrat', 'roboto'], FONTS_B = ['plex', 'roboto', 'lato', 'atkinson', 'lora'];
 var openState = {}, autoOpened = {};
 function collapseCards() { if (!settings.openAll) openState = {}; if (cardPushed) { cardPushed = null; try { history.back(); } catch (e) { nlErr(e); } } }   // quando si filtra l'elenco torna compatto   // schede aperte/chiuse in questa sessione (true/false); se manca vale la regola di isOpen
+var SORTS = ['recent', 'titolo', 'autore', 'editore', 'anno', 'scaffale', 'voto', 'letti'];
 var q = '', sortBy = 'recent', flt = '', tab = 'lib', readFlt = '', shFlt = '', genFlt = '', autFlt = '', autName = '', edFlt = '';   // shFlt, genFlt: chiave normalizzata, NONE = senza   // flt: '' | 'guess' | 'loan'; tab: 'lib' (Libreria) | 'wish' (Desideri)
 var tSave = null, toastTimer = null, scanning = false, offlineNoted = false;
 
@@ -428,8 +429,10 @@ function loadAll() {
     var s = JSON.parse(ls.get(LS_SET) || '{}');
     settings.gbKey = L.str(s.gbKey); settings.price = s.price !== false; settings.extra = true;   // scaffale, genere, pagine e note sempre visibili (opzione tolta il 16/11/2026)
     settings.lastBackup = Number(s.lastBackup) || 0; settings.snooze = Number(s.snooze) || 0;
-    settings.viewDef = s.viewDef === 'list' ? 'list' : 'grid';                       // vista all'apertura: copertine (predefinita) o elenco
-    settings.view = settings.viewDef;                                               // il pulsante sopra i libri la cambia fino alla prossima apertura
+    settings.viewDef = s.viewDef === 'list' ? 'list' : 'grid';                       // vista all'apertura: l'ultima scelta con il pulsante (giro 1, 18/11/2026: l'app ricorda l'ultima vista)
+    settings.view = settings.viewDef;
+    settings.sortBy = SORTS.indexOf(s.sortBy) >= 0 ? s.sortBy : 'recent'; sortBy = settings.sortBy;   // ultimo ordine usato (giro 1)
+    settings.cols = s.cols >= 2 && s.cols <= 5 ? Math.round(s.cols) : 0;             // copertine per riga sul telefono, 2-5 (0 = come prima, da sole) (giro 1)
     settings.openAll = s.openAll === true && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);   // «schede sempre aperte» tolta il 16/11/2026: resta solo per le prove automatiche
     settings.sbnUrl = /^https:\/\//.test(L.str(s.sbnUrl)) ? L.str(s.sbnUrl) : '';
     settings.loanSnooze = Number(s.loanSnooze) || 0;

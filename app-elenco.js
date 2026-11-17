@@ -56,8 +56,8 @@ function facetsHTML(b, ex) {
       icon(FACET_ICON[f]) + '<span class="fl">' + esc(label) + '</span><span class="n">' + n + '</span></button>');
   }
   if (b.g.indexOf('a') < 0) authorsOf(b).slice(0, 3).forEach(function (name) {
-    var k = L.norm(name);
-    var n = books.filter(function (x) { return authorsOf(x).some(function (y) { return L.norm(y) === k; }); }).length;
+    var k = auKey(name);                                  // autori con nomi simili contano insieme (giro 1)
+    var n = books.filter(function (x) { return authorsOf(x).some(function (y) { return auKey(y) === k; }); }).length;
     if (n > 1) chip('a', k, name, n);
   });
   [['e', b.g.indexOf('e') < 0], ['gen', true], ['sh', true]].forEach(function (p) {
@@ -72,14 +72,14 @@ function applyFacet(f, key, name) {
   flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = '';
   q = ''; $('#q').value = '';
   collapseCards();
-  if (f === 'a') { autFlt = key; autName = name; }
+  if (f === 'a') { autFlt = key; autName = auCanon(name); }
   else if (f === 'e') edFlt = key;
   else if (f === 'gen') genFlt = key;
   else if (f === 'sh') shFlt = key;
   renderList(); updateSummary();
   window.scrollTo(0, 0); setTimeout(function () { window.scrollTo(0, 0); }, 60); setTimeout(function () { window.scrollTo(0, 0); }, 300);   // anche dopo l'Indietro che chiude la scheda
   var n = visible().length;
-  toast((f === 'a' ? 'Libri di ' : FACET_WORD[f] + ' «') + name + (f === 'a' ? '' : '»') + ': ' + n + '. Per tornare a tutti, tocca la × del filtro sotto la ricerca.');
+  toast((f === 'a' ? 'Libri di ' : FACET_WORD[f] + ' «') + (f === 'a' ? auShow(autName) : name) + (f === 'a' ? '' : '»') + ': ' + n + '. Per tornare a tutti, tocca la × del filtro sotto la ricerca.');
 }
 function dupTag(v) {
   if (v === 'dup') return '<span class="tag tap" data-act="dup" role="button" tabindex="0" title="Un altro libro nell\'elenco ha lo stesso ISBN o lo stesso titolo e autore: tocca per decidere">Doppione?</span>';
@@ -101,7 +101,7 @@ function rowHTML(b, dups, ex) {
     if (k === 'a' && !dis && String(val || '').trim() && !auEditing[b.id]) {     // autore compilato: nomi da toccare (profilo) e matita per modificare
       var names = authorsOf(b);
       return '<div class="f f-a au-view' + (b.g.indexOf('a') >= 0 ? ' is-guess' : '') + '"' + fieldTitle('a') + '><span class="lbl">Autore</span><span class="au-names">' +
-        names.map(function (n) { return '<button type="button" class="au-name" data-act="auinfo" data-n="' + esc(n) + '" title="Chi è ' + esc(n) + '">' + esc(n) + '</button>'; }).join('<span class="au-sep">, </span>') +
+        names.map(function (n) { return '<button type="button" class="au-name" data-act="auinfo" data-n="' + esc(n) + '" title="Info Autore: ' + esc(n) + '">' + esc(n) + '</button>'; }).join('<span class="au-sep">, </span>') +
         '</span><button type="button" class="ico au-edit" data-act="auedit" aria-label="Modifica l\'autore" title="Modifica l\'autore">' + icon('pen') + '</button></div>';
     }
     return '<label class="f f-' + k + (b.g.indexOf(k) >= 0 ? ' is-guess' : '') + '"' + fieldTitle(k) + '><span class="lbl">' + label + '</span>' +
@@ -263,6 +263,7 @@ function renderList() {
   syncThumbs();
   fillDatalists();
   var vis = visible(), n = tabBooks().length;
+  packN = 0; list.classList.remove('grp-exp');
   document.body.classList.toggle('gridview', settings.view === 'grid');
   document.body.classList.toggle('openall', settings.openAll);
   $('#thead').hidden = n === 0 || settings.view === 'grid' || !settings.openAll;
@@ -294,12 +295,13 @@ function renderList() {
   };
   if (settings.view === 'grid') {
     var gridOf = function (a) { return '<div class="grid">' + a.map(coverHTML).join('') + '</div>'; };
-    list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], gridOf); }).join('') : gridOf(vis);
-    paintSel(); return;
+    list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], x[0] === 'now' ? gridOf : packGrid); }).join('') : packGrid(vis);   // serie e copie accorpate, mai in «In lettura» (giro 1)
+    gcPlace(list); paintSel(); return;
   }
   var dups = computeDups();
   var rowsOf = function (a) { return a.map(function (b) { return rowHTML(b, dups); }).join(''); };
-  list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], rowsOf); }).join('') : rowsOf(vis);
+  var packOf = function (a) { return packRows(a, dups); };
+  list.innerHTML = parts ? parts.map(function (x) { return shelf(x[0], x[1], x[2], x[0] === 'now' ? rowsOf : packOf); }).join('') : packOf(vis);
   emit('rows', list);                              // i moduli possono sistemare le schede appena disegnate
   autosizeAll(list);
   paintSel();
@@ -350,9 +352,108 @@ function groupBy(books, keyOf, none, sk) {                 // [[chiave, nome, li
   order.sort(function (a, b) { return !a ? 1 : !b ? -1 : sk ? coll.compare(sk(m[a].name), sk(m[b].name)) : coll.compare(m[a].name, m[b].name); });
   return order.map(function (k) { return [k || '~', m[k].name, m[k].books]; });
 }
+/* ---- autori con nomi molto simili (giro 1, 18/11/2026; scelta di Piero): uniti SOLO nei gruppi, nei filtri e nelle copertine degli autori,
+   con il nome che ha la foto (se nessuno: il piu' usato, poi il piu' lungo); i libri restano come sono scritti.
+   Stesso cognome e: nome uguale a meno di accenti, maiuscole e punti («Umberto  Eco», «umberto eco»), oppure iniziali
+   che corrispondono a un solo nome intero («U. Eco» con «Umberto Eco»; se ci sono «Umberto Eco» e «Ugo Eco», «U. Eco» resta da solo). ---- */
+var auAl = { st: '', m: {} };
+function auSig(name) {
+  var p = L.authorParts(name, settings.auCut[L.norm(name)]), clean = function (x) { return L.norm(x).replace(/[^a-z0-9]+/g, ' ').trim(); };
+  var giv = clean(p.sur ? p.given : '');
+  return { sur: clean(p.sur || p.name), giv: giv ? giv.split(' ') : [] };
+}
+function auIni(g) { return g.length && g.some(function (w) { return w.length === 1; }); }
+function auFits(ini, full) {                             // «u» con «umberto», «j r r» con «john ronald reuel»
+  return ini.length === full.length && ini.every(function (w, i) { return w === full[i] || (w.length === 1 && full[i].charAt(0) === w); });
+}
+function auAlias() {
+  var st = state.books.length + ':' + state.updated + ':' + (guest ? guest.name : '');
+  if (auAl.st === st) return auAl.m;
+  var cnt = {}, names = {}, bySur = {}, m = {};
+  state.books.forEach(function (b) { authorsOf(b).forEach(function (n) { var k = L.norm(n); cnt[k] = (cnt[k] || 0) + 1; if (!names[k]) names[k] = n; }); });
+  Object.keys(names).forEach(function (k) { var sg = auSig(names[k]); if (sg.sur) (bySur[sg.sur] = bySur[sg.sur] || []).push({ k: k, g: sg.giv }); });
+  Object.keys(bySur).forEach(function (sur) {
+    var arr = bySur[sur]; if (arr.length < 2) return;
+    var cl = {};                                         // gruppi per nome intero uguale (senza accenti, punti, maiuscole)
+    arr.forEach(function (x) { if (!auIni(x.g)) (cl[x.g.join(' ')] = cl[x.g.join(' ')] || []).push(x.k); });
+    arr.forEach(function (x) {                           // le iniziali vanno con l'unico nome intero che corrisponde
+      if (!auIni(x.g)) return;
+      var ok = Object.keys(cl).filter(function (g) { return g && auFits(x.g, g.split(' ')); });
+      if (ok.length === 1) cl[ok[0]].push(x.k);
+    });
+    Object.keys(cl).forEach(function (g) {
+      var ks = cl[g]; if (ks.length < 2) return;
+      var best = ks.slice().sort(function (a, b) { return (aufGet(names[b]) ? 1 : 0) - (aufGet(names[a]) ? 1 : 0) || cnt[b] - cnt[a] || names[b].length - names[a].length; })[0];
+      ks.forEach(function (k) { m[k] = names[best]; });
+    });
+  });
+  auAl = { st: st, m: m };
+  return m;
+}
+function auCanon(n) { return auAlias()[L.norm(n)] || n; }
+function auKey(n) { return L.norm(auCanon(n)); }
+/* ---- serie e copie accorpate (giro 1, 18/11/2026; scelte di Piero) ----
+   Serie (almeno 2 volumi): sempre raggruppate, nelle copertine e nell'elenco: la copertina del primo volume con il bollino del numero;
+   un tocco apre i volumi in ordine di numero. Nell'elenco una riga «Serie: … · N volumi» che si apre.
+   Copie dello stesso libro (stesso titolo e autore, anche edizioni diverse): una copertina sola con il bollino e «N copie».
+   Mai in «In lettura»; con una ricerca o dei filtri i libri si vedono uno per uno. Si aprono e chiudono come i gruppi (settings.grpOpen). ---- */
+var packN = 0;
+function packOn() { return !q && !activeCount(); }   // anche durante la selezione: niente salti sotto il dito; la pila si apre per scegliere i libri
+function volNum(b) { var n = parseFloat(String(b.sn || '').replace(',', '.')); return isNaN(n) ? 1e9 : n; }
+function packItems(a) {
+  if (!packOn() || a.length < 2) return a;
+  var ser = {}, cop = {}, done = {}, out = [];
+  var sk = function (b) { var k = L.serKey(b.se); return k && ser[k] && ser[k].length > 1 ? k : ''; };
+  var ck = function (b) { var t = L.titleKey(b.t); return t ? t + '|' + auKey(authorsOf(b)[0] || '') : ''; };
+  a.forEach(function (b) { var k = L.serKey(b.se); if (k) (ser[k] = ser[k] || []).push(b); });
+  a.forEach(function (b) { if (sk(b)) return; var k = ck(b); if (k) (cop[k] = cop[k] || []).push(b); });
+  a.forEach(function (b) {
+    var k = sk(b);
+    if (k) {
+      if (!done['s' + k]) { done['s' + k] = 1; var vs = ser[k].slice().sort(function (x, y) { return volNum(x) - volNum(y) || coll.compare(L.sortKeyTitle(x.t) || '~', L.sortKeyTitle(y.t) || '~'); }); out.push({ pk: 'ser', key: k, name: L.str(vs[0].se).trim().replace(/\s+/g, ' '), books: vs }); }
+      return;
+    }
+    k = ck(b);
+    if (k && cop[k].length > 1) { if (!done['c' + k]) { done['c' + k] = 1; out.push({ pk: 'cop', key: k, name: b.t, books: cop[k] }); } return; }
+    out.push(b);
+  });
+  return out;
+}
+function packGk(x) { return 'p:' + tab + ':' + x.pk + ':' + x.key; }
+function packCount(x) { var n = x.books.length; return x.pk === 'ser' ? n + ' volumi' : n + ' copie'; }
+function packLab(x) { return x.pk === 'ser' ? 'Serie: ' + x.name : x.name; }
+function packOpen(x) { return !!settings.grpOpen[packGk(x)] || x.books.some(function (b) { return openState[b.id] && b.t; }); }
+function packHead(x, id, open) {
+  return '<div class="gpanel pk-panel" id="' + id + '"' + (open ? '' : ' hidden') + '><div class="gp-h"><b>' + esc(packLab(x)) + '</b><small>' + packCount(x) + '</small><span class="gp-sp"></span>' +
+    '<button type="button" class="ico gp-x" data-gk="' + esc(packGk(x)) + '" aria-label="Chiudi">×</button></div>';
+}
+function packAria(x, id, open) { return ' data-gk="' + esc(packGk(x)) + '" data-pk="' + x.pk + '" aria-expanded="' + open + '" aria-controls="' + id + '" aria-label="' + esc(packLab(x) + ', ' + packCount(x)) + '"'; }
+function packGrid(a) {                                   // copertine: libri, serie e copie
+  var items = packItems(a);
+  if (!items.some(function (x) { return x.pk; })) return '<div class="grid">' + a.map(coverHTML).join('') + '</div>';
+  return '<div class="grid gcards">' + items.map(function (x, i) {
+    if (!x.pk) return coverHTML(x).replace('<button class="cover', '<button style="order:' + (2 * i) + '" class="cover');
+    var id = 'pk-' + (packN++), open = packOpen(x), b0 = x.books[0], img = bigImg(b0);
+    return '<button type="button" class="cover gcard pcard' + (open ? ' on' : '') + '" style="order:' + (2 * i) + '"' + packAria(x, id, open) + '><span class="art">' +
+      (img ? '<img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph" style="--h:' + hue(x.name + b0.a) + '"><b>' + esc(x.name) + '</b><small>' + esc(b0.a) + '</small></span>') +
+      '<span class="gc-n">' + x.books.length + '</span></span><span class="cap">' + esc(packLab(x)) + '</span><span class="cap2">' + packCount(x) + '</span></button>' +
+      packHead(x, id, open).replace('class="gpanel pk-panel"', 'class="gpanel pk-panel" data-gi="' + i + '"') + '<div class="grid">' + x.books.map(coverHTML).join('') + '</div></div>';
+  }).join('') + '</div>';
+}
+function packRows(a, dups) {                             // elenco: riga «Serie: … · N volumi» o «N copie» che si apre
+  return packItems(a).map(function (x) {
+    if (!x.pk) return rowHTML(x, dups);
+    var id = 'pk-' + (packN++), open = packOpen(x), b0 = x.books[0], img = smallImg(b0);
+    return '<button type="button" class="grow prow' + (open ? ' on' : '') + '"' + packAria(x, id, open) + '>' +
+      (img ? '<span class="sum-img pk-img"><img src="' + esc(img) + '" alt="" loading="lazy" referrerpolicy="no-referrer"></span>' : '<span class="sum-img ph pk-img" style="--h:' + hue(x.name + b0.a) + '" aria-hidden="true">' + esc(x.name.replace(/^(il|lo|la|i|gli|le|un|uno|una|l')\s*/i, '').charAt(0).toUpperCase() || '?') + '</span>') +
+      '<span class="gr-t"><b>' + esc(packLab(x)) + '</b><small>' + esc(packCount(x) + (b0.a ? ' · ' + b0.a : '')) + '</small></span><span class="sh-n">' + x.books.length + '</span>' +
+      '<svg class="sh-c" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
+      packHead(x, id, open) + x.books.map(function (b) { return rowHTML(b, dups); }).join('') + '</div>';
+  }).join('');
+}
 function grpParts(vis, g) {
   if (g === 'read') return READ_GRP.map(function (r) { return [r[0], r[1], vis.filter(function (b) { return (b.rs === 'ok' ? 'ok' : 'da') === r[0]; })]; }).filter(function (x) { return x[2].length; });
-  var aut = function (b) { return authorsOf(b)[0] || ''; }, gen = function (b) { return L.str(b.gen).trim(); };
+  var aut = function (b) { var a0 = authorsOf(b)[0]; return a0 ? auCanon(a0) : ''; }, gen = function (b) { return L.str(b.gen).trim(); };   // autori simili uniti (giro 1)
   var ak = function (n) { return L.sortKeyAuthor(n, settings.auCut); };   // autori per cognome anche nei gruppi (prima per nome intero)
   if (g === 'aut') return groupBy(vis, aut, 'Senza autore', ak);
   var gs = groupBy(vis, gen, 'Senza genere');
@@ -505,7 +606,8 @@ function grpLibri(n) { return n + (n === 1 ? ' libro' : ' libri'); }
 function renderGroups(list, vis, g) {
   var isGrid = settings.view === 'grid', dups = isGrid ? null : computeDups(), n = 0, forced = !!(q || activeCount());
   var exp = forced ? grpFltShut !== fltSig() : !!settings.grpExp;   // con filtri o ricerca si parte tutto aperto, ma si può comprimere
-  var inner = function (a) { return isGrid ? '<div class="grid">' + a.map(coverHTML).join('') + '</div>' : a.map(function (b) { return rowHTML(b, dups); }).join(''); };
+  var inner = function (a) { return isGrid ? packGrid(a) : packRows(a, dups); };   // dentro i gruppi anche serie e copie accorpate (giro 1)
+  var innerNow = function (a) { return isGrid ? '<div class="grid">' + a.map(coverHTML).join('') + '</div>' : a.map(function (b) { return rowHTML(b, dups); }).join(''); };
   var hasOpen = function (a) { return a.some(function (b) { return openState[b.id] && b.t; }); };
   var isOpen = function (key, books) { return exp ? !grpShutX[key] : (!!settings.grpOpen[key] || hasOpen(books)); };
   var kindOf = function (lvl) { return g === 'aut' || (g === 'genaut' && lvl === 2) ? 'aut' : 'gen'; };
@@ -521,7 +623,7 @@ function renderGroups(list, vis, g) {
   /* gruppi come copertine (o righe nell'elenco); il riquadro con i libri si apre sotto */
   var panel = function (key, x, kind, i, open, id, inside) {
     return '<div class="gpanel" id="' + id + '" data-gi="' + i + '"' + (open ? '' : ' hidden') + '><div class="gp-h"><b>' + esc(lab(x, kind)) + '</b><small>' + grpLibri(x[2].length) + '</small><span class="gp-sp"></span>' +
-      (kind === 'aut' && x[0] !== '~' ? '<button type="button" class="link gp-who" data-gau="' + esc(x[1]) + '" data-gid="' + esc(x[2][0].id) + '">Chi è ›</button>' : '') +
+      (kind === 'aut' && x[0] !== '~' ? '<button type="button" class="link gp-who" data-gau="' + esc(x[1]) + '" data-gid="' + esc(x[2][0].id) + '">Info Autore ›</button>' : '') +
       '<button type="button" class="ico gp-x" data-gk="' + esc(key) + '" aria-label="Chiudi">×</button></div>' + (inside != null ? inside : inner(x[2])) + '</div>';
   };
   var cards = function (groups, kind, base, sub) {     // sub: Genere › Autore, nel riquadro del genere le copertine degli autori (17/11/2026)
@@ -559,7 +661,7 @@ function renderGroups(list, vis, g) {
         '<span>' + esc(title) + '</span><span class="sh-n">' + cnt + '</span><svg class="sh-c" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>' +
         '<div class="shelf-b" id="shelf-' + k + '"' + (open ? '' : ' hidden') + '>' + inside + '</div></section>';
     };
-    list.innerHTML = sh('now', 'In lettura', inner(now), now.length) + (rest.length ? sh('all', 'Gli altri libri', tools + html, rest.length) : '');
+    list.innerHTML = sh('now', 'In lettura', innerNow(now), now.length) + (rest.length ? sh('all', 'Gli altri libri', tools + html, rest.length) : '');
   } else list.innerHTML = tools + html;
   list.classList.toggle('grp-exp', exp);
   gcPlace(list); aufWatch(list);
@@ -570,7 +672,7 @@ function renderGroups(list, vis, g) {
 function gcPlace(root) {
   Array.prototype.forEach.call(root.querySelectorAll('.gcards'), function (gr) {
     if (!gr.offsetParent) return;
-    var cols = getComputedStyle(gr).gridTemplateColumns.split(' ').filter(Boolean).length || 1, cnt = gr.querySelectorAll(':scope > .gcard').length;
+    var cols = getComputedStyle(gr).gridTemplateColumns.split(' ').filter(Boolean).length || 1, cnt = gr.querySelectorAll(':scope > .cover').length;   // anche i libri accanto a serie e copie (giro 1)
     Array.prototype.forEach.call(gr.querySelectorAll(':scope > .gpanel'), function (p) {
       var i = Number(p.dataset.gi) || 0, end = Math.min(cnt - 1, Math.floor(i / cols) * cols + cols - 1);
       p.style.order = 2 * end + 1;
@@ -578,7 +680,7 @@ function gcPlace(root) {
     });
   });
 }
-window.addEventListener('resize', function () { var l = $('#list'); if (l && grpMode()) gcPlace(l); });
+window.addEventListener('resize', function () { var l = $('#list'); if (l) gcPlace(l); });
 function rowEl(id) { return $('#list').querySelector('[data-id="' + id + '"]'); }
 function refreshRow(id) {
   if (scanning) return;

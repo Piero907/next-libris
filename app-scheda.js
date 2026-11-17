@@ -91,7 +91,7 @@ async function openAuthor(id, name) {
   $('#auMine').textContent = mine > 1 ? 'I suoi libri nella tua libreria (' + mine + ')' : 'Il suo libro nella tua libreria';
   $('#auMine').hidden = mine < 2;
   auCutPaint(name);
-  $('#auTxt').innerHTML = '<p class="desc-wait"><span class="spin" aria-hidden="true"></span>Cerco chi è…</p>';
+  $('#auTxt').innerHTML = '<p class="desc-wait"><span class="spin" aria-hidden="true"></span>Cerco le informazioni…</p>';
   $('#auSheet').hidden = false;
   if (navigator.onLine === false) { $('#auTxt').innerHTML = '<p class="desc-none">Senza connessione: le informazioni sull\'autore si cercano online.</p>'; return; }
   try {
