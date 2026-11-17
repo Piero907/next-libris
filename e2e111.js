@@ -163,12 +163,12 @@ const base = 'http://localhost:' + CFG.port(8311);
   await A.openRow(tart); await wait(500);
   t = await A.$eval('[data-id="' + tart + '"] .cv-guest', x => x.innerText.replace(/\s+/g, ' '));
   assert(/^Di Bruno/.test(t), '«Di Bruno» nella libreria'); assert(await vis('[data-id="' + tart + '"] .g-wish'), 'icona anche nella libreria');
-  await A.click('#guestBar [data-g="back"]'); await wait(500);
+  await A.evaluate(() => window.NL.guestExit()); await wait(500);
   await A.add({ t: 'Il deserto dei Tartari', a: 'Dino Buzzati', i: '9788804668015' });
   await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
   await A.openRow(tart); await wait(500);
   assert(/Ce l.hai anche tu/.test(await A.$eval('[data-id="' + tart + '"] .cv-guest', x => x.innerText)) && !(await A.$('[data-id="' + tart + '"] .g-wish')), 'ce l\'ha: niente icona');
-  await A.click('#guestBar [data-g="back"]'); await wait(500);
+  await A.evaluate(() => window.NL.guestExit()); await wait(500);
   // A spegne la scelta: salvata; il testo cambia
   await A.evaluate(() => window.NLAmici.open(true)); await wait(700);
   await A.click('#friRegali'); await wait(500);

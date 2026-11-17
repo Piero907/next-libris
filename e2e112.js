@@ -82,7 +82,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     return { items, bad, don: document.getElementById('donMenu').getBoundingClientRect().top / innerHeight };
   });
   console.log('[2 menu]', mn.items.join(' | '), '· Sostieni a', Math.round(mn.don * 100) + '%');
-  assert.deepStrictEqual(mn.items, ['Filtri e ordine', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
+  assert.deepStrictEqual(mn.items, ['Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
     'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
     'Info e aiuto', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);
   assert.deepStrictEqual(mn.bad, [], 'sottotitoli su una riga');

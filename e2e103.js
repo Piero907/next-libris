@@ -129,7 +129,8 @@ const base = 'http://localhost:' + CFG.port(8303);
   await A.click('[data-id="' + rosa + '"] .cv-guest [data-g="gift"]'); await wait(700);
   assert.strictEqual(DB.pren['uB|' + rosa], 'uA', 'prenotato da A'); assert(/Lo regali tu/.test(await A.$eval('[data-id="' + rosa + '"] .cv-guest', x => x.innerText)));
   await A.screenshot({ path: CFG.OUT + '/amici-desideri.png' });
-  await A.click('#guestBar [data-g="back"]'); await wait(500);
+  await A.evaluate(() => window.NL.guestExit());   // «‹ La tua libreria» tolto (17/11/2026 notte)
+  await wait(500);
   assert.strictEqual(await A.evaluate(() => window.NL.guest()), null, 'tornata alla sua libreria');
   assert.deepStrictEqual(await A.evaluate(() => window.NL.books().map(b => b.t)), ['Il deserto dei Tartari'], 'i suoi libri, intatti');
   // ---- A presta un libro a B: prima «Annulla» (non parte niente), poi davvero ----

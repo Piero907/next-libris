@@ -163,7 +163,7 @@ const base = 'http://localhost:' + CFG.port(8304);
   const gatt = await A.evaluate(() => window.NL.books().find(b => /Gattopardo/.test(b.t)).id);
   await A.openRow(gatt); await wait(400);
   assert(/Ce l.hai anche tu/.test(await A.$eval('[data-id="' + gatt + '"] .cv-guest', x => x.innerText)));
-  await A.click('#guestBar [data-g="back"]'); await wait(500);
+  await A.evaluate(() => window.NL.guestExit()); await wait(500);
   assert.strictEqual(await A.evaluate(() => window.NL.guest()), null);
   assert.deepStrictEqual(await A.titles(), ['Il Gattopardo', 'Il giardino dei Finzi-Contini (D)'], 'tornata: i suoi libri');
   // ---- B: avviso «Me lo presti?» → Presta ----
@@ -233,12 +233,15 @@ const base = 'http://localhost:' + CFG.port(8304);
   await A.keyboard.press('Escape'); await wait(200);
   await A.evaluate(() => { window.NL.settings.sbnUrl = 'https://sbn-anna.workers.dev'; window.NL.saveSettings(); });
   await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
-  assert.match(await A.$eval('#guestKey', x => x.getAttribute('aria-label')), /^Presta chiave API e worker a /);   // icona sulla riga del nome (17/11/2026 sera)
-  await A.click('#guestKey'); await wait(400);
+  assert(await A.$eval('#guestKey', x => x.hidden).catch(() => true), 'icona solo se prestate (17/11/2026 notte)');
+  await A.evaluate(() => window.NLAmici.friend('uB')); await wait(600); await A.click('[data-f="keyshare"][data-id="uB"]'); await wait(400);
   assert(await A.$eval('#keyGb', x => x.checked) && await A.$eval('#keySbn', x => x.checked), 'all\'inizio tutte e due');
   await A.click('#keySbn'); await A.click('#keyGo'); await wait(600);
   assert.deepStrictEqual(DB.keys.map(k => [k.gb_key, k.sbn]), [['AIzaChiaveDiAnna', '']], 'solo la chiave');
   assert.match(await A.$eval('#guestKey', x => x.getAttribute('aria-label') + (x.classList.contains('on') ? ' ✓' : '')), /^Prestata: chiave API a .* ✓$/);
+  assert.match(await A.$eval('#friBody', x => x.innerText), /Prestata: chiave API\s*Cambia/, 'in «Prestiti, regali e altro»');
+  await A.evaluate(() => { document.getElementById('friSheet').hidden = true; });
+  if (process.env.SCHERMATE) await A.screenshot({ path: require('path').join(process.env.SCHERMATE, 'amico-chiave.png') });
   await A.click('#guestKey'); await wait(400);
   assert(await A.$eval('#keyGb', x => x.checked) && !(await A.$eval('#keySbn', x => x.checked)), 'la scelta resta');
   assert.strictEqual(await A.$eval('#keyGo', x => x.textContent), 'Salva');

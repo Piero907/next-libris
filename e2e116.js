@@ -63,7 +63,7 @@ let wiki = 0;
   // 5) foto degli autori: Eco da Wikipedia, Calvino con le iniziali; salvate
   await p.waitForFunction(() => document.querySelector('.gcard .gc-img'), { polling: 100, timeout: 8000 });
   const ph = await p.evaluate(() => [...document.querySelectorAll('.gcard')].map(c => c.querySelector('.cap').textContent + ':' + (c.querySelector('.gc-img') ? 'foto' : c.querySelector('.gc-ph b').textContent)));
-  console.log('[5 foto]', ph.join(' | '), '· richieste', wiki); assert.deepStrictEqual(ph, ['Italo Calvino:IC', 'Umberto Eco:foto']);
+  console.log('[5 foto]', ph.join(' | '), '· richieste', wiki); assert.deepStrictEqual(ph, ['Calvino, Italo:IC', 'Eco, Umberto:foto']);   // «Cognome, Nome» di predefinito (17/11/2026 notte)
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('prova:catalogo-libri-aufoto')));
   assert(saved['umberto eco'][0] === 'https://upload.wikimedia.org/eco.png' && saved['italo calvino'][0] === '', 'foto salvate: ' + JSON.stringify(saved));
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-foto-412.png') });
@@ -92,21 +92,20 @@ let wiki = 0;
   await p.click('#statsSheet .sh-x'); await wait(600);
   assert(await p.evaluate(() => document.getElementById('statsSheet').hidden && document.getElementById('drawer').classList.contains('open')), '× delle statistiche torna al Menu');
 
-  // 2) finestrella al posto della tendina
-  await p.evaluate(() => window.__app.openDrawer('flt')); await wait(500);
+  // 2) finestrella al posto della tendina (dal 17/11/2026 notte nella riga sotto la ricerca, non più nei filtri)
+  await p.evaluate(() => window.__app.closeDrawer()); await wait(400);
   const pk = await p.evaluate(() => ({ sel: [...document.querySelectorAll('select.dsel')].map(s => s.offsetParent === null), btn: [...document.querySelectorAll('.dpick .dp-t')].map(b => b.textContent) }));
-  console.log('[2 tasti]', JSON.stringify(pk)); assert(pk.sel.every(Boolean) && pk.btn[0] === 'Più recenti' && pk.btn[1] === 'Autore', 'tendine nascoste, tasti con la scelta');
+  console.log('[2 tasti]', JSON.stringify(pk)); assert(pk.sel.every(Boolean) && pk.btn[0] === 'Più recenti' && pk.btn[1] === 'Raggruppa: Autore', 'tendine nascoste, tasti con la scelta');
   await p.evaluate(() => document.querySelectorAll('.dpick')[1].click()); await wait(200);
   const pop = await p.evaluate(() => ({ o: [...document.querySelectorAll('#pickPop .pk-o')].map(x => x.textContent + (x.getAttribute('aria-selected') === 'true' ? '*' : '')), focus: document.activeElement.textContent }));
   console.log('[2 finestrella]', JSON.stringify(pop)); assert.deepStrictEqual(pop.o, ['Nessun gruppo', 'Autore*', 'Genere', 'Genere, poi autore', 'Lettura']);
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'finestrella-412.png') });
   await p.evaluate(() => [...document.querySelectorAll('#pickPop .pk-o')][2].click()); await wait(300);
   const af = await p.evaluate(() => ({ v: document.getElementById('grp').value, g: JSON.parse(localStorage.getItem('prova:catalogo-libri-set')).grp, t: document.querySelectorAll('.dpick .dp-t')[1].textContent, hid: document.getElementById('pickPop').hidden }));
-  assert(af.v === 'gen' && af.g === 'gen' && af.t === 'Genere' && af.hid, 'scelta fatta: ' + JSON.stringify(af));
+  assert(af.v === 'gen' && af.g === 'gen' && af.t === 'Raggruppa: Genere' && af.hid, 'scelta fatta: ' + JSON.stringify(af));
   await p.evaluate(() => document.querySelectorAll('.dpick')[0].click()); await wait(200);
   await p.keyboard.press('Escape'); await wait(200);
-  assert(await p.evaluate(() => document.getElementById('pickPop').hidden && document.getElementById('drawer').classList.contains('open')), 'Esc chiude solo la finestrella');
-  await p.evaluate(() => window.__app.closeDrawer()); await wait(400);
+  assert(await p.evaluate(() => document.getElementById('pickPop').hidden), 'Esc chiude la finestrella');
 
   // 4) libreria di un amico
   await p.evaluate(() => NL.guestEnter('Anna', [
@@ -119,7 +118,7 @@ let wiki = 0;
     nav: [...document.querySelectorAll('#layNav .on')].length }));
   console.log('[4 striscia]', JSON.stringify(gb));
   assert.deepStrictEqual(gb.tabs, ['Libreria 3*', 'Desideri 1']);
-  assert(!gb.pill.some(t => /Prest/.test(t)) && /Presta/.test(gb.key) && gb.nav === 0, 'icona della chiave al posto della pillola, nessun tasto in basso acceso');
+  assert(!gb.pill.some(t => /Prest/.test(t)) && gb.key === '' && gb.nav === 0, 'niente icona della chiave se non è prestata, nessun tasto in basso acceso');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-412.png') });
   await p.evaluate(() => { const s = document.getElementById('grp'); s.value = ''; s.dispatchEvent(new Event('change', { bubbles: true })); }); await wait(300);
   await p.click('#btnView'); await wait(400);
@@ -138,7 +137,7 @@ let wiki = 0;
   await p.click('#layNav [data-l="lib"]'); await wait(400);
   st = await p.evaluate(() => [NL.guest(), NL.tab(), document.querySelectorAll('#list .row, #list .cover').length]);
   assert.deepStrictEqual(st, [null, 'lib', 3], 'Libreria in basso: la tua');
-  assert(await p.evaluate(() => document.getElementById('guestKey').hidden), 'icona della chiave via fuori dalla libreria dell\'amico');
+  assert(await p.evaluate(() => { const k = document.getElementById('guestKey'); return !k || k.hidden; }), 'icona della chiave via fuori dalla libreria dell\'amico');
   // «Per te» dalla libreria di un amico: le tue statistiche
   await p.evaluate(() => NL.guestEnter('Anna', [{ id: 'g1', t: 'Uno', a: 'X', ts: 1 }], { id: 'x' })); await wait(400);
   await p.click('#layNav [data-l="you"]'); await wait(300); await p.click('#layYou [data-l="stats"]'); await wait(500);

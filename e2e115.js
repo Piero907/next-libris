@@ -92,7 +92,7 @@ const books = [
   const now = await p.evaluate(() => [...document.querySelectorAll('#list .shelf-now .cover')].map(c => c.dataset.id));
   assert.deepStrictEqual(now, ['b2'], '«In lettura» non raggruppato');
   let c = await cards(p); console.log('[3 autore]', JSON.stringify(c));
-  assert.deepStrictEqual(c.map(x => x.t), ['Italo Calvino', 'Umberto Eco', 'Yuval Noah Harari', 'Senza autore']);
+  assert.deepStrictEqual(c.map(x => x.t), ['Calvino, Italo', 'Eco, Umberto', 'Harari, Yuval Noah', 'Senza autore']);   // per cognome, «Cognome, Nome» (17/11/2026 notte)
   assert.deepStrictEqual(c.map(x => x.n), [3, 1, 1, 1]);
   assert(c.every(x => !x.open), 'chiusi di partenza');
   assert(await p.evaluate(() => !!document.querySelector('#list .shelf-all .grp-tools [data-gx="1"]')), 'Espandi tutto in cima a «Gli altri libri»');
@@ -123,8 +123,8 @@ const books = [
   await p.evaluate(() => document.querySelectorAll('#list .shelf.grp > .shelf-h').forEach(h => { if (h.getAttribute('aria-expanded') !== 'true') h.click(); })); await wait(300);
   g = await groups(p); console.log('[3 genere › autore]', JSON.stringify(g));
   assert.deepStrictEqual(g.map(x => x.t), ['Romanzo', 'Saggio', 'Senza genere']);
-  assert.deepStrictEqual(g[0].sub, ['Italo Calvino', 'Umberto Eco']);
-  assert.deepStrictEqual(g[1].sub, ['Italo Calvino', 'Yuval Noah Harari']);
+  assert.deepStrictEqual(g[0].sub, ['Calvino, Italo', 'Eco, Umberto']);
+  assert.deepStrictEqual(g[1].sub, ['Calvino, Italo', 'Harari, Yuval Noah']);
   await p.evaluate(() => document.querySelector('#list .shelf.grp .gcard').click()); await wait(300);
   assert.strictEqual(await p.evaluate(() => document.querySelectorAll('#list .shelf.grp .gpanel:not([hidden]) .cover').length), 2, 'Calvino nei romanzi');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-genere-autore-412.png') });
@@ -134,7 +134,7 @@ const books = [
   assert.deepStrictEqual(g.map(x => x.t), ['Da leggere', 'Letti']);
   assert.deepStrictEqual(g.map(x => x.n), [4, 2]);
   await p.click('#edgeTab'); await wait(450);
-  const sub = await p.evaluate(() => document.getElementById('goFltTxt').textContent); assert(/per lettura/.test(sub), 'riassunto del Menu: ' + sub);
+  const sub = await p.evaluate(() => document.getElementById('grpPick').textContent); assert.strictEqual(sub, 'Raggruppa: Lettura', 'riga sotto la ricerca');   // dal 17/11/2026 notte non più nel riassunto del Menu
   await p.evaluate(() => history.back()); await wait(500);
   await p.evaluate(() => document.getElementById('tabWish').click()); await wait(400);
   g = await groups(p); assert.strictEqual(g.length, 0, 'nei Desideri niente gruppi per lettura');

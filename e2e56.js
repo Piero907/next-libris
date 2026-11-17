@@ -31,7 +31,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   await page.screenshot({ path: CFG.OUT + '/menu_home.png' });
   // 2) «Filtri e ordine» -> pagina; Indietro torna al menu; un altro Indietro chiude
   await page.click('#goFilters'); await wait(300);
-  s = await st(); assert(s.flt && !s.home && s.back && s.h === 'Filtri e ordine');
+  s = await st(); assert(s.flt && !s.home && s.back && s.h === 'Filtri');
   const groups = await page.$$eval('#drawerFlt h3', e => e.map(x => x.textContent)); console.log('[2 gruppi]', groups.join(' | '));
   assert.deepStrictEqual(groups.slice(0, 4), ['Libri', 'Lettura', 'Scaffale', 'Genere']);
   // scaffali: 12 -> 8 + «Altri 4…»
