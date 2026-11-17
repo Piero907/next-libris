@@ -3,7 +3,7 @@ const HN = require('./_harness');
 // moduli: social, notifiche, ricerche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Ricerche condivise» (ricerche.js) con un Supabase finto, 16/11/2026:
 // archivio comune (libro già cercato: niente Google; libro nuovo: una sola ricerca Google, poi nell'archivio solo i dati pubblici);
-// copertina grande dallo stesso indirizzo di Google (zoom=0), senza la richiesta /volumes/; descrizione assente = «non disponibile», nessuna altra richiesta;
+// copertina grande dallo stesso indirizzo di Google (zoom=3; zoom=0 tolto il 17/11/2026), senza la richiesta /volumes/; descrizione assente = «non disponibile», nessuna altra richiesta;
 // contatore condiviso della chiave prestata da Bruno (sha256, mai la chiave) e del worker; a 950 notifica «limite» nella campanella,
 // Google si ferma (dati da Open Library); la notifica apre la guida «Crea la tua chiave Google Libri: è gratis» (360, 412 scuro, 1280).
 const puppeteer = require('puppeteer-core');
@@ -82,7 +82,7 @@ let gHits = [], sbnHits = 0, coverHits = [];
         return r.respond(json({ items: [{ id: 'vol' + isbn.slice(-4), volumeInfo: { title: g[0], authors: [g[1]], publisher: g[2], publishedDate: g[3], language: 'it',
           industryIdentifiers: [{ type: 'ISBN_13', identifier: isbn }], imageLinks: { thumbnail: 'http://books.google.com/books/content?id=vol' + isbn.slice(-4) + '&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api' } } }] }));
       }
-      if (u.includes('books.google.com/books/content')) { coverHits.push(u); return r.respond({ status: 200, contentType: 'image/svg+xml', headers: { 'access-control-allow-origin': '*' }, body: /zoom=0/.test(u) ? SVG : SVG.replace('300', '128').replace('300', '128') }); }
+      if (u.includes('books.google.com/books/content')) { coverHits.push(u); return r.respond({ status: 200, contentType: 'image/svg+xml', headers: { 'access-control-allow-origin': '*' }, body: /zoom=3/.test(u) ? SVG : SVG.replace('300', '128').replace('300', '128') }); }
       if (u.startsWith(SBN)) { sbnHits++; return r.respond({ status: 404, headers: { 'access-control-allow-origin': '*' }, body: '' }); }
       if (u.includes('openlibrary.org/api/books') && isbn && OL[isbn]) return r.respond(json({ ['ISBN:' + isbn]: OL[isbn] }));
       if (/openlibrary|crossref|covers/.test(u)) return r.respond({ status: 404, headers: { 'access-control-allow-origin': '*' }, body: '' });
@@ -108,7 +108,7 @@ let gHits = [], sbnHits = 0, coverHits = [];
   b = await A.byIsbn('9788845292613'); console.log('[2 nuovo]', b.t, '| Google', gHits, '| imgL', b.imgL, '| dsn', b.dsn);
   assert.strictEqual(gHits.length, 1, 'una sola ricerca Google');
   assert(!gHits.some(x => x.includes('/volumes/')), 'nessuna richiesta /volumes/');
-  assert(/zoom=0/.test(b.imgL) && !/edge=curl/.test(b.imgL), 'copertina grande dallo stesso indirizzo');
+  assert(/zoom=3/.test(b.imgL) && !/edge=curl/.test(b.imgL) && !coverHits.some(x => /zoom=0/.test(x)), 'copertina grande dallo stesso indirizzo, solo zoom=3 (17/11/2026: zoom=0 dà spesso la prima pagina)');
   assert(!b.ds && b.dsn > 0, 'descrizione non disponibile');
   const put = DB.puts.find(x => x.isbn === '9788845292613'); console.log('[2 archiviato]', JSON.stringify(put && put.dati));
   assert(put && put.dati.t === 'Il nome della rosa' && put.dati.e === 'Bompiani' && !('c' in put.dati) && !('n' in put.dati) && !('id' in put.dati), 'nell\'archivio solo i dati pubblici');

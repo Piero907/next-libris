@@ -118,15 +118,17 @@ const books = [
   await p.evaluate(() => { const q = document.getElementById('q'); q.value = 'il'; q.dispatchEvent(new Event('input', { bubbles: true })); }); await wait(600);
   g = await groups(p); assert(g.length && g.every(x => x.open), 'con la ricerca tutti aperti: ' + JSON.stringify(g));
   await p.evaluate(() => { const q = document.getElementById('q'); q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); }); await wait(600);
-  // genere, poi autore: generi come sezioni, autori come copertine
+  // genere, poi autore: generi a copertine; toccandone uno, sotto le copertine dei suoi autori (Piero, 17/11/2026)
   await pick(p, 'genaut');
-  await p.evaluate(() => document.querySelectorAll('#list .shelf.grp > .shelf-h').forEach(h => { if (h.getAttribute('aria-expanded') !== 'true') h.click(); })); await wait(300);
-  g = await groups(p); console.log('[3 genere › autore]', JSON.stringify(g));
-  assert.deepStrictEqual(g.map(x => x.t), ['Romanzo', 'Saggio', 'Senza genere']);
-  assert.deepStrictEqual(g[0].sub, ['Calvino, Italo', 'Eco, Umberto']);
-  assert.deepStrictEqual(g[1].sub, ['Calvino, Italo', 'Harari, Yuval Noah']);
-  await p.evaluate(() => document.querySelector('#list .shelf.grp .gcard').click()); await wait(300);
-  assert.strictEqual(await p.evaluate(() => document.querySelectorAll('#list .shelf.grp .gpanel:not([hidden]) .cover').length), 2, 'Calvino nei romanzi');
+  const ga = await p.evaluate(() => [...document.querySelectorAll('#list .gcards > .gcard')].filter(c => !c.closest('.gpanel')).map(c => c.querySelector('.cap').textContent + ' ' + c.querySelector('.gc-n').textContent + (c.querySelector('.gc-ico') ? ' icona' : '')));
+  console.log('[3 genere › autore]', JSON.stringify(ga));
+  assert.deepStrictEqual(ga.map(x => x.split(' ')[0]), ['Romanzo', 'Saggio', 'Senza']);
+  assert(!(await p.$('#list .shelf.grp > .shelf-h[data-gk]')), 'i generi non sono più sezioni');
+  await p.evaluate(() => [...document.querySelectorAll('#list .gcard')].find(c => /^Romanzo/.test(c.getAttribute('aria-label'))).click()); await wait(300);
+  const au = await p.evaluate(() => [...document.querySelectorAll('#list .gpanel:not([hidden]) .gcard')].map(c => c.querySelector('.cap').textContent));
+  assert.deepStrictEqual(au, ['Calvino, Italo', 'Eco, Umberto'], 'autori dei romanzi a copertine');
+  await p.evaluate(() => document.querySelector('#list .gpanel:not([hidden]) .gcard').click()); await wait(300);
+  assert.strictEqual(await p.evaluate(() => document.querySelectorAll('#list .gpanel:not([hidden]) .gpanel:not([hidden]) .cover:not(.gcard)').length), 2, 'Calvino nei romanzi');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-genere-autore-412.png') });
   // lettura (solo Libreria): «In lettura» a parte
   await pick(p, 'read');

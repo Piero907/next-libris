@@ -7,6 +7,9 @@ const H = require('./_harness');
 // 2) toccando la miniatura dell'autore in «Chi è» la foto si apre a tutto schermo, più grande (960px), con la piccola se la grande manca.
 // 3) il tasto per restituire si chiama «Restituiscilo» ed è un tasto pieno (colore dell'app), come «È tornato: segna restituito».
 // 4) «N in prestito» conta anche i libri ricevuti dagli amici; toccandolo: «Prestati a» e «Prestati da», un gruppo per persona.
+// 5) «Latinoamericana»: miniatura giusta, copertina grande sbagliata (Google zoom=0 = spesso la prima pagina): via le zoom=0 salvate,
+//    si prova solo zoom=3; aggiungendo dai risultati della ricerca per titolo resta la copertina toccata.
+// 6) testata: «Libreria di Piero R.» sopra, i numeri sotto; nei Desideri «Desideri di Piero R.».
 const puppeteer = require('puppeteer-core');
 const fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -31,6 +34,8 @@ const books = [
   B({ id: 'b5', t: 'Il giardino dei Finzi-Contini', a: 'Giorgio Bassani', ts: 6, sk: 'p', sda: 'Bruno' }),
   B({ id: 'b6', t: 'Lessico famigliare', a: 'Natalia Ginzburg', ts: 5, sk: 'q', sda: 'Anna' }),
   B({ id: 'b7', t: 'Il Gattopardo', a: 'Giuseppe Tomasi di Lampedusa', ts: 4 }),
+  B({ id: 'b8', t: 'Latinoamericana: un diario per un viaggio in motocicletta', a: 'Ernesto Guevara', i: '9788807812590', ts: 3,
+    img: 'https://books.google.com/books/content?id=LBhU91DAFgsC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api', imgL: 'https://books.google.com/books/content?id=LBhU91DAFgsC&printsec=frontcover&img=1&zoom=0&source=gbs_api' }),
 ];
 const J = (r, o, st) => r.respond({ status: st || 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(o) });
 const hits = { pi: 0, wd: 0, big: 0 };
@@ -58,6 +63,11 @@ const hits = { pi: 0, wd: 0, big: 0 };
     if (/prop=pageimages/.test(u) && /pilicense=any/.test(u) && /titles=Ennio Flaiano/.test(u)) { hits.pi++; return J(r, { query: { pages: { '7': { title: 'Ennio Flaiano', thumbnail: { source: 'https://upload.wikimedia.org/wikipedia/it/thumb/a/ab/Ennio_Flaiano.jpg/330px-Ennio_Flaiano.jpg' } } } } }); }
     if (/wikidata\.org/.test(u)) { hits.wd++; return J(r, { claims: {} }); }
     if (/wikipedia\.org/.test(u)) return J(r, {}, 404);
+    if (/googleapis\.com\/books\/v1\/volumes/.test(u)) {   // ricerca per titolo: volume AAA; ricerca per ISBN: un altro volume, BBB
+      const vol = (id, isbn) => ({ id, volumeInfo: { title: 'Il barone rampante', authors: ['Italo Calvino'], publisher: 'Mondadori', publishedDate: '2016', language: 'it', industryIdentifiers: [{ type: 'ISBN_13', identifier: isbn }], imageLinks: { thumbnail: 'http://books.google.com/books/content?id=' + id + '&printsec=frontcover&img=1&zoom=1&source=gbs_api' } } });
+      return J(r, { totalItems: 1, items: [vol(/isbn:/.test(u) ? 'BBB' : 'AAA', '9788804668237')] });
+    }
+    if (/books\.google\.com\/books\/content/.test(u)) { hits.gz = (hits.gz || []).concat((u.match(/zoom=\d/) || [''])[0]); return r.respond({ status: 200, contentType: 'image/png', body: PNG }); }
     if (/960px-Ennio_Flaiano/.test(u)) { hits.big++; return r.respond({ status: 404, body: '' }); }   // la grande non c'e': si torna alla piccola
     if (/upload\.wikimedia\.org/.test(u)) return r.respond({ status: 200, contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' }, body: PNG });
     r.respond({ status: 200, contentType: 'application/json', body: '{"totalItems":0}' });
@@ -115,6 +125,27 @@ const hits = { pi: 0, wd: 0, big: 0 };
   await p.evaluate(() => { NL.settings.view = 'grid'; NL.saveSettings(); });
   await p.click('#summary [data-sum="loan"]'); await wait(300);
   assert.strictEqual(await p.$$eval('#list .loan-groups .cover', x => x.length), 5, 'anche a copertine');
+
+  // 5) copertine: la «grande» zoom=0 salvata sparisce, si prova solo zoom=3; dai risultati per titolo resta la copertina toccata
+  const b8 = await p.evaluate(() => NL.get('b8'));
+  console.log('[Latinoamericana]', b8.imgL || '(nessuna grande)', '· richieste Google', JSON.stringify(hits.gz || []));
+  assert(!/zoom=0/.test(b8.imgL || '') && !(hits.gz || []).includes('zoom=0'), 'niente zoom=0');
+  assert(await p.evaluate(() => NL.L.badBigCover('https://books.google.com/books/content?id=X&printsec=frontcover&img=1&zoom=0&source=gbs_api') && !NL.L.badBigCover('https://books.google.com/books/content?id=X&img=1&zoom=3')));
+  await p.evaluate(() => { NL.setFlt(''); NL.setTab('lib'); });
+  await p.evaluate(() => document.getElementById('btnType').click()); await wait(300);
+  await p.evaluate(() => { document.querySelector('#isbnText').value = 'Il barone rampante'; }); await p.evaluate(() => document.getElementById('isbnGo').click());
+  await p.waitForFunction(() => document.querySelector('#isbnRes .cand'), { polling: 100, timeout: 6000 });
+  await p.evaluate(() => document.querySelector('#isbnRes .cand').click());
+  await p.waitForFunction(() => { const b = NL.books().find(x => x.t === 'Il barone rampante'); return b && b.e; }, { polling: 100, timeout: 8000 });
+  const nb = await p.evaluate(() => NL.books().find(x => x.t === 'Il barone rampante').img);
+  console.log('[dal titolo]', nb);
+  assert(/id=AAA/.test(nb), 'resta la copertina toccata (AAA), non quella della ricerca per ISBN (BBB)');
+
+  // 6) testata
+  const hd = await p.evaluate(() => ({ o: document.getElementById('owner').innerText, d: getComputedStyle(document.getElementById('owner')).display }));
+  assert.deepStrictEqual(hd, { o: 'Libreria di Piero R.', d: 'block' });
+  await p.evaluate(() => document.getElementById('tabWish').click()); await wait(300);
+  assert.strictEqual(await p.$eval('#owner', x => x.innerText), 'Desideri di Piero R.');
 
   assert.deepStrictEqual(errors, [], 'errori JavaScript: ' + errors.join(' | '));
   console.log('OK e2e119');

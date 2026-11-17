@@ -63,12 +63,12 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   // 1) testata
   const hd = await p.evaluate(() => {
     const r = e => e.getBoundingClientRect(), h1 = r(document.querySelector('h1')), gear = r(document.getElementById('btnOpts')), meta = document.querySelector('.top-meta');
-    return { owner: document.getElementById('owner').innerText, meta: document.getElementById('owner').innerText + JSON.parse(getComputedStyle(document.getElementById('owner'), '::after').content) + document.getElementById('summary').innerText.replace(/\s+/g, ' ').trim(), metaH: r(meta).height, h1c: h1.top + h1.height / 2, gearC: gear.top + gear.height / 2, h1R: h1.right, gearL: gear.left };
+    return { owner: document.getElementById('owner').innerText, meta: document.getElementById('owner').innerText + ' · ' + document.getElementById('summary').innerText.replace(/\s+/g, ' ').trim(), metaH: r(meta).height, ownH: r(document.getElementById('owner')).height, sumH: r(document.getElementById('summary')).height, h1c: h1.top + h1.height / 2, gearC: gear.top + gear.height / 2, h1R: h1.right, gearL: gear.left };
   });
   console.log('[1 testata]', JSON.stringify(hd));
-  assert.strictEqual(hd.owner, 'Piero R.');
-  assert(/^Piero R\. · 12 libri · 2 in prestito/.test(hd.meta), hd.meta);
-  assert(hd.metaH < 30, 'nome e numeri su una riga sola');
+  assert.strictEqual(hd.owner, 'Libreria di Piero R.');   // «Libreria di» (17/11/2026)
+  assert(/^Libreria di Piero R\. · 12 libri · \d+ in prestito/.test(hd.meta), hd.meta);
+  assert(hd.ownH < 30 && hd.sumH < 30 && hd.metaH > 30 && hd.metaH < 50, 'due righe: «Libreria di …» sopra, i numeri sotto (17/11/2026)');
   assert(Math.abs(hd.h1c - hd.gearC) <= 4, 'icone centrate sul titolo');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 170 } });
 
