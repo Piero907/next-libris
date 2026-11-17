@@ -332,6 +332,20 @@ function addMine(o) {
   else { touch(); renderList(); updateSummary(); }
   return b.id;
 }
+/* toglie uno dei TUOI libri (anche mentre guardi la libreria di un amico: «Nei desideri» acceso → spento); restoreMine lo rimette */
+function removeMine(id) {
+  var arr = myBooks(), i = arr.findIndex(function (x) { return x.id === id; }); if (i < 0) return null;
+  var b = arr.splice(i, 1)[0];
+  if (guest) { clearTimeout(tSave); tSave = setTimeout(persist, 350); emit('mine', b); }
+  else { delete S[id]; touch(); renderList(); updateSummary(); }
+  return b;
+}
+function restoreMine(b) {
+  if (!b || myBooks().some(function (x) { return x.id === b.id; })) return;
+  myBooks().unshift(b);
+  if (guest) { clearTimeout(tSave); tSave = setTimeout(persist, 350); emit('mine', b); }
+  else { touch(); renderList(); updateSummary(); }
+}
 function isMine(b) { var keys = guest ? guest.mineKeys : null; if (!keys) { keys = {}; state.books.forEach(function (x) { if (!x.w && !x.xs) bookKeys(x).forEach(function (k) { keys[k] = 1; }); }); } return bookKeys(b).some(function (k) { return keys[k]; }); }
 function loadAll() {
   try {
@@ -6620,7 +6634,7 @@ window.NL = {
   L: L, esc: esc, $: $, ls: ls, toast: toast, eur: eur, hue: hue, bigImg: bigImg, authorsOf: authorsOf, coll: coll, PROVA: PROVA, COPIA: COPIA,
   books: function () { return state.books; }, quotes: allQuotes, tab: function () { return tab; }, settings: settings, saveSettings: saveSettings,
   name: function () { return settings.name || ''; }, setName: function (v) { saveName(v); }, newId: newId, today: today,
-  guest: function () { return guest ? guest.name : null; }, showBook: showBook, guestEnter: guestEnter, guestExit: function () { guestExit(); }, myBooks: myBooks, addMine: addMine, isMine: isMine,
+  guest: function () { return guest ? guest.name : null; }, showBook: showBook, guestEnter: guestEnter, guestExit: function () { guestExit(); }, myBooks: myBooks, addMine: addMine, removeMine: removeMine, restoreMine: restoreMine, isMine: isMine,
   setFlt: function (v) { flt = v; collapseCards(); renderList(); updateSummary(); if (typeof updateActiveFilters === 'function') updateActiveFilters(); }, flt: function () { return flt; }, goal: function () { return settings.goal || 0; },
   closeDrawer: function () { closeDrawer(); }, refresh: function () { renderList(); updateSummary(); },
   icon: icon, setTab: function (t) { setTab(t); }, openMenu: function () { openDrawer('opt'); }, openSugg: function (t) { openSugg(t); },
