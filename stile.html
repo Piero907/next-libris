@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it" data-look="nuovo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Next Libris · pagina campione dello stile</title>
+<!-- Pagina campione (STILE.md): gli elementi veri con i CSS dell'app accanto (../next-libris). Si apre con un server nella cartella sopra. -->
+<link rel="stylesheet" href="../next-libris/style.css">
+<link rel="stylesheet" href="../next-libris/amici.css">
+<style>
+  body{padding:16px;max-width:460px;margin:0 auto}
+  .camp{margin:0 0 28px}
+  .camp>h2{font:600 13px var(--font-body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;border-bottom:1px dashed var(--line);padding-bottom:4px}
+  .camp .note{font-size:13px;color:var(--muted);margin:6px 0 0}
+  .demo-sheet{position:relative;inset:auto;background:none;padding:0;display:block;z-index:auto}
+  .demo-sheet .sheet-in{max-height:none}
+  .barra{display:flex;gap:8px;margin:0 0 20px}
+</style>
+</head>
+<body>
+<div class="barra">
+  <button class="btn" type="button" onclick="document.documentElement.dataset.look=document.documentElement.dataset.look?'':'nuovo'">Aspetto «nuovo» sì/no</button>
+  <button class="btn" type="button" onclick="var r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark'">Chiaro / scuro</button>
+</div>
+
+<section class="camp"><h2>Tasti</h2>
+  <div class="row-btns"><button class="btn primary" type="button">Azione principale</button><button class="btn" type="button">Altra azione</button></div>
+  <p><button class="link" type="button">Link piccolo ›</button> · <button class="ico" type="button" aria-label="Chiudi">×</button></p>
+  <p class="note">Una sola .btn.primary per finestra. .ico sempre con aria-label.</p>
+</section>
+
+<section class="camp"><h2>Pillole e schede</h2>
+  <div class="chips"><button class="chip" type="button">Avviso</button> <button class="chip todo" type="button">Azione dell'amico</button></div>
+  <div class="tabs" role="tablist" style="margin-top:10px"><button type="button" role="tab" aria-selected="true">Libreria <span class="cnt">12</span></button><button type="button" role="tab" aria-selected="false">Desideri <span class="cnt">3</span></button></div>
+  <div class="grp-tools"><button type="button" class="gx">Espandi tutto</button><button type="button" class="gx">Comprimi tutto</button></div>
+</section>
+
+<section class="camp"><h2>Scelta (al posto delle tendine)</h2>
+  <h3>Raggruppa per</h3>
+  <button type="button" class="dpick" aria-expanded="true"><span class="dp-t">Autore</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+  <div class="pick-pop" role="listbox">
+    <button type="button" class="pk-o" role="option" aria-selected="false"><span class="pk-dot"></span><span>Nessun gruppo</span></button>
+    <button type="button" class="pk-o" role="option" aria-selected="true"><span class="pk-dot"></span><span>Autore</span></button>
+    <button type="button" class="pk-o" role="option" aria-selected="false"><span class="pk-dot"></span><span>Genere</span></button>
+  </div>
+  <p class="note">Mai &lt;select&gt; visibili: .dpick + #pickPop (app.js, pickShow).</p>
+</section>
+
+<section class="camp"><h2>Finestra</h2>
+  <div class="sheet demo-sheet"><div class="sheet-in has-x">
+    <button type="button" class="ico sh-x" aria-label="Chiudi">×</button>
+    <h2>Titolo della finestra</h2>
+    <p class="msg">Testo breve e semplice.</p>
+    <button class="btn primary" type="button">Azione principale</button>
+    <button class="btn" type="button">Chiudi</button>
+    <p class="hint">Nota in piccolo, in grigio.</p>
+  </div></div>
+  <p class="note">La × la mette da sola sheetX() quando c'è «Chiudi» o «Ho capito»; le richieste con «Annulla» non l'hanno.</p>
+</section>
+
+<section class="camp"><h2>Sezioni e gruppi</h2>
+  <div id="list">
+    <section class="shelf"><button type="button" class="shelf-h" aria-expanded="true"><span>Gli altri libri</span><span class="sh-n">20</span><svg class="sh-c" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+    <div class="shelf-b">
+      <div class="grid gcards">
+        <button type="button" class="cover gcard on" aria-expanded="true"><span class="art"><span class="gc-face"><span class="ph gc-ph gc-au" style="--h:40"><b>IC</b></span></span><span class="gc-n">5</span></span><span class="cap">Italo Calvino</span><span class="cap2">5 libri</span></button>
+        <button type="button" class="cover gcard"><span class="art"><span class="gc-face"><span class="ph gc-ph" style="--h:300"><b>R</b></span></span><span class="gc-n">10</span></span><span class="cap">Romanzo</span><span class="cap2">10 libri</span></button>
+        <button type="button" class="cover"><span class="art"><span class="ph" style="--h:120"><b>Un libro</b><small>Autore</small></span><span class="badge loan">Prestato</span></span><span class="cap">Un libro</span><span class="cap2">Autore</span></button>
+        <div class="gpanel" style="--x:16%"><div class="gp-h"><b>Italo Calvino</b><small>5 libri</small><span class="gp-sp"></span><button type="button" class="link gp-who">Chi è ›</button><button type="button" class="ico gp-x" aria-label="Chiudi">×</button></div><p class="hint">… i suoi libri …</p></div>
+      </div>
+      <div class="glist" style="margin-top:12px">
+        <button type="button" class="grow" aria-expanded="false"><span class="gc-face sm"><span class="ph gc-ph gc-au" style="--h:200"><b>EF</b></span></span><span class="gr-t"><b>Elena Ferrante</b><small>«L'amica geniale», «La figlia oscura»</small></span><span class="sh-n">2</span><svg class="sh-c" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+    </div></section>
+  </div>
+</section>
+
+<section class="camp"><h2>Testi</h2>
+  <p class="msg">Next Libris è gratis, senza pubblicità e senza abbonamenti. Se ti ha fatto ritrovare almeno un libro prestato e mai tornato, offrimi una birra!</p>
+  <p class="note">Mai «i libri restano sul telefono». Amici sempre in ordine alfabetico. Nei libri di un amico: «Anna l'ha letto».</p>
+</section>
+</body>
+</html>

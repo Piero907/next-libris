@@ -3,7 +3,7 @@ const H = require('./_harness');
 // 17/11/2026 pomeriggio, prova 101.3. Richieste di Piero:
 // 1) «In prestito» sulla copertina di un libro ricevuto in prestito da un amico.
 // 2) boccale di birra nella testata: apre Sostieni.
-// 3) «Raggruppa per» (Autore, Genere, Genere poi autore, Lettura) nelle copertine e nell'elenco; gruppi chiusi di partenza,
+// 3) «Raggruppa per» (Autore, Genere, Genere poi autore, Lettura) nelle copertine e nell'elenco; dal 17/11 sera gruppi a copertine, «In lettura» a parte;
 //    aperti con un tocco e ricordati; nei Desideri niente gruppi per lettura.
 // 4) la vista resta la stessa dopo un'azione sul libro: nei Desideri, libro aperto dalle copertine ed eliminato → di nuovo copertine.
 // 5) Privacy in una finestra dentro l'app; la × torna al Menu.
@@ -65,10 +65,12 @@ const books = [
     return page;
   }
   const set = (p) => p.evaluate(() => JSON.parse(localStorage.getItem('prova:catalogo-libri-set')));
-  const groups = (p) => p.evaluate(() => [...document.querySelectorAll('#list > .shelf.grp')].map(s => {
+  const cards = (p) => p.evaluate(() => [...document.querySelectorAll('#list .gcard, #list .grow')].map(c => ({ t: (c.querySelector('.cap') || c.querySelector('.gr-t b')).textContent,
+    n: +(c.querySelector('.gc-n') || c.querySelector('.sh-n')).textContent, open: c.getAttribute('aria-expanded') === 'true', row: c.classList.contains('grow') })));
+  const groups = (p) => p.evaluate(() => [...document.querySelectorAll('#list .shelf.grp:not(.grp-sub)')].map(s => {
     const h = s.querySelector(':scope > .shelf-h');
     return { t: h.querySelector('.sh-t').textContent, n: +h.querySelector('.sh-n').textContent, open: h.getAttribute('aria-expanded') === 'true',
-      sub: [...s.querySelectorAll(':scope > .shelf-b > .shelf.grp-sub > .shelf-h .sh-t')].map(x => x.textContent) };
+      sub: [...s.querySelectorAll(':scope > .shelf-b > .shelf.grp-sub > .shelf-h .sh-t, :scope > .shelf-b .gcard .cap')].map(x => x.textContent) };
   }));
   const pick = async (p, v) => { await p.evaluate((v) => { const s = document.getElementById('grp'); s.value = v; s.dispatchEvent(new Event('change', { bubbles: true })); }, v); await wait(300); };
 
@@ -85,42 +87,52 @@ const books = [
   await p.click('#btnBeer'); await wait(400);
   assert(await p.evaluate(() => !document.getElementById('donSheet').hidden), 'Sostieni aperto dal boccale');
   await p.click('#donClose'); await wait(400);
-  // 3) Raggruppa per autore: gruppi chiusi, in ordine, «Senza autore» in fondo
+  // 3) Raggruppa per autore (17/11/2026 sera): «In lettura» a parte; gli altri come copertine dei gruppi, chiuse; un tocco apre i libri sotto
   await pick(p, 'aut');
-  let g = await groups(p); console.log('[3 autore]', JSON.stringify(g));
-  assert.deepStrictEqual(g.map(x => x.t), ['Italo Calvino', 'Umberto Eco', 'Yuval Noah Harari', 'Senza autore']);
-  assert.deepStrictEqual(g.map(x => x.n), [3, 2, 1, 1]);
-  assert(g.every(x => !x.open), 'chiusi di partenza');
-  await p.click('#list > .shelf.grp:first-child > .shelf-h'); await wait(300);
-  g = await groups(p); assert(g[0].open && !g[1].open, 'aperto con un tocco');
-  assert.strictEqual(await p.evaluate(() => document.querySelectorAll('#list > .shelf.grp:first-child .grid .cover').length), 3, 'copertine nel gruppo');
+  const now = await p.evaluate(() => [...document.querySelectorAll('#list .shelf-now .cover')].map(c => c.dataset.id));
+  assert.deepStrictEqual(now, ['b2'], '«In lettura» non raggruppato');
+  let c = await cards(p); console.log('[3 autore]', JSON.stringify(c));
+  assert.deepStrictEqual(c.map(x => x.t), ['Italo Calvino', 'Umberto Eco', 'Yuval Noah Harari', 'Senza autore']);
+  assert.deepStrictEqual(c.map(x => x.n), [3, 1, 1, 1]);
+  assert(c.every(x => !x.open), 'chiusi di partenza');
+  assert(await p.evaluate(() => !!document.querySelector('#list .shelf-all .grp-tools [data-gx="1"]')), 'Espandi tutto in cima a «Gli altri libri»');
+  await p.click('#list .gcard'); await wait(300);
+  c = await cards(p); assert(c[0].open && !c[1].open, 'aperto con un tocco');
+  const pan = await p.evaluate(() => { const g = [...document.querySelectorAll('#list .gcard')], pn = document.querySelector('#list .gpanel:not([hidden])'), r = pn.getBoundingClientRect();
+    return { n: pn.querySelectorAll('.cover').length, below: r.top >= g[0].getBoundingClientRect().bottom, row: Math.round(g[1].getBoundingClientRect().top - g[0].getBoundingClientRect().top) }; });
+  console.log('[3 riquadro]', JSON.stringify(pan)); assert(pan.n === 3 && pan.below && pan.row === 0, 'libri del gruppo sotto la riga, che resta intera');
   assert((await set(p)).grp === 'aut' && Object.keys((await set(p)).grpOpen).length === 1, 'scelta e gruppo aperto ricordati');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-autore-412.png') });
-  // nell'elenco gli stessi gruppi
+  // nell'elenco: righe con la foto (o le iniziali)
   await p.click('#btnView'); await wait(400);
-  g = await groups(p); assert(g[0].open && g.length === 4, 'elenco con gli stessi gruppi');
-  assert.strictEqual(await p.evaluate(() => document.querySelectorAll('#list > .shelf.grp:first-child .row').length), 3, 'righe nel gruppo');
+  c = await cards(p); assert(c.length === 4 && c[0].open && c[0].row, 'elenco a righe: ' + JSON.stringify(c));
+  assert.strictEqual(await p.evaluate(() => document.querySelectorAll('#list .gpanel:not([hidden]) .row').length), 3, 'righe nel gruppo');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-autore-elenco-412.png') });
   await p.click('#btnView'); await wait(400);
+  // Espandi tutto / Comprimi tutto
+  await p.click('#list [data-gx="1"]'); await wait(400);
+  let g = await groups(p); assert(g.length === 4 && g.every(x => x.open) && (await set(p)).grpExp === 1, 'espanso: ' + JSON.stringify(g));
+  await p.click('#list [data-gx="0"]'); await wait(400);
+  c = await cards(p); assert(c.length === 4 && c.every(x => !x.open) && !(await set(p)).grpExp && !Object.keys((await set(p)).grpOpen).length, 'compresso');
   // la ricerca apre tutti i gruppi
   await p.evaluate(() => { const q = document.getElementById('q'); q.value = 'il'; q.dispatchEvent(new Event('input', { bubbles: true })); }); await wait(600);
   g = await groups(p); assert(g.length && g.every(x => x.open), 'con la ricerca tutti aperti: ' + JSON.stringify(g));
   await p.evaluate(() => { const q = document.getElementById('q'); q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); }); await wait(600);
-  // genere, poi autore
+  // genere, poi autore: generi come sezioni, autori come copertine
   await pick(p, 'genaut');
-  await p.evaluate(() => document.querySelectorAll('#list > .shelf.grp > .shelf-h').forEach(h => { if (h.getAttribute('aria-expanded') !== 'true') h.click(); })); await wait(300);
+  await p.evaluate(() => document.querySelectorAll('#list .shelf.grp > .shelf-h').forEach(h => { if (h.getAttribute('aria-expanded') !== 'true') h.click(); })); await wait(300);
   g = await groups(p); console.log('[3 genere › autore]', JSON.stringify(g));
   assert.deepStrictEqual(g.map(x => x.t), ['Romanzo', 'Saggio', 'Senza genere']);
   assert.deepStrictEqual(g[0].sub, ['Italo Calvino', 'Umberto Eco']);
   assert.deepStrictEqual(g[1].sub, ['Italo Calvino', 'Yuval Noah Harari']);
-  await p.click('#list > .shelf.grp:first-child .shelf.grp-sub:first-child > .shelf-h'); await wait(300);
-  assert.strictEqual(await p.evaluate(() => document.querySelectorAll('#list > .shelf.grp:first-child .shelf.grp-sub:first-child .cover').length), 2, 'Calvino nei romanzi');
+  await p.evaluate(() => document.querySelector('#list .shelf.grp .gcard').click()); await wait(300);
+  assert.strictEqual(await p.evaluate(() => document.querySelectorAll('#list .shelf.grp .gpanel:not([hidden]) .cover').length), 2, 'Calvino nei romanzi');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-genere-autore-412.png') });
-  // lettura (solo Libreria)
+  // lettura (solo Libreria): «In lettura» a parte
   await pick(p, 'read');
   g = await groups(p); console.log('[3 lettura]', JSON.stringify(g.map(x => x.t + ' ' + x.n)));
-  assert.deepStrictEqual(g.map(x => x.t), ['In lettura', 'Da leggere', 'Letti']);
-  assert.deepStrictEqual(g.map(x => x.n), [1, 4, 2]);
+  assert.deepStrictEqual(g.map(x => x.t), ['Da leggere', 'Letti']);
+  assert.deepStrictEqual(g.map(x => x.n), [4, 2]);
   await p.click('#edgeTab'); await wait(450);
   const sub = await p.evaluate(() => document.getElementById('goFltTxt').textContent); assert(/per lettura/.test(sub), 'riassunto del Menu: ' + sub);
   await p.evaluate(() => history.back()); await wait(500);
@@ -152,11 +164,11 @@ const books = [
   await p.close();
 
   // ---------- 360 scuro: testata con il boccale e gruppi ----------
-  p = await phone(360, 780, true, { seenV: V, wn2: 1, grp: 'aut', grpOpen: { 'aut:lib:italo calvino': 1 } });
+  p = await phone(360, 780, true, { seenV: V, wn2: 1, grp: 'aut', grpOpen: { 'aut:lib/italo calvino': 1 } });
   const t3 = await p.evaluate(() => { const h = document.querySelector('.top h1').getBoundingClientRect(), b = document.getElementById('btnBeer').getBoundingClientRect(), o = document.getElementById('btnOpts').getBoundingClientRect();
     return { gap: Math.round(b.left - h.right), right: Math.round(o.right), over: document.documentElement.scrollWidth - document.documentElement.clientWidth }; });
   console.log('[360 testata]', JSON.stringify(t3)); assert(t3.gap >= 0 && t3.over <= 0, 'a 360 il titolo non tocca il boccale');
-  g = await groups(p); assert(g.length === 4 && g[0].open, 'gruppo aperto ricordato: ' + JSON.stringify(g));
+  c = await cards(p); assert(c.length === 4 && c[0].open, 'gruppo aperto ricordato: ' + JSON.stringify(c));
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-autore-360-scuro.png') });
   await p.close();
 
