@@ -23,8 +23,8 @@ const PNG = fs.readFileSync(path.join(CFG.IMG, 'cov_thumb.png'));
 const B = o => Object.assign({ id: 'x', t: '', a: '', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: 1, sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: false, rs: 'da', rt: 0, rd: '' }, o);
 const books = [
   B({ id: 'b1', t: 'Sostiene Pereira', a: 'Antonio Tabucchi', gen: 'Romanzo', ts: 10 }),
-  B({ id: 'b2', t: 'Il nome della rosa', a: 'Umberto Eco', gen: 'Romanzo', ts: 9 }),
-  B({ id: 'b3', t: 'Palomar', a: 'Italo Calvino', gen: 'Romanzo', ts: 8 }),
+  B({ id: 'b2', t: 'Il nome della rosa', a: 'Umberto Eco', gen: 'Giallo', ts: 9 }),
+  B({ id: 'b3', t: 'Palomar', a: 'Italo Calvino', gen: 'Libri della nonna', ts: 8 }),
   B({ id: 'b4', t: 'Il deserto dei Tartari', a: 'Dino Buzzati', gen: 'Romanzo', ts: 7 }),
 ];
 const J = (r, o, st) => r.respond({ status: st || 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(o) });
@@ -83,6 +83,17 @@ const hits = { wd: 0, cm: 0 };
   const w0 = hits.wd; await p.reload({ waitUntil: 'load' }); await wait(1500);
   assert(await p.evaluate(() => !!document.querySelector('.gcard[aria-label^="Tabucchi"] .gc-img')), 'foto di Tabucchi alla riapertura');
   assert.strictEqual(hits.wd, w0, 'alla riapertura Wikidata non si richiama');
+
+  // 5) senza foto: nome piccolo e COGNOME grande al centro; generi con l'icona (libro chiuso se il genere non si riconosce)
+  const nm = await p.evaluate(() => { const c = document.querySelector('.gcard[aria-label^="Calvino"] .gc-ph'); const s = getComputedStyle(c.querySelector('.gc-sur'));
+    return [c.querySelector('.gc-nm').textContent, c.querySelector('.gc-sur').textContent, s.textTransform, getComputedStyle(c).justifyContent]; });
+  assert.deepStrictEqual(nm, ['Italo', 'Calvino', 'uppercase', 'center']);
+  await p.evaluate(() => { const g = document.getElementById('grp'); g.value = 'gen'; g.dispatchEvent(new Event('change', { bubbles: true })); }); await wait(500);
+  const gi = await p.evaluate(() => [...document.querySelectorAll('.gcard')].map(c => c.querySelector('.gc-gn').textContent + ':' + c.querySelector('.gc-ico').innerHTML.slice(0, 20)));
+  console.log('[generi]', gi.join(' | '));
+  assert.strictEqual(gi.length, 3); assert(/Giallo:<circle cx="10.5"/.test(gi.join('|')) && /Libri della nonna:<path d="M5 19.5/.test(gi.join('|')), 'icone: lente per il giallo, libro chiuso per un genere non riconosciuto');
+  const ov = await p.evaluate(() => [...document.querySelectorAll('.gc-face')].some(f => f.scrollWidth > f.clientWidth + 1));
+  assert(!ov, 'niente testo che esce dalle copertine');
 
   assert.deepStrictEqual(errors, [], 'errori JavaScript: ' + errors.join(' | '));
   console.log('e2e118 OK');

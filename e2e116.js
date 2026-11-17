@@ -62,8 +62,8 @@ let wiki = 0;
 
   // 5) foto degli autori: Eco da Wikipedia, Calvino con le iniziali; salvate
   await p.waitForFunction(() => document.querySelector('.gcard .gc-img'), { polling: 100, timeout: 8000 });
-  const ph = await p.evaluate(() => [...document.querySelectorAll('.gcard')].map(c => c.querySelector('.cap').textContent + ':' + (c.querySelector('.gc-img') ? 'foto' : c.querySelector('.gc-ph b').textContent)));
-  console.log('[5 foto]', ph.join(' | '), '· richieste', wiki); assert.deepStrictEqual(ph, ['Calvino, Italo:IC', 'Eco, Umberto:foto']);   // «Cognome, Nome» di predefinito (17/11/2026 notte)
+  const ph = await p.evaluate(() => [...document.querySelectorAll('.gcard')].map(c => c.querySelector('.cap').textContent + ':' + (c.querySelector('.gc-img') ? 'foto' : c.querySelector('.gc-ph').textContent)));
+  console.log('[5 foto]', ph.join(' | '), '· richieste', wiki); assert.deepStrictEqual(ph, ['Calvino, Italo:ItaloCalvino', 'Eco, Umberto:foto']);   // «Cognome, Nome» di predefinito (17/11/2026 notte); senza foto nome e cognome (17/11/2026)
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('prova:catalogo-libri-aufoto')));
   assert(saved['umberto eco'][0] === 'https://upload.wikimedia.org/eco.png' && saved['italo calvino'][0] === '', 'foto salvate: ' + JSON.stringify(saved));
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-foto-412.png') });
