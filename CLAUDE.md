@@ -20,6 +20,8 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
   8. **Cerca per autore:** opere da **Wikipedia/Wikidata**, poi l'edizione con Open Library/SBN/Google; **nel + e in «Chi è»** («Le sue opere ›», segnati quelli che hai già).
   9. **Icona della chiave anche nella propria libreria:** **sempre**, in alto a destra sulla riga «Libreria di …», apre la **finestra della chiave** (`NLAmici.keys()`); chi non ha la chiave vede la guida.
   10. **Serie come raggruppamento, sempre, copertine ed elenco:** copertina del primo volume disponibile + bollino con il numero; toccando si aprono i volumi in ordine di numero; nell'elenco riga «Serie: … · N volumi» che si apre. (IN_SOSPESO 23 e parte di 9.)
+  11. **«Chi è» dell'autore diventa «Info Autore»** (ovunque: titolo sul nome, «Chi è ›» nei gruppi, testi delle impostazioni).
+  - **NON pubblicare nella prova finché Piero non dice che l'elenco è chiuso** (17/11 sera: «aspetta a pubblicare nel caso ci siano altre modifiche»); gli è stato mostrato l'elenco dei sospesi per scegliere se aggiungere altro.
   - **In sospeso (aggiunte):** IN_SOSPESO 37 (libro del mese), 38 (risolvere gli ISBN non trovati), 39 (bacheca).
   - **Stato dei passi:** (aggiornare qui) nessuno ancora fatto.
 - **Foto di Flaiano, titolare della privacy, IN_SOSPESO in ordine** (17/11/2026 sera, **FATTO**: prova 103.2, poi **vera 104** su richiesta di Piero; nessun cambio al database).
