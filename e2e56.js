@@ -25,7 +25,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   assert(s.open && s.home && !s.flt && s.h === 'Menu' && Math.abs(s.w - Math.round(412 * 0.67)) <= 3);
   const items = await page.$$eval('#drawerOpts .dopt b', e => e.map(x => x.textContent)); console.log('  voci:', items.join(' | '));
   const iDon = items.indexOf('Sostieni Next Libris'), set = items.slice(3);
-  assert(iDon > items.indexOf('Backup ed esportazione') && iDon < items.indexOf('Impostazioni'), 'Sostieni dopo «La tua libreria», sopra Impostazioni (menu riordinato il 17/11/2026)');
+  assert(iDon > items.indexOf('Statistiche') && iDon < items.indexOf("Sistema l'elenco") && iDon < items.indexOf('Impostazioni'), 'Sostieni dopo Statistiche, prima di Amici e «La tua libreria» (17/11/2026 pomeriggio)');
   const don = await page.$eval('#donMenu', e => { const c = e.querySelector('.don-cup').getBoundingClientRect(); return { bg: getComputedStyle(e).backgroundColor, sub: e.querySelector('small').textContent, svg: !!e.querySelector('.don-cup svg'), w: Math.round(c.width), h: Math.round(c.height) }; });
   console.log('  sostieni:', JSON.stringify(don)); assert(don.bg !== 'rgba(0, 0, 0, 0)' && /birra/.test(don.sub) && don.svg && don.w === don.h && don.w >= 36, 'boccale nel cerchio');
   await page.screenshot({ path: CFG.OUT + '/menu_home.png' });

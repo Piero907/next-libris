@@ -6,7 +6,8 @@ const H = require('./_harness');
 // 2) Menu: ordine nuovo (Sostieni sopra Impostazioni, «Invita un amico» tolto, Impostazioni in ordine d'uso, «Info e aiuto»),
 //    sottotitoli su una riga, Sostieni intorno a meta' schermo (412x915).
 // 3) Indietro da una finestra aperta dal Menu (con e senza cronologia) riapre il Menu nello stesso punto e con i gruppi aperti;
-//    «Chiudi» chiude tutto e non lascia voci in piu' nella cronologia.
+//    «Chiudi» e × fanno come Indietro (17/11/2026 pomeriggio, prima chiudevano tutto) e non lasciano voci in piu' nella cronologia.
+//    Sostieni sta prima di Amici (17/11/2026 pomeriggio).
 // 4) «Con gli amici» (chiave e worker) sta in Ricerca dei libri, non piu' in Condivisione.
 // Con SCHERMATE=cartella: foto a 412, 360 scuro e 1280.
 const puppeteer = require('puppeteer-core');
@@ -81,11 +82,11 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     return { items, bad, don: document.getElementById('donMenu').getBoundingClientRect().top / innerHeight };
   });
   console.log('[2 menu]', mn.items.join(' | '), '· Sostieni a', Math.round(mn.don * 100) + '%');
-  assert.deepStrictEqual(mn.items, ['Filtri e ordine', 'Suggerimenti', 'Statistiche', '## Amici', 'I tuoi amici', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
-    'Sostieni Next Libris', 'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
+  assert.deepStrictEqual(mn.items, ['Filtri e ordine', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
+    'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
     'Info e aiuto', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);
   assert.deepStrictEqual(mn.bad, [], 'sottotitoli su una riga');
-  assert(mn.don > 0.4 && mn.don < 0.62, 'Sostieni intorno a meta\' schermo');
+  assert(mn.don > 0.15 && mn.don < 0.6, 'Sostieni prima di Amici, nella parte alta-centrale');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-412.png') });
 
   // 3a) Impostazioni aperte, menu scorso, Aspetto (finestra con cronologia) → Indietro → Menu come prima
@@ -107,17 +108,23 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   await p.click('#setList .dopt[data-sec="look"]'); await wait(400);
   await p.click('#optBack'); await wait(500); s = await st(p);
   assert(s.drawer && !s.win && s.sets, '‹ torna al Menu');
-  // 3d) Chiudi da una finestra con cronologia (Sostieni): chiude tutto, cronologia a posto
+  // 3d) Chiudi da una finestra con cronologia (Sostieni): come Indietro, si torna al Menu
   await p.click('#donMenu'); await wait(400);
   await p.click('#donClose'); await wait(700); s = await st(p); console.log('[3d Chiudi da Sostieni]', JSON.stringify(s));
-  assert(!s.drawer && !s.win && !/drawer|don/.test(s.state), 'Chiudi chiude tutto');
-  // 3e) Chiudi da una finestra senza cronologia (Account): chiude tutto, cronologia a posto
-  await openMenu(p); await p.click('#goSettings'); await wait(300);
+  assert(s.drawer && !s.win && /drawer/.test(s.state) && s.sets, 'Chiudi torna al Menu');
+  // 3e) Chiudi da una finestra senza cronologia (Account): come Indietro, si torna al Menu
   await p.click('#goAcc'); await wait(500);
   s = await st(p); assert(s.win && !s.drawer, 'Account aperto');
   await p.click('#accClose'); await wait(800); s = await st(p); console.log('[3e Chiudi da Account]', JSON.stringify(s));
-  assert(!s.drawer && !s.win && !/drawer/.test(s.state), 'Chiudi da Account chiude tutto');
-  // e Indietro dopo non si perde: arriva subito all'uscita
+  assert(s.drawer && !s.win && /drawer/.test(s.state), 'Chiudi da Account torna al Menu');
+  // 3e') × di Opzioni (Aspetto) e Chiudi di Statistiche (senza cronologia): come Indietro
+  await p.click('#setList .dopt[data-sec="look"]'); await wait(400);
+  await p.click('#optClose'); await wait(700); s = await st(p); assert(s.drawer && !s.win, '× di Aspetto torna al Menu');
+  await p.click('#goStats'); await wait(400);
+  await p.click('#statsClose'); await wait(700); s = await st(p);
+  assert(s.drawer && !s.win, 'Chiudi di Statistiche torna al Menu: ' + JSON.stringify(s));
+  // e dal Menu Indietro lo chiude, poi arriva subito all'uscita (nessuna voce in piu')
+  await back(p); s = await st(p); assert(!s.drawer && !s.win, 'Indietro chiude il Menu');
   await back(p); s = await st(p); assert(/root/.test(s.state), 'nessuna voce in piu\' nella cronologia: ' + s.state);
   // 3f) Info e aiuto aperto, Contatti → Indietro → Menu con Info aperto
   await p.evaluate(() => history.pushState({ guard: 1 }, ''));
@@ -183,8 +190,10 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
       if (!b) { b = document.createElement('button'); b.className = 'ico nt-top'; b.id = 'btnBell'; b.textContent = '•'; document.querySelector('header.top').appendChild(b); }
       b.hidden = false;
       const h = document.querySelector('h1'), t = h.querySelector('.prova-tag'), r = (t || h).getBoundingClientRect().right;
-      const ic = [...document.querySelectorAll('.top .nt-top, .top .fri-top, .top .gear')].map(x => x.getBoundingClientRect());
-      return { gap: b.getBoundingClientRect().left - r, c: Math.max(...ic.map(x => Math.abs((x.top + x.height / 2) - (h.getBoundingClientRect().top + h.getBoundingClientRect().height / 2)))) };
+      const ic = [...document.querySelectorAll('.top .nt-top, .top .fri-top, .top .gear, .top .beer-top')].map(x => x.getBoundingClientRect());
+      const bb = document.getElementById('btnBeer').getBoundingClientRect(), left = bb.left + (bb.width - 24) / 2;   // il boccale (17/11/2026) e' l'icona piu' a sinistra
+      const bl = b.getBoundingClientRect(); if ((bl.left + bl.width / 2) - (bb.left + bb.width / 2) < 30) return { gap: -1, c: 0, beer: 'troppo vicino alla campanella' };   // le zone da toccare si sovrappongono gia' (e2e105): contano i disegni
+      return { gap: left - r, c: Math.max(...ic.map(x => Math.abs((x.top + x.height / 2) - (h.getBoundingClientRect().top + h.getBoundingClientRect().height / 2)))) };
     });
     console.log('[' + w + ' con la campanella]', JSON.stringify(ov));
     assert(ov.gap >= 4 && ov.c <= 4, w + ': titolo e campanella');

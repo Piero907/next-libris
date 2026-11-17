@@ -99,10 +99,10 @@ const base = 'http://localhost:' + CFG.port(8302);
   assert(await A.$('header.top #btnFri') && !(await A.$('#btnFriN')), 'icona Amici in testata, senza numero (il numero è sulla campanella)');
   await A.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
   const menu = await A.evaluate(() => { const o = document.getElementById('drawerOpts'); return { heads: [...o.querySelectorAll('h3')].filter(h => h.getClientRects().length).map(h => h.textContent),
-    m: [...document.getElementById('friMenu').children].map(x => x.id), after: document.getElementById('friMenuH').previousElementSibling.classList.contains('dmain'),
+    m: [...document.getElementById('friMenu').children].map(x => x.id), after: document.getElementById('friMenuH').previousElementSibling.classList.contains('ddon') && document.getElementById('friMenuH').previousElementSibling.previousElementSibling.classList.contains('dmain'),   // dal 17/11 pomeriggio: Sostieni tra Statistiche e Amici
     acc: document.getElementById('goAcc').parentNode.id, fri: document.getElementById('goFriTxt').textContent }; });
   console.log('[menu]', JSON.stringify(menu));
-  assert.deepStrictEqual(menu.heads, ['Amici', 'La tua libreria']); assert(menu.after && menu.m.join() === 'goFri', 'Amici subito dopo Filtri/Statistiche («Invita» nella finestra Amici, 17/11/2026)');
+  assert.deepStrictEqual(menu.heads, ['Amici', 'La tua libreria']); assert(menu.after && menu.m.join() === 'goFri', 'Amici subito dopo Filtri/Statistiche e Sostieni («Invita» nella finestra Amici, 17/11/2026)');
   assert.strictEqual(menu.acc, 'setList', 'Account e sincronizzazione sotto Impostazioni');
   assert(/Scegli il tuo nome/.test(menu.fri), 'senza nome il Menu lo chiede');
   await A.evaluate(() => window.__app.closeDrawer()); await wait(300);

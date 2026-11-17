@@ -39,7 +39,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   assert(!m.setOpen && m.exp === 'false', 'impostazioni chiuse');
   for (const k of ['look', 'search', 'cards', 'share', 'app']) assert(!m.rows.includes(k), k + ' nascosta');
   assert(m.rows.includes('fix') && m.rows.includes('export') && m.rows.includes('goSettings') && m.rows.includes('donMenu'));
-  assert(m.rows.indexOf('export') < m.rows.indexOf('donMenu') && m.rows.indexOf('donMenu') < m.rows.indexOf('goSettings'), 'ordine: libreria, sostieni, impostazioni (17/11/2026)');
+  assert(m.rows.indexOf('donMenu') < m.rows.indexOf('goFri') && m.rows.indexOf('donMenu') < m.rows.indexOf('fix') && m.rows.indexOf('export') < m.rows.indexOf('goSettings'), 'ordine: sostieni, amici, libreria, impostazioni (17/11/2026 pomeriggio)');
   assert(/Ultimo backup: 15\/11\/2026/.test(m.bk), 'data del backup dentro la voce Backup');
   assert(await vis('#verBox'), 'versione in fondo');
   assert(await page.evaluate(() => document.querySelector('#donMenu').compareDocumentPosition(document.querySelector('#verBox')) & Node.DOCUMENT_POSITION_FOLLOWING), 'Sostieni sopra la versione');

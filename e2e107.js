@@ -87,7 +87,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     await P.click('#goInfo'); await wait(400);
     const items = await P.$$eval('#infoList .dopt b', xs => xs.map(x => x.textContent));
     assert.deepStrictEqual(items, ['Condivisione', 'Installazione sul telefono', 'Privacy', 'Contatti']);
-    assert.strictEqual(await P.$eval('#goPrivacy', x => x.getAttribute('href')), 'privacy.html');
+    assert.strictEqual(await P.$eval('#goPrivacy', x => x.dataset.sec), 'privacy');   // dal 17/11/2026 pomeriggio: finestra dentro l'app (e2e115)
     assert(await side(P), 'niente scorrimento di lato (menu)');
     await P.evaluate(() => { const l = document.getElementById('infoList'); l.scrollIntoView({ block: 'end' }); }); await wait(200);
     await shot('2-menu');

@@ -52,11 +52,13 @@ const assert = require('assert');
   await page.click('#optPrice'); await wait(100);
   assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).price), !pr0);
   await page.click('#optPrice'); await wait(100);
-  await page.click('#optClose'); await wait(300); assert(!(await vis('#optSheet')));
+  await page.click('#optClose'); await wait(500); assert(!(await vis('#optSheet')));
+  assert(await drawerOpen(), '× torna al Menu (17/11/2026 pomeriggio)'); await page.click('#drawerX'); await wait(400);
   assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8143) + '/?vista=elenco');
   // 3) Backup ed esportazione
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="export"]'); await wait(300);
-  assert(await vis('#exportSheet')); assert(!(await drawerOpen())); await page.click('#exportClose'); await wait(200);
+  assert(await vis('#exportSheet')); assert(!(await drawerOpen())); await page.click('#exportClose'); await wait(500);
+  assert(await drawerOpen(), 'Chiudi torna al Menu'); await page.click('#drawerX'); await wait(400);
   // 4) Filtri e linguetta aprono la scheda Filtri
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerX'); await wait(300);
   await page.click('#btnFilters'); await wait(300); assert(await vis('#drawerFilters')); assert(await vis('#drawerFoot'));
