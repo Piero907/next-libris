@@ -3,7 +3,7 @@ const H = require('./_harness');
 // moduli: layout
 // 17/11/2026. Richieste di Piero:
 // 1) Ennio Flaiano ha la foto su Wikipedia ma non nell'app: la foto sta solo su it.wikipedia (non libera), il riassunto non la dà
-//    → si chiede pageimages con pilicense=any; i vecchi «senza foto» si ricercano una volta (segno '~v' 3); Wikidata non serve.
+//    → si chiede pageimages con pilicense=any; i vecchi «senza foto» si ricercano una volta (segno '~v' 4: dal 17/11/2026 le miniature arrivano da thumb.wikimedia.org con «?utm…»); Wikidata non serve.
 // 2) toccando la miniatura dell'autore in «Chi è» la foto si apre a tutto schermo, più grande (960px), con la piccola se la grande manca.
 // 3) il tasto per restituire si chiama «Restituiscilo» ed è un tasto pieno (colore dell'app), come «È tornato: segna restituito».
 // 4) «N in prestito» conta anche i libri ricevuti dagli amici; toccandolo: «Prestati a» e «Prestati da», un gruppo per persona.
@@ -53,14 +53,14 @@ const hits = { pi: 0, wd: 0, big: 0 };
     localStorage.setItem('prova:catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), price: false, name: 'Piero R.', welcomed: 1, donSeen: 1, viewDef: 'grid', look: 'nuovo', seenV: V, wn2: 1, grp: 'aut' }));
     localStorage.setItem('prova:catalogo-libri-layout', JSON.stringify({ v: 'a' })); localStorage.setItem('prova:catalogo-libri-card', JSON.stringify({ v: 'd' }));
     // come sul telefono di Piero: Flaiano già cercato con la 102.4 e salvato «senza foto»
-    localStorage.setItem('prova:catalogo-libri-aufoto', JSON.stringify({ '~v': 2, 'ennio flaiano': ['', Date.now()] }));
+    localStorage.setItem('prova:catalogo-libri-aufoto', JSON.stringify({ '~v': 3, 'ennio flaiano': ['', Date.now()] }));
   }, books, V);
   await p.setRequestInterception(true);
   p.on('request', r => {
     const u = decodeURIComponent(r.url());
     if (u.startsWith(base)) return r.continue();
     if (/summary\/Ennio_Flaiano/.test(u)) return J(r, { type: 'standard', title: 'Ennio Flaiano', description: 'scrittore e sceneggiatore italiano', extract: 'Ennio Flaiano è stato uno scrittore.', wikibase_item: 'Q353406' });
-    if (/prop=pageimages/.test(u) && /pilicense=any/.test(u) && /titles=Ennio Flaiano/.test(u)) { hits.pi++; return J(r, { query: { pages: { '7': { title: 'Ennio Flaiano', thumbnail: { source: 'https://upload.wikimedia.org/wikipedia/it/thumb/a/ab/Ennio_Flaiano.jpg/330px-Ennio_Flaiano.jpg' } } } } }); }
+    if (/prop=pageimages/.test(u) && /pilicense=any/.test(u) && /titles=Ennio Flaiano/.test(u)) { hits.pi++; return J(r, { query: { pages: { '7': { title: 'Ennio Flaiano', thumbnail: { source: 'https://thumb.wikimedia.org/wikipedia/it/thumb/a/ab/Ennio_Flaiano.jpg/330px-Ennio_Flaiano.jpg?utm_source=it.wikipedia.org&utm_campaign=api' } } } } }); }
     if (/wikidata\.org/.test(u)) { hits.wd++; return J(r, { claims: {} }); }
     if (/wikipedia\.org/.test(u)) return J(r, {}, 404);
     if (/googleapis\.com\/books\/v1\/volumes/.test(u)) {   // ricerca per titolo: volume AAA; ricerca per ISBN: un altro volume, BBB
@@ -69,7 +69,7 @@ const hits = { pi: 0, wd: 0, big: 0 };
     }
     if (/books\.google\.com\/books\/content/.test(u)) { hits.gz = (hits.gz || []).concat((u.match(/zoom=\d/) || [''])[0]); return r.respond({ status: 200, contentType: 'image/png', body: PNG }); }
     if (/960px-Ennio_Flaiano/.test(u)) { hits.big++; return r.respond({ status: 404, body: '' }); }   // la grande non c'e': si torna alla piccola
-    if (/upload\.wikimedia\.org/.test(u)) return r.respond({ status: 200, contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' }, body: PNG });
+    if (/(upload|thumb)\.wikimedia\.org/.test(u)) return r.respond({ status: 200, contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' }, body: PNG });
     r.respond({ status: 200, contentType: 'application/json', body: '{"totalItems":0}' });
   });
   await p.goto(base + '/next-libris-prova/', { waitUntil: 'load' }); await wait(1500);
@@ -79,7 +79,7 @@ const hits = { pi: 0, wd: 0, big: 0 };
   await p.waitForFunction(() => { const c = document.querySelector('.gcard[aria-label^="Flaiano"]'); return c && c.querySelector('.gc-img'); }, { polling: 100, timeout: 10000 });
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('prova:catalogo-libri-aufoto')));
   console.log('[Flaiano]', JSON.stringify(saved['ennio flaiano']), '· pageimages', hits.pi, '· Wikidata', hits.wd, '· ~v', saved['~v']);
-  assert(/330px-Ennio_Flaiano/.test(saved['ennio flaiano'][0]) && saved['~v'] === 3, 'foto di Flaiano salvata, vecchio «senza foto» ricercato');
+  assert(/330px-Ennio_Flaiano/.test(saved['ennio flaiano'][0]) && /^https:\/\/thumb\.wikimedia\.org\/[^?]+$/.test(saved['ennio flaiano'][0]) && saved['~v'] === 4, 'foto di Flaiano salvata (thumb.wikimedia.org, senza «?utm»), vecchio «senza foto» ricercato');
   assert.strictEqual(hits.pi >= 1 && hits.wd, 0, 'trovata su it.wikipedia: Wikidata non serve');
 
   // 2) «Chi è» › tocco sulla miniatura: a tutto schermo

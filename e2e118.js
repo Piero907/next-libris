@@ -54,9 +54,9 @@ const hits = { wd: 0, cm: 0 };
     if (/summary\/Dino_Buzzati/.test(u)) return r.abort('timedout');   // errore di rete per un solo autore
     if (/wikidata\.org.*entity=Q231781/.test(u)) { hits.wd++; return J(r, { claims: { P18: [{ rank: 'normal', mainsnak: { datavalue: { value: 'Antonio Tabucchi.jpg' } } }] } }); }
     if (/wikidata\.org/.test(u)) { hits.wd++; return J(r, { claims: {} }); }   // Calvino: nemmeno Wikidata ha la foto
-    if (/commons\.wikimedia\.org.*File:Antonio Tabucchi\.jpg/.test(u)) { hits.cm++; return J(r, { query: { pages: { '1': { imageinfo: [{ thumburl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/x/xy/Antonio_Tabucchi.jpg/330px-Antonio_Tabucchi.jpg' }] } } } }); }
+    if (/commons\.wikimedia\.org.*File:Antonio Tabucchi\.jpg/.test(u)) { hits.cm++; return J(r, { query: { pages: { '1': { imageinfo: [{ thumburl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/x/xy/Antonio_Tabucchi.jpg/330px-Antonio_Tabucchi.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo' }] } } } }); }
     if (/wikipedia\.org/.test(u)) return J(r, {}, 404);
-    if (/upload\.wikimedia\.org/.test(u)) return r.respond({ status: 200, contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' }, body: PNG });
+    if (/(upload|thumb)\.wikimedia\.org/.test(u)) return r.respond({ status: 200, contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' }, body: PNG });
     r.respond({ status: 200, contentType: 'application/json', body: '{"totalItems":0}' });
   });
   await p.goto(base + '/next-libris-prova/', { waitUntil: 'load' }); await wait(1500);
@@ -70,8 +70,8 @@ const hits = { wd: 0, cm: 0 };
   assert.strictEqual(hits.cm, 1, 'Commons solo per chi ha la foto su Wikidata');
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('prova:catalogo-libri-aufoto')));
   console.log('[salvate]', JSON.stringify(saved));
-  assert(/330px-Antonio_Tabucchi/.test(saved['antonio tabucchi'][0]), 'foto di Tabucchi salvata');
-  assert(saved['italo calvino'][0] === '' && !saved['dino buzzati'] && saved['~v'] === 3, 'Calvino senza foto, Buzzati non salvato (errore), segno della pulizia');
+  assert.strictEqual(saved['antonio tabucchi'][0], 'https://thumb.wikimedia.org/wikipedia/commons/thumb/x/xy/Antonio_Tabucchi.jpg/330px-Antonio_Tabucchi.jpg', 'foto di Tabucchi salvata (nuovo indirizzo thumb.wikimedia.org, senza «?utm»)');
+  assert(saved['italo calvino'][0] === '' && !saved['dino buzzati'] && saved['~v'] === 4, 'Calvino senza foto, Buzzati non salvato (errore), segno della pulizia');
 
   // 4) «Chi è» mostra la stessa foto
   await p.evaluate(() => document.querySelector('.gcard[aria-label^="Tabucchi"]').click()); await wait(300);

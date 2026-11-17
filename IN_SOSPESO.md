@@ -4,43 +4,33 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui (va in «Fatti», in fondo, con una riga) e la novità va nel registro dell'app.
 
-**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **30**.
+**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **37**.
 
-Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
+Ultimo aggiornamento: **17/11/2026 sera**, vera **103**, prova **103.2**.
 
 ## Indice
 
-- **A. In attesa di Piero** (cose già fatte nella prova o da confermare)
-- **B. Da verificare sul telefono**
+- **A. In attesa di Piero**: portare nella vera la prova 103.2
+- **B. Da verificare sul telefono**: foto di Flaiano (103.2)
 - **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine
 - **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki · 12 nazionalità degli autori · 6 film dai libri
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
-- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo · 31 pagina del profilo · 32 premio per chi usa chiave e worker suoi
-- **G. Guide:** 13 guida di primo avvio · 16 guida per il worker e la chiave
-- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste · 27 verifica di sicurezza
+- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo · 31 pagina del profilo · 32 premio per chi usa chiave e worker suoi · 33 avviso sui desideri di un amico
+- **G. Guide:** 13 guida di primo avvio · 16 «Prova la chiave / Prova il worker»
+- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 21 dominio proprio ed email · 22 chiavi prestate davvero nascoste · 30 colori per daltonici · 34 copertine grandi «large» di Google · 35 Google per ultimo nella ricerca · 36 dividere app.js in moduli
 - **Fatti** (tolti dall'elenco)
 
 ---
 
 ## A. In attesa di Piero
 
-Il dettaglio di come si porta ogni cosa sta in CLAUDE.md («Lavoro in corso»).
-
-- **Portare nella vera la prova 99.2-99.5:** campanella delle notifiche (`011_notifiche.sql`), ricerche condivise con l'archivio comune (`012_ricerche_archivio.sql`), «Presta chiave API e worker» con la grafica degli amici (`013_chiavi_quali.sql`), chiavi prestate nascoste e menu «Info e condivisione». Le migrazioni vanno applicate alla vera **in ordine**, poi tutte le prove e il confronto con la prova.
-- **Da confermare (scelte fatte da Claude nella campanella):**
-  - la richiesta d'amicizia compare solo nella campanella, non nel riquadro in cima;
-  - nessuna notifica se si annulla o si cambia un regalo.
-- **Titolare nella privacy:** oggi è provvisorio «Piero R., sviluppatore di Next Libris» (`privacy.html`).
+- **Portare nella vera la prova 103.2** (quando lo dice Piero): foto degli autori dal nuovo indirizzo `thumb.wikimedia.org` e titolare della privacy «Piero R., l'ideatore di Next Libris». Nessun cambio al database.
 
 ## B. Da verificare sul telefono
 
-Cose fatte ma senza riscontro di Piero.
+Il 17/11/2026 sera Piero ha confermato **tutto il resto** (vera 103 e 102, «Accedi con Google» con la CSP, notifiche push, foto degli autori, fotocamera posteriore, backup su Drive, luce del Galaxy A32 lasciata così).
 
-- **Fotocamera del telefono** (v90, pulsante «📷 Usa la fotocamera del telefono (con il flash)», opzione `settings.camNative`): si apre sulla fotocamera posteriore (`capture="environment"`)? Se si apre in selfie, di solito basta girarla una volta.
-- **Backup «Fai il backup e mandalo su Drive, email…»** (v88): se non parte compare «Il backup non è partito» con una sigla tra parentesi. Se Piero la riferisce:
-  - `NotAllowedError`: di solito il tocco è «scaduto» o il file non è ammesso;
-  - `DataError` / `TypeError`: file troppo grande o non ammesso.
-- **Luce sul Galaxy A32** (storia in STORIA.md, v88-v92): Chrome dichiara la torcia ma non la accende; Piero ha risposto «No» a «Prova la luce», quindi per lui la strada è la fotocamera del telefono. **Prova possibile, solo se la chiede:** riaprire la fotocamera a risoluzione più bassa prima di accendere la luce (su alcuni Samsung la torcia va solo a certe risoluzioni). Non verificato.
+- **Foto di Ennio Flaiano** (prova 103.2): non compariva perché Wikipedia ha cambiato l'indirizzo delle miniature (vedi CLAUDE.md). Da guardare nella prova, con la rete.
 
 ---
 
@@ -228,6 +218,18 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 **Limiti e note:** oggi non ci sono file online (Storage di Supabase 1 GB, 50 MB a file): la foto va rimpicciolita sul telefono (es. 256×256 WebP, ~15-25 kB) prima di salvarla; con poche centinaia di utenti è poco spazio. Regole di accesso sul file (solo amici) o una cartella pubblica con nomi non indovinabili: da decidere. Va scritto in privacy.html. L'ex-libris (15) può usare lo stesso sistema per le immagini.
 
+### 31. Pagina del profilo (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** una **pagina del profilo** con la **raccolta delle citazioni** e la **citazione preferita**; se la libreria è visibile, anche le **statistiche**, mostrate «in modo cool». Si lega alla voce 28 (foto del profilo). Nulla di costruito. **Prima di costruire, chiedere:** chi la vede (solo tu o anche gli amici: oggi le citazioni non sono mai visibili agli amici), come si sceglie la citazione preferita, quali statistiche e in che stile, dove si apre (testata, Menu, finestra Amici).
+
+### 32. Premio per chi usa chiave Google e worker suoi (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** un **riconoscimento («reward»)** per chi ha la sua chiave API e il suo worker (non pesa sulla chiave «della casa», vedi la simulazione degli utenti). Nulla di costruito. **Prima di costruire, chiedere:** che premio (distintivo nel profilo e nella libreria vista dagli amici, colori o temi in più, ringraziamento), se conta anche chi li presta agli amici, come si verifica che sono davvero suoi.
+
+### 33. Avviso quando un amico aggiunge un libro ai desideri (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** poter chiedere una **notifica quando un amico aggiunge un libro ai suoi desideri**, scegliendolo **già nella richiesta di amicizia** e **dopo, con un tasto apposito** (per ogni amico). Vale **solo se l'amico rende visibili i desideri** (Impostazioni › Amici e privacy). Nulla di costruito. **Prima di costruire, chiedere:** dove sta il tasto (finestra dell'amico, sua libreria), se l'avviso va nella campanella, nelle notifiche push o in tutte e due, se un avviso per libro o uno riassuntivo al giorno, se l'amico sa di essere «seguito». Serve il database (tabella o colonna delle preferenze, avviso creato dal server quando arriva un desiderio nuovo): prima nella prova.
+
 ## G. Guide
 
 ### 13. Guida di primo avvio (chiesto il 16/11/2026; piano concordato con Piero)
@@ -250,9 +252,9 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 **Richiesta di Piero:** spiegare meglio come creare il **worker SBN** (Cloudflare) e la **chiave di Google Libri**, così chi usa l'app ci riesce da solo.
 
-**Già fatto (prova 99.3):** la guida «Crea la tua chiave Google Libri: è gratis» (`#kgSheet`), che si apre dalla notifica «limite». **Resta:** la guida del worker e il resto qui sotto.
+**Già fatto (nella vera dalla 102):** la guida «Crea la tua chiave Google Libri: è gratis» (`#kgSheet`) e la guida del worker in Impostazioni › Ricerca (`#sbnHow`, 5 passi, «Copia il codice del worker»). **Resta:** il controllo «Prova la chiave / Prova il worker» qui sotto.
 
-**Idee da proporre (nessuna costruita):** passi numerati con schermate vere o disegnini dentro Impostazioni › Ricerca; codice del worker pronto con «Copia»; un controllo «Prova la chiave / Prova il worker» che dice subito se funziona e cosa manca; una riga su a cosa servono (più libri trovati, meno limiti) e che sono gratuiti.
+**Idea da proporre (non costruita):** un controllo «Prova la chiave / Prova il worker» che dice subito se funziona e cosa manca; una riga su a cosa servono (più libri trovati, meno limiti) e che sono gratuiti.
 
 ---
 
@@ -290,60 +292,36 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 ### 18. Proposte rimaste dalla simulazione degli utenti (16/11/2026)
 
-**Fatto (prova 99.3):** contatore condiviso, meno ricerche Google per libro, archivio comune per ISBN; prima ancora (98.7) chiave e worker condivisi tra amici. La proposta 8 (chi usa molto tiene la sua chiave) c'è già. Documento: `claude/simulazione-utenti.md` nel progetto claude.ai; conti in `simulazione_utenti.py`.
+**Fatto (nella vera dalla 102):** contatore condiviso, meno ricerche Google per libro, archivio comune per ISBN; prima ancora (98.7) chiave e worker condivisi tra amici. La proposta 8 (chi usa molto tiene la sua chiave) c'è già. Documento: `claude/simulazione-utenti.md` nel progetto claude.ai; conti in `simulazione_utenti.py`.
 
 **Restano (nessuna costruita):**
 - **chiedere a Google più ricerche al giorno** (Console › Google Books API › Quote): gratis ma non garantito; a 10.000 al giorno il limite diventerebbe lo spazio di Supabase;
 - **suggerimenti condivisi:** «Da scoprire» e «Novità dei tuoi autori» salvati per autore e genere, validi per tutti per una settimana;
 - **meno traffico su Supabase:** un controllo leggero «c'è qualcosa di nuovo?» ogni 3 minuti e il giro completo degli amici solo se serve (circa 4 volte meno traffico);
 - **spazio su Supabase:** verso i 2.000 utenti decidere tra togliere le descrizioni dalla copia online (si ritrovano nell'archivio comune) o passare al piano Pro (25 $ al mese);
-- **rifare i conti** con la 99.3 (da ~2,75 a ~1,2 ricerche per libro nuovo) quando si porta nella vera.
+- **rifare i conti** con le ricerche di oggi (da ~2,75 a ~1,2 ricerche per libro nuovo): la simulazione è ancora quella del 16/11.
 
-### 20. Notifiche push con l'app chiusa (dal 16/11/2026, seguito della campanella)
+### 21. Dominio proprio ed email di accesso (dalla copia social, 16/11/2026)
 
-Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 al mese nel piano gratuito). Oggi gli avvisi arrivano alla riapertura e ogni 3 minuti con l'app aperta.
-
-### 21. Dominio proprio, email di accesso, privacy (dalla copia social, 16/11/2026)
-
-- **Dominio proprio** (`nextlibris.it` o simile, 10–15 € l'anno): serve perché nell'accesso con Google compaia «nextlibris» e non `piero907.github.io` (il nome dell'app si mostra solo con la verifica del marchio, che chiede un dominio di proprietà). Piero deve controllare se è libero. Piano: prima la prova sul nuovo indirizzo (nel codice: riconoscere la copia anche dal nome del sito, non solo dal percorso), poi la vera con il **trasloco** (con l'account: sincronizza sul vecchio indirizzo, entra sul nuovo; senza: backup e ripristino). Attenzione: cambiando dominio cambiano i dati del browser (`localStorage`, IndexedDB).
-- **Email di accesso con Brevo:** ferma fino al dominio (con un mittente Gmail finiscono spesso nello spam). Con il dominio: `accesso@nextlibris.it`, modelli con il codice di 6 cifre (testo pronto in `claude/guida-accesso-google-brevo.md` del progetto claude.ai).
-- **Titolare nella privacy:** vedi la parte A.
+- **Indirizzo:** fatto con nextlibris.github.io (versione 100), senza «piero» anche nell'accesso con Google.
+- **Dominio proprio** (`nextlibris.it` o simile, 10–15 € l'anno): servirebbe solo per la verifica del marchio di Google (nome e logo nella finestra di accesso) e per le email. Piero deve controllare se è libero. Cambiando dominio servirebbe di nuovo il trasloco dei dati.
+- **Email di accesso con Brevo:** ferma (accesso solo con Google, `CFG.email = false`). Con un dominio: `accesso@nextlibris.it`, modelli con il codice di 6 cifre (testo pronto in `claude/guida-accesso-google-brevo.md` del progetto claude.ai).
 
 ### 22. Chiave e worker prestati davvero nascosti (chiesto il 16/11/2026)
 
 **Richiesta di Piero:** chi riceve chiave API e worker da un amico non deve poterli vedere né passare ad altri.
 
-**Già fatto (prova 99.5):** nascosti nell'app (niente campo in Impostazioni › Ricerca, niente salvati, backup o link). Restano però sul telefono di chi li usa: una persona esperta li legge con gli strumenti del browser.
+**Già fatto (nella vera dalla 102):** nascosti nell'app (niente campo in Impostazioni › Ricerca, niente salvati, backup o link). Restano però sul telefono di chi li usa: una persona esperta li legge con gli strumenti del browser.
 
 **Da fare quando lo chiede («davvero nascosti»):** le ricerche di chi usa la chiave di un amico passano da un servizio sul server (Edge Function di Supabase) che tiene chiave e worker e fa la richiesta al posto suo; il telefono riceve solo i risultati. Costi: ricerche un po' più lente, funzioni del piano gratuito (500.000 al mese, ~2-3 per libro), da contare con la simulazione degli utenti; serve anche per i suggerimenti e le novità degli autori. Si lega al contatore condiviso (012) e alla voce 18.
 
 ---
-
-### 27. Verifica di sicurezza (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** fare una **verifica di sicurezza** dell'app. Nulla fatto.
-
-**Prima di partire, chiedere:** su quale copia (prova, vera o tutte e due); fino a dove (solo controllo e rapporto, o anche correzioni nella prova).
-
-**Cosa guardare (proposta):** regole RLS e permessi di tutte le tabelle (anche `notifiche`, `ricerche`, `archivio`, `push_*`), funzioni `security definer` (controllo amicizia, limiti al giorno, `search_path`), `get_advisors` di sicurezza su tutte e due le copie; dati che il client manda (lunghezze, jsonb, testo dentro la pagina senza `esc()`, cioè XSS); chiave e worker prestati (voce 22); Edge Function `push` e segreti nel Vault; link d'invito e `#k=`; intestazioni e Content-Security-Policy possibili su GitHub Pages; worker Cloudflare (origine ammessa, abusi); dipendenze in `vendor/`.
 
 ### 30. Versioni accessibili per chi non distingue i colori (chiesto il 17/11/2026)
 
 **Richiesta di Piero:** versioni dell'app adatte ai daltonici, prima **verificando se si può fare**. Nulla fatto.
 
 **Appunti per la verifica (non ancora controllati):** l'app ha già Aspetto › tema e colori, quindi una scelta in più («Colori per daltonici») si aggancia lì. Da controllare: dove il colore da solo porta un significato (pallino della sincronizzazione verde/arancio, avvisi ⚠, prestiti, «da verificare», interruttori acceso/spento, grafici delle Statistiche e della stagione in libri); per ognuno serve anche un segno o una parola, non solo il colore. Provare i colori con un simulatore (protanopia, deuteranopia, tritanopia) e il contrasto WCAG.
-
-### 31. Pagina del profilo (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** una **pagina del profilo** con la **raccolta delle citazioni** e la **citazione preferita**; se la libreria è visibile, anche le **statistiche**, mostrate «in modo cool». Si lega alla voce 28 (foto del profilo). Nulla di costruito. **Prima di costruire, chiedere:** chi la vede (solo tu o anche gli amici: oggi le citazioni non sono mai visibili agli amici), come si sceglie la citazione preferita, quali statistiche e in che stile, dove si apre (testata, Menu, finestra Amici).
-
-### 32. Premio per chi usa chiave Google e worker suoi (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** un **riconoscimento («reward»)** per chi ha la sua chiave API e il suo worker (non pesa sulla chiave «della casa», vedi la simulazione degli utenti). Nulla di costruito. **Prima di costruire, chiedere:** che premio (distintivo nel profilo e nella libreria vista dagli amici, colori o temi in più, ringraziamento), se conta anche chi li presta agli amici, come si verifica che sono davvero suoi.
-
-### 33. Avviso quando un amico aggiunge un libro ai desideri (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** poter chiedere una **notifica quando un amico aggiunge un libro ai suoi desideri**, scegliendolo **già nella richiesta di amicizia** e **dopo, con un tasto apposito** (per ogni amico). Vale **solo se l'amico rende visibili i desideri** (Impostazioni › Amici e privacy). Nulla di costruito. **Prima di costruire, chiedere:** dove sta il tasto (finestra dell'amico, sua libreria), se l'avviso va nella campanella, nelle notifiche push o in tutte e due, se un avviso per libro o uno riassuntivo al giorno, se l'amico sa di essere «seguito». Serve il database (tabella o colonna delle preferenze, avviso creato dal server quando arriva un desiderio nuovo): prima nella prova.
 
 ### 34. Copertine grandi di Google con i link ufficiali (chiesto il 17/11/2026)
 
@@ -353,6 +331,10 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 
 **Richiesta di Piero:** valutare di **invertire l'ordine delle ricerche**, perché Google Libri è la fonte più limitata (1.000 ricerche al giorno per chiave; vedi la simulazione degli utenti). **Oggi** (lib.js `lookupIsbn`): Google, Open Library e SBN partono **insieme**; Crossref solo se manca qualcosa; prima di tutto l'archivio comune. **Idea:** archivio → Open Library e SBN → **Google solo se manca ancora qualcosa** (titolo, autore, editore, anno, copertina, descrizione). **Da valutare prima:** quanto spesso Open Library e SBN bastano per i libri italiani (copertina e descrizione arrivano quasi sempre solo da Google, quindi il risparmio potrebbe essere piccolo se servono sempre); tempi più lunghi (Google aspetta le altre); cosa vale come «manca qualcosa» (per esempio la descrizione si potrebbe cercare solo all'apertura del libro, come la proposta 2 della simulazione). Si può misurare con le ricerche vere della prova prima di decidere. **Prima di costruire, chiedere.**
 
+### 36. Dividere app.js in moduli (dalla verifica del 17/11/2026)
+
+**Proposta della verifica, lasciata da parte da Piero:** `app.js` è troppo grande (~470 KB). Spostare in moduli propri, un pezzo alla volta e con le prove: fotocamera e scansione, editor delle foto, suggerimenti, statistiche. Rapporto in `claude/verifica-17-11-2026.md` del progetto claude.ai.
+
 ## Fatti (tolti dall'elenco)
 
 - **1. Fotocamera e luce:** fotocamera del telefono (v90), controllo dell'obiettivo (v91), «Prova la luce» (v92). Restano solo le verifiche nella parte B.
@@ -361,3 +343,8 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 - **Amicizie** (dalla copia social): fatte, nella vera dalla 99.
 - **18. Contatore e archivio:** fatti nella prova 99.3; il resto è sopra.
 - **29. Indirizzo nextlibris.github.io:** fatto con la versione 100 (17/11/2026), con il trasloco dal vecchio indirizzo.
+- **20. Notifiche push:** fatte (prova 99.6, nella vera dalla 102); Piero ha confermato sul telefono il 17/11/2026.
+- **27. Verifica di sicurezza:** fatta il 17/11/2026 (rapporto `claude/verifica-17-11-2026.md`); bonifiche nella prova 101.2, nella vera dalla 102.
+- **Campanella:** scelte confermate da Piero il 17/11/2026 (richiesta d'amicizia solo nella campanella; nessuna notifica se si annulla o si cambia un regalo).
+- **Titolare nella privacy:** «Piero R., l'ideatore di Next Libris» (prova 103.2).
+- **Verifiche sul telefono** (fotocamera posteriore, backup su Drive, luce del Galaxy A32): confermate o chiuse da Piero il 17/11/2026.
