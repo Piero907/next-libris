@@ -345,6 +345,14 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 
 **Richiesta di Piero:** poter chiedere una **notifica quando un amico aggiunge un libro ai suoi desideri**, scegliendolo **già nella richiesta di amicizia** e **dopo, con un tasto apposito** (per ogni amico). Vale **solo se l'amico rende visibili i desideri** (Impostazioni › Amici e privacy). Nulla di costruito. **Prima di costruire, chiedere:** dove sta il tasto (finestra dell'amico, sua libreria), se l'avviso va nella campanella, nelle notifiche push o in tutte e due, se un avviso per libro o uno riassuntivo al giorno, se l'amico sa di essere «seguito». Serve il database (tabella o colonna delle preferenze, avviso creato dal server quando arriva un desiderio nuovo): prima nella prova.
 
+### 34. Copertine grandi di Google con i link ufficiali (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** tenerla in sospeso. Dal 17/11/2026 la copertina grande di Google si prende dallo stesso indirizzo della miniatura con **zoom=3** («medium»); **zoom=0 è stato tolto** perché spesso dà la prima pagina del libro e non la copertina («Latinoamericana»). Per la **massima qualità** senza quel rischio: chiedere a Google la **scheda del volume** (`/volumes/<id>`), che ha i link ufficiali **large** ed **extraLarge** quando esistono. Costa **una ricerca Google in più per libro** (era stata tolta il 16/11 per il limite di 1.000 al giorno). Idea: farlo **solo quando si apre la copertina ingrandita**, e solo se la zoom=3 non c'è o è piccola. **Prima di costruire, chiedere:** solo all'ingrandimento o sempre; se conta nel contatore condiviso; se salvarla nell'archivio comune (così la scheda si chiede una volta sola per ISBN).
+
+### 35. Google per ultimo nella ricerca dei libri (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** valutare di **invertire l'ordine delle ricerche**, perché Google Libri è la fonte più limitata (1.000 ricerche al giorno per chiave; vedi la simulazione degli utenti). **Oggi** (lib.js `lookupIsbn`): Google, Open Library e SBN partono **insieme**; Crossref solo se manca qualcosa; prima di tutto l'archivio comune. **Idea:** archivio → Open Library e SBN → **Google solo se manca ancora qualcosa** (titolo, autore, editore, anno, copertina, descrizione). **Da valutare prima:** quanto spesso Open Library e SBN bastano per i libri italiani (copertina e descrizione arrivano quasi sempre solo da Google, quindi il risparmio potrebbe essere piccolo se servono sempre); tempi più lunghi (Google aspetta le altre); cosa vale come «manca qualcosa» (per esempio la descrizione si potrebbe cercare solo all'apertura del libro, come la proposta 2 della simulazione). Si può misurare con le ricerche vere della prova prima di decidere. **Prima di costruire, chiedere.**
+
 ## Fatti (tolti dall'elenco)
 
 - **1. Fotocamera e luce:** fotocamera del telefono (v90), controllo dell'obiettivo (v91), «Prova la luce» (v92). Restano solo le verifiche nella parte B.
