@@ -30,6 +30,7 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
     16. **Avviso sui desideri di un amico** (IN_SOSPESO 33): **campanella e push, un solo riassunto per amico al giorno**; arriva **solo se tu hai scelto di seguirlo** (nella richiesta d'amicizia e dopo con un tasto per ogni amico) **e lui ha i desideri visibili**, altrimenti niente; **l'amico non lo sa** (scritto nella privacy). Database: prima nella prova.
     17. **Guida di primo avvio** (IN_SOSPESO 13): piano già concordato; **prima i testi in chat per Piero**, poi il modulo `guida.js`.
     18. **Colori per daltonici** (IN_SOSPESO 30): **prima la verifica** (dove il colore porta da solo un significato) e il rapporto a Piero, poi si decide.
+    19. **Dividere app.js in moduli** (IN_SOSPESO 36), aggiunto da Piero il 17/11 sera, indeciso se per primo o per ultimo. **Consiglio di Claude: per primo (giro 0)**, come taglio semplice in più file senza cambiare il codice (script classici, stesse variabili globali), con **un giro completo delle prove** prima e dopo (qui serve); poi le novità vanno nei file giusti. **In attesa della conferma di Piero.**
   - **Ordine proposto a Piero (a giri, niente pubblicato fino al suo via):** giro 1 = 1, 5, 9, 11, 6, 7, 4, 10, 3 (libreria, solo app); giro 2 = 8, 12, 13 (Wikidata); giro 3 = 2, 14, 15, 16 (database 018+, amici); giro 4 = 17 (testi), 18 (verifica).
   - **In sospeso (aggiunte):** IN_SOSPESO 37 (libro del mese), 38 (risolvere gli ISBN non trovati), 39 (bacheca).
   - **Stato dei passi:** (aggiornare qui) nessuno ancora fatto.
