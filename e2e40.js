@@ -89,6 +89,7 @@ const books = [
   await click('#bulkSheet [data-bk="move"]'); await wait(300); assert((await book('k')).w); assert(await page.$eval('#selBar', e => e.hidden));
   // vista Copertine: pressione lunga sulla copertina
   await page.evaluate(() => document.querySelector('#btnView').click()); await wait(300);
+  await page.evaluate(() => document.querySelector('.pcard[data-pk="ser"]').click()); await wait(300);   // dal giro 1 la serie è una copertina sola: si apre, poi si scelgono i volumi
   await longPress('.cover[data-id="m1"]'); await tap('.cover[data-id="m3"]');
   assert.deepStrictEqual((await page.$$eval('#list .cover.sel', e => e.map(c => c.dataset.id))).sort(), ['m1', 'm3']);
   assert(await page.$eval('#lightbox', e => e.hidden), 'non apre la copertina');

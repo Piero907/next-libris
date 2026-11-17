@@ -61,19 +61,10 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   await page.evaluate(() => { document.querySelector('#drawerShow') && 0; });
   // vista all'apertura: Copertine di predefinito (nessuna scelta salvata), scelta nelle Opzioni › Aspetto
   assert(await page.evaluate(() => document.body.classList.contains('gridview') && !!document.querySelector('#list .grid')), 'copertine di predefinito');
-  await page.evaluate(() => window.__app.openOptions('look')); await wait(300);
-  assert(await page.$eval('input[name="viewDef"][value="grid"]', e => e.checked));
-  // la scelta ha l'aspetto di quella del tema: due pulsanti uguali affiancati, il pallino della radio non si vede
-  const vseg = await page.evaluate(() => { const sp = [...document.querySelectorAll('.seg-view span')].map(x => x.getBoundingClientRect()), th = document.querySelector('.seg-theme span').getBoundingClientRect(); return { w: sp.map(r => Math.round(r.width)), h: Math.round(sp[0].height), th: Math.round(th.height), op: getComputedStyle(document.querySelector('.seg-view input')).opacity, bg: getComputedStyle(document.querySelector('.seg-view input:checked+span')).backgroundColor }; });
-  console.log('[vista: aspetto]', JSON.stringify(vseg)); assert(vseg.op === '0' && Math.abs(vseg.w[0] - vseg.w[1]) <= 2 && vseg.h === vseg.th && vseg.bg !== 'rgba(0, 0, 0, 0)');
-  await page.evaluate(() => document.querySelector('.seg-view').scrollIntoView({ block: 'center' })); await page.screenshot({ path: CFG.OUT + '/vista_scelta.png' });
-  await page.click('input[name="viewDef"][value="list"]'); await wait(300);
-  assert(await page.evaluate(() => !document.body.classList.contains('gridview') && window.__app.settings.viewDef === 'list'));
-  await page.click('input[name="viewDef"][value="grid"]'); await wait(300);
-  await page.evaluate(() => window.__app.closeOptions()); await wait(300);
-  // il pulsante sopra i libri cambia solo fino alla prossima apertura
+  // dal giro 1 (18/11/2026) niente scelta in Aspetto: l'app ricorda l'ultima vista scelta con il pulsante sopra i libri
+  assert(await page.evaluate(() => !document.querySelector('input[name="viewDef"]')), 'scelta «All\'apertura mostra» tolta');
   await page.evaluate(() => document.querySelector('#btnView').click()); await wait(200);
-  assert(await page.evaluate(() => !document.body.classList.contains('gridview') && window.__app.settings.viewDef === 'grid'));
+  assert(await page.evaluate(() => !document.body.classList.contains('gridview') && window.__app.settings.viewDef === 'list'), 'elenco ricordato');
   await page.evaluate(() => document.querySelector('#btnView').click()); await wait(400);
   const bd = await page.evaluate(() => { const b = document.querySelector('.cover .badge.loan'); if (!b) return null; const r = b.getBoundingClientRect(), rg = document.createRange(); rg.selectNodeContents(b); const t = rg.getBoundingClientRect(); return { top: Math.round(t.top - r.top), bottom: Math.round(r.bottom - t.bottom) }; });
   console.log('[4 Prestato]', JSON.stringify(bd));
