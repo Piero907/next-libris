@@ -6,12 +6,12 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **37**.
 
-Ultimo aggiornamento: **17/11/2026 sera**, vera **103**, prova **103.2**.
+Ultimo aggiornamento: **17/11/2026 sera**, vera **104**, prova **104.1** (uguali).
 
 ## Indice
 
-- **A. In attesa di Piero**: portare nella vera la prova 103.2
-- **B. Da verificare sul telefono**: foto di Flaiano (103.2)
+- **A. In attesa di Piero**: niente
+- **B. Da verificare sul telefono**: foto di Flaiano (104)
 - **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine
 - **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki · 12 nazionalità degli autori · 6 film dai libri
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
@@ -24,13 +24,13 @@ Ultimo aggiornamento: **17/11/2026 sera**, vera **103**, prova **103.2**.
 
 ## A. In attesa di Piero
 
-- **Portare nella vera la prova 103.2** (quando lo dice Piero): foto degli autori dal nuovo indirizzo `thumb.wikimedia.org` e titolare della privacy «Piero R., l'ideatore di Next Libris». Nessun cambio al database.
+Niente: prova e vera sono uguali (104). La prossima cosa si sceglie dalle voci qui sotto.
 
 ## B. Da verificare sul telefono
 
 Il 17/11/2026 sera Piero ha confermato **tutto il resto** (vera 103 e 102, «Accedi con Google» con la CSP, notifiche push, foto degli autori, fotocamera posteriore, backup su Drive, luce del Galaxy A32 lasciata così).
 
-- **Foto di Ennio Flaiano** (prova 103.2): non compariva perché Wikipedia ha cambiato l'indirizzo delle miniature (vedi CLAUDE.md). Da guardare nella prova, con la rete.
+- **Foto di Ennio Flaiano** (vera 104): non compariva perché Wikipedia ha cambiato l'indirizzo delle miniature (vedi CLAUDE.md). Dalla pagina della prova la foto arriva; da guardare sul telefono, con la rete.
 
 ---
 
@@ -346,5 +346,5 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 - **20. Notifiche push:** fatte (prova 99.6, nella vera dalla 102); Piero ha confermato sul telefono il 17/11/2026.
 - **27. Verifica di sicurezza:** fatta il 17/11/2026 (rapporto `claude/verifica-17-11-2026.md`); bonifiche nella prova 101.2, nella vera dalla 102.
 - **Campanella:** scelte confermate da Piero il 17/11/2026 (richiesta d'amicizia solo nella campanella; nessuna notifica se si annulla o si cambia un regalo).
-- **Titolare nella privacy:** «Piero R., l'ideatore di Next Libris» (prova 103.2).
+- **Titolare nella privacy:** «Piero R., l'ideatore di Next Libris» (vera 104).
 - **Verifiche sul telefono** (fotocamera posteriore, backup su Drive, luce del Galaxy A32): confermate o chiuse da Piero il 17/11/2026.
