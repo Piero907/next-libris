@@ -38,7 +38,7 @@ books.push(B({ id: 'z2', t: 'Baudolino', a: 'Umberto Eco, Altro Autore', e: 'Bom
   assert.deepStrictEqual(r.sort(), ['b0', 'z1', 'z2']); assert.strictEqual(await page.$eval('#fltBadge', e => e.textContent), '1');
   // nel pannello si vede e si toglie
   await page.click('#btnFilters'); await wait(300);
-  assert((await page.$eval('#drawerFlt', e => e.innerText)).includes('Autore: Umberto Eco'));
+  assert((await page.$eval('#drawerFlt', e => e.innerText)).includes('Autore: Eco, Umberto'));
   await click('#drawerFlt [data-g="aut"]'); await wait(150);
   assert.strictEqual((await rows()).length, all); await page.keyboard.press('Escape'); await wait(300);
   // 3) casa editrice e scaffale (maiuscole/spazi diversi = stesso scaffale)

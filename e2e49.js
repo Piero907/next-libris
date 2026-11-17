@@ -85,8 +85,9 @@ let hits = [];
   await page.waitForFunction(() => !document.querySelector('#auPic').hidden, { timeout: 5000 });
   console.log('[fotografo]', await page.$eval('#auDesc', e => e.textContent), '| foto:', await page.$eval('#auPic img', e => e.src.slice(-20)));
   assert.strictEqual(await page.$eval('#auDesc', e => e.textContent), 'Fotografo brasiliano');
-  await click('#auPic'); await wait(150); assert(await page.$eval('#auPic', e => e.classList.contains('big')));
+  await click('#auPic'); await wait(150); assert(await page.$eval('#phView', e => !e.hidden && e.classList.contains('au')), 'foto a tutto schermo');
   await page.screenshot({ path: CFG.OUT + '/au_foto.png' });
+  await click('#phClose'); await wait(200); assert(await page.$eval('#phView', e => e.hidden));
   await click('#auClose'); await wait(200);
   // senza foto (Mutis): nessun riquadro vuoto
   await open('m2'); await click('.row[data-id="m2"] .au-name');

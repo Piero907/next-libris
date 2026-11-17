@@ -71,7 +71,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   // Aspetto: tema vicino a colori e caratteri; poi all'apertura e riepilogo (16/11/2026)
   await page.evaluate(() => window.__app.openOptions('look')); await wait(350);
   const legs = await page.$$eval('#optSheet .opt-sec[data-sec="look"] legend', e => e.map(x => x.textContent)); console.log('[aspetto]', legs.join(' | '));
-  assert.deepStrictEqual(legs, ['Tema', 'Colori', 'Carattere dei titoli', 'Carattere del testo', 'All\'apertura mostra', 'Riepilogo in alto']);
+  assert.deepStrictEqual(legs, ['Tema', 'Autori nei gruppi', 'Colori', 'Carattere dei titoli', 'Carattere del testo', 'All\'apertura mostra', 'Riepilogo in alto']);
   assert(await page.evaluate(() => !document.querySelector('.opt-sec[data-sec="look"] #optSound')), 'Suoni non piu\' in Aspetto');
   await page.screenshot({ path: CFG.OUT + '/opzioni_aspetto.png' });
   await page.evaluate(() => window.__app.closeOptions()); await wait(300);
