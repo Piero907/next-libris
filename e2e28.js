@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const APPU = /'https:\/\/nextlibris\.github\.io\/';/.test(require('fs').readFileSync(require('path').join(CFG.APP, 'app.js'), 'utf8')) ? 'https://nextlibris.github.io/' : 'https://piero907.github.io/next-libris/';   // indirizzo dell'app (dalla versione 100 nextlibris.github.io)
 // preferiti, condivisione di un libro e di una lista, link ricevuto, provenienza
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -77,7 +78,7 @@ const BOOKS = [
   let sh = (await p.evaluate(() => window.__shared))[0];
   console.log('[2 messaggio]\n' + sh.text + '\n' + sh.url);
   assert.strictEqual(sh.title, 'I preferiti di Piero'); assert(sh.text.startsWith('I preferiti di Piero (2 libri):')); assert(sh.text.includes('«Il nome della rosa» di Umberto Eco (Bompiani, 2012) · 14,00 €')); assert(sh.text.includes('Totale: 26,50 €'));
-  assert(/^https:\/\/piero907\.github\.io\/next-libris\/#l=z[\w-]+$/.test(sh.url));
+  assert(sh.url.startsWith(APPU + '#l=z') && /#l=z[\w-]+$/.test(sh.url));
   assert(!/segreta|Marco|Studio/.test(sh.text));
   assert.strictEqual((await set(p)).name, 'Piero'); assert(await hid(p, '#shareSheet'));
   const favLink = sh.url.split('#')[1];

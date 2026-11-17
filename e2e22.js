@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const APPU = /'https:\/\/nextlibris\.github\.io\/';/.test(require('fs').readFileSync(require('path').join(CFG.APP, 'app.js'), 'utf8')) ? 'https://nextlibris.github.io/' : 'https://piero907.github.io/next-libris/';   // indirizzo dell'app (dalla versione 100 nextlibris.github.io)
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -122,9 +123,9 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   assert(!(await hidden(p, '#instChrome'))); assert(!(await hidden(p, '#instCopy')));
   const href = await p.$eval('#instChrome', a => a.getAttribute('href'));
   console.log('[5 intent]', href);
-  assert(href.startsWith('intent://piero907.github.io/next-libris/#Intent;scheme=https;package=com.android.chrome;'));
+  assert(href.startsWith('intent://' + APPU.slice(8) + '#Intent;scheme=https;package=com.android.chrome;'));
   await p.click('#instCopy'); await wait(100);
-  assert.deepStrictEqual(await p.evaluate(() => window.__copied), ['https://piero907.github.io/next-libris/']);
+  assert.deepStrictEqual(await p.evaluate(() => window.__copied), [APPU]);
   await p.screenshot({ path: CFG.OUT + '/i_inapp.png' });
   await p.browserContext().close();
 
@@ -151,9 +152,9 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   await p.click('#shareApp'); await wait(100);
   const sh = await p.evaluate(() => window.__shared);
   console.log('[7 condiviso]', JSON.stringify(sh));
-  assert.strictEqual(sh[0].url, 'https://piero907.github.io/next-libris/'); assert.strictEqual(sh[0].title, 'Next Libris');
+  assert.strictEqual(sh[0].url, APPU); assert.strictEqual(sh[0].title, 'Next Libris');
   await p.click('#copyApp'); await wait(100);
-  assert.deepStrictEqual(await p.evaluate(() => window.__copied), ['https://piero907.github.io/next-libris/']);
+  assert.deepStrictEqual(await p.evaluate(() => window.__copied), [APPU]);
   console.log('[7 copia]', await txt(p, '.toast'));
   // tema scuro: il QR resta nero su bianco
   await p.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); }); await wait(100);
@@ -165,7 +166,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   p = await open(ANDROID, { set: { installed: true, instScope: '/' }, noShare: true });
   await p.evaluate(() => window.__app.openOptions('share')); await wait(150);
   await p.click('#shareApp'); await wait(100);
-  assert.deepStrictEqual(await p.evaluate(() => window.__copied), ['https://piero907.github.io/next-libris/']);
+  assert.deepStrictEqual(await p.evaluate(() => window.__copied), [APPU]);
   await p.browserContext().close();
 
   // 9) anteprima per WhatsApp e simili
@@ -173,7 +174,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
   const og = await p.evaluate(() => Object.fromEntries([...document.querySelectorAll('meta[property^="og:"]')].map(m => [m.getAttribute('property'), m.content])));
   console.log('[9 og]', og);
   assert(fs.existsSync(path.join(ROOT, 'icons/next-libris-og.png')));
-  assert.strictEqual(og['og:image'], 'https://piero907.github.io/next-libris/icons/next-libris-og.png');
+  assert.strictEqual(og['og:image'], APPU + 'icons/next-libris-og.png');
   await p.browserContext().close();
 
   // 10) installata al vecchio indirizzo (catalogo-libri): qui la scheda «Installa» ricompare

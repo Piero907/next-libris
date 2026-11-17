@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const APPU = /'https:\/\/nextlibris\.github\.io\/';/.test(require('fs').readFileSync(require('path').join(CFG.APP, 'app.js'), 'utf8')) ? 'https://nextlibris.github.io/' : 'https://piero907.github.io/next-libris/';   // indirizzo dell'app (dalla versione 100 nextlibris.github.io)
 // condividere le citazioni: dalla finestra della citazione e «Condividi tutte»
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -32,7 +33,7 @@ const books = [
   assert((await page.$eval('details.quotes[data-id="rosa"]', e => e.textContent)).includes('Condividi tutte (2)'));
   await click('details.quotes[data-id="rosa"] [data-act="quoteshareall"]'); await wait(200);
   let s = await last(); console.log('[tutte]\n' + s.text);
-  assert(s.text.startsWith('Citazioni da «Il nome della rosa» di Umberto Eco') && s.text.includes('«Stat rosa pristina nomine, nomina nuda tenemus.» (p. 503)') && s.text.includes('indagine.»') && s.text.includes('— scelte da Piero\n\nInviato con Next Libris') && s.text.endsWith('/next-libris/'));
+  assert(s.text.startsWith('Citazioni da «Il nome della rosa» di Umberto Eco') && s.text.includes('«Stat rosa pristina nomine, nomina nuda tenemus.» (p. 503)') && s.text.includes('indagine.»') && s.text.includes('— scelte da Piero\n\nInviato con Next Libris') && s.text.endsWith(APPU));
   // dalla finestra della citazione (anche modificata e non salvata)
   await click('details.quotes[data-id="rosa"] [data-act="quoteedit"][data-i="0"]'); await wait(150);
   await page.evaluate(() => { document.querySelector('#quoteText').value = 'Stat rosa pristina nomine.'; });
