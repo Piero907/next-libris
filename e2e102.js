@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Amici» (amici.js) con un Supabase finto: parte «Amici» nel Menu (sotto Filtri/Statistiche, prima di «La tua libreria»),
 // icona accanto all'ingranaggio con il numero delle richieste; un solo nome (quello dell'app = quello per gli amici: proposto,
 // già preso senza badare alle maiuscole → messaggio; cambiato nelle Impostazioni → anche per gli amici, se preso torna com'era);

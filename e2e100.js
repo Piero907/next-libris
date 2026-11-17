@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // copia social, modulo «Account e sincronizzazione» (social.js) con un Supabase finto sullo stesso server:
 // voce nel Menu, accesso con email e codice (codice sbagliato → messaggio), copia di sicurezza prima della prima sincronizzazione,
 // due telefoni con lo stesso account (libri che passano da uno all'altro, modifiche, cancellazioni «morbide» che lasciano i dati online),
@@ -94,7 +95,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   }
   async function login(page, email, code) {
     await page.evaluate(() => { window.__app.openDrawer('opt'); const s = document.getElementById('setList'); if (s && s.hidden) document.getElementById('goSettings').click(); }); await wait(400);
-    const t = await page.$eval('#goAcc', e => e.innerText); assert(/Account e sincronizzazione/.test(t) && /Salva i libri online/.test(t), 'voce nel Menu');
+    const t = await page.$eval('#goAcc', e => e.innerText); assert(/Account e sincronizzazione/.test(t) && /Libri online/.test(t), 'voce nel Menu');
     await page.click('#goAcc'); await wait(400);
     assert(await page.$eval('#accSheet', e => !e.hidden));
     assert(!(await page.$('[data-acc="google"]')), 'Google spento in Supabase: niente pulsante');
@@ -202,7 +203,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
   await A.click('[data-acc="yes"]'); await wait(800);
   console.log('[A dopo il ripristino]', JSON.stringify(await A.books()));
   assert.deepStrictEqual(await A.books(), ['9788804668015', '9788806219352']);
-  // uscita: i libri restano sul telefono, la voce del Menu torna «Salva i libri online»
+  // uscita: i libri restano sul telefono, la voce del Menu torna «Libri online, su ogni telefono»
   await A.click('#accSheet summary'); await A.click('[data-acc="logout"]'); await wait(150); await A.click('[data-acc="yes"]'); await wait(500);
   s = await A.st(); assert(!s.auth, 'uscito'); assert.strictEqual((await A.books()).length, 2, 'i libri restano');
   assert(/La tua email/.test(await A.$eval('#accBody', x => x.innerText)));

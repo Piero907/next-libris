@@ -27,7 +27,7 @@ r = await W.fetch(req('/?isbn=9788806219352', 'https://altro.sito')); assert.str
 r = await W.fetch(req('/?isbn=9788806219352', null)); assert.strictEqual(r.status, 200);     // prova a mano dal browser
 mode = 'down'; r = await W.fetch(req('/?isbn=9788806219352', APP)); assert.strictEqual(r.status, 502); console.log((await r.json()).error);
 // la risposta dell'intermediario si legge con il parser dell'app
-const L = (await import('/home/claude/libri-app/lib.js')).default;
+const L = (await import(path.join(process.env.APP_DIR || path.join(here, '..', 'next-libris'), 'lib.js'))).default;
 const p = L.parseSbn(j, '9788806219352'); console.log(p.t, '|', p.a, '|', p.e, p.y, p.pg);
 assert.strictEqual(p.pg, '623');
 console.log('worker OK');

@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Amici»: libreria, desideri, prestiti e regali tra amici (Supabase finto). A (Anna) e B (Bruno) amici.
 // B accende «Gli amici vedono la mia libreria»: A tocca Bruno e la vede nella schermata principale (barra con libri in comune e letti di recente;
 // mai le note), nei suoi desideri apre la scheda e «Te lo regalo io», poi torna alla sua libreria intatta;
@@ -154,9 +155,9 @@ const base = 'http://localhost:' + CFG.port(8303);
   await B.evaluate(() => window.NLAmici.load(true)); await wait(500);
   assert.strictEqual((await B.evaluate(() => window.NL.books().filter(b => b.t === 'La coscienza di Zeno').length)), 1, 'una volta sola');
   await B.screenshot({ path: CFG.OUT + '/amici-ricevuto.png' });
-  // B dice «Restituito»: da confermare, non si chiude da solo
-  const restituisci = async () => { await B.click('[data-id="' + bz.id + '"] [data-act="recv"]'); await wait(300); await B.click('#recvYes'); await wait(600); };
-  await B.click('[data-id="' + bz.id + '"] [data-act="recv"]'); await wait(300);
+  // B dice «Restituito»: da confermare, non si chiude da solo (il libro va al centro: in fondo lo copre la barra «Scansiona»)
+  const restituisci = async () => { await B.$eval('[data-id="' + bz.id + '"] [data-act="recv"]', e => e.scrollIntoView({ block: 'center' })); await B.click('[data-id="' + bz.id + '"] [data-act="recv"]'); await wait(300); await B.click('#recvYes'); await wait(600); };
+  await B.$eval('[data-id="' + bz.id + '"] [data-act="recv"]', e => e.scrollIntoView({ block: 'center' })); await B.click('[data-id="' + bz.id + '"] [data-act="recv"]'); await wait(300);
   assert(/Hai restituito «La coscienza di Zeno» ad Anna\?/.test(await B.$eval('#recvTxt', x => x.textContent)) && /Anna dovrà confermare/.test(await B.$eval('#recvSub', x => x.textContent)));
   await B.click('#recvYes'); await wait(600);
   assert.strictEqual(sw1.stato, 'reso', 'online: da confermare'); bz = await B.book("b.id==='" + bz.id + "'"); assert(bz.sk === 'q' && !bz.xs, 'da B: in attesa');

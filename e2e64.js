@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: wrap   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Modulo «La tua stagione in libri» (fino al 16/11/2026 trimestre) (wrap.js + wrap.css): invito in cima all'elenco nel primo mese della stagione nuova,
 // schermate a storie (avanti/indietro, barre), numeri della stagione, stagione prima, immagine, menu, opzione in Aspetto (predefinito sì),
 // Esc e Indietro chiudono; e l'app senza il modulo (file assenti) funziona uguale
@@ -85,6 +86,8 @@ const books = [
   assert(!(await hid('#wrap')) && !(await page.evaluate(() => document.body.classList.contains('drawer-open'))));
   await page.evaluate(() => history.back()); await wait(400);
   assert(await hid('#wrap'), 'Indietro chiude');
+  assert(await page.evaluate(() => document.body.classList.contains('drawer-open')), 'Indietro riapre il Menu (99.10)');
+  await page.evaluate(() => window.__app.closeDrawer()); await wait(300);
   // tema scuro: il fondo resta scuro anche se il colore della palette e' chiaro
   await page.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); window.NLWrap.open('2026-S3'); }); await wait(300);
   const base = await page.$eval('#wrap', e => e.style.getPropertyValue('--w-base')); console.log('  fondo scuro:', base);

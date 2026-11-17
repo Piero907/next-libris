@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, notifiche, ricerche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Ricerche condivise» (ricerche.js) con un Supabase finto, 16/11/2026:
 // archivio comune (libro già cercato: niente Google; libro nuovo: una sola ricerca Google, poi nell'archivio solo i dati pubblici);
 // copertina grande dallo stesso indirizzo di Google (zoom=0), senza la richiesta /volumes/; descrizione assente = «non disponibile», nessuna altra richiesta;

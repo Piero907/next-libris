@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Condivisione › «Chiave Google e worker» su misura e finestra della chiave (Piero, 16/11/2026); interruttore Libreria/Desideri nel +; scheda di un libro senza titolo (17/11/2026).
 // Anna ha chiave e worker: «Presta a un amico» apre la finestra della chiave (non Amici); presta a Bruno; chiudendo si torna a Condivisione.
 // Bruno non ha niente: vede «Anna ti presta …» e la guida; la usa e vede «Usi … di Anna» + guida (il caso di Serena); smette dalla finestra.

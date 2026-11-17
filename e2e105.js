@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, amici, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Notifiche» (notifiche.js) con un Supabase finto: campanella in testata prima dell'icona Amici, solo con l'account;
 // numero delle non lette; finestra con tutti i tipi di notifica (testi), le nuove evidenziate; aprendo si segnano lette sul server;
 // senza rete si segnano al caricamento dopo; tocco su un prestito → si apre la scheda del libro, su un'amicizia → finestra Amici;
@@ -80,8 +81,9 @@ const base = 'http://localhost:' + CFG.port(8305);
   }
   const side = (P) => P.evaluate(() => { const si = document.querySelector('#ntSheet .sheet-in'); return Math.max(si.scrollWidth - si.clientWidth, document.documentElement.scrollWidth - document.documentElement.clientWidth); });
   const headOk = (P) => P.evaluate(() => {          // titolo e stato non finiscono sotto le icone
-    const bell = document.getElementById('btnBell').getBoundingClientRect(), h = document.querySelector('header.top h1').getBoundingClientRect();
-    const fri = document.getElementById('btnFri').getBoundingClientRect(), gear = document.getElementById('btnOpts').getBoundingClientRect();
+    // dalla 99.10 a 360 px le icone sono più strette e le zone da toccare si sovrappongono un poco: si guardano i disegni (svg)
+    const box = (id) => { const b = document.getElementById(id), g = b.querySelector('svg'); return (g || b).getBoundingClientRect(); };
+    const bell = box('btnBell'), h = document.querySelector('header.top h1').getBoundingClientRect(), fri = box('btnFri'), gear = box('btnOpts');
     return h.right <= bell.left + 1 && bell.right <= fri.left + 8 && fri.right <= gear.left + 8 && Math.abs(bell.top - gear.top) < 2;
   });
 

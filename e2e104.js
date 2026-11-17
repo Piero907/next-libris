@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, amici, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Amici», seconda parte (Supabase finto): A (Anna) e B (Bruno) amici, librerie visibili.
 // Nella libreria di B (sola lettura): «Solo quelli che non hai», «Aggiungi ai miei desideri» (nei SUOI desideri), «Me lo presti?»;
 // mentre A guarda, i suoi libri non cambiano e non si sincronizza niente; tornando, tutto com'era.

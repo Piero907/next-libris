@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Menu laterale riordinato (16/11/2026): «La tua libreria» (Sistema l'elenco, Backup con la data dell'ultimo),
 // «Impostazioni» chiuse finche' non le apri (Aspetto, Ricerca, Aggiunta dei libri, Condivisione, Installazione sul telefono), Sostieni e versione dove erano.
 // L'ingranaggio in alto apre il menu con le impostazioni gia' aperte; tornando da una voce restano aperte.

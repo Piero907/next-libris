@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, amici, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Amici dell'amico e icona Amici nella libreria di un amico (Piero, 17/11/2026; 015_amici_visibili.sql).
 // Anna guarda la libreria di Bruno: l'icona Amici c'è e apre i suoi Amici; «N amici in comune» apre gli amici di Bruno:
 // Carla (in comune) in cima, Dario con «Chiedi l'amicizia»; toccando Carla si passa alla sua libreria.

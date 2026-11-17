@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: amici, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // 17/11/2026, prova 99.10. Menu riordinato, Indietro che torna al Menu, testata su due righe (scelte di Piero).
 // 1) Testata: «Next Libris» con le icone centrate sulla stessa linea; sotto una riga sola «Piero R. · 12 libri · 2 in prestito».
 // 2) Menu: ordine nuovo (Sostieni sopra Impostazioni, «Invita un amico» tolto, Impostazioni in ordine d'uso, «Info e aiuto»),

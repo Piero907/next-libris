@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Desideri e libreria di un amico (17/11/2026, richiesta di Piero; Supabase finto). A (Anna), B (Bruno), C (Carla) amici.
 // «Aggiungi ai miei desideri» è un'icona in alto nella scheda (come «Libreria» nei propri Desideri), anche nella sua libreria;
 // accesa se il libro è già nei tuoi desideri (tocco = lo togli, con «Annulla»); niente icona se ce l'hai. «Desiderio di Bruno».

@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: social, notifiche, push   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Notifiche push» (push.js, sw.js) con un Supabase finto e il push del browser simulato:
 // riga dopo l'accesso con la scelta dei tipi (Attiva → permesso, iscrizione, preferenze salvate; Non ora → spente);
 // Impostazioni › Notifiche (riga ultima sotto Impostazioni; stato, tipi, orari di silenzio 22-8, spegnere = cancellare l'iscrizione);

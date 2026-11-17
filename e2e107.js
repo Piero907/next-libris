@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+// moduli: amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // 16/11/2026, prova 99.5.
 // 1) Chiave e worker PRESTATI da un amico: si usano per cercare, ma non si vedono in Impostazioni › Ricerca (al posto del campo:
 //    «Usi la chiave Google di Anna…»), non finiscono tra i «salvati», né nel backup, né nella condivisione con il link;
