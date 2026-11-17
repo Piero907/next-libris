@@ -2589,7 +2589,8 @@ async function auLookup(name) {
   async function summary(title) {
     var j = await L.getJson(fetch, 'https://it.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(title.replace(/ /g, '_')) + '?redirect=true', { waits: [], timeout: 8000 });
     return j && j.type !== 'disambiguation' && j.extract ? { title: j.title, desc: L.str(j.description), text: L.str(j.extract), url: (j.content_urls && j.content_urls.mobile && j.content_urls.mobile.page) || auWikiUrl(j.title),
-      img: j.thumbnail && /^https:\/\/upload\.wikimedia\.org\//.test(j.thumbnail.source || '') ? j.thumbnail.source : '' } : null;   // foto dell'autore, se Wikipedia ce l'ha
+      img: j.thumbnail && /^https:\/\/upload\.wikimedia\.org\//.test(j.thumbnail.source || '') ? j.thumbnail.source : '',   // foto dell'autore, se Wikipedia ce l'ha
+      qid: /^Q\d{1,12}$/.test(j.wikibase_item || '') ? j.wikibase_item : '' } : null;
   }
   var r = null;
   try { r = await summary(name); } catch (e) { if (!(e && e.status === 404)) throw e; }
@@ -2612,8 +2613,25 @@ async function auLookup(name) {
     }
     if (!r) r = direct || other;                        // nessuno scrittore: la voce col suo nome (fotografo, cuoco…) o il primo trovato
   }
+  if (r && !r.img && r.qid) {                           // la voce italiana senza foto (Antonio Tabucchi, 17/11/2026): la foto di Wikidata
+    try { r.img = await auWdImg(r.qid); } catch (e) { r.retry = true; }   // senza rete: non si salva «senza foto», si riprova
+  }
+  if (r && r.retry) return r;
   auCache[name] = r || { none: true };
   return auCache[name];
+}
+/* foto della persona su Wikidata (proprieta' P18) e la sua miniatura su Commons: 2 richieste, solo per chi non ha la foto su it.wikipedia */
+async function auWdImg(qid) {
+  var o = { waits: [], timeout: 8000 }, file = '';
+  var j = await L.getJson(fetch, 'https://www.wikidata.org/w/api.php?action=wbgetclaims&format=json&origin=*&property=P18&entity=' + encodeURIComponent(qid), o);
+  var cl = (j && j.claims && j.claims.P18) || [];
+  cl = cl.filter(function (c) { return c && c.rank !== 'deprecated'; }).sort(function (a, b) { return (b.rank === 'preferred') - (a.rank === 'preferred'); });
+  for (var i = 0; i < cl.length && !file; i++) { var v = cl[i].mainsnak && cl[i].mainsnak.datavalue && cl[i].mainsnak.datavalue.value; if (typeof v === 'string' && v.length < 250) file = v; }
+  if (!file) return '';
+  var c = await L.getJson(fetch, 'https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&prop=imageinfo&iiprop=url&iiurlwidth=330&titles=' + encodeURIComponent('File:' + file), o);
+  var pg = c && c.query && c.query.pages, u = '';
+  if (pg) Object.keys(pg).forEach(function (k) { var ii = pg[k] && pg[k].imageinfo && pg[k].imageinfo[0]; if (!u && ii && typeof ii.thumburl === 'string') u = ii.thumburl; });
+  return /^https:\/\/upload\.wikimedia\.org\//.test(u) ? u : '';
 }
 async function openAuthor(id, name) {
   auNow = { id: id, name: name };
@@ -2631,6 +2649,7 @@ async function openAuthor(id, name) {
     if (r.none) { $('#auTxt').innerHTML = '<p class="desc-none">Non ho trovato una voce di Wikipedia su questo autore. Prova «Cerca sul web».</p>'; return; }
     $('#auDesc').textContent = r.desc ? r.desc.charAt(0).toUpperCase() + r.desc.slice(1) : '';
     auPic(r.img || '', name);
+    if (r.img && aufGet(name) !== r.img) { aufSave(name, r.img); aufPaint(name, r.img); }   // la stessa foto anche sulla copertina dell'autore
     $('#auTxt').innerHTML = r.text.split(/\n+/).map(function (t) { return '<p>' + esc(t) + '</p>'; }).join('');
     $('#auSrc').hidden = false;
     var w = $('#auWiki'); w.href = r.url; w.hidden = false;
@@ -3951,7 +3970,15 @@ function grpParts(vis, g) {
 /* foto degli autori: Wikipedia (auLookup), cercate una alla volta e solo per i gruppi che si vedono; salvate sul telefono */
 var AUF_LS = 'catalogo-libri-aufoto', AUF_RETRY = 30 * 864e5, aufo = null, aufQ = [], aufBusy = false, aufIO = null;
 function aufMap() {
-  if (!aufo) { try { aufo = JSON.parse(ls.get(AUF_LS) || '{}'); } catch (e) { nlErr(e); } if (!aufo || typeof aufo !== 'object') aufo = {}; }
+  if (!aufo) {
+    try { aufo = JSON.parse(ls.get(AUF_LS) || '{}'); } catch (e) { nlErr(e); }
+    if (!aufo || typeof aufo !== 'object') aufo = {};
+    if (aufo['~v'] !== 2) {                              // 17/11/2026: prima si guardava solo it.wikipedia, i vecchi «senza foto» si ricercano (anche Wikidata)
+      Object.keys(aufo).forEach(function (k) { if (!Array.isArray(aufo[k]) || !aufo[k][0]) delete aufo[k]; });
+      aufo['~v'] = 2;
+      try { ls.set(AUF_LS, JSON.stringify(aufo)); } catch (e) { nlErr(e); }
+    }
+  }
   return aufo;
 }
 function aufGet(name) {                                  // indirizzo della foto; '' = cercata, non c'e'; null = da cercare
@@ -3961,31 +3988,45 @@ function aufGet(name) {                                  // indirizzo della foto
   return /^https:\/\/upload\.wikimedia\.org\//.test(x[0] || '') ? x[0] : '';
 }
 function aufSave(name, url) {
-  var m = aufMap(), ks = Object.keys(m);
+  var m = aufMap(), ks = Object.keys(m).filter(function (k) { return k.charAt(0) !== '~'; });
   if (ks.length >= 2000) ks.sort(function (a, b) { return (m[a][1] || 0) - (m[b][1] || 0); }).slice(0, 200).forEach(function (k) { delete m[k]; });
   m[L.norm(name)] = [url || '', Date.now()];
   try { ls.set(AUF_LS, JSON.stringify(m)); } catch (e) { nlErr(e); }
 }
 function aufImg(url) { return '<img class="gc-img" src="' + esc(url) + '" alt="" loading="lazy" referrerpolicy="no-referrer" data-rm>'; }
 function aufPaint(name, url) {
-  Array.prototype.forEach.call(document.querySelectorAll('[data-auf]'), function (el) {
-    if (el.dataset.auf !== L.norm(name)) return;
+  var k = L.norm(name);
+  Array.prototype.forEach.call(document.querySelectorAll('.gc-face[data-aun]'), function (el) {
+    if (L.norm(el.dataset.aun) !== k) return;
     el.removeAttribute('data-auf');
-    if (url && !el.querySelector('.gc-img')) el.insertAdjacentHTML('beforeend', aufImg(url));
+    var im = el.querySelector('.gc-img');
+    if (im && url && im.getAttribute('src') !== url) { im.remove(); im = null; }
+    if (url && !im) el.insertAdjacentHTML('beforeend', aufImg(url));
   });
 }
+var aufFails = 0, aufLater = 0;
 async function aufRun() {
   if (aufBusy) return; aufBusy = true;
   try {
     while (aufQ.length) {
-      if (navigator.onLine === false) { aufQ = []; break; }
+      if (navigator.onLine === false) { aufQ = []; aufAgain(); break; }
       var name = aufQ.shift();
       if (aufGet(name) !== null) { aufPaint(name, aufGet(name)); continue; }
-      try { var r = await auLookup(name); aufSave(name, (r && r.img) || ''); aufPaint(name, (r && r.img) || ''); }
-      catch (e) { aufQ = []; break; }                   // senza rete o errore: si riprova la prossima volta
+      try {
+        var r = await auLookup(name);
+        if (r && r.retry) throw r;
+        aufFails = 0; aufSave(name, (r && r.img) || ''); aufPaint(name, (r && r.img) || '');
+      } catch (e) {                                     // errore: si salta solo questo autore (17/11/2026; prima si buttava via tutta la coda)
+        if (++aufFails >= 3) { aufQ = []; aufFails = 0; aufAgain(); break; }   // tre di fila: rete assente o lenta, si riprova tra un minuto
+      }
     }
   } finally { aufBusy = false; }
 }
+function aufAgain() {                                    // si riguardano le copertine ancora senza foto che si vedono
+  clearTimeout(aufLater);
+  aufLater = setTimeout(function () { if (aufIO) Array.prototype.forEach.call(document.querySelectorAll('#list [data-auf]'), function (el) { aufIO.unobserve(el); aufIO.observe(el); }); }, 60000);
+}
+window.addEventListener('online', function () { if (aufIO) Array.prototype.forEach.call(document.querySelectorAll('#list [data-auf]'), function (el) { aufIO.unobserve(el); aufIO.observe(el); }); });
 function aufWant(name) { if (aufQ.indexOf(name) < 0) aufQ.push(name); aufRun(); }
 function aufWatch(root) {                                // si cercano solo le foto dei gruppi che si vedono
   var els = root.querySelectorAll('[data-auf]'); if (!els.length) return;
@@ -4001,7 +4042,7 @@ function grpFace(kind, name, none, small) {
   var url = kind === 'aut' && !none ? aufGet(name) : '';
   var txt = none ? '?' : kind === 'aut' ? grpInitials(name) : name.charAt(0).toUpperCase();
   var wait = kind === 'aut' && !none && url === null;
-  return '<span class="gc-face' + (small ? ' sm' : '') + '"' + (wait ? ' data-auf="' + esc(L.norm(name)) + '" data-aun="' + esc(name) + '"' : '') + '>' +
+  return '<span class="gc-face' + (small ? ' sm' : '') + '"' + (kind === 'aut' && !none ? ' data-aun="' + esc(name) + '"' : '') + (wait ? ' data-auf="' + esc(L.norm(name)) + '"' : '') + '>' +
     '<span class="ph gc-ph' + (kind === 'aut' ? ' gc-au' : '') + '" style="--h:' + (none ? 200 : hue(name)) + '"><b>' + esc(txt) + '</b></span>' + (url ? aufImg(url) : '') + '</span>';
 }
 function grpLibri(n) { return n + (n === 1 ? ' libro' : ' libri'); }
