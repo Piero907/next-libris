@@ -4,7 +4,7 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui (va in «Fatti», in fondo, con una riga) e la novità va nel registro dell'app.
 
-**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **29**.
+**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **30**.
 
 Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 
@@ -17,7 +17,7 @@ Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
 - **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo
 - **G. Guide:** 13 guida di primo avvio · 16 guida per il worker e la chiave
-- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste · 27 verifica di sicurezza
+- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste · 27 verifica di sicurezza · 29 indirizzo nextlibris.github.io
 - **Fatti** (tolti dall'elenco)
 
 ---
@@ -326,6 +326,16 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 **Prima di partire, chiedere:** su quale copia (prova, vera o tutte e due); fino a dove (solo controllo e rapporto, o anche correzioni nella prova).
 
 **Cosa guardare (proposta):** regole RLS e permessi di tutte le tabelle (anche `notifiche`, `ricerche`, `archivio`, `push_*`), funzioni `security definer` (controllo amicizia, limiti al giorno, `search_path`), `get_advisors` di sicurezza su tutte e due le copie; dati che il client manda (lunghezze, jsonb, testo dentro la pagina senza `esc()`, cioè XSS); chiave e worker prestati (voce 22); Edge Function `push` e segreti nel Vault; link d'invito e `#k=`; intestazioni e Content-Security-Policy possibili su GitHub Pages; worker Cloudflare (origine ammessa, abusi); dipendenze in `vendor/`.
+
+### 29. Indirizzo nextlibris.github.io al posto di piero907.github.io (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** passare a **nextlibris.github.io**, prima **verificando se si può fare**. Nulla fatto.
+
+**Da verificare (appunti, non ancora controllati sul web):** serve un account o un'organizzazione GitHub di nome `nextlibris` (gratis, se il nome è libero); i repository si trasferiscono lì (o si copiano). GitHub Pages non porta con sé il vecchio indirizzo: su piero907.github.io va lasciata una pagina che rimanda al nuovo.
+
+**Attenzione, il punto delicato:** i libri stanno nel telefono **legati all'indirizzo** (localStorage e IndexedDB): con l'indirizzo nuovo il telefono vede un'app vuota. Chi ha l'account li ritrova con la sincronizzazione (non le copertine e le foto, che oggi non si sincronizzano); chi non l'ha deve passare dal backup. Va pensato un passaggio guidato (es. la vecchia pagina che propone «Porta i tuoi libri» prima di rimandare). Anche l'app installata va reinstallata.
+
+**Da cambiare:** Google Cloud (origini e Branding: home, privacy, domini), Supabase (Site URL e Redirect URLs nei due progetti), worker Cloudflare (origine ammessa), indirizzi nel codice, privacy.html, manifest, link d'invito già mandati (`?amico=`), documenti del progetto. Le prove usano `/next-libris-prova/`.
 
 ## Fatti (tolti dall'elenco)
 
