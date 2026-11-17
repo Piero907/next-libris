@@ -12,10 +12,10 @@ Ultimo aggiornamento: **17/11/2026 sera**, vera **104**, prova **104.1** (uguali
 
 - **A. In attesa di Piero**: niente
 - **B. Da verificare sul telefono**: foto di Flaiano (104)
-- **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine
+- **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine (in lavorazione) · 38 risolvere gli ISBN non trovati
 - **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki · 12 nazionalità degli autori · 6 film dai libri
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
-- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo · 31 pagina del profilo · 32 premio per chi usa chiave e worker suoi · 33 avviso sui desideri di un amico
+- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo · 31 pagina del profilo · 32 premio per chi usa chiave e worker suoi · 33 avviso sui desideri di un amico · 37 libro del mese · 39 bacheca
 - **G. Guide:** 13 guida di primo avvio · 16 «Prova la chiave / Prova il worker»
 - **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 21 dominio proprio ed email · 22 chiavi prestate davvero nascoste · 30 colori per daltonici · 34 copertine grandi «large» di Google · 35 Google per ultimo nella ricerca · 36 dividere app.js in moduli
 - **Fatti** (tolti dall'elenco)
@@ -70,6 +70,10 @@ Il 17/11/2026 sera Piero ha confermato **tutto il resto** (vera 103 e 102, «Acc
 **Richiesta di Piero:** un filtro per vedere solo i libri con l'ISBN **non trovato** in nessuna banca dati (oggi hanno l'etichetta «Non trovato», campo `nf`, ma non c'è un filtro).
 
 **Idea:** in Filtri › Libri, accanto a «Da verificare», la voce «Non trovati» (libri con `nf`), con la pillola e la × sotto la ricerca come gli altri filtri; magari anche toccando l'etichetta «Non trovato».
+
+### 38. Risolvere gli ISBN non trovati (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** cercare di risolvere il problema dei codici ISBN che non si trovano in nessuna banca dati (legata alla 17, che è solo il filtro). Nulla di costruito. **Da studiare:** quali ISBN non si trovano (vecchi, piccoli editori, pubblicati in proprio) e con quali altre fonti provare (altri cataloghi, ricerca per titolo dalla foto della copertina, archivio comune, nuova ricerca periodica dei «non trovati»).
 
 ### 19. Foto del + anche per il codice scritto (chiesto il 16/11/2026)
 
@@ -229,6 +233,14 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 ### 33. Avviso quando un amico aggiunge un libro ai desideri (chiesto il 17/11/2026)
 
 **Richiesta di Piero:** poter chiedere una **notifica quando un amico aggiunge un libro ai suoi desideri**, scegliendolo **già nella richiesta di amicizia** e **dopo, con un tasto apposito** (per ogni amico). Vale **solo se l'amico rende visibili i desideri** (Impostazioni › Amici e privacy). Nulla di costruito. **Prima di costruire, chiedere:** dove sta il tasto (finestra dell'amico, sua libreria), se l'avviso va nella campanella, nelle notifiche push o in tutte e due, se un avviso per libro o uno riassuntivo al giorno, se l'amico sa di essere «seguito». Serve il database (tabella o colonna delle preferenze, avviso creato dal server quando arriva un desiderio nuovo): prima nella prova.
+
+### 37. Il libro del mese (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** «Il libro del mese», con **invio di citazioni agli interessati**. Nulla di costruito. **Prima di costruire, chiedere:** chi sceglie il libro (ognuno il suo, un gruppo di amici, l'app); chi sono «gli interessati» (amici che si iscrivono, tutti gli amici); quali citazioni (quelle scritte da chi legge, o da Wikiquote) e con che ritmo; come arrivano (campanella, push). Attenzione: oggi citazioni e appunti non sono mai visibili agli amici.
+
+### 39. Bacheca (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** una «bacheca». Nulla di costruito e niente dettagli. **Prima di costruire, chiedere** cosa deve contenere (novità degli amici: libri aggiunti, letti, voti; avvisi; consigli) e chi la vede.
 
 ## G. Guide
 
