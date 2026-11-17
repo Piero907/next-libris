@@ -1,12 +1,12 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // obiettivo con la luce, «Prova la luce» (sì/no), Sostieni in evidenza in Opzioni › App: l'app prova gli obiettivi e usa quello con la torcia (e se lo ricorda); se nessuno ce l'ha
 // o la luce non si accende davvero, i pulsanti della luce spariscono; Opzioni › App › «Prova gli obiettivi»
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip', '.wasm': 'application/wasm' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8181));
+const server = H.serve(CFG.port(8181), ROOT);
 // tre obiettivi finti sopra la fotocamera finta di Chrome: anteriore, posteriore grandangolare (senza luce), posteriore principale.
 // modi: ok, none (nessuna luce), dead (luce che resta spenta e lo dice), lie (dice accesa ma non si vede, come il Galaxy A32)
 function stub(mode) {
@@ -31,7 +31,7 @@ function stub(mode) {
 }
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + CFG.IMG + '/blank.mjpeg'] });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const errors = [];
   async function open(mode) {
     const ctx = await browser.createBrowserContext();

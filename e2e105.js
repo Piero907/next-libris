@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: social, amici, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Notifiche» (notifiche.js) con un Supabase finto: campanella in testata prima dell'icona Amici, solo con l'account;
 // numero delle non lette; finestra con tutti i tipi di notifica (testi), le nuove evidenziate; aprendo si segnano lette sul server;
@@ -64,7 +65,7 @@ const base = 'http://localhost:' + CFG.port(8305);
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   async function phone(name, uid, w, h, dark) {
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
     await page.setViewport({ width: w || 412, height: h || 915, deviceScaleFactor: 2, isMobile: w < 900, hasTouch: w < 900 });

@@ -1,11 +1,11 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // numerazione personalizzata: frecce, trascinamento, numeri scritti a mano, controllo dei doppioni
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8165));
+const server = H.serve(CFG.port(8165), ROOT);
 const B = (o) => Object.assign({ t: '', a: 'Álvaro Mutis', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: 0, sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: false, rs: 'da', rt: 0, rd: '' }, o);
 const books = [B({ id: 'a', t: 'Abdul Bashur', y: '2014', ts: 4 }), B({ id: 'b', t: "L'ultimo scalo del Tramp Steamer", y: '2006', ts: 3 }), B({ id: 'c', t: 'La casa di Araucaíma', y: '2014', ts: 2 }), B({ id: 'd', t: 'Ilona arriva con la pioggia', y: '2016', ts: 1 })];
 (async () => {
@@ -16,7 +16,7 @@ const books = [B({ id: 'a', t: 'Abdul Bashur', y: '2014', ts: 4 }), B({ id: 'b',
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1 })); sessionStorage.seeded = 1; } }, books);
   await page.goto('http://localhost:' + CFG.port(8165) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await wait(1200);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
   const all = () => page.evaluate(() => JSON.parse(JSON.stringify(window.__app.state.books)));

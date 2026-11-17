@@ -1,12 +1,12 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // ISBN 979-8 (pubblicazione Amazon in proprio) non trovato: casa editrice «Amazon (pubblicazione in proprio)», riquadro nella scheda con
 // «Fotografa la copertina» e «Cerca sul web»; la foto riconosce titolo e autore e il codice resta il suo; i 979-8 già non trovati si sistemano all'avvio
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP, IMG = CFG.IMG;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip', '.wasm': 'application/wasm' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8189));
+const server = H.serve(CFG.port(8189), ROOT);
 const gItem = (id, t, a, e, y, isbn) => ({ id, volumeInfo: { title: t, authors: [a], publisher: e, publishedDate: y, language: 'it', industryIdentifiers: isbn ? [{ type: 'ISBN_13', identifier: isbn }] : [] } });
 const FERRANTE = [gItem('A1', "L'amica geniale", 'Elena Ferrante', '', '2011', '9788866321378'), gItem('A3', 'Storia del nuovo cognome', 'Elena Ferrante', '', '2012', '9788866322214')];
 const KDP = '9798864592106', OLD = '9798857067536';
@@ -15,7 +15,7 @@ const KDP = '9798864592106', OLD = '9798857067536';
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.setRequestInterception(true);
   page.on('request', req => {
     const u = req.url();

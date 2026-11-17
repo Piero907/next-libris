@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // copia di prova allo stesso indirizzo di base (…/next-libris-prova/): dati, copie offline e titolo separati dalla versione vera (…/next-libris/);
 // timbro della pubblicazione (BUILD): la prova propone «Aggiorna adesso» anche a parità di versione, la vera no
 const puppeteer = require('puppeteer-core');
@@ -25,7 +26,7 @@ const server = http.createServer((req, res) => {
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.setRequestInterception(true);
   page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8182) + '') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
   // versione vera: un libro

@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // Schermi di misure diverse (16/11/2026): telefono piccolo, telefono, telefono sdraiato, tablet, PC.
 // Sopra gli 880 px la «Pagina del libro» finiva schiacciata nella prima colonna della vecchia tabella: ora e' a tutta larghezza,
 // su due colonne (copertina, dati e lettura a sinistra; descrizione a destra); la modifica (matita) resta in colonna come sul telefono;
@@ -7,8 +8,7 @@ const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8194));
+const server = H.serve(CFG.port(8194), ROOT);
 const books = [{ id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', pg: '624', c: 13, i: '9788845292613', rs: 'ok', rd: '2026-02-10', rt: 4, gen: 'Narrativa', sh: 'Studio', n: 'Regalo di Anna', fav: true, ts: 900, ds: 'Ultima settimana del novembre 1327: frate Guglielmo da Baskerville e il novizio Adso arrivano in un monastero benedettino. Una serie di morti misteriose sconvolge la vita dei monaci.', dsf: 'google' }]
   .concat(Array.from({ length: 14 }, (_, i) => ({ id: 'f' + i, t: 'Riempitivo ' + i, a: 'Autore ' + i, ts: 800 - i, rs: 'da' })));
 (async () => {

@@ -1,19 +1,19 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // suoni della scansione: bip quando legge il codice; se poi titolo e autore non si trovano, suono «non trovato» (due note basse che scendono);
 // trovato: nessun suono in più; libri aggiunti senza scansione (in sottofondo) non suonano; con i suoni spenti, niente
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8187));
+const server = H.serve(CFG.port(8187), ROOT);
 const FOUND = '9788806219352';
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + CFG.IMG + '/blank.mjpeg', '--autoplay-policy=no-user-gesture-required'] });
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.setRequestInterception(true);
   page.on('request', r => {
     const u = decodeURIComponent(r.url());

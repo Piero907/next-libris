@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: social, notifiche, push   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Notifiche push» (push.js, sw.js) con un Supabase finto e il push del browser simulato:
 // riga dopo l'accesso con la scelta dei tipi (Attiva → permesso, iscrizione, preferenze salvate; Non ora → spente);
@@ -43,7 +44,7 @@ const base = 'http://localhost:' + CFG.port(8308);
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   // perm: permesso del browser simulato ('default' | 'granted' | 'denied'); il push vero (Google) qui non si raggiunge
   async function phone(name, uid, w, h, dark, perm, q) {
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();

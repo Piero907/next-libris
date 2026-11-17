@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // donazioni: riga in fondo (X = 10 giorni), promemoria ogni 50 libri, finestra «Sostieni» con PayPal, ritorno con soglia di 20 secondi
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -13,7 +14,7 @@ const DAY = 864e5;
   const page = await browser.newPage();
   await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const base = { lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1, donOpens: 10 };
   async function load(nBooks, set) {
     await page.goto('http://localhost:' + CFG.port(8171) + '/?vista=elenco', { waitUntil: 'load' });

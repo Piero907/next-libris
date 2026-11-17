@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // 16/11/2026, prova 99.5.
 // 1) Chiave e worker PRESTATI da un amico: si usano per cercare, ma non si vedono in Impostazioni › Ricerca (al posto del campo:
@@ -25,7 +26,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   async function phone(w, h, dark) {
     const page = await (await browser.createBrowserContext()).newPage();
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1, isMobile: w < 700, hasTouch: w < 700 });

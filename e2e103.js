@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: social, amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Amici»: libreria, desideri, prestiti e regali tra amici (Supabase finto). A (Anna) e B (Bruno) amici.
 // B accende «Gli amici vedono la mia libreria»: A tocca Bruno e la vede nella schermata principale (barra con libri in comune e letti di recente;
@@ -80,7 +81,7 @@ const base = 'http://localhost:' + CFG.port(8303);
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   async function phone(name, uid, w) {
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
     await page.setViewport({ width: w || 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });

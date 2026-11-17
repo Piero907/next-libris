@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: amici, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // 17/11/2026, prova 99.10. Menu riordinato, Indietro che torna al Menu, testata su due righe (scelte di Piero).
 // 1) Testata: «Next Libris» con le icone centrate sulla stessa linea; sotto una riga sola «Piero R. · 12 libri · 2 in prestito».
@@ -29,7 +30,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   async function phone(w, h, dark) {
     const page = await (await browser.createBrowserContext()).newPage();
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1, isMobile: w < 700, hasTouch: w < 700 });

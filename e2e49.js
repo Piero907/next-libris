@@ -1,11 +1,11 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // autore: nome da toccare (profilo da Wikipedia), matita per modificare, ricerca sul web, i suoi libri
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8168));
+const server = H.serve(CFG.port(8168), ROOT);
 const json = o => ({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
 const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: 1, sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: false, rs: 'da', rt: 0, rd: '' }, o);
 const books = [B({ id: 'm1', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', ts: 3 }), B({ id: 'm2', t: 'Ilona arriva con la pioggia', a: 'Álvaro Mutis', ts: 2 }), B({ id: 'x', t: 'Due autori', a: 'Mario Rossi, Anna Bianchi', ts: 1 }), B({ id: 'v', t: 'Senza autore', ts: 0 }), B({ id: 'sg', t: 'Africa', a: 'Sebastião Salgado', ts: -1 }), B({ id: 'pr', t: 'I filosofi e le macchine', a: 'Paolo Rossi', ts: -2 })];
@@ -38,7 +38,7 @@ let hits = [];
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true); window.__opened = []; window.open = u => { window.__opened.push(u); return null; };
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ extra: true, lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1 })); sessionStorage.seeded = 1; } }, books);
   await page.goto('http://localhost:' + CFG.port(8168) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await wait(1200);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
   const open = async id => { await page.evaluate(i => document.querySelector('.row[data-id="' + i + '"] [data-act="toggle"]').click(), id); await wait(250); };

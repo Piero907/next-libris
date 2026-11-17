@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // dopo un aggiornamento: «Aggiornato in questa versione» con le righe del registro delle versioni nuove, prima quelle in grassetto;
 // una volta sola; alla prima apertura dell'app no; «Tutte le novità» apre il registro
 const puppeteer = require('puppeteer-core');
@@ -14,7 +15,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const shown = () => page.evaluate(() => !document.querySelector('#wnSheet').hidden);
   // 1) prima apertura (nessun libro): niente pagina, ma si ricorda la versione
   await page.goto('http://localhost:' + CFG.port(8190) + '/?vista=elenco', { waitUntil: 'load' }); await wait(1800);

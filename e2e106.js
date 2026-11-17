@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const HN = require('./_harness');
 // moduli: social, notifiche, ricerche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Ricerche condivise» (ricerche.js) con un Supabase finto, 16/11/2026:
 // archivio comune (libro già cercato: niente Google; libro nuovo: una sola ricerca Google, poi nell'archivio solo i dati pubblici);
@@ -57,7 +58,7 @@ let gHits = [], sbnHits = 0, coverHits = [];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = HN.wait;   // attesa «finché» (_harness.js)
   const json = o => ({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
   async function phone(w, h, dark) {
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();

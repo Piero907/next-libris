@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 const puppeteer = require('puppeteer-core'); const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
@@ -14,7 +15,7 @@ const server = http.createServer((q, s) => { let p = path.join(ROOT, decodeURICo
   await page.evaluateOnNewDocument(() => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!localStorage.getItem('catalogo-libri-set')) localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), swiped: true })); });
   await page.goto('http://localhost:' + CFG.port(8148) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());
   await wait(3200);
   assert(await page.$eval('#notice', e => e.hidden || !e.textContent.includes('versione')), 'nessun avviso: e\' gia\' l\'ultima');

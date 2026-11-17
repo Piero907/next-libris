@@ -10,7 +10,7 @@ DST = os.path.abspath(os.environ.get('SITO_DIR') or os.path.join(here, '..', 'ne
 nota = ' '.join(a.strip() for a in sys.argv[1:] if a.strip()) or 'aggiornamento'
 assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository del sito: ' + DST
 FILES = ['index.html', 'app.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt',
-         'cloudflare-sbn-worker.js', 'privacy.html', 'indirizzo.js', 'trasloco.html', 'trasloco.js']
+         'cloudflare-sbn-worker.js', 'privacy.html', 'indirizzo.js', 'avvio.js', 'trasloco.html', 'trasloco.js']
 MODULES = ['wrap', 'layout', 'schede', 'social', 'amici', 'notifiche', 'ricerche', 'push']   # .js e .css, se ci sono nell'app
 DIRS = ['icons', 'vendor']
 TENERE = {'.git', '.nojekyll', 'README.md'}

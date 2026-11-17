@@ -1,14 +1,12 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // «Descrizione» nella scheda aperta (dal 16/11/2026, scelta di Piero): arriva solo con la prima ricerca del libro; se manca
 // «Descrizione non disponibile» e nessun'altra richiesta. Fonti, lingua, «Leggi tutto», toglila, salvata nel libro.
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
-  const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
-  res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8151));
+const server = H.serve(CFG.port(8151), ROOT);
 const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: Date.now(), sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: false, rs: 'da', rt: 0, rd: '' }, o);
 const books0 = [
   B({ id: 'rosa', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', i: '9788845292613' }),
@@ -49,7 +47,7 @@ let net = 'ok', hits = [];
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true);
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ extra: true, lastBackup: Date.now(), price: false, installed: true, instScope: '/', swiped: true, name: 'Piero' })); sessionStorage.seeded = 1; } }, books);
   await page.goto('http://localhost:' + CFG.port(8151) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await wait(1200);
   const book = id => page.evaluate(i => { const b = window.__app.state.books.find(x => x.id === i); return b && JSON.parse(JSON.stringify(b)); }, id);
   const open = async id => { if (!await page.$('.row.open[data-id="' + id + '"]')) await page.evaluate(i => document.querySelector('.row[data-id="' + i + '"] [data-act="toggle"]').click(), id); await wait(250); };

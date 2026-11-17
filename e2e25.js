@@ -1,10 +1,10 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP, IMG = CFG.IMG;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8136));
+const server = H.serve(CFG.port(8136), ROOT);
 const A = '9788806219352', B = '9788804668015', C = '9788807881213', D = '9788845292613', E = '9788817050562';
 const TITLES = { [A]: ['Libro A', 'Autore Uno'], [B]: ['Il deserto dei Tartari', 'Dino Buzzati'], [C]: ['Libro C', 'Autore Tre'], [D]: ['Libro D', 'Autore Quattro'], [E]: ['Libro E', 'Autore Cinque'] };
 (async () => {
@@ -43,7 +43,7 @@ const TITLES = { [A]: ['Libro A', 'Autore Uno'], [B]: ['Il deserto dei Tartari',
     return nf();
   });
   await page.goto('http://localhost:' + CFG.port(8136) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const book = i => page.evaluate(i => JSON.parse(JSON.stringify(window.__app.state.books.find(b => b.i === i))), i);
   const sel = id => '#list .row[data-id="' + id + '"] [data-act="coverphoto"]';
   const toastTxt = () => page.$eval('#toast', e => e.hidden ? '' : document.querySelector('#toastTxt').textContent);

@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // «In lettura» in cima (16/11/2026): in Libreria, senza ricerca ne' filtri, i libri «In lettura» stanno in una sezione in cima,
 // sotto «Gli altri libri»; tutte e due si aprono e chiudono toccando il titolo, e l'app se lo ricorda. Vale in Elenco e in Copertine.
 // Con un filtro, una ricerca o un ordine diverso da «Più recenti», o nei Desideri, niente sezioni.
@@ -6,8 +7,7 @@ const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8196));
+const server = H.serve(CFG.port(8196), ROOT);
 const books = [{ id: 'a1', t: 'Cent\'anni di solitudine', a: 'Gabriel García Márquez', rs: 'ok', ts: 9 }, { id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', pg: '624', rs: 'in', pp: '212', ts: 8 },
   { id: 'a2', t: 'Il barone rampante', a: 'Italo Calvino', rs: 'da', ts: 7 }, { id: 'r2', t: 'Baudolino', a: 'Umberto Eco', rs: 'in', ts: 6 }, { id: 'w1', t: 'Desiderio', a: 'X', w: true, ts: 5 }];
 (async () => {
@@ -17,7 +17,7 @@ const books = [{ id: 'a1', t: 'Cent\'anni di solitudine', a: 'Gabriel García M�
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.setRequestInterception(true);
   page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8196)) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.evaluateOnNewDocument(bk => { if (!localStorage.getItem('catalogo-libri-set')) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: bk, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ look: 'nuovo', seenV: 999, wn2: 1, swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9, view: 'list' })); localStorage.setItem('catalogo-libri-card', JSON.stringify({ v: 'd' })); } }, books);
   await page.goto('http://localhost:' + CFG.port(8196) + '/?vista=elenco', { waitUntil: 'load' }); await wait(800);
   const st = () => page.evaluate(() => ({ heads: [...document.querySelectorAll('#list .shelf-h')].map(h => h.textContent.trim() + (h.getAttribute('aria-expanded') === 'true' ? '+' : '-')),

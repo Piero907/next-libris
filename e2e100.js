@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: social, amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // copia social, modulo «Account e sincronizzazione» (social.js) con un Supabase finto sullo stesso server:
 // voce nel Menu, accesso con email e codice (codice sbagliato → messaggio), copia di sicurezza prima della prima sincronizzazione,
@@ -77,7 +78,7 @@ const rows = (email) => Object.values(DB.rows).filter(x => x.utente === DB.users
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const GIS = "window.google={accounts:{id:{initialize:function(o){window.__gis=o;},renderButton:function(el,opt){window.__gisOpt=opt;var b=document.createElement('button');b.type='button';b.id='gisFinto';b.textContent='Accedi con Google';b.onclick=function(){window.__gis.callback({credential:'IDT-bruno@esempio.it.'+window.__gis.nonce});};el.appendChild(b);}}}};";
   async function phone(name, gClient, gisFail, noEmail) {                              // un «telefono»: contesto separato, memoria tutta sua
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();

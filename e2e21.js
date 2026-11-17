@@ -1,16 +1,10 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP, IMG = CFG.IMG;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.gz': 'application/gzip' };
-const server = http.createServer((req, res) => {
-  let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
-  const f = path.join(ROOT, p);
-  if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
-  res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
-  fs.createReadStream(f).pipe(res);
-}).listen(CFG.port(8129));
+const server = H.serve(CFG.port(8129), ROOT);
 const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors: [a], publisher: pub, publishedDate: '2012', language: lang, industryIdentifiers: isbn ? [{ type: 'ISBN_13', identifier: isbn }] : [], imageLinks: { thumbnail: 'https://books.google.com/x' + id } } });
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -35,7 +29,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
     req.abort();
   });
   const resp = await page.goto('http://localhost:' + CFG.port(8129) + '/?vista=elenco', { waitUntil: 'load' }); console.log('[goto]', resp && resp.status(), resp && resp.url());
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const books = () => page.evaluate(() => JSON.parse(JSON.stringify(window.__app.state.books)));
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());
   await wait(300); console.log('[0 errori all\'avvio]', errors, await page.evaluate(() => [typeof window.__app, document.readyState, document.title, [...document.scripts].map(s => s.src).join(' ')]));

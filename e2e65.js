@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // Modulo «Disposizione dello schermo» (layout.js + layout.css): Classico e A (barra in basso; B, C, D tolte il 15/11/2026);
 // nella A avvisi sopra la ricerca, uno alla volta (opzione), riga «Prestati» solo se serve; finestre «Aggiungi» e «Per te»;
 // riepilogo in alto con le opzioni (euro e «non più in libreria» spenti, «in prestito» si tocca), «Salvato su questo telefono» opzionale;
@@ -17,7 +18,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.goto('http://localhost:' + CFG.port(8185) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'Piero', selTip: 1, lastBackup: Date.now(), donOpens: 9, donUntil: 0 })); localStorage.setItem('catalogo-libri-layout', JSON.stringify({ v: 'a' })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(900);

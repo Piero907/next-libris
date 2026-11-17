@@ -1,19 +1,19 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // backup: nome «Libreria di Piero - Next Libris - data ora» (2026-11-15 22.58); se l'invio non parte compare «Il backup non è partito» con Riprova e Download.
 // fotocamera della scansione: torcia (resta accesa) e flash (solo per la foto della copertina, un attimo allo scatto)
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8', '.gz': 'application/gzip' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8179));
+const server = H.serve(CFG.port(8179), ROOT);
 const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + i, a: 'Autore', ts: 10 + i }));
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + CFG.IMG + '/blank.mjpeg'] });
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.setRequestInterception(true);
   page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8179) + '') ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
   await page.evaluateOnNewDocument(() => {

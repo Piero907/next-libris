@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // 17/11/2026: trasloco da piero907.github.io a nextlibris.github.io (trasloco.html / trasloco.js).
 // Due indirizzi finti: due porte diverse (vecchio e nuovo), la pagina li prende da ?vecchio=&nuovo= solo sul computer.
 // 1) Il vecchio apre il nuovo: passano libri, impostazioni, account e foto della copia (solo «prova:»); non passano
@@ -36,7 +37,7 @@ const LIBRI = [B({ id: 'rosa', t: 'Il nome della rosa', a: 'Umberto Eco' }), B({
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const ctx = await browser.createBrowserContext();
   function guard(page, nome) {
     page.on('pageerror', e => errors.push(nome + ': ' + e.message));

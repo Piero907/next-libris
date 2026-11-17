@@ -1,16 +1,10 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP, IMG = CFG.IMG;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.gz': 'application/gzip' };
-const server = http.createServer((req, res) => {
-  let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
-  const f = path.join(ROOT, p);
-  if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
-  res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
-  fs.createReadStream(f).pipe(res);
-}).listen(CFG.port(8126));
+const server = H.serve(CFG.port(8126), ROOT);
 const ISBN = '9788806219352';
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new',
@@ -31,7 +25,7 @@ const ISBN = '9788806219352';
     req.abort();
   });
   await page.goto('http://localhost:' + CFG.port(8126) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const first = () => page.evaluate(() => { const b = window.__app.state.books[0]; return b && { id: b.id, t: b.t, i: b.i, c: b.c }; });
   const reset = () => page.evaluate(() => { window.__app.state.books.length = 0; });
   const askVisible = () => page.$eval('#priceAsk', e => !e.hidden);

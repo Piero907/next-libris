@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // novità delle versioni dentro l'app (registro impaginato), versione attuale in evidenza, senza rete dalla copia
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -15,7 +16,7 @@ const server = http.createServer((req, res) => { let p = decodeURIComponent(req.
   await page.evaluateOnNewDocument(() => { localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), installed: true, instScope: '/', swiped: true, name: 'Piero', selTip: 1 })); });
   await page.goto('http://localhost:' + CFG.port(8170) + '/?vista=elenco', { waitUntil: 'load' });
   await page.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 20000 }).catch(async () => { await page.reload(); await page.waitForFunction(() => navigator.serviceWorker.controller, { timeout: 20000 }); });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await wait(1500);
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
   await page.evaluate(() => window.__app.openOptions('app')); await wait(400);

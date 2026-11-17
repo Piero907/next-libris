@@ -1,10 +1,10 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8133));
+const server = H.serve(CFG.port(8133), ROOT);
 const W1 = 'https://sbn-libri.piero.workers.dev', K1 = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQrStUvW', K2 = 'AIzaSyZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ';
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -27,7 +27,7 @@ const W1 = 'https://sbn-libri.piero.workers.dev', K1 = 'AIzaSyA1b2C3d4E5f6G7h8I9
     req.abort();
   });
   await page.goto('http://localhost:' + CFG.port(8133) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());
   const hidden = sel => page.$eval(sel, e => e.hidden);
   const val = sel => page.$eval(sel, e => e.value);

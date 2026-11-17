@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: social, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Condivisione › «Chiave Google e worker» su misura e finestra della chiave (Piero, 16/11/2026); interruttore Libreria/Desideri nel +; scheda di un libro senza titolo (17/11/2026).
 // Anna ha chiave e worker: «Presta a un amico» apre la finestra della chiave (non Amici); presta a Bruno; chiudendo si torna a Condivisione.
@@ -99,7 +100,7 @@ const base = 'http://localhost:' + CFG.port(8309);
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const SHOTS = process.env.SCHERMATE;   // cartella: se c'è, fa anche le schermate
   async function phone(name, uid, w, dark) {
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();

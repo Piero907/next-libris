@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: social, amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Amici» (amici.js) con un Supabase finto: parte «Amici» nel Menu (sotto Filtri/Statistiche, prima di «La tua libreria»),
 // icona accanto all'ingranaggio con il numero delle richieste; un solo nome (quello dell'app = quello per gli amici: proposto,
@@ -75,7 +76,7 @@ const base = 'http://localhost:' + CFG.port(8302);
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   async function phone(name, uid, email, query) {
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
     await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });

@@ -1,15 +1,9 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const ROOT = CFG.APP, IMG = CFG.IMG;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
-const server = http.createServer((req, res) => {
-  let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
-  const f = path.join(ROOT, p);
-  if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
-  res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
-  fs.createReadStream(f).pipe(res);
-}).listen(CFG.port(8124));
+const server = H.serve(CFG.port(8124), ROOT);
 const ISBN = fs.readFileSync(IMG + '/isbn.txt', 'utf8').trim();
 const gItem = (id, t, a, e, y, lang, isbn) => ({ id, volumeInfo: { title: t, authors: [a], publisher: e, publishedDate: y, language: lang, industryIdentifiers: isbn ? [{ type: 'ISBN_13', identifier: isbn }] : [], imageLinks: { thumbnail: 'http://books.google.com/t/' + id + '.png' } } });
 const png1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGNgYGD4DwABBAEAf9JkWQAAAABJRU5ErkJggg==', 'base64');
@@ -19,7 +13,7 @@ const FERRANTE = [
   gItem('A3', 'Storia del nuovo cognome', 'Elena Ferrante', 'E/O', '2012', 'it', '9788866322214'),
   gItem('A5', 'Storia di chi fugge e di chi resta', 'Elena Ferrante', 'E/O', '2013', 'it', '9788866323211'),
   gItem('A6', "La figlia oscura", 'Elena Ferrante', 'E/O', '2006', 'it', '9788876417252')];
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = H.wait;   // attesa «finché» (_harness.js)
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const page = await browser.newPage();

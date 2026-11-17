@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Menu laterale riordinato (16/11/2026): «La tua libreria» (Sistema l'elenco, Backup con la data dell'ultimo),
 // «Impostazioni» chiuse finche' non le apri (Aspetto, Ricerca, Aggiunta dei libri, Condivisione, Installazione sul telefono), Sostieni e versione dove erano.
@@ -7,8 +8,7 @@ const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8192));
+const server = H.serve(CFG.port(8192), ROOT);
 const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs: 'ok' }, { id: 'm2', t: 'Baudolino', a: 'Umberto Eco', ts: 1 }];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
@@ -17,7 +17,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.setRequestInterception(true);
   page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8192)) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.goto('http://localhost:' + CFG.port(8192) + '/', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: new Date(2026, 10, 15).getTime(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9 })); localStorage.setItem('catalogo-libri-layout', JSON.stringify({ v: 'a' })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(800);

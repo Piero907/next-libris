@@ -1,11 +1,11 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // filtri -> schede compatte; fotocamera: pulsante di uscita
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP, IMG = CFG.IMG;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.gz': 'application/gzip' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8145));
+const server = H.serve(CFG.port(8145), ROOT);
 const B = [{ id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', gen: 'Gialli', ts: 3, p: 'Marco' }, { id: 'b2', t: 'Il deserto dei Tartari', a: 'Dino Buzzati', gen: 'Narrativa', ts: 2 }, { id: 'b3', t: 'Il pendolo di Foucault', a: 'Umberto Eco', gen: 'Gialli', ts: 1 }];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', '--use-file-for-fake-video-capture=' + IMG + '/live.mjpeg'] });
@@ -16,7 +16,7 @@ const B = [{ id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', gen: 'Gialli',
   await p.setRequestInterception(true);
   p.on('request', r => { const u = r.url(); if (u.startsWith('http://localhost:' + CFG.port(8145) + '')) return r.continue(); if (u.includes('googleapis.com/books')) return r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ items: [{ id: 'g', volumeInfo: { title: 'Libro scansionato', authors: ['A'] } }] }) }); r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }); });
   await p.goto('http://localhost:' + CFG.port(8145) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const tap = s => p.$eval(s, e => e.click());
   const openN = () => p.$$eval('#list .row.open', a => a.length);
   const openAllCards = async () => { for (const id of await p.$$eval('#list .row.closed', a => a.map(x => x.dataset.id))) { await tap('#list .row[data-id="' + id + '"] .sum'); await wait(60); } };

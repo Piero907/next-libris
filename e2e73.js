@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // due copie allo stesso indirizzo di base: vera (…/next-libris/) e prova (…/next-libris-prova/). (Fino al 16/11/2026 c'era anche la social.)
 // Ognuna ha libri, impostazioni, database delle copertine e copie offline suoi; nessun service worker cancella le copie offline delle altre;
 // l'etichetta dice il nome della copia; il tema all'avvio (prima di app.js) si legge dalle impostazioni della copia giusta
@@ -22,7 +23,7 @@ const base = 'http://localhost:' + CFG.port(8193);
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.setRequestInterception(true);
   page.on('request', r => r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
   const open = async (copy) => { await page.goto(base + '/' + copy + '/?vista=elenco', { waitUntil: 'load' }); await wait(800); };

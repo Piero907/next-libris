@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: social, amici, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Amici dell'amico e icona Amici nella libreria di un amico (Piero, 17/11/2026; 015_amici_visibili.sql).
 // Anna guarda la libreria di Bruno: l'icona Amici c'è e apre i suoi Amici; «N amici in comune» apre gli amici di Bruno:
@@ -110,7 +111,7 @@ const base = 'http://localhost:' + CFG.port(8310);
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const SHOTS = process.env.SCHERMATE;
   async function phone(name, uid, w, dark) {
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();

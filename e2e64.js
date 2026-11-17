@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // moduli: wrap   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Modulo «La tua stagione in libri» (fino al 16/11/2026 trimestre) (wrap.js + wrap.css): invito in cima all'elenco nel primo mese della stagione nuova,
 // schermate a storie (avanti/indietro, barre), numeri della stagione, stagione prima, immagine, menu, opzione in Aspetto (predefinito sì),
@@ -31,7 +32,7 @@ const books = [
     class FD extends RD { constructor(...a) { if (a.length) super(...a); else super(RD.now() + off); } static now() { return RD.now() + off; } }
     window.Date = FD;
   });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.goto('http://localhost:' + CFG.port(8184) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'Piero', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, goal: 20, nxSeen: 'c' })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(800);

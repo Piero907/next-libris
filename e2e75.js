@@ -1,12 +1,12 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // Segnalibro (16/11/2026): nella pagina del libro «In lettura» si scrive la pagina a cui si e' arrivati («Sono a pagina [212] di 624 · 34%»)
 // con la barra; nell'elenco «In lettura · 34%» con una linea sottile, sulle copertine una barretta. Solo cifre; si salva (con la data) e resta.
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8195));
+const server = H.serve(CFG.port(8195), ROOT);
 const books = [{ id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', pg: '624', rs: 'in', pp: '212', ts: 9 },
   { id: 'r2', t: 'Baudolino', a: 'Umberto Eco', rs: 'in', ts: 8 }, { id: 'r3', t: 'Le città invisibili', a: 'Italo Calvino', pg: '170', rs: 'ok', pp: '170', ts: 7 }];
 (async () => {
@@ -16,7 +16,7 @@ const books = [{ id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompia
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.setRequestInterception(true);
   page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8195)) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.evaluateOnNewDocument(bk => { if (!localStorage.getItem('catalogo-libri-set')) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: bk, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ look: 'nuovo', seenV: 999, wn2: 1, swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9, view: 'list' })); localStorage.setItem('catalogo-libri-card', JSON.stringify({ v: 'd' })); } }, books);
   await page.goto('http://localhost:' + CFG.port(8195) + '/?vista=elenco', { waitUntil: 'load' }); await wait(800);
   const tag = id => page.evaluate(id => { const t = document.querySelector('#list .row[data-id="' + id + '"] .tag.read'); return t ? { t: t.textContent, pp: t.classList.contains('has-pp'), v: t.style.getPropertyValue('--pp') } : null; }, id);

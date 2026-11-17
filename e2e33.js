@@ -1,4 +1,5 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // avvio dalla copia: la versione nuova si scarica in sottofondo e arriva all'apertura dopo; mai file di versioni diverse
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -19,7 +20,7 @@ const bump = (v) => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const p = await browser.newPage();
   await p.evaluateOnNewDocument(() => localStorage.setItem('catalogo-libri-set', JSON.stringify({ installed: true, instScope: '/', swiped: true })));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   // il service worker ricontrolla i file al massimo una volta al minuto: invece di aspettare 61 secondi lo fermo (riparte da zero alla prossima apertura)
   const cdp = await p.target().createCDPSession(); await cdp.send('ServiceWorker.enable');
   const swReset = async () => { await cdp.send('ServiceWorker.stopAllWorkers'); await wait(300); };

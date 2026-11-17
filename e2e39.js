@@ -1,13 +1,11 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // tastiera: il campo resta visibile e la barra in basso sparisce; «Cerca sul web» in alto
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
-  const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); }
-  res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8156));
+const server = H.serve(CFG.port(8156), ROOT);
 const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: [], img: '', nf: false, ts: Date.now(), sh: '', n: '', gen: '', pg: '', p: '', pd: '', w: false, rs: 'da', rt: 0, rd: '' }, o);
 const books = [B({ id: 'arau', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', e: 'Adelphi', y: '2011', i: '9788845925870' }), B({ id: 'x2', t: 'Altro libro', a: 'Qualcuno' }), B({ id: 'x3', t: 'Terzo libro', a: 'Altri' })];
 (async () => {
@@ -18,7 +16,7 @@ const books = [B({ id: 'arau', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', e
   await page.evaluateOnNewDocument((b) => { window.addEventListener('beforeinstallprompt', e => e.stopImmediatePropagation(), true); window.__opened = []; window.open = u => { window.__opened.push(u); return null; };
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ extra: true, lastBackup: Date.now(), price: false, installed: true, instScope: '/', swiped: true, name: 'Piero' })); sessionStorage.seeded = 1; } }, books);
   await page.goto('http://localhost:' + CFG.port(8156) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await wait(1200);
   await page.evaluate(() => document.querySelector('.row[data-id="arau"] [data-act="toggle"]').click()); await wait(300);
   await page.evaluate(() => window.scrollTo(0, 0)); await wait(200);

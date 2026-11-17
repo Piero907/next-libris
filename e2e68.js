@@ -1,12 +1,12 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 // triangolino nel riepilogo: compare quando un avviso ancora valido è stato chiuso (prestiti lunghi, «Hai finito…», trimestre)
 // e toccandolo li riapre; senza avvisi chiusi non c'è; nella disposizione A si riparte dal primo avviso
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2', '.md': 'text/markdown; charset=utf-8' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8188));
+const server = H.serve(CFG.port(8188), ROOT);
 const today = new Date().toISOString().slice(0, 10), old = new Date(Date.now() - 200 * 864e5).toISOString().slice(0, 10);
 const books = Array.from({ length: 8 }, (_, i) => ({ id: 'z' + i, t: 'Libro ' + i, a: 'Autore ' + i, ts: Date.now() - i * 864e5, rs: i === 0 ? 'ok' : 'da', rd: i === 0 ? today : '', p: i === 2 ? 'Anna' : '', pd: i === 2 ? old : '' }));
 (async () => {
@@ -14,7 +14,7 @@ const books = Array.from({ length: 8 }, (_, i) => ({ id: 'z' + i, t: 'Libro ' + 
   const page = await browser.newPage();
   await page.setViewport({ width: 412, height: 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   const errors = []; page.on('pageerror', e => errors.push(e.message));
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.goto('http://localhost:' + CFG.port(8188) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9 })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(3200);

@@ -1,16 +1,10 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP, IMG = CFG.IMG, DL = CFG.OUT + '/dl';
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.gz': 'application/gzip' };
-const server = http.createServer((req, res) => {
-  let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html';
-  const f = path.join(ROOT, p);
-  if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end('nf'); }
-  res.writeHead(200, { 'Content-Type': (p.endsWith('.wasm.js') ? 'text/javascript' : MIME[path.extname(f)]) || 'application/octet-stream' });
-  fs.createReadStream(f).pipe(res);
-}).listen(CFG.port(8128));
+const server = H.serve(CFG.port(8128), ROOT);
 const mk = (body12) => { let sum = 0; for (let i = 0; i < 12; i++) sum += (+body12[i]) * (i % 2 ? 3 : 1); return body12 + ((10 - sum % 10) % 10); };
 const ROSA = '9788806219352';
 const PUB = { [ROSA]: 'Bompiani' };
@@ -46,7 +40,7 @@ let noExtra = new Set();
     req.abort();
   });
   await page.goto('http://localhost:' + CFG.port(8128) + '/?vista=elenco', { waitUntil: 'load' });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   const books = () => page.evaluate(() => window.__app.state.books.map(b => ({ i: b.i, t: b.t, e: b.e, w: b.w, p: b.p, pd: b.pd, sh: b.sh, gen: b.gen, pg: b.pg, n: b.n, g: b.g })));
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
   const text = sel => page.$eval(sel, e => e.textContent.trim());

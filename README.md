@@ -2,7 +2,7 @@
 
 Questo è il ramo `prove` del repository `Piero907/next-libris`. Le regole di lavoro sono in `CLAUDE.md`, le idee e i problemi in sospeso in `IN_SOSPESO.md`. Contiene **solo** le prove automatiche, i materiali che usano (foto e video finti) e gli strumenti di lavoro. **Non contiene l'app.**
 
-- L'app sta nel ramo `main`: è quello pubblicato su GitHub Pages (https://piero907.github.io/next-libris/) e l'unico da usare per un eventuale APK.
+- L'app vera sta nel ramo `main` e si pubblica su **https://nextlibris.github.io/** (repository `nextlibris/nextlibris.github.io`, con `pubblica_vera.py`); il vecchio indirizzo https://piero907.github.io/next-libris/ (servito da `main`) fa solo il trasloco. Il codice della copia di prova sta nel ramo `prova`.
 - Questo ramo non ha file in comune con `main` (è un ramo «orfano»). Così nulla di quanto c'è qui finisce nel sito o nell'app.
 
 ## Preparazione
@@ -65,17 +65,9 @@ APP_DIR=/percorso/copia node esegui.js
 - **Pubblicarla:** `python3 pubblica_prova.py "nota"`. Copia l'app in `../next-libris-prova` (o in `PROVA_DIR`), mette il manifest da prova («Next Libris (prova)», colore diverso), fa il commit e il push. Le righe di attribuzione dei commit si passano in `ATTRIBUZIONE`.
 - **Flusso concordato con Piero:** ogni novità va prima nella copia di prova. Quando lui dice che va bene, si porta nella versione vera (numero di versione, registro, prove, come sempre).
 
-## Copia social (dal 16/11/2026)
+## Copia social (16/11/2026, non c'è più)
 
-- **Cos'è:** una terza copia dell'app per costruire **account e amicizie** senza toccare la versione vera né la copia di prova. Il codice sta nel ramo **`social`** di `Piero907/next-libris`; la copia pubblicata nel repository `Piero907/next-libris-social` (GitHub Pages: https://piero907.github.io/next-libris-social/).
-- **Dati separati:** nel ramo `social` il riconoscimento della copia è generale (`COPIA` in app.js, sw.js e nello script in testa a index.html): dall'indirizzo `…/next-libris-NOME/` viene il prefisso `NOME:` per localStorage, il database `NOME-catalogo-libri` e le copie offline `NOME-catalogo-libri-vN`. La prova resta identica (`prova:`…). Etichetta **SOCIAL** blu. La prova e2e73 controlla le tre copie insieme.
-  - Finché questo cambiamento non arriva su `main`, il service worker della versione vera cancella le copie offline della social quando si aggiorna (non i dati: la social riscarica i suoi file).
-- **Preparazione (una volta):** `git -C ../next-libris worktree add ../next-libris-ramo-social social` e il clone di `next-libris-social` accanto.
-- **Pubblicarla:** `python3 pubblica_social.py "nota"`. Controlla che in `../next-libris-ramo-social` (o `SOCIAL_SRC`) ci sia il ramo `social`, copia l'app in `../next-libris-social` (o `SOCIAL_DIR`) con il manifest da social («Next Libris (social)», blu), aggiunge la voce a `REGISTRO_SOCIAL.md` («Social V.n»), fa il commit e il push. Copia anche i moduli `social.js`/`social.css` quando ci saranno.
-- **Restare allineati:** le novità della versione vera si portano nel ramo social spesso (`git merge main` nel ramo `social`), non solo alla fine. Il codice social va il più possibile in un **modulo** (`social.js`, `social.css`, solo `window.NL`), così `app.js` cambia poco e le fusioni restano semplici.
-- **Modulo `social` (account e sincronizzazione, Social 96.2):** `social.js`/`social.css`, solo `window.NL` (in `app.js`: evento `saved` dopo ogni salvataggio e `NL.fields`, `NL.clean`, `NL.stored`, `NL.save`). Voce «Account e sincronizzazione» nel Menu, sotto Backup. Accesso con email e codice di 6 cifre (Supabase Auth via fetch, nessuna libreria), libri nella tabella `libri` con regole RLS. Il database si descrive in `supabase/001_libri_e_profili.sql`, le regole si provano con `supabase/prova_sicurezza.sql`. Le prove usano un Supabase finto sullo stesso server (`window.NL_SOCIAL = { url, key }`): prova e2e100.
-  - **Supabase:** progetto `next-libris-social` (Francoforte), organizzazione di Piero; gestibile anche dal connettore Supabase di Claude. Finché non si configura un SMTP proprio, i codici arrivano solo alle email dei membri del progetto (cioè a Piero).
-- **Portarla nella versione vera:** quando Piero dice che va bene, si fonde il ramo `social` in `main` (pull request), con il solito flusso: prima la copia di prova, poi la versione vera.
+La terza copia («social», `pubblica_social.py`, ramo `social`) è servita a costruire account e amici; dal 16/11/2026 tutto è nella prova e la copia social non si usa più. Il riconoscimento delle copie dall'indirizzo (`COPIA` in app.js e sw.js: `…/next-libris-NOME/` → prefisso `NOME:`) è rimasto generale.
 
 ## Flusso di lavoro per ogni nuova versione
 
@@ -84,7 +76,7 @@ APP_DIR=/percorso/copia node esegui.js
 3. Aggiornare `REGISTRO_MODIFICHE.md` (nuova voce `## Versione N · gg/mm/aaaa` in cima) e, se serve, `LEGGIMI.txt`.
 4. Alzare la versione: `python3 nuova_versione.py N "breve nota"`. Cambia insieme `APP_VERSION` in `app.js`, `version.json` e il nome della cache in `sw.js` (`catalogo-libri-vN`).
 5. Prove: per la **copia di prova** basta `node esegui.js --veloce eNN …` con le prove della parte toccata; per la **versione vera** sempre **tutte** (`node esegui.js`). Se un cambiamento voluto rompe una prova vecchia, si aggiorna la prova e lo si dice.
-6. Copiare i file nel ramo `main`, fare il commit (con le righe di attribuzione richieste) e il push. GitHub Pages pubblica da `main`.
+6. Portare il codice nel ramo `main` (unione veloce di `prova`), fare il commit (con le righe di attribuzione richieste) e il push; poi `pubblica_vera.py` copia l'app nel sito https://nextlibris.github.io/ (repository `nextlibris/nextlibris.github.io`).
 7. Fare il commit anche qui nel ramo `prove` delle prove nuove o cambiate.
 
 Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I percorsi passano sempre da `CFG.APP`, `CFG.IMG`, `CFG.OUT` e `CFG.CHROME`: niente percorsi scritti a mano.
@@ -92,6 +84,11 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 ## Come sono fatte le prove
 
 **Prove della libreria** (`test_*.js`, `test_worker.mjs`): Node puro con `assert`. Caricano `lib.js` dall'app (è UMD, funziona anche in Node) o il worker SBN (`cloudflare-sbn-worker.js`).
+
+**Aiutante comune** (`_harness.js`, 17/11/2026): `const H = require('./_harness')` subito dopo `_config`.
+- `H.serve(CFG.port(NNNN), ROOT)`: il server dei file dell'app (prima ~10 righe ripetute in ogni prova). Le prove con un server speciale (Supabase finto, percorsi `/next-libris-prova/`, errori voluti) tengono il loro.
+- `const wait = H.wait`: **attesa «finché»**. `wait(ms)` torna appena nella pagina non c'è più niente in corso che arriverebbe entro `ms` (timer, rete, immagini, IndexedDB, `toBlob`, FileReader, animazioni CSS), poi aspetta due fotogrammi; al massimo `ms`, come prima. Le pagine aperte con `browser.newPage()` si preparano da sole. `H.sleep(ms)` è l'attesa fissa vera; `PROVE_ATTESE=fisse node esegui.js` rimette le attese fisse dappertutto (per capire se un errore dipende dai tempi); `PROVE_ATTESE=debug node e2eNN.js` stampa quanto si è aspettato e perché. Se una prova aspetta qualcosa che il contatore non vede, lì si usa `H.sleep(ms)`.
+- **Moduli:** una prova che ha bisogno di file dell'app che non ci sono sempre lo scrive nelle prime righe, `// moduli: amici, notifiche`; `esegui.js` la salta se l'app non li ha (per esempio sulla vera, che non ha notifiche.js). Una prova può anche saltarsi da sola uscendo con il codice 77 (e2e27 senza le foto vere in `FOTO_PB`).
 
 **Prove nel browser** (`e2e*.js`): ognuna fa le stesse cose.
 
@@ -156,14 +153,11 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e40.js | 8157 | selezione multipla: pressione lunga, elimina con conferma, modifiche di gruppo |
 | e2e41.js | 8159 | riquadro «Libro aggiunto» con prezzo facoltativo |
 | e2e42.js | 8160 | fotocamera dentro l'app (sempre quella posteriore) |
-| e2e43.js | 8161 | editor delle foto: evidenziatore, penne, testo |
-| e2e44.js | 8162 | editor delle foto: zoom con due dita |
+| e2e43.js | 8161 | editor delle foto, in quattro parti (prima e2e43, e2e44, e2e48, e2e50): evidenziatore, penne, annulla; zoom con due dita; gomma e adesivi; maniglie per grandezza e rotazione |
 | e2e45.js | 8163 | descrizione cercata da sola; senza rete in sospeso e ripresa |
 | e2e46.js | 8165 | numerazione personalizzata della serie |
 | e2e47.js | 8166 | durata dei messaggi (brevi; con Annulla 4 s) |
-| e2e48.js | 8167 | editor delle foto: gomma, adesivi |
 | e2e49.js | 8168 | autore: profilo Wikipedia, matita, ricerca, i suoi libri; fotografo trovato con la foto (si ingrandisce), omonimo: vince chi scrive |
-| e2e50.js | 8169 | editor delle foto: maniglie per grandezza e rotazione |
 | e2e51.js | 8170 | novità delle versioni dentro l'app, anche senza rete |
 | e2e52.js | 8171 | donazioni: riga dopo 5 accessi, promemoria ogni 50 libri, PayPal, soglia di 20 s |
 | e2e53.js | 8173 | foto della copertina non trovata: titolo e autore a mano; volume accanto al titolo; suono del prezzo |
@@ -185,9 +179,20 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e70.js | 8190 | Dopo un aggiornamento: «Aggiornato in questa versione» con le novità delle versioni nuove (prima quelle in grassetto), una volta sola, non alla prima apertura; «Tutte le novità» apre il registro. La versione per la prova è in e2e62 |
 | e2e71.js | 8191 | Modulo «Scheda aperta del libro» (schede.js/.css): Pagina del libro è quella dell'app, sezione tolta dalle Opzioni (Classica solo su localhost, con `NLCard.set`); nei Desideri anche preferito e Presta, vendi o regala. Icone in alto su una riga con la matita, descrizione in 3 righe con freccetta, lettura modificabile, autore che apre la sua finestra, etichette-filtro in fondo, copertina che si ingrandisce, Presta e Cerca sul web in fondo |
 | e2e72.js | 8192 | Menu laterale riordinato: «La tua libreria» (Sistema l'elenco, Backup con la data dell'ultimo), «Impostazioni» chiuse finché non le apri (Aspetto, Ricerca, Schede e prezzo, Condivisione, App), Sostieni e versione in fondo; l'ingranaggio le apre già aperte; tornando da una voce restano aperte; Aspetto (tema, colori, caratteri vicini), «Aggiunta dei libri» (prezzo, suoni, fotocamera, luce; tolte le altre opzioni), «Installazione sul telefono» |
-| e2e73.js | 8193 | Tre copie insieme (vera, prova, social): libri, impostazioni, database delle copertine e copie offline separati; etichetta SOCIAL blu; tema all'avvio letto dalla copia giusta; ogni service worker cancella solo le sue copie offline vecchie |
-| e2e100.js | 8300 | Copia social, modulo «Account e sincronizzazione»: voce nel Menu, accesso con codice (sbagliato → messaggio), copia di sicurezza prima della prima sincronizzazione, due telefoni con lo stesso account (libri, modifiche, cancellazioni morbide), nessun caricamento a vuoto, conflitto, ripristino della copia, uscita (Supabase finto) |
-| e2e101.js | 8301 | Copia social: timbro della pubblicazione (`pubblica_social.py` riempie `BUILD` e `version.json` con `build` e `copia`): in fondo al Menu «social 97.5 del …», «Ultime novità della copia social», avviso «C'è un aggiornamento della copia social (97.6 …)» con «Aggiorna adesso» |
+| e2e73.js | 8193 | Due copie insieme (vera e prova; fino al 16/11 anche la social): libri, impostazioni, database delle copertine e copie offline separati; tema all'avvio letto dalla copia giusta; ogni service worker cancella solo le sue copie offline |
+| e2e100.js | 8300 | Modulo «Account e sincronizzazione» (social.js, Supabase finto): voce nel Menu, accesso, copia di sicurezza prima della prima sincronizzazione, due telefoni, uscita |
+| e2e102.js | 8302 | Modulo «Amici» (amici.js): parte «Amici» nel Menu, nome, ricerca, inviti, richieste |
+| e2e103.js | 8303 | Amici: libreria e desideri dell'amico, «Te lo regalo io», prestiti e regali, reso da confermare |
+| e2e104.js | 8304 | Amici, seconda parte: librerie visibili, «Me lo presti?», consigli |
+| e2e105.js | 8305 | Modulo «Notifiche» (notifiche.js): campanella in testata solo con l'account, elenco, lette, testata a 360/412/1280 |
+| e2e106.js | 8306 | Modulo «Ricerche condivise» (ricerche.js): contatore condiviso della chiave, notifica «limite», archivio comune per ISBN |
+| e2e107.js | 8307 | Chiavi prestate nascoste, «Info e condivisione», Contatti |
+| e2e108.js | 8308 | Modulo «Notifiche push» (push.js, sw.js): permesso, iscrizione, tipi, orari di silenzio, push simulato |
+| e2e109.js | 8309 | Condivisione su misura e finestra della chiave; Libreria/Desideri nel +; scheda senza titolo su PC |
+| e2e110.js | 8310 | Amici dell'amico e icona Amici nella libreria di un amico |
+| e2e111.js | 8311 | Desideri e libreria di un amico: icona «Aggiungi ai miei desideri», regali visibili a scelta |
+| e2e112.js | 8312 | Menu riordinato, Indietro che torna al Menu, testata su due righe, «Usa la tua», guida del worker |
+| e2e113.js | 8313 | Trasloco da piero907.github.io a nextlibris.github.io (trasloco.html, trasloco.js) |
 | e2e74.js | 8194 | Schermi di misure diverse (telefono piccolo, telefono, telefono sdraiato, tablet, PC, PC grande): niente scorrimento orizzontale; pagina del libro a tutta larghezza e su due colonne da 760 px; modifica in colonna; barra in basso raccolta al centro, sottile sugli schermi bassi |
 | e2e75.js | 8195 | Segnalibro: «Sono a pagina [N] di T · %» con la barra nella pagina del libro «In lettura» (solo cifre, si salva con la data, resta alla riapertura, oltre l'ultima pagina 100%); senza pagine del libro solo il campo; «In lettura · 34%» con la linea sottile nell'elenco, barretta sulle copertine; con «Letto» sparisce |
 | e2e76.js | 8196 | «In lettura» in cima: sezioni «In lettura» e «Gli altri libri» in Elenco e Copertine (si chiudono, se lo ricorda); niente sezioni con ricerca, filtri, ordine diverso da «Più recenti», nei Desideri o senza libri in lettura; dalla copertina si apre ancora la pagina del libro |

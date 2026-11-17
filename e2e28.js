@@ -1,12 +1,12 @@
 const CFG = require("./_config");
+const H = require('./_harness');
 const APPU = /'https:\/\/nextlibris\.github\.io\/';/.test(require('fs').readFileSync(require('path').join(CFG.APP, 'app.js'), 'utf8')) ? 'https://nextlibris.github.io/' : 'https://piero907.github.io/next-libris/';   // indirizzo dell'app (dalla versione 100 nextlibris.github.io)
 // preferiti, condivisione di un libro e di una lista, link ricevuto, provenienza
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
 const ROOT = CFG.APP;
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.woff2': 'font/woff2' };
-const server = http.createServer((req, res) => { let p = decodeURIComponent(req.url.split('?')[0]); if (p === '/') p = '/index.html'; const f = path.join(ROOT, p); if (!f.startsWith(ROOT) || !fs.existsSync(f)) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res); }).listen(CFG.port(8144));
+const server = H.serve(CFG.port(8144), ROOT);
 const BASE = 'http://localhost:' + CFG.port(8144) + '/?vista=elenco';
 const BOOKS = [
   { id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompiani', y: '2012', c: 14, i: '9788845292613', ts: 5, img: 'https://books.google.com/books/content?id=ROSA&img=1&zoom=1', pg: '624', n: 'nota segreta', p: 'Marco', sh: 'Studio', gen: 'Gialli', rt: 5 },
@@ -15,7 +15,7 @@ const BOOKS = [
   { id: 'w1', t: 'Le città invisibili', a: 'Italo Calvino', i: '9788804668022', ts: 2, w: true }];
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
-  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const wait = H.wait;   // attesa «finché» (_harness.js)
   async function open(url, set, books, noShare) {
     const ctx = await browser.createBrowserContext(); const p = await ctx.newPage();
     await p.evaluateOnNewDocument((s, b, ns) => {
