@@ -268,7 +268,7 @@ function cleanBook(x) {
     i: L.str(x.i).replace(/[^\dXx]/g, '').toUpperCase(),
     g: Array.isArray(x.g) ? x.g.filter(function (k) { return ['t', 'a', 'e', 'y', 'i'].indexOf(k) >= 0; }) : [],
     img: /^https:\/\//.test(img) ? img : '',
-    imgL: /^https:\/\//.test(L.str(x.imgL)) ? L.str(x.imgL) : '',
+    imgL: /^https:\/\//.test(L.str(x.imgL)) && !L.badBigCover(x.imgL) ? L.str(x.imgL) : '',   // via le «grandi» di Google con zoom=0 (17/11/2026): si ricerca con zoom=3
     nf: !!x.nf,
     ts: Number(x.ts) || 0,
     sh: L.str(x.sh).slice(0, 80), n: L.str(x.n).slice(0, 2000), gen: L.str(x.gen).slice(0, 80),
@@ -633,7 +633,7 @@ function applyResult(b, r, code) {
   if (!b.y) b.y = r.y;
   if (!b.gen && r.gen) b.gen = r.gen;
   if (!b.pg && r.pg) b.pg = r.pg;
-  if (r.img) b.img = r.img;
+  if (r.img && !(S[b.id] && S[b.id].keepImg && b.img)) b.img = r.img;
   b.i = code; b.nf = false;
   b.g = b.g.filter(function (k) { return ['t', 'a', 'e', 'y', 'i'].indexOf(k) < 0; });
   guessEditor(b);
@@ -4167,12 +4167,12 @@ function renderGroups(list, vis, g) {
       '<div class="shelf-b" id="' + id + '"' + (open ? '' : ' hidden') + '>' + body + '</div></section>';
   };
   /* gruppi come copertine (o righe nell'elenco); il riquadro con i libri si apre sotto */
-  var panel = function (key, x, kind, i, open, id) {
+  var panel = function (key, x, kind, i, open, id, inside) {
     return '<div class="gpanel" id="' + id + '" data-gi="' + i + '"' + (open ? '' : ' hidden') + '><div class="gp-h"><b>' + esc(lab(x, kind)) + '</b><small>' + grpLibri(x[2].length) + '</small><span class="gp-sp"></span>' +
       (kind === 'aut' && x[0] !== '~' ? '<button type="button" class="link gp-who" data-gau="' + esc(x[1]) + '" data-gid="' + esc(x[2][0].id) + '">Chi è ›</button>' : '') +
-      '<button type="button" class="ico gp-x" data-gk="' + esc(key) + '" aria-label="Chiudi">×</button></div>' + inner(x[2]) + '</div>';
+      '<button type="button" class="ico gp-x" data-gk="' + esc(key) + '" aria-label="Chiudi">×</button></div>' + (inside != null ? inside : inner(x[2])) + '</div>';
   };
-  var cards = function (groups, kind, base) {
+  var cards = function (groups, kind, base, sub) {     // sub: Genere › Autore, nel riquadro del genere le copertine degli autori (17/11/2026)
     var h = groups.map(function (x, i) {
       var key = base + '/' + x[0], open = isOpen(key, x[2]), id = 'grp-' + (n++), none = x[0] === '~';
       var aria = ' data-gk="' + esc(key) + '" aria-expanded="' + open + '" aria-controls="' + id + '" aria-label="' + esc(lab(x, kind) + ', ' + grpLibri(x[2].length)) + '"';
@@ -4181,7 +4181,7 @@ function renderGroups(list, vis, g) {
             '<span class="cap">' + esc(lab(x, kind)) + '</span><span class="cap2">' + grpLibri(x[2].length) + '</span></button>'
         : '<button type="button" class="grow' + (open ? ' on' : '') + '"' + aria + '>' + grpFace(kind, x[1], none, true) + '<span class="gr-t"><b>' + esc(lab(x, kind)) + '</b><small>' +
             esc(x[2].slice(0, 2).map(function (b) { return '«' + (b.t || 'senza titolo') + '»'; }).join(', ') + (x[2].length > 2 ? '…' : '')) + '</small></span><span class="sh-n">' + x[2].length + '</span><svg class="sh-c" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>';
-      return card + panel(key, x, kind, i, open, id);
+      return card + panel(key, x, kind, i, open, id, sub && x[3] ? cards(x[3], 'aut', key) : null);
     }).join('');
     return isGrid ? '<div class="grid gcards">' + h + '</div>' : '<div class="glist">' + h + '</div>';
   };
@@ -4193,7 +4193,7 @@ function renderGroups(list, vis, g) {
       if (x[3]) return sec(key, x, x[3].map(function (y) { return sec(key + '/' + y[0], y, inner(y[2]), true, 'aut'); }).join(''), false);
       return sec(key, x, inner(x[2]), false, kindOf(1));
     }).join('');
-    if (g === 'genaut') return parts.map(function (x) { var key = base + ':' + x[0]; return sec(key, x, cards(x[3], 'aut', key), false); }).join('');
+    if (g === 'genaut') return cards(parts, 'gen', base, true);   // generi a copertine, dentro gli autori a copertine (Piero, 17/11/2026)
     return cards(parts, kindOf(1), base);
   };
   var tools = '<div class="grp-tools"><button type="button" class="gx" data-gx="1"' + (exp ? ' disabled' : '') + '>Espandi tutto</button><button type="button" class="gx" data-gx="0">Comprimi tutto</button></div>';
@@ -4245,6 +4245,7 @@ function refreshRow(id) {
 }
 function eur(n) { return eurFmt.format(n); }
 function updateSummary() {
+  renderOwner();                                   // «Libreria di» / «Desideri di» segue la scheda
   var all = tabBooks().filter(hasData), done = all.filter(function (b) { return !b.xs; });
   var gone = all.length - done.length;
   var total = done.reduce(function (a, b) { return a + (b.c || 0); }, 0);
@@ -4382,6 +4383,7 @@ function pickTitle(i) {
     if (res.moved) { openState[res.moved.id] = false; renderList(); updateSummary(); toast('Era nei Desideri: spostato in Libreria. ' + (res.moved.t || code)); return; }
     var b = res.book;
     b.t = c.t; b.a = c.a; if (c.img) b.img = c.img;           // si vede subito; il resto arriva dalle banche dati
+    if (c.img && S[b.id]) S[b.id].keepImg = true;              // la copertina toccata nei risultati resta: la ricerca per ISBN non la cambia (Piero, 17/11/2026)
     openState[b.id] = false;
     renderList(); updateSummary(); addedToast(b); askPrice(b.id);
     return;
@@ -4773,7 +4775,7 @@ function testImage(u) {
   return new Promise(function (res) {
     var im = new Image(), t = setTimeout(function () { res(false); }, 12000);
     im.referrerPolicy = 'no-referrer';
-    im.onload = function () { clearTimeout(t); var w = im.naturalWidth, r = im.naturalHeight / Math.max(1, w); res(w >= 250 && r > 1.05 && r < 2.1); };
+    im.onload = function () { clearTimeout(t); var w = im.naturalWidth, h = im.naturalHeight, r = h / Math.max(1, w); res(w >= 250 && r > 1.05 && r < 2.1 && !(w === 575 && h === 750 && /books\.google/.test(u))); };   // 575x750: «immagine non disponibile» di Google
     im.onerror = function () { clearTimeout(t); res(false); };
     im.src = u;
   });
@@ -4782,7 +4784,8 @@ function testImage(u) {
 function googleBig(img) {
   if (!L.googleVolumeId(img)) return [];
   var u = String(img).replace(/^http:\/\//i, 'https://').replace(/&edge=curl/g, '');
-  return ['0', '3'].map(function (z) { return /[?&]zoom=\d/.test(u) ? u.replace(/([?&]zoom=)\d/, '$1' + z) : u + '&zoom=' + z; }).filter(function (x) { return x !== img; });
+  /* solo zoom=3 (medium): zoom=0 spesso da' la prima pagina del libro, non la copertina (17/11/2026) */
+  return ['3'].map(function (z) { return /[?&]zoom=\d/.test(u) ? u.replace(/([?&]zoom=)\d/, '$1' + z) : u + '&zoom=' + z; }).filter(function (x) { return x !== img; });
 }
 function probeCover(id) {
   var b = get(id);
@@ -5746,7 +5749,7 @@ function saveName(v) {
 function renderOwner() {
   var el = $('#owner');
   if (guest) { el.innerHTML = 'Libreria di <b>' + esc(guest.name) + '</b>'; return; }
-  el.innerHTML = settings.name ? '<b>' + esc(settings.name) + '</b>'   // una riga sola con i numeri: «Piero R. · 120 libri» (17/11/2026)
+  el.innerHTML = settings.name ? (tab === 'wish' ? 'Desideri di ' : 'Libreria di ') + '<b>' + esc(settings.name) + '</b>'   // «Libreria di Piero R. · 120 libri», nei Desideri «Desideri di Piero R.» (Piero, 17/11/2026)
     : '<button type="button" class="link" id="ownerSet">Scrivi il tuo nome</button>';
 }
 $('#owner').addEventListener('click', function (e) { if (e.target.closest('#ownerSet')) { openOptions('share'); setTimeout(function () { try { $('#optName').focus(); } catch (x) {} }, 80); } });

@@ -1051,7 +1051,7 @@ html[data-theme="dark"] .ico.act.fav.on svg{color:#F4C430}
 /* testata su due righe (Piero, 17/11/2026): «Next Libris [PROVA]» con le icone centrate sulla stessa linea, sotto una riga grigia con nome e numeri */
 .top-meta{margin:6px 0 0;font-size:15px;line-height:1.35;color:var(--muted)}
 .top-meta .summary{margin:0;display:inline}
-.top-meta .owner:not(:empty)::after{content:" · ";color:var(--muted);font-weight:400}
+.top-meta .owner:not(:empty){display:block}   /* «Libreria di Piero R.» sopra, i numeri sotto (Piero, 17/11/2026) */
 html[data-look="nuovo"] .top{--h1-fs:calc(clamp(24px,6.8vw,38px) * var(--ft-k,1))}
 html[data-look="nuovo"] .top h1{font-size:var(--h1-fs)}
 .top .gear,.top .fri-top,.top .nt-top,.top .beer-top{top:calc(var(--h1-fs,31px) * .52 - 22px)}   /* centrate sulla riga del titolo */
