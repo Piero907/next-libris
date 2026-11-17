@@ -1,6 +1,6 @@
 const CFG = require("./_config");
 const H = require('./_harness');
-const APPU = /'https:\/\/nextlibris\.github\.io\/';/.test(require('fs').readFileSync(require('path').join(CFG.APP, 'app.js'), 'utf8')) ? 'https://nextlibris.github.io/' : 'https://piero907.github.io/next-libris/';   // indirizzo dell'app (dalla versione 100 nextlibris.github.io)
+const APPU = /'https:\/\/nextlibris\.github\.io\/';/.test(require('fs').readdirSync(CFG.APP).filter(f => /^app(-[a-z-]+)?\.js$/.test(f)).map(f => require('fs').readFileSync(require('path').join(CFG.APP, f), 'utf8')).join('\n')) ? 'https://nextlibris.github.io/' : 'https://piero907.github.io/next-libris/';   // indirizzo dell'app (dalla versione 100 nextlibris.github.io)
 // preferiti, condivisione di un libro e di una lista, link ricevuto, provenienza
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
