@@ -86,7 +86,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set', oldApp = false;
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
-var APP_VERSION = { v: 99, date: '2026-11-16', note: 'Amici: libreria e desideri visibili, prestiti e regali, «Te lo regalo io», Me lo presti?, consigli, chiave e worker condivisi' };
+var APP_VERSION = { v: 100, date: '2026-11-17', note: 'Nuovo indirizzo nextlibris.github.io e trasloco dei libri' };
 var state = { books: [], updated: 0 };
 var hooks = {};                              // moduli aggiuntivi (vedi window.NL in fondo): si agganciano dopo l'avvio
 function emit(name, arg) { (hooks[name] || []).forEach(function (fn) { try { fn(arg); } catch (e) { if (window.console) console.warn('modulo', name, e); } }); }
@@ -6387,7 +6387,7 @@ $('#btnClearGuess').addEventListener('click', function () {
 /* Finche' l'app si usa dal browser, in alto c'e' la scheda «Installa»: un tocco apre la richiesta di Chrome
    (quando Chrome la offre), altrimenti spiega i passi giusti per quel telefono e browser. */
 /* indirizzo dell'app: quello da cui gira (cosi' link e condivisioni seguono un eventuale cambio di nome); di riserva quello pubblicato */
-var APP_URL = /\.github\.io$/.test(location.hostname) ? location.origin + location.pathname.replace(/[^/]*$/, '') : 'https://piero907.github.io/next-libris/';
+var APP_URL = /\.github\.io$/.test(location.hostname) ? location.origin + location.pathname.replace(/[^/]*$/, '') : 'https://nextlibris.github.io/';
 var APP_SCOPE = location.pathname.replace(/[^/]*$/, '');      // es. /next-libris/: l'app installata e' legata a questa cartella
 var SHARE_TXT = 'Next Libris: il catalogo della libreria di casa. Inquadri il codice a barre e il libro si compila da solo. Aprilo con Chrome e premi «Installa».';
 var deferred = null;
