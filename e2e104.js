@@ -233,13 +233,13 @@ const base = 'http://localhost:' + CFG.port(8304);
   await A.keyboard.press('Escape'); await wait(200);
   await A.evaluate(() => { window.NL.settings.sbnUrl = 'https://sbn-anna.workers.dev'; window.NL.saveSettings(); });
   await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
-  assert.strictEqual(await A.$eval('#guestBar [data-g="key"]', x => x.textContent), 'Presta chiave API e worker');
-  await A.click('#guestBar [data-g="key"]'); await wait(400);
+  assert.match(await A.$eval('#guestKey', x => x.getAttribute('aria-label')), /^Presta chiave API e worker a /);   // icona sulla riga del nome (17/11/2026 sera)
+  await A.click('#guestKey'); await wait(400);
   assert(await A.$eval('#keyGb', x => x.checked) && await A.$eval('#keySbn', x => x.checked), 'all\'inizio tutte e due');
   await A.click('#keySbn'); await A.click('#keyGo'); await wait(600);
   assert.deepStrictEqual(DB.keys.map(k => [k.gb_key, k.sbn]), [['AIzaChiaveDiAnna', '']], 'solo la chiave');
-  assert.strictEqual(await A.$eval('#guestBar [data-g="key"]', x => x.textContent), '✓ Prestata: chiave API');
-  await A.click('#guestBar [data-g="key"]'); await wait(400);
+  assert.match(await A.$eval('#guestKey', x => x.getAttribute('aria-label') + (x.classList.contains('on') ? ' ✓' : '')), /^Prestata: chiave API a .* ✓$/);
+  await A.click('#guestKey'); await wait(400);
   assert(await A.$eval('#keyGb', x => x.checked) && !(await A.$eval('#keySbn', x => x.checked)), 'la scelta resta');
   assert.strictEqual(await A.$eval('#keyGo', x => x.textContent), 'Salva');
   assert(await A.evaluate(() => [...document.querySelectorAll('.sheet:not([hidden]) .sheet-in')].every(s => s.scrollWidth - s.clientWidth <= 0)), 'niente scorrimento di lato');

@@ -68,10 +68,10 @@ const DAY = 864e5;
   await load(3);
   await click('#donRowOpen'); await wait(300); v = await vis(); assert(v.sheet);
   let info = await page.evaluate(() => ({ go: document.querySelector('#donGo').textContent, sel: document.querySelector('.don-amt[aria-checked="true"]').textContent, top: (() => { const r = document.querySelector('#donSheet .sheet-in').getBoundingClientRect(); return !!document.elementFromPoint(r.left + r.width / 2, r.top + 20).closest('#donSheet'); })() }));
-  console.log('[finestra]', JSON.stringify(info)); assert(info.go === 'Dona 3 € con PayPal' && info.sel === '3 €' && info.top);
+  console.log('[finestra]', JSON.stringify(info)); assert(info.go === 'Offri una media con PayPal' && info.sel === 'Media3 €' && info.top);   // testi della birra (17/11/2026 sera)
   await page.screenshot({ path: CFG.OUT + '/don_sheet.png' });
-  await page.evaluate(() => document.querySelector('.don-amt[data-amt="5"]').click()); assert.strictEqual(await page.$eval('#donGo', e => e.textContent), 'Dona 5 € con PayPal');
-  await page.evaluate(() => document.querySelector('.don-amt[data-amt=""]').click()); assert.strictEqual(await page.$eval('#donGo', e => e.textContent), 'Dona con PayPal');
+  await page.evaluate(() => document.querySelector('.don-amt[data-amt="5"]').click()); assert.strictEqual(await page.$eval('#donGo', e => e.textContent), 'Offri una grande con PayPal');
+  await page.evaluate(() => document.querySelector('.don-amt[data-amt=""]').click()); assert.strictEqual(await page.$eval('#donGo', e => e.textContent), 'Offri una birra con PayPal');
   // Indietro chiude la finestra
   await page.evaluate(() => history.back()); await wait(300); v = await vis(); assert(!v.sheet);
   // apre PayPal con l'importo scelto
@@ -90,7 +90,7 @@ const DAY = 864e5;
   }, ago);
   await page.evaluate(() => { window.__app.settings.donUntil = 0; });
   await back(5000); await wait(300); v = await vis(); const tt = await toastTxt(); console.log('[ritorno 5 s]', JSON.stringify(v.set), tt);
-  assert(/Grazie se hai donato/.test(tt) && v.set.donGo === 0 && Math.abs(v.set.donUntil - Date.now() - 10 * DAY) < 60000 && !v.row);
+  assert(/Grazie se mi hai offerto la birra/.test(tt) && v.set.donGo === 0 && Math.abs(v.set.donUntil - Date.now() - 10 * DAY) < 60000 && !v.row);
   // ritorno dopo 25 s: 3 mesi
   await page.evaluate(() => { window.__app.settings.donUntil = 0; });
   await back(25000); await wait(300); v = await vis(); console.log('[ritorno 25 s]', JSON.stringify(v.set));
