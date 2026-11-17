@@ -15,7 +15,7 @@ Ultimo aggiornamento: **17/11/2026**, vera **99**, prova **99.8**.
 - **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine
 - **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki · 12 nazionalità degli autori · 6 film dai libri
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
-- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo
+- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo · 31 pagina del profilo · 32 premio per chi usa chiave e worker suoi
 - **G. Guide:** 13 guida di primo avvio · 16 guida per il worker e la chiave
 - **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 20 notifiche push · 21 dominio, email, privacy · 22 chiavi prestate davvero nascoste · 27 verifica di sicurezza
 - **Fatti** (tolti dall'elenco)
@@ -332,6 +332,14 @@ Solo se Piero le chiede. Strada: Web Push + Edge Function di Supabase (500.000 a
 **Richiesta di Piero:** versioni dell'app adatte ai daltonici, prima **verificando se si può fare**. Nulla fatto.
 
 **Appunti per la verifica (non ancora controllati):** l'app ha già Aspetto › tema e colori, quindi una scelta in più («Colori per daltonici») si aggancia lì. Da controllare: dove il colore da solo porta un significato (pallino della sincronizzazione verde/arancio, avvisi ⚠, prestiti, «da verificare», interruttori acceso/spento, grafici delle Statistiche e della stagione in libri); per ognuno serve anche un segno o una parola, non solo il colore. Provare i colori con un simulatore (protanopia, deuteranopia, tritanopia) e il contrasto WCAG.
+
+### 31. Pagina del profilo (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** una **pagina del profilo** con la **raccolta delle citazioni** e la **citazione preferita**; se la libreria è visibile, anche le **statistiche**, mostrate «in modo cool». Si lega alla voce 28 (foto del profilo). Nulla di costruito. **Prima di costruire, chiedere:** chi la vede (solo tu o anche gli amici: oggi le citazioni non sono mai visibili agli amici), come si sceglie la citazione preferita, quali statistiche e in che stile, dove si apre (testata, Menu, finestra Amici).
+
+### 32. Premio per chi usa chiave Google e worker suoi (chiesto il 17/11/2026)
+
+**Richiesta di Piero:** un **riconoscimento («reward»)** per chi ha la sua chiave API e il suo worker (non pesa sulla chiave «della casa», vedi la simulazione degli utenti). Nulla di costruito. **Prima di costruire, chiedere:** che premio (distintivo nel profilo e nella libreria vista dagli amici, colori o temi in più, ringraziamento), se conta anche chi li presta agli amici, come si verifica che sono davvero suoi.
 
 ## Fatti (tolti dall'elenco)
 
