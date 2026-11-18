@@ -38,7 +38,7 @@ var S = [
   { ico: 'loan', h: 'Prestiti', go: 'loan',   // giro 7: Prestiti e Desideri in due schermate (testi approvati da Piero il 18/11/2026)
     p: ['Segna a chi hai prestato un libro e chi l\'ha prestato a te. Quando te lo restituiscono, tocca <b>Restituiscilo</b>.'] },
   { ico: 'towish', h: 'Desideri', go: 'wish',
-    p: ['Metti nei <b>Desideri</b> i libri che vorresti. Gli amici possono vederli e regalarteli di nascosto, e ti avvisiamo se un amico ce l\'ha già.'] },
+    p: ['Metti nei <b>Desideri</b> i libri che vorresti leggere. Gli amici possono vederli e trovare l\'idea giusta per un regalo. Se un amico ce l\'ha già, te lo diciamo: magari ve lo prestate.'] },
   { ico: 'user', h: 'Amici e profilo', go: 'friends', mod: 'NLAmici',
     p: ['Con <b>Accedi con Google</b> i tuoi libri si salvano anche online e puoi trovare gli amici per nome. Guarda le loro librerie, chiedi <b>Me lo presti?</b> e segui i loro desideri.',
       'La <b>campanella</b> ti avvisa delle novità. Tocca il tuo nome in alto per vedere il tuo <b>profilo</b>.'] },
@@ -195,13 +195,15 @@ var D = '2026-';
 function bk(k, o) { return Object.assign({ id: 'ex' + k, ts: Date.parse(D + '01-01') - k * 864e5, g: [], c: null }, o); }
 /* libri: classici, più García Márquez e Asimov (scelta di Piero); solo titolo, autore e dati; descrizioni nostre */
 var BOOKS = [
-  bk(1, { t: 'I promessi sposi', a: 'Alessandro Manzoni', e: 'Mondadori', y: '2002', pg: '720', gen: 'Romanzo storico', rs: 'ok', rt: 5, rd: D + '03-10', fav: true,
+  bk(1, { t: 'I promessi sposi', a: 'Alessandro Manzoni', e: 'Mondadori', y: '2002', pg: '720', gen: 'Romanzo storico', rs: 'ok', rt: 5, rd: D + '03-10', fav: true, lc: true,
+    qs: [{ x: 'Quel ramo del lago di Como, che volge a mezzogiorno, tra due catene non interrotte di monti…', pg: '1', d: 3, pin: true }],
     ds: 'Renzo e Lucia vogliono sposarsi, ma un signorotto prepotente lo impedisce. Tra fughe, peste e carestia, la loro storia attraversa la Lombardia del Seicento.' }),
   bk(2, { t: 'I promessi sposi', a: 'Alessandro Manzoni', e: 'Einaudi', y: '2014', pg: '880', gen: 'Romanzo storico',
     ds: 'La stessa storia in un\'altra edizione, con note e commento: le due copie stanno insieme sotto un solo libro.' }),
   bk(3, { t: 'Il fu Mattia Pascal', a: 'Luigi Pirandello', e: 'Feltrinelli', y: '2015', pg: '280', gen: 'Romanzo', rs: 'in', pp: '112',
     ds: 'Un uomo legge sul giornale della propria morte e decide di approfittarne per ricominciare da capo con un altro nome.' }),
-  bk(4, { t: 'Le avventure di Pinocchio', a: 'Carlo Collodi', e: 'Giunti', y: '2019', pg: '240', gen: 'Per ragazzi', rs: 'ok', rt: 4, rd: D + '01-22', p: 'Marta', pd: D + '10-02',
+  bk(4, { t: 'Le avventure di Pinocchio', a: 'Carlo Collodi', e: 'Giunti', y: '2019', pg: '240', gen: 'Per ragazzi', rs: 'ok', rt: 4, rd: D + '01-22', lc: true,
+    qs: [{ x: 'C\'era una volta… un pezzo di legno.', pg: '7', d: 2, pin: true }], p: 'Marta', pd: D + '10-02',
     ds: 'Il burattino di legno che vorrebbe diventare un bambino vero, tra bugie, cattive compagnie e un padre che non smette di cercarlo.' }),
   bk(5, { t: 'Anna Karenina', a: 'Lev Tolstoj', e: 'Garzanti', y: '2008', pg: '960', gen: 'Romanzo', rs: 'ok', rt: 4, rd: D + '07-15',
     ds: 'Nella Russia dell\'Ottocento, una donna sceglie l\'amore contro le regole della sua società, mentre accanto a lei altre vite cercano la loro strada.' }),
