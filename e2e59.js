@@ -56,6 +56,20 @@ const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + 
   await page.click('#bkFailDl'); await wait(300);
   const dl = await page.evaluate(() => window.__dl); console.log('[4 download]', JSON.stringify(dl));
   assert.strictEqual(dl.length, 1); assert(new RegExp('^Libreria di Piero - Next Libris - ' + today + ' \\d\\d\\.\\d\\d\\.json$').test(dl[0]), 'nome con data e ora: ' + dl[0]);
+  // 4b) con le foto (18/11/2026): oltre ~45 MB niente condivisione, «Invia senza le foto»; un NotAllowedError con le foto propone lo stesso
+  await page.evaluate(() => { navigator.canShare = f => /\.txt$/.test(f.files[0].name); window.__shareMode = 'ok'; window.__shared = []; window.coverIds = () => ['k1']; backupReady = '{"app":"catalogo-libri"' + ' '.repeat(46 * 1048576) + '}'; bkWarm = window.__app.state.updated; });
+  await page.evaluate(() => { document.getElementById('bkFailSheet').hidden = true; }); await page.click('#btnShareBackup'); await wait(300);
+  let big = await page.evaluate(() => ({ sh: window.__shared.length, msg: document.getElementById('bkFailMsg').textContent, lite: !document.getElementById('bkFailLite').hidden, retry: !document.getElementById('bkFailRetry').hidden }));
+  console.log('[4b grande]', JSON.stringify(big).slice(0, 220));
+  assert(big.sh === 0 && /troppo grande/.test(big.msg) && big.lite && !big.retry, 'troppo grande: niente condivisione, Invia senza le foto');
+  await page.click('#bkFailLite'); await wait(300);
+  sh = await page.evaluate(() => window.__shared); console.log('[4b senza foto]', JSON.stringify(sh));
+  assert(sh.length === 1 && / \(senza foto\)\.txt$/.test(sh[0][0]) && !(await vis('#bkFailSheet')), 'mandato senza le foto');
+  await page.evaluate(() => { backupReady = '{"app":"catalogo-libri"' + ' '.repeat(9 * 1048576) + '}'; window.__shareMode = 'no'; });
+  await page.click('#btnShareBackup'); await wait(300);
+  big = await page.evaluate(() => ({ msg: document.getElementById('bkFailMsg').textContent, lite: !document.getElementById('bkFailLite').hidden }));
+  assert(/prova senza le foto/.test(big.msg) && big.lite, 'NotAllowedError con un backup grande: proposta senza foto');
+  await page.evaluate(() => { document.getElementById('bkFailSheet').hidden = true; });
   await page.click('#exportClose'); await wait(300);
   // 5) fotocamera: torcia e flash
   await page.evaluate(() => window.__app.startScan()); await page.waitForFunction(() => !document.querySelector('#scan').hidden, { timeout: 8000 }); await wait(900);
