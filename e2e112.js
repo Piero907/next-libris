@@ -68,7 +68,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   console.log('[1 testata]', JSON.stringify(hd));
   assert.strictEqual(hd.owner, 'Libreria di Piero R.');   // «Libreria di» (17/11/2026)
   assert(/^Libreria di Piero R\. · 12 libri · \d+ in prestito/.test(hd.meta), hd.meta);
-  assert(hd.ownH < 30 && hd.sumH < 30 && hd.metaH > 30 && hd.metaH < 50, 'due righe: «Libreria di …» sopra, i numeri sotto (17/11/2026)');
+  assert(hd.ownH < 30 && hd.sumH < 45 && hd.metaH > 30 && hd.metaH < 70, '«Libreria di …» sopra, i numeri sotto (17/11/2026; giro 7: con la foto tonda a sinistra i numeri possono andare su due righe)');
   assert(Math.abs(hd.h1c - hd.gearC) <= 4, 'icone centrate sul titolo');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 170 } });
 
@@ -82,7 +82,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     return { items, bad, don: document.getElementById('donMenu').getBoundingClientRect().top / innerHeight };
   });
   console.log('[2 menu]', mn.items.join(' | '), '· Sostieni a', Math.round(mn.don * 100) + '%');
-  assert.deepStrictEqual(mn.items, ['Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', 'Il tuo profilo', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
+  assert.deepStrictEqual(mn.items, ['Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
     'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
     'Info e aiuto', '  Come si usa', '  Guarda una libreria di esempio', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);   // voci della guida (giro 4)
   assert.deepStrictEqual(mn.bad, [], 'sottotitoli su una riga');

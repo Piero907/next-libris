@@ -289,6 +289,10 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 **Proposta di partenza:** 1 + 2 (facili, nessun permesso nuovo).
 
+**Giro 7 (18/11/2026, scelte di Piero):** fatto il punto 2 nella prova: promemoria ogni **45 giorni** o dopo **20 libri nuovi**, e «Fai il backup» lo manda su Drive, WhatsApp o email con un tocco (le foto si preparano mentre l'avviso è in vista). **Restano in sospeso:**
+- **C · backup automatico su Google Drive** (cartella nascosta dell'app nel Drive dell'utente, copertine e foto comprese, una volta a settimana; permesso in più «file creati da Next Libris», da verificare se Google chiede una verifica);
+- **D · copia del database per Piero:** un'esportazione a mano ogni tanto (amicizie, prestiti, archivio), con una procedura scritta, perché il piano gratuito di Supabase non fa backup.
+
 ### 5. Quanti dispositivi usano l'app (chiesto il 15/11/2026, «inizia a pensarci»)
 
 **Domanda di Piero:** come capire su quanti dispositivi è installata l'app principale? GitHub Pages non dà statistiche.
@@ -328,6 +332,12 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 **Già fatto (nella vera dalla 102):** nascosti nell'app (niente campo in Impostazioni › Ricerca, niente salvati, backup o link). Restano però sul telefono di chi li usa: una persona esperta li legge con gli strumenti del browser.
 
 **Da fare quando lo chiede («davvero nascosti»):** le ricerche di chi usa la chiave di un amico passano da un servizio sul server (Edge Function di Supabase) che tiene chiave e worker e fa la richiesta al posto suo; il telefono riceve solo i risultati. Costi: ricerche un po' più lente, funzioni del piano gratuito (500.000 al mese, ~2-3 per libro), da contare con la simulazione degli utenti; serve anche per i suggerimenti e le novità degli autori. Si lega al contatore condiviso (012) e alla voce 18.
+
+**Giro 8 (scelto da Piero il 18/11/2026, da fare con Fable):** R1 (la chiave prestata non lascia mai il server: funzione Supabase con la chiave nel Vault, limite al giorno per amico, stop immediato), R3 (guida della chiave: solo Books API, niente fatturazione, «così non si paga mai niente»), R4 (pulsante «La mia chiave è finita in giro» con i passi per rigenerarla). Scelte in `claude/giro-7-8-scelte.md` del progetto claude.ai.
+
+### 40. Worker e link della chiave (dal giro 7-8, 18/11/2026)
+- **R5 · limite di richieste per il worker** (in sospeso, scelta di Piero): oggi chiunque conosca l'indirizzo lo può usare da un programma; il piano gratuito si ferma a 100.000 al giorno senza costi, ma SBN potrebbe bloccare il worker. Possibile: un limite per indirizzo IP o un piccolo segreto.
+- **R2 · link con la chiave (`#k=`)** non scelto per ora: porta la chiave in chiaro; si potrebbe togliere o farlo valere per un solo amico e per 7 giorni.
 
 ---
 

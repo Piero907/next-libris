@@ -97,17 +97,17 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   assert(await page.evaluate(() => !document.querySelector('#optLayout') && !/Disposizione dello schermo/.test(document.querySelector('#optSheet').innerText)), 'la scelta della disposizione non c\'e\' piu\'');
   assert(await page.evaluate(() => !document.querySelector('#layOne')), 'niente opzione «Avvisi in cima uno alla volta»: e\' sempre cosi\' (16/11/2026)');
   const sumOpts = await page.$$eval('.sum-opts input', e => e.map(x => x.id + (x.checked ? '*' : ''))); console.log('[riepilogo opzioni]', sumOpts.join(' '));
-  assert.deepStrictEqual(sumOpts, ['optSumEur', 'optSumLoan*', 'optSumGone', 'optShowSync']);
+  assert.deepStrictEqual(sumOpts, ['optSumLoan*', 'optSumGone', 'optShowSync']);   // giro 7: niente «Valore in euro»
   await page.screenshot({ path: CFG.OUT + '/layout_opzione.png' });
-  await page.click('#optSumEur'); await page.click('#optSumGone'); await page.click('#optSumLoan'); await page.click('#optShowSync'); await wait(250);
+  await page.click('#optSumGone'); await page.click('#optSumLoan'); await page.click('#optShowSync'); await wait(250);
   await page.evaluate(() => window.__app.closeOptions()); await wait(350); await page.evaluate(() => window.scrollTo(0, 0));
   sum = await txt('#summary'); console.log('[riepilogo cambiato]', sum);
-  assert(/^13 libri · 130,00 € · 1 non più in libreria$/.test(sum));
+  assert(/^13 libri · 1 non più in libreria$/.test(sum));
   assert(await vis('#fltLoan'), 'senza «in prestito» nel riepilogo torna la riga Prestati');
   assert(await vis('#sync'), 'Salvato acceso a mano');
   assert(await page.evaluate(() => !!document.querySelector('.lay-later')), 'avvisi sempre uno alla volta');
   const st = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
-  assert(st.sumEur === true && st.sumGone === true && st.sumLoan === false && st.showSync === true);
+  assert(st.sumGone === true && st.sumLoan === false && st.showSync === true);
   // classico: come prima, avvisi al loro posto (sotto la ricerca)
   const pick = async v => { await page.evaluate(v => window.NLLayout.set(v), v); await wait(350); await page.evaluate(() => window.scrollTo(0, 0)); };   // la classica resta solo per le prove
   await pick('classico');

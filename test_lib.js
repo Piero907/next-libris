@@ -183,11 +183,8 @@ assert.deepStrictEqual([o[0].t, o[0].a, o[0].e, o[0].y, o[0].img], ['Foo', 'A B'
   console.log('ambiguous strong:', L.strongMatch(amb), amb.map(c => c.score.toFixed(2)));
   assert(!L.strongMatch(amb));
 
-  // prezzo
-  assert.strictEqual(L.extractPrice('Prezzo € 12,00 ISBN'), 12);
-  assert.strictEqual(L.extractPrice('euro 9.90'), 9.9);
-  assert.strictEqual(L.extractPrice('18,50 €'), 18.5);
-  assert.strictEqual(L.extractPrice('978 88 06'), null);
+  // prezzo: niente lettura dalle foto dal giro 7
+  assert(!L.extractPrice && !L.findPrice, 'lettura del prezzo tolta');
   // csv
   const csv = L.buildCSV([{ t: 'A;B', a: '"x"', e: '', y: '2000', c: 9.5, i: '' }]);
   assert(csv.startsWith('﻿Titolo;Autore'));

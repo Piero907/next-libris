@@ -7,6 +7,7 @@ const H = require('./_harness');
 // 3) «Prova adesso» della schermata 3: libreria di esempio con un libro aperto (stella, libricini, film già scritto), tocchi = avviso, nulla cambia;
 // 4) l'esempio non fa nessuna richiesta fuori e non salva niente: i tuoi libri restano quelli, uscendo tornano;
 // 5) schermata 6: i Desideri dell'esempio; schermata 2: si apre il +. Niente scorrimento di lato a 360.
+// Giro 7: nove schermate (Prestiti e Desideri separati) e pillola «‹ Torna alla guida» dopo «Prova adesso» sulle parti vere.
 // Giro 5: otto schermate («Trova più libri» con «Crea la chiave»), tocco ai lati per sfogliare; chi usa già l'app la vede una volta dopo l'aggiornamento.
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
@@ -37,7 +38,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await open(p), 'la guida si apre da sola alla prima apertura');
   const scr = await p.evaluate(() => window.NLGuida.screens());
   console.log('[schermate]', scr.map(s => s.h + (s.go ? ' (' + s.go + ')' : '')).join(' · '));
-  assert.strictEqual(scr.length, 8, 'otto schermate');
+  assert.strictEqual(scr.length, 9, 'nove schermate (giro 7: Prestiti e Desideri separati)');
   for (const s of scr) {
     if (s.sel) assert(await p.evaluate((q) => q.split(',').some(x => document.querySelector(x.trim())), s.sel), 'la parte di app di «' + s.h + '» esiste: ' + s.sel);
     if (s.mod) assert(await p.evaluate((m) => !!window[m], s.mod), 'modulo ' + s.mod);
@@ -45,7 +46,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await p.evaluate(() => !!(window.NLRicerche && window.NLRicerche.guide) && !!(window.NLAmici && window.NLAmici.open) && !!document.getElementById('sortBar')), 'guida della chiave, amici, Ordina · Raggruppa');
   // sfoglia: tasti e dito
   let seen = [];
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 9; i++) {
     const s = await slide(p); seen.push(s.h + ':' + s.tries.join('+'));
     const w = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     assert(w <= 0, 'niente scorrimento di lato: ' + s.h);
@@ -62,9 +63,9 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   // tocco a sinistra = indietro
   await p.evaluate(() => window.NLGuida.open(4)); await wait(100);
   await p.evaluate(() => { const g = document.querySelector('#gdStage .gd-slide'), ev = (t, x) => g.dispatchEvent(new PointerEvent(t, { clientX: x, clientY: 300, pointerType: 'touch', bubbles: true })); ev('pointerdown', 15); ev('pointerup', 15); }); await wait(100);
-  assert.strictEqual(await p.evaluate(() => document.getElementById('gdN').textContent), '4 di 8', 'tocco a sinistra = indietro');
+  assert.strictEqual(await p.evaluate(() => document.getElementById('gdN').textContent), '4 di 9', 'tocco a sinistra = indietro');
   await p.evaluate(() => window.NLGuida.close()); await wait(200);
-  assert(/^La pagina del libro:book/.test(seen[3]) && /^Prestiti e Desideri:wish/.test(seen[5]) && /^Per te:$/.test(seen[7]), 'Prova adesso al posto giusto');
+  assert(/^La pagina del libro:book/.test(seen[3]) && /^Prestiti:loan/.test(seen[5]) && /^Desideri:wish/.test(seen[6]) && /^Per te:$/.test(seen[8]), 'Prova adesso al posto giusto');
   assert(!(await open(p)), '«Inizia» chiude la guida');
   await p.reload({ waitUntil: 'load' }); await wait(1800);
   assert(!(await open(p)), 'vista una volta, non si riapre da sola');
@@ -74,6 +75,29 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   await p.evaluate(() => window.NLGuida.open(1)); await wait(300);
   await p.click('#gdStage .gd-try'); await wait(600);
   assert(await p.evaluate(() => !document.getElementById('layAdd').hidden), 'si apre il +');
+  // giro 7: pillola «‹ Torna alla guida · 2/9»; Indietro del telefono chiude il + e riapre la guida dalla stessa schermata
+  const pl = await p.evaluate(() => { const e = document.getElementById('gdPill'); return e && !e.hidden ? e.textContent : ''; });
+  assert(/Torna alla guida/.test(pl) && /2\/9/.test(pl), 'pillola: ' + pl);
+  const box = await p.evaluate(() => { const r = document.getElementById('gdPill').getBoundingClientRect(); return { r: r.right, b: r.bottom, w: innerWidth, h: innerHeight }; });
+  assert(box.r <= box.w && box.b <= box.h, 'pillola dentro lo schermo');
+  await p.goBack().catch(() => {}); await wait(600);
+  let g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, add: !document.getElementById('layAdd').hidden, pill: !document.getElementById('gdPill').hidden }));
+  assert(g.open && g.n === '2 di 9' && !g.add && !g.pill, 'Indietro torna alla guida: ' + JSON.stringify(g));
+  // di nuovo «Prova adesso», poi il tocco sulla pillola
+  await p.click('#gdStage .gd-try'); await wait(600);
+  await p.click('#gdPill .gd-pill-go'); await wait(600);
+  g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, add: !document.getElementById('layAdd').hidden }));
+  assert(g.open && g.n === '2 di 9' && !g.add, 'la pillola torna alla guida: ' + JSON.stringify(g));
+  // la ✕ della pillola: resta dove sei
+  await p.click('#gdStage .gd-try'); await wait(600);
+  await p.click('#gdPill .gd-pill-x'); await wait(500);
+  g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, pill: !document.getElementById('gdPill').hidden }));
+  assert(!g.open && !g.pill, '✕: la pillola sparisce e la guida resta chiusa');
+  // schermata Prestiti: l'esempio apre Pinocchio prestato a Marta
+  await p.evaluate(() => window.NLGuida.open(5)); await wait(200);
+  await p.click('#gdStage .gd-try'); await wait(1200);
+  assert.strictEqual(await p.evaluate(() => (document.querySelector('#list .row.open') || {}).dataset ? document.querySelector('#list .row.open').dataset.id : ''), 'ex4', 'Prestiti: Pinocchio aperto');
+  await p.evaluate(() => document.querySelector('#exBar [data-ex="out"]').click()); await wait(300);
   await p.close();
 
   // 2) chi usa già l'app (libri sul telefono, guida vecchia vista): la vede una volta dopo l'aggiornamento (giro 5); voci nel Menu

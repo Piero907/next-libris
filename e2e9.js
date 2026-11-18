@@ -149,7 +149,7 @@ let net = 'ok', sbnHits = 0;
   await page.evaluate(() => { window.__sh = null; navigator.share = async (d) => { window.__sh = d; }; });
   await click('#btnShareWish'); await wait(200); await click('#shareSend'); await wait(300);
   const sh = await page.evaluate(() => window.__sh); console.log('[6 condiviso]\n' + sh.text);
-  assert(sh.text.startsWith('Una lista dei desideri (2 libri):') && sh.text.includes('«La storia» di Elsa Morante (Einaudi, 2014)') && sh.text.includes('«La storia» di Elsa Morante (Einaudi, 2014) · 15,00 €') && sh.text.includes('Totale: 24,50 €') && /#l=[zj]/.test(sh.url));
+  assert(sh.text.startsWith('Una lista dei desideri (2 libri):') && sh.text.includes('«La storia» di Elsa Morante (Einaudi, 2014)') && !/€|Totale/.test(sh.text) && /#l=[zj]/.test(sh.url));
   await page.evaluate(() => { delete navigator.share; navigator.share = undefined; window.__clip = null; navigator.clipboard.writeText = async (t) => { window.__clip = t; }; });
   await click('#btnShareWish'); await wait(200); await click('#shareSend'); await wait(300);
   assert((await page.evaluate(() => window.__clip)).includes('Sostiene Pereira'));

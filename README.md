@@ -137,7 +137,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | e2e24.js | 8135 | tema predefinito, backup delle impostazioni, backup vecchi |
 | e2e25.js | 8136 | copertina: stessa edizione o altra edizione, «Non è questa» |
 | e2e26.js | 8139 | pulsanti della scheda aperta: prestato, venduto, non trovato, desideri |
-| e2e27.js | 8143 | lettura del prezzo dentro l'app: casi realistici, retri senza prezzo |
+| ~~e2e27.js~~ | — | tolta nel giro 7 (lettura del prezzo dalle foto non c'è più) |
 | e2e28.js | 8144 | preferiti, condivisione di un libro e di una lista, link ricevuto |
 | e2e29.js | 8145 | filtri e schede compatte; uscita dalla fotocamera |
 | e2e30.js | 8147 | schermata d'apertura nell'app installata |

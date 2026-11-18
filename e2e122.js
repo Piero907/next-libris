@@ -160,7 +160,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   await noSide(A, '#friSheet .sheet-in', 'Amici e privacy a 360'); await shot(A, 'profilo-privacy-360');
   await A.keyboard.press('Escape'); await wait(200);
   // dal Menu
-  assert(await A.$('#goProf'), '«Il tuo profilo» nel Menu');
+  assert(await A.$('#drawerOpts .dmain > #goProf:first-child'), '«Il mio profilo» in cima al Menu (giro 7)');
 
   // ---- 14 e 16) elenco degli amici: foto di Bruno, «Segui» ----
   await A.evaluate(() => window.NLAmici.open()); await wait(900);

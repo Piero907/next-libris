@@ -77,7 +77,7 @@ const BOOKS = [
   await tap(p, '#shareSend'); await wait(300);
   let sh = (await p.evaluate(() => window.__shared))[0];
   console.log('[2 messaggio]\n' + sh.text + '\n' + sh.url);
-  assert.strictEqual(sh.title, 'I preferiti di Piero'); assert(sh.text.startsWith('I preferiti di Piero (2 libri):')); assert(sh.text.includes('«Il nome della rosa» di Umberto Eco (Bompiani, 2012) · 14,00 €')); assert(sh.text.includes('Totale: 26,50 €'));
+  assert.strictEqual(sh.title, 'I preferiti di Piero'); assert(sh.text.startsWith('I preferiti di Piero (2 libri):')); assert(sh.text.includes('«Il nome della rosa» di Umberto Eco (Bompiani, 2012)')); assert(!/€|Totale/.test(sh.text), 'giro 7: niente prezzi nelle condivisioni');
   assert(sh.url.startsWith(APPU + '#l=z') && /#l=z[\w-]+$/.test(sh.url));
   assert(!/segreta|Marco|Studio/.test(sh.text));
   assert.strictEqual((await set(p)).name, 'Piero'); assert(await hid(p, '#shareSheet'));
@@ -92,7 +92,7 @@ const BOOKS = [
   await tap(p, '#shareCopy'); await wait(300);
   const copied = (await p.evaluate(() => window.__copied))[0];
   console.log('[3 copiato]\n' + copied);
-  assert(copied.startsWith('Piero ti consiglia un libro:\n«Il nome della rosa» di Umberto Eco (Bompiani, 2012) · 14,00 €\nGialli · 624 pagine\nISBN 9788845292613')); assert(copied.includes('Aprilo in Next Libris'));
+  assert(copied.startsWith('Piero ti consiglia un libro:\n«Il nome della rosa» di Umberto Eco (Bompiani, 2012)\nGialli · 624 pagine\nISBN 9788845292613')); assert(copied.includes('Aprilo in Next Libris'));
   const bookLink = copied.match(/#(l=[\w-]+)$/)[1];
 
   // 4) lista per genere: nome della lista proposto e modificabile
@@ -132,7 +132,7 @@ const BOOKS = [
   console.log('[5 importato]', JSON.stringify({ w: nb.w, fr: nb.fr, fl: nb.fl, i: nb.i, e: nb.e, y: nb.y, fav: nb.fav, rs: nb.rs }), '|', await toast(p));
   assert.strictEqual(bs.length, 2); assert.deepStrictEqual([nb.w, nb.fr, nb.fl, nb.i, nb.e, nb.y, nb.fav], [true, 'Piero', 'Preferiti', '9788804668015', 'Mondadori', '2016', false]);
   console.log('[5 dati in più]', nb.c, nb.gen, nb.pg, nb.img === nb.imgL, nb.img);
-  assert.deepStrictEqual([nb.c, nb.gen, nb.pg, nb.imgL, nb.n, nb.sh, nb.rt], [12.5, 'Narrativa', '240', 'https://covers.openlibrary.org/b/isbn/9788804668015-L.jpg?default=false', '', '', 0]);
+  assert.deepStrictEqual([nb.c, nb.gen, nb.pg, nb.imgL, nb.n, nb.sh, nb.rt], [null, 'Narrativa', '240', 'https://covers.openlibrary.org/b/isbn/9788804668015-L.jpg?default=false', '', '', 0]);   // giro 7: il prezzo non viaggia nei link
   assert.strictEqual(await toast(p), '1 libro aggiunto ai Desideri.');
   assert((await txt(p, '#list .row[data-id="' + nb.id + '"] .sum-tags')).includes('Da Piero'));
   assert((await txt(p, '#activeFlt')).includes('Ricevuti da Piero'));
