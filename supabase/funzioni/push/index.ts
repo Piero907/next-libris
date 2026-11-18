@@ -43,6 +43,10 @@ function testo(x: N): string {
       const n = Number(x.rif) || 1;
       return chi + (n === 1 ? " ha un nuovo desiderio: " : " ha " + n + " nuovi desideri: ") + (x.titolo || "") + (n > 3 ? " e altri" : "");
     }
+    case "trovato": {   // un tuo desiderio è entrato nella libreria di un amico (giro 6): rif = quanti:id del suo libro, titolo = i primi tre titoli già tra «»
+      const n = Number(String(x.rif).split(":")[0]) || 1;
+      return "📚 " + chi + " ha aggiunto " + (x.titolo || "un libro") + (n > 3 ? " e altri" : "") + (n === 1 ? ", che è nei tuoi Desideri" : ", che sono nei tuoi Desideri");
+    }
     default: return "Hai una novità in Next Libris";
   }
 }

@@ -41,7 +41,7 @@ const books = [
   console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani · 2012 · 624 pagine/.test(d.page) && d.headHidden);
   // in alto solo preferito, condividi, elimina; sotto, con la scritta: presta, desideri, cerca sul web
   const acts = await page.evaluate(s => { const e = document.querySelector(s); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act + ':' + (getComputedStyle(x.querySelector('.al')).display !== 'none')) }; }, card());
-  console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['fav', 'towish', 'share', 'del']); assert.deepStrictEqual(acts.low, ['loan:true', 'websearch:true']);
+  console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['fav', 'lc', 'towish', 'share', 'del']);   // dal giro 6 la coccarda «Lo consiglio» dopo la stella assert.deepStrictEqual(acts.low, ['loan:true', 'websearch:true']);
   const lay = await page.evaluate(s => { const e = document.querySelector(s), t = [...e.querySelectorAll('.acts-main [data-act]')].map(x => Math.round(x.getBoundingClientRect().top)), low = e.querySelector('.cv-acts2'); return { oneRow: new Set(t).size === 1, last: e.lastElementChild === low }; }, card());
   assert(lay.oneRow && lay.last, 'icone su una riga, Presta e Cerca sul web in fondo');
   // descrizione subito sotto i dati, senza riquadro; etichette in fondo, prima di Presta e Cerca sul web

@@ -116,7 +116,8 @@ const base = 'http://localhost:' + CFG.port(8303);
   const A = await phone('A', 'uA');
   await A.add({ t: 'Il deserto dei Tartari', a: 'Dino Buzzati', i: '9788804668015' });
   await A.click('#btnFri'); await wait(700);
-  await A.click('[data-f="friend"]'); await wait(1200);
+  await A.click('[data-f="friend"]'); await wait(900);                  // dal giro 6 il nome apre il profilo: da lì «Libreria»
+  if (await A.$('#profBody [data-p="lib"]')) { await A.click('#profBody [data-p="lib"]'); await wait(1200); }
   assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Bruno', 'libreria di Bruno aperta');
   let t = await A.$eval('#guestBar', x => x.innerText.replace(/\s+/g, ' ')); console.log('[barra di Bruno]', t);
   assert(/0 amici in comune · 1 libro in comune/.test(t) && /Letti di recente «Il deserto dei Tartari» Capolavoro/.test(t), 'barra in cima');

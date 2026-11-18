@@ -33,7 +33,7 @@ const server = H.serve(CFG.port(8139), ROOT);
     }, id);
   }
   let c = await card('b1'); console.log('[libro]', JSON.stringify(c));
-  assert.deepStrictEqual(c.main, ['Presta, vendi o regala|Presta, vendi o regala il libro', 'Desideri|Sposta nei Desideri', 'Preferito|Metti tra i preferiti', 'Cerca sul web|Cerca questo libro su Google: prezzo, recensioni, dove comprarlo', 'Elimina|Elimina il libro']);
+  assert.deepStrictEqual(c.main, ['Presta, vendi o regala|Presta, vendi o regala il libro', 'Desideri|Sposta nei Desideri', 'Preferito|Metti tra i preferiti', 'Lo consiglio|Lo consiglio: gli amici lo vedono nel tuo profilo', 'Cerca sul web|Cerca questo libro su Google: prezzo, recensioni, dove comprarlo', 'Elimina|Elimina il libro']);
   assert.deepStrictEqual(c.win, ['toggle:icona']);
   // «Elimina» lontano dalla freccetta: almeno 60 px tra i due
   const gap = await p.evaluate(() => { const r = document.querySelector('#list .row[data-id="b1"]'), d = r.querySelector('[data-act="del"]').getBoundingClientRect(), t = r.querySelector('[data-act="toggle"]').getBoundingClientRect(); return Math.hypot((t.left + t.right) / 2 - (d.left + d.right) / 2, (t.top + t.bottom) / 2 - (d.top + d.bottom) / 2); });

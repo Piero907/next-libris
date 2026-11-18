@@ -157,8 +157,10 @@ const base = 'http://localhost:' + CFG.port(8310);
     await A.click$('#friBody [data-f="ask"][data-u="Dario"]'); await wait(700);
     assert(DB.am.some(x => x.da === 'uA' && x.a === 'uD' && x.stato === 'attesa'), 'richiesta a Dario');
     assert(/Dario Richiesta inviata/.test(await A.txt('#friBody')), 'Dario: richiesta inviata');
-    // ---- toccando Carla si passa alla sua libreria ----
-    await A.click$('#friBody [data-f="friend"][data-id="uC"]'); await wait(1000);
+    // ---- toccando Carla si apre il suo profilo (giro 6) e da lì la sua libreria ----
+    await A.click$('#friBody [data-f="friend"][data-id="uC"]'); await wait(900);
+    assert.strictEqual(await A.evaluate(() => document.getElementById('profH').textContent), 'Profilo di Carla Maria Benedetti');
+    await A.click$('#profBody [data-p="lib"]'); await wait(1000);
     assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Carla Maria Benedetti');
     assert(await A.evaluate(() => document.getElementById('friSheet').hidden));
     // ---- l'icona apre i tuoi Amici ----
