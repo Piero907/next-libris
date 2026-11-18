@@ -34,7 +34,7 @@ const assert = require('assert');
   await page.screenshot({ path: CFG.OUT + '/s_menu_opts.png' });
   // 2) voce -> pagina; «‹» torna al menu; Indietro torna al menu (17/11/2026), poi Indietro lo chiude
   await page.click('#drawerOpts [data-sec="search"]'); await wait(350);
-  assert(!(await drawerOpen())); assert(await vis('#optSheet')); assert(await vis('#gbKey')); assert(!(await vis('#optPrice')));
+  assert(!(await drawerOpen())); assert(await vis('#optSheet')); assert(await vis('#svcKey')); assert(!(await vis('#optPrice')));
   console.log('[2 titolo]', await page.$eval('#optH', e => e.textContent), '|', await page.$eval('#gbCount', e => e.textContent));
   await page.screenshot({ path: CFG.OUT + '/s_opt_search.png' });
   await page.click('#optBack'); await wait(350);

@@ -53,7 +53,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     const shot = (n) => P.screenshot({ path: path.join(OUT, tag + '-' + n + '.png') });
     // ---- la chiave di Anna si usa ma non si vede ----
     assert.strictEqual(await P.evaluate(() => window.NL.settings.gbKey), 'AIzaDiAnna0000000000', 'in uso per cercare');
-    await P.evaluate(() => window.NL.openOptions('search')); await wait(500);
+    await P.evaluate(() => { window.NL.openOptions('search'); window.NL.svcFold('key', true); window.NL.svcFold('sbn', true); }); await wait(500);   // sezioni richiudibili (giro 5)
     const sr = await P.evaluate(() => ({
       gb: document.getElementById('gbKey').value, sbn: document.getElementById('sbnUrl').value,
       rowGb: document.querySelector('#svcKey .svc-row').hidden, rowSbn: document.querySelector('#svcSbn .svc-row').hidden,
@@ -64,7 +64,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     assert(/Usi la chiave Google di Anna: non si vede e non si può prestare/.test(sr.txt) && /Usi il worker SBN di Anna/.test(sr.txt), 'al posto del campo');
     assert(!/AIzaDiAnna|sbn-anna/.test(sr.txt), 'nessuna traccia della chiave o del worker');
     assert(/AIzaMi/.test(sr.saved) && !/AIzaDi/.test(sr.saved), 'tra le salvate solo la mia: ' + sr.saved);
-    assert.strictEqual(sr.st, 'Prestata'); assert(sr.clear, 'niente «Cancella»');
+    assert.strictEqual(sr.st, 'Prestata da Anna'); assert(sr.clear, 'niente «Cancella»');
     assert(await side(P), 'niente scorrimento di lato (ricerca)');
     await shot('1-ricerca');
     const saved = await P.evaluate(() => localStorage.getItem('prova:catalogo-libri-saved'));
@@ -86,7 +86,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     assert(!(await P.$('#setList [data-sec="share"]')) && !(await P.$('#setList [data-sec="app"]')), 'tolte da Impostazioni');
     await P.click('#goInfo'); await wait(400);
     const items = await P.$$eval('#infoList .dopt b', xs => xs.map(x => x.textContent));
-    assert.deepStrictEqual(items, ['Condivisione', 'Installazione sul telefono', 'Privacy', 'Contatti']);
+    assert.deepStrictEqual(items, ['Come si usa', 'Guarda una libreria di esempio', 'Condivisione', 'Installazione sul telefono', 'Privacy', 'Contatti']);
     assert.strictEqual(await P.$eval('#goPrivacy', x => x.dataset.sec), 'privacy');   // dal 17/11/2026 pomeriggio: finestra dentro l'app (e2e115)
     assert(await side(P), 'niente scorrimento di lato (menu)');
     await P.evaluate(() => { const l = document.getElementById('infoList'); l.scrollIntoView({ block: 'end' }); }); await wait(200);

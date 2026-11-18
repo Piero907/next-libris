@@ -117,7 +117,7 @@ let net = 'ok', sbnHits = 0;
   await click('#activeFlt [data-clear="aut"]'); await wait(100);
 
   // ---- 5) catalogo SBN: indirizzo nelle opzioni, editore/anno/pagine/genere da SBN
-  await page.evaluate(() => { window.__app.openOptions(); });
+  await page.evaluate(() => { window.__app.openOptions(); window.NL.svcFold('sbn', true); });   // sezione richiudibile (giro 5)
   await page.type('#sbnUrl', 'http://sbagliato'); await page.evaluate(() => document.querySelector('#sbnUrl').dispatchEvent(new Event('change'))); await wait(100);
   assert((await page.$eval('#toastTxt', e => e.textContent)).includes('https://'));
   await page.evaluate(() => { const i = document.querySelector('#sbnUrl'); i.value = 'https://sbn.test.workers.dev/'; i.dispatchEvent(new Event('change')); }); await wait(100);

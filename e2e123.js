@@ -6,7 +6,8 @@ const H = require('./_harness');
 // 2) chi aggiorna (libri o impostazioni già sul telefono) non la vede da sola; Menu › Info e aiuto › Come si usa e «Guarda una libreria di esempio»;
 // 3) «Prova adesso» della schermata 3: libreria di esempio con un libro aperto (stella, libricini, film già scritto), tocchi = avviso, nulla cambia;
 // 4) l'esempio non fa nessuna richiesta fuori e non salva niente: i tuoi libri restano quelli, uscendo tornano;
-// 5) schermata 5: i Desideri dell'esempio; schermata 2: si apre il +. Niente scorrimento di lato a 360.
+// 5) schermata 6: i Desideri dell'esempio; schermata 2: si apre il +. Niente scorrimento di lato a 360.
+// Giro 5: otto schermate («Trova più libri» con «Crea la chiave»), tocco ai lati per sfogliare; chi usa già l'app la vede una volta dopo l'aggiornamento.
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
 const server = H.serve(CFG.port(8323), CFG.APP);
@@ -36,7 +37,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await open(p), 'la guida si apre da sola alla prima apertura');
   const scr = await p.evaluate(() => window.NLGuida.screens());
   console.log('[schermate]', scr.map(s => s.h + (s.go ? ' (' + s.go + ')' : '')).join(' · '));
-  assert.strictEqual(scr.length, 7, 'sette schermate');
+  assert.strictEqual(scr.length, 8, 'otto schermate');
   for (const s of scr) {
     if (s.sel) assert(await p.evaluate((q) => q.split(',').some(x => document.querySelector(x.trim())), s.sel), 'la parte di app di «' + s.h + '» esiste: ' + s.sel);
     if (s.mod) assert(await p.evaluate((m) => !!window[m], s.mod), 'modulo ' + s.mod);
@@ -44,17 +45,26 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await p.evaluate(() => !!(window.NLRicerche && window.NLRicerche.guide) && !!(window.NLAmici && window.NLAmici.open) && !!document.getElementById('sortBar')), 'guida della chiave, amici, Ordina · Raggruppa');
   // sfoglia: tasti e dito
   let seen = [];
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 8; i++) {
     const s = await slide(p); seen.push(s.h + ':' + s.tries.join('+'));
     const w = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     assert(w <= 0, 'niente scorrimento di lato: ' + s.h);
     if (i === 1) { await p.evaluate(() => { const g = document.getElementById('guida'), ev = (t, x) => g.dispatchEvent(new PointerEvent(t, { clientX: x, clientY: 400, pointerType: 'touch', bubbles: true })); ev('pointerdown', 300); ev('pointerup', 120); }); }
+    else if (i === 3) { await p.evaluate(() => { const g = document.querySelector('#gdStage .gd-slide'), ev = (t, x) => g.dispatchEvent(new PointerEvent(t, { clientX: x, clientY: 300, pointerType: 'touch', bubbles: true })); ev('pointerdown', 345); ev('pointerup', 345); }); }   // tocco a destra = avanti
     else await p.click('.gd-next');
     await wait(200);
   }
   console.log('[sfogliate]', seen.join(' | '));
-  assert.strictEqual(seen[1], 'Aggiungi i libri:key+add', 'schermata 2 con + e chiave');
-  assert(/^La pagina del libro:book/.test(seen[2]) && /^Prestiti e Desideri:wish/.test(seen[4]) && /^Per te:$/.test(seen[6]), 'Prova adesso al posto giusto');
+  assert.strictEqual(seen[1], 'Aggiungi i libri:add', 'schermata 2 con il +');
+  assert.strictEqual(seen[2], 'Trova più libri (facoltativo):key', 'schermata 3: chiave e worker');
+  assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(2); return document.querySelector('#gdStage .gd-try').textContent; }), 'Crea la chiave');
+  await p.evaluate(() => window.NLGuida.close()); await wait(200);
+  // tocco a sinistra = indietro
+  await p.evaluate(() => window.NLGuida.open(4)); await wait(100);
+  await p.evaluate(() => { const g = document.querySelector('#gdStage .gd-slide'), ev = (t, x) => g.dispatchEvent(new PointerEvent(t, { clientX: x, clientY: 300, pointerType: 'touch', bubbles: true })); ev('pointerdown', 15); ev('pointerup', 15); }); await wait(100);
+  assert.strictEqual(await p.evaluate(() => document.getElementById('gdN').textContent), '4 di 8', 'tocco a sinistra = indietro');
+  await p.evaluate(() => window.NLGuida.close()); await wait(200);
+  assert(/^La pagina del libro:book/.test(seen[3]) && /^Prestiti e Desideri:wish/.test(seen[5]) && /^Per te:$/.test(seen[7]), 'Prova adesso al posto giusto');
   assert(!(await open(p)), '«Inizia» chiude la guida');
   await p.reload({ waitUntil: 'load' }); await wait(1800);
   assert(!(await open(p)), 'vista una volta, non si riapre da sola');
@@ -66,9 +76,13 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await p.evaluate(() => !document.getElementById('layAdd').hidden), 'si apre il +');
   await p.close();
 
-  // 2) chi aggiorna: libri già sul telefono, la guida non si apre; voci nel Menu
+  // 2) chi usa già l'app (libri sul telefono, guida vecchia vista): la vede una volta dopo l'aggiornamento (giro 5); voci nel Menu
   p = await newPage(MIEI);
-  assert(!(await open(p)), 'chi aggiorna non vede la guida da sola');
+  assert(await open(p), 'chi usa già l\'app vede la guida nuova una volta');
+  await p.click('.gd-skip'); await wait(300);
+  assert.strictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-guida')).v), 2, 'segnata la versione 2');
+  await p.reload({ waitUntil: 'load' }); await wait(1800);
+  assert(!(await open(p)), 'non torna da sola');
   assert(await p.evaluate(() => !!document.getElementById('goGuida') && !!document.getElementById('goEsempio') && /Guida/.test(document.querySelector('#goInfo small').textContent)), 'Come si usa e Libreria di esempio nel Menu');
   await p.evaluate(() => { window.NL.openMenu(); }); await wait(400);
   await p.evaluate(() => document.getElementById('goInfo').click()); await wait(200);
@@ -76,8 +90,8 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await open(p), 'dal Menu si apre la guida');
   const before = await p.evaluate(() => localStorage.getItem('catalogo-libri-v2'));
 
-  // 3) schermata 3: libreria di esempio con il libro aperto
-  await p.evaluate(() => window.NLGuida.open(2)); await wait(200);
+  // 3) schermata 4: libreria di esempio con il libro aperto
+  await p.evaluate(() => window.NLGuida.open(3)); await wait(200);
   p.fuori.length = 0;
   await p.click('#gdStage .gd-try'); await wait(1500);
   const ex = await p.evaluate(() => {
@@ -89,7 +103,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   });
   console.log('[esempio]', JSON.stringify(ex));
   assert(/esempio/.test(ex.cls) && !/\bguest\b/.test(ex.cls) && ex.bar && !ex.friendBar && /Libreria di esempio/.test(ex.owner), 'striscia dell\'esempio');
-  assert(ex.n >= 10 && ex.open === 'ex7' && ex.fav && ex.stars === 5 && /Serie TV/.test(ex.film), 'libro aperto con stella, libricini e film');
+  assert(ex.n >= 10 && ex.open === 'ex7' && ex.fav && ex.stars === 5 && /serie TV/.test(ex.film) && /Dal libro/.test(ex.film), 'libro aperto con stella, libricini e film');
   // i tocchi: avviso, niente cambia
   await p.evaluate(() => document.querySelector('#list .row.open [data-act="rt"][data-v="2"]').click()); await wait(300);
   const t1 = await p.evaluate(() => ({ toast: document.body.innerText.includes('È solo un esempio'), rt: window.NL.get('ex7').rt }));

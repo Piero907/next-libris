@@ -97,7 +97,7 @@ if (CB && CB._createPageInContext) {
     const p = await orig.apply(this, arguments);
     try { await p.evaluateOnNewDocument(tracker); created.add(p); } catch (e) {}
     // guida di primo avvio (giro 4): nelle prove non si apre da sola, tranne con ?guida=1 nell'indirizzo (e2e123)
-    try { await p.evaluateOnNewDocument(() => { try { if (!/[?&]guida=1/.test(location.search)) ['catalogo-libri-guida', 'prova:catalogo-libri-guida'].forEach(k => { if (!localStorage.getItem(k)) localStorage.setItem(k, '{"seen":1}'); }); } catch (e) {} }); } catch (e) {}
+    try { await p.evaluateOnNewDocument(() => { try { if (!/[?&]guida=1/.test(location.search)) ['catalogo-libri-guida', 'prova:catalogo-libri-guida'].forEach(k => { if (!localStorage.getItem(k)) localStorage.setItem(k, '{"seen":1,"v":99}'); }); } catch (e) {} }); } catch (e) {}
     p.on('console', m => { const t = m.text(); if (/Content Security Policy/i.test(t)) csp.push(t.slice(0, 300)); });
     return p;
   };

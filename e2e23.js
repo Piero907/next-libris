@@ -38,7 +38,9 @@ const W1 = 'https://sbn-libri.piero.workers.dev', K1 = 'AIzaSyA1b2C3d4E5f6G7h8I9
 
   // 1) worker e chiave già impostati: visibili nei campi, «In uso», contatori a zero, già tra i salvati
   await page.evaluate(() => window.__app.openOptions('search')); await wait(200);
-  assert.strictEqual(await val('#sbnUrl'), W1); assert.strictEqual(await val('#gbKey'), K1);
+  await page.evaluate(() => { window.NL.svcFold('key', true); window.NL.svcFold('sbn', true); }); await wait(100);   // sezioni richiudibili (giro 5)
+  const KM = K1.slice(0, 4) + '…' + K1.slice(-3);   // chiave coperta nel campo (giro 5)
+  assert.strictEqual(await val('#sbnUrl'), W1); assert.strictEqual(await val('#gbKey'), KM);
   console.log('[1 SBN]', await txt('#svcSbn .svc-h'), '|', await txt('#sbnCount'));
   console.log('[1 Google]', await txt('#svcKey .svc-h'), '|', await txt('#gbCount'));
   assert.strictEqual(await txt('#sbnSt'), 'In uso'); assert.strictEqual(await txt('#gbSt'), 'In uso');
@@ -80,7 +82,7 @@ const W1 = 'https://sbn-libri.piero.workers.dev', K1 = 'AIzaSyA1b2C3d4E5f6G7h8I9
   await tap('#svcRestore'); await wait(100);
   console.log('[3 rimessi]', await txt('#toastTxt'));
   st = await set(); assert.strictEqual(st.sbnUrl, W1); assert.strictEqual(st.gbKey, K1);
-  assert.strictEqual(await val('#sbnUrl'), W1); assert.strictEqual(await val('#gbKey'), K1);
+  assert.strictEqual(await val('#sbnUrl'), W1); assert.strictEqual(await val('#gbKey'), KM);
   assert(await hidden('#svcRestore'));
   // Annulla del ripristino
   await page.click('.toast button'); await wait(100);

@@ -119,9 +119,10 @@ const WORKS = {
 
   // 12) Raggruppa per Paese: copertine con la bandiera, un solo paese per autore
   await p.evaluate(() => { const s = document.querySelector('#grp'); s.value = 'pae'; s.dispatchEvent(new Event('change', { bubbles: true })); }); await wait(400);
-  let g = await p.evaluate(() => [...document.querySelectorAll('#list .gcard')].map(c => c.querySelector('.cap').textContent + '|' + c.querySelector('.gc-n').textContent + '|' + ((c.querySelector('.gc-flag') || {}).textContent || '?')));
+  let g = await p.evaluate(() => [...document.querySelectorAll('#list .gcard')].map(c => c.querySelector('.cap').textContent + '|' + c.querySelector('.gc-n').textContent + '|' + ((c.querySelector('.gc-flag img.flag') || {}).getAttribute ? c.querySelector('.gc-flag img.flag').getAttribute('src').replace('vendor/flags/', '') : '?')));
   console.log('[gruppi]', g.join(' · '));
-  assert.deepStrictEqual(g, ['Francia|1|🇫🇷', 'Italia|3|🇮🇹', 'Russia|1|🇷🇺', 'Stati Uniti|1|🇺🇸', 'Paese non trovato|1|?']);
+  assert.deepStrictEqual(g, ['Francia|1|fr.webp', 'Italia|3|it.webp', 'Russia|1|ru.webp', 'Stati Uniti|1|us.webp', 'Paese non trovato|1|?']);   // bandiere come immagini dell'app (giro 5)
+  assert(await p.evaluate(() => [...document.querySelectorAll('#list .gc-flag img.flag')].every(i => i.complete && i.naturalWidth > 0)), 'le bandiere si caricano');
   assert.strictEqual(await p.$eval('#sortBar', e => /Raggruppa: Paese/.test(e.textContent)), true, 'la riga dice «Raggruppa: Paese»');
   await noOverflow('#list', 'gruppi per paese');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'paesi-gruppi-412.png') });
@@ -135,12 +136,12 @@ const WORKS = {
   await p.evaluate(() => { openDrawer(); }); await wait(500);
   let pills = await p.$$eval('#drawerFlt [data-g="pa"]', a => a.map(x => x.textContent));
   console.log('[filtri]', pills.join(' · '));
-  assert.deepStrictEqual(pills, ['🇮🇹 Italia3', '🇫🇷 Francia1', '🇷🇺 Russia1', '🇺🇸 Stati Uniti1', 'Non trovato1']);
+  assert.deepStrictEqual(pills, ['Italia3', 'Francia1', 'Russia1', 'Stati Uniti1', 'Non trovato1']);
   if (SHOTS) { await p.$eval('#drawerFlt [data-g="pa"]', e => e.scrollIntoView({ block: 'center' })); await wait(200); await p.screenshot({ path: path.join(SHOTS, 'paesi-filtri-412.png') }); }
   await p.$eval('#drawerFlt [data-g="pa"][data-v="IT"]', e => e.click()); await wait(300);
   await p.evaluate(() => { closeDrawer(); }); await wait(500);
   assert.strictEqual(await p.$$eval('#list .cover', a => a.length), 3, 'filtro Italia: 3 libri');
-  assert.strictEqual(await p.$eval('#activeFlt', e => e.textContent.replace('×', '').trim()), 'Paese: 🇮🇹 Italia');
+  assert.strictEqual(await p.$eval('#activeFlt', e => e.textContent.replace('×', '').trim()), 'Paese: Italia');
   await p.click('#activeFlt [data-clear="pa"]'); await wait(300);
   assert.strictEqual(await p.$$eval('#list .cover', a => a.length), 7, 'tolto il filtro tornano tutti');
 
@@ -148,7 +149,7 @@ const WORKS = {
   await p.evaluate(() => { openStats(); }); await wait(500);
   const st = await p.$eval('#stPaesi', e => ({ bars: [...e.querySelectorAll('.bar-row')].map(b => b.querySelector('.bl').textContent + '=' + b.querySelector('.bv').textContent), note: e.querySelector('.st-pa-note').textContent }));
   console.log('[statistiche]', st.bars.join(' · '), '|', st.note);
-  assert.deepStrictEqual(st.bars, ['🇮🇹 Italia=3', '🇫🇷 Francia=1', '🇷🇺 Russia=1', '🇺🇸 Stati Uniti=1']);
+  assert.deepStrictEqual(st.bars, ['Italia=3', 'Francia=1', 'Russia=1', 'Stati Uniti=1']);
   assert(/italiani: 3 libri · stranieri: 3 libri · paese non trovato: 1 libro/.test(st.note), 'italiani e stranieri');
   if (SHOTS) { await p.$eval('#stPaesi', e => e.scrollIntoView({ block: 'center' })); await wait(200); await p.screenshot({ path: path.join(SHOTS, 'paesi-statistiche-412.png') }); }
   await p.$eval('#stPaesi .bar-row[data-sv="RU"]', e => e.click()); await wait(500);
@@ -160,7 +161,7 @@ const WORKS = {
   await p.evaluate(() => { openAuthor('c1', 'Italo Calvino'); }); await wait(700);
   let pa = await p.$eval('#auPa', e => e.hidden ? '' : e.textContent.replace(/\s+/g, ' ').trim());
   console.log('[autore]', pa);
-  assert.strictEqual(pa, 'Paese: 🇮🇹 Italia (nascita: 🇨🇺 Cuba) Correggi');
+  assert.strictEqual(pa, 'Paese: Italia (nascita: Cuba) Correggi');
   assert.strictEqual(await p.$eval('#auWorks', e => e.hidden), false, '«Le sue opere» c\'è');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'autore-paese-412.png') });
   await p.click('#auPa [data-aup="open"]'); await wait(300);
@@ -170,14 +171,14 @@ const WORKS = {
   await noOverflow('#auSheet .sheet-in', 'finestra dell\'autore');
   await p.click('#auPaList [data-aup="CU"]'); await wait(300);
   pa = await p.$eval('#auPa', e => e.textContent.replace(/\s+/g, ' ').trim());
-  assert.strictEqual(pa, 'Paese: 🇨🇺 Cuba (corretto) Correggi', 'corretto a mano: niente nascita ripetuta');
+  assert.strictEqual(pa, 'Paese: Cuba (corretto) Correggi', 'corretto a mano: niente nascita ripetuta');
   assert.strictEqual(await p.evaluate(() => wdBookCountry(get('c1'))), 'CU');
   assert.strictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).auPa['italo calvino']), 'CU', 'la correzione è salvata');
   await p.click('#auPa [data-aup="open"]'); await wait(200); await p.click('#auPa [data-aup="auto"]'); await wait(300);
   assert.strictEqual(await p.evaluate(() => wdBookCountry(get('c1'))), 'IT', 'tolta la correzione torna Wikipedia');
   await p.evaluate(() => { closeAuthor(); }); await hideAll();
   await p.evaluate(() => { openAuthor('n1', 'Vladimir Nabokov'); }); await wait(600);
-  assert.strictEqual(await p.$eval('#auPa', e => e.textContent.replace(/\s+/g, ' ').trim()), 'Paese: 🇺🇸 Stati Uniti (nascita: 🇷🇺 Russia) Correggi');
+  assert.strictEqual(await p.$eval('#auPa', e => e.textContent.replace(/\s+/g, ' ').trim()), 'Paese: Stati Uniti (nascita: Russia) Correggi');
   await p.evaluate(() => { closeAuthor(); });
   await p.evaluate(() => { openAuthor('z1', 'Tizio Sconosciuto'); }); await wait(600);
   assert.strictEqual(await p.$eval('#auPa', e => e.textContent.replace(/\s+/g, ' ').trim()), 'Paese: non trovato Scegli', 'senza voce: si può scegliere a mano');
@@ -189,7 +190,7 @@ const WORKS = {
   const fb = await p.$eval('#list .filmbox[data-film="r1"]', e => ({ hidden: e.hidden, txt: e.textContent.replace(/\s+/g, ' ').trim(), a: [...e.querySelectorAll('a')].map(x => x.getAttribute('href')), vis: e.getBoundingClientRect().height > 0 }));
   console.log('[film]', fb.txt);
   assert.strictEqual(fb.hidden, false); assert(fb.vis, 'la riga dei film si vede nella scheda');
-  assert.strictEqual(fb.txt, 'Al cinema: Il nome della rosa (1986, Jean-Jacques Annaud) · Il nome della rosa a cartoni (1999)Serie TV: Il nome della rosa (2019, Giacomo Battiato)');
+  assert.strictEqual(fb.txt, 'Dal libro🎬Il nome della rosa — film, 1986 · regia di J.-J. Annaud›🎬Il nome della rosa a cartoni — film, 1999📺Il nome della rosa — serie TV, 2019 · regia di G. Battiato');   // sezione «Dal libro» (giro 5)
   assert.deepStrictEqual(fb.a, ['https://it.wikipedia.org/wiki/Il_nome_della_rosa_(film)'], 'link solo alla voce italiana');
   await noOverflow('#list', 'scheda con i film');
   if (SHOTS) { await p.$eval('#list .filmbox[data-film="r1"]', e => e.scrollIntoView({ block: 'center' })); await wait(200); await p.screenshot({ path: path.join(SHOTS, 'film-scheda-412.png') }); }

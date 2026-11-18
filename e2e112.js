@@ -84,7 +84,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   console.log('[2 menu]', mn.items.join(' | '), '· Sostieni a', Math.round(mn.don * 100) + '%');
   assert.deepStrictEqual(mn.items, ['Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', 'Il tuo profilo', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
     'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
-    'Info e aiuto', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);
+    'Info e aiuto', '  Come si usa', '  Guarda una libreria di esempio', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);   // voci della guida (giro 4)
   assert.deepStrictEqual(mn.bad, [], 'sottotitoli su una riga');
   assert(mn.don > 0.15 && mn.don < 0.6, 'Sostieni prima di Amici, nella parte alta-centrale');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-412.png') });
@@ -147,16 +147,16 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
       localStorage.setItem('prova:catalogo-libri-amici-chiavi-mie', JSON.stringify({ gb: 'AIzaMiaChiave0000000', sbn: '' }));
       localStorage.setItem('prova:catalogo-libri-amici-chiave-in-uso', JSON.stringify({ da: 'uA', nome: 'Anna', gb: 'AIzaDiAnna0000000000', sbn: 'https://sbn-anna.workers.dev' }));
       window.NL.settings.gbKey = 'AIzaDiAnna0000000000'; window.NL.settings.sbnUrl = 'https://sbn-anna.workers.dev'; window.NL.saveSettings();
-      window.NL.openOptions('search');
+      window.NL.openOptions('search'); window.NL.svcFold('key', true); window.NL.svcFold('sbn', true);   // sezioni richiudibili (giro 5)
     }); await wait(500);
     const lab = () => q.$$eval('.svc-own', xs => xs.filter(x => x.offsetParent).map(x => x.dataset.own + ':' + x.textContent));
     let l = await lab(); console.log('[5 prestate]', l.join(' | '));
-    assert.deepStrictEqual(l, ['sbn:Inserisci il tuo worker', 'gb:Usa la tua chiave (AIzaMi…0000)']);
+    assert.deepStrictEqual(l, ['gb:Usa la tua chiave (AIzaMi…0000)', 'sbn:Inserisci il tuo worker']);   // Google sopra il worker (giro 5)
     if (SHOTS) await q.screenshot({ path: path.join(SHOTS, 'ricerca-prestate-412.png') });
     await q.click('.svc-own[data-own="gb"]'); await wait(400);
     let v = await q.evaluate(() => ({ gb: window.NL.settings.gbKey, sbn: window.NL.settings.sbnUrl, field: document.getElementById('gbKey').value, row: document.querySelector('#svcKey .svc-row').hidden, uso: localStorage.getItem('prova:catalogo-libri-amici-chiave-in-uso') }));
     console.log('[5 la mia chiave]', JSON.stringify(v));
-    assert(v.gb === 'AIzaMiaChiave0000000' && v.field === 'AIzaMiaChiave0000000' && !v.row && v.sbn === 'https://sbn-anna.workers.dev' && /"nogb":true/.test(v.uso), 'chiave mia, worker ancora di Anna');
+    assert(v.gb === 'AIzaMiaChiave0000000' && v.field === 'AIza…000' && !v.row && v.sbn === 'https://sbn-anna.workers.dev' && /"nogb":true/.test(v.uso), 'chiave mia, worker ancora di Anna');
     l = await lab(); assert.deepStrictEqual(l, ['sbn:Inserisci il tuo worker']);
     await q.click('.svc-own[data-own="sbn"]'); await wait(400);
     v = await q.evaluate(() => ({ gb: window.NL.settings.gbKey, sbn: window.NL.settings.sbnUrl, focus: document.activeElement && document.activeElement.id, row: document.querySelector('#svcSbn .svc-row').hidden, uso: localStorage.getItem('prova:catalogo-libri-amici-chiave-in-uso') }));
