@@ -7,6 +7,6 @@
     "unita": "node esegui.js --solo-unita"
   },
   "devDependencies": {
-    "puppeteer-core": "^25.17.0"
+    "puppeteer-core": "^25.18.1"
   }
 }
