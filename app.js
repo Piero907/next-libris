@@ -484,7 +484,9 @@ function loadAll() {
     settings.viewDef = s.viewDef === 'list' ? 'list' : 'grid';                       // vista all'apertura: l'ultima scelta con il pulsante (giro 1, 18/11/2026: l'app ricorda l'ultima vista)
     settings.view = settings.viewDef;
     settings.sortBy = SORTS.indexOf(s.sortBy) >= 0 ? s.sortBy : 'recent'; sortBy = settings.sortBy;   // ultimo ordine usato (giro 1)
-    settings.cols = s.cols >= 2 && s.cols <= 5 ? Math.round(s.cols) : 0;             // copertine per riga sul telefono, 2-5 (0 = come prima, da sole) (giro 1)
+    settings.cols = s.cols >= 2 && s.cols <= 5 ? Math.round(s.cols) : 3;             // copertine per riga sul telefono, 2-5 (giro 1)
+    if (!s.cols3) settings.cols = 3;               // 3 per riga di partenza, per tutti, anche per chi le aveva cambiate (una volta sola; Piero, 18/11/2026)
+    settings.cols3 = true;
     settings.openAll = s.openAll === true && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);   // «schede sempre aperte» tolta il 16/11/2026: resta solo per le prove automatiche
     settings.sbnUrl = /^https:\/\//.test(L.str(s.sbnUrl)) ? L.str(s.sbnUrl) : '';
     settings.loanSnooze = Number(s.loanSnooze) || 0;
