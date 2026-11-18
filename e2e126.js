@@ -5,7 +5,7 @@ const H = require('./_harness');
 // 1) profilo più facile da trovare: foto tonda in testata, «Il mio profilo» in cima al Menu, «Profilo» nella barra in basso (tutti e tre da provare);
 // 2) prezzi: niente somma in euro nel riepilogo e nelle statistiche, niente prezzo nella condivisione dei Desideri, niente colonna Prezzo nel PDF;
 //    restano il campo «Costo» e la domanda del prezzo;
-// 3) backup: promemoria dopo 45 giorni o dopo 20 libri nuovi (non prima).
+// 3) backup: promemoria dopo 45 giorni o dopo 40 libri nuovi (non prima).
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
 const server = H.serve(CFG.port(8326), CFG.APP);
@@ -83,7 +83,8 @@ function books(n, ts) { const out = []; for (let i = 0; i < n; i++) out.push({ i
   const cases = [
     ['ultimo backup 30 giorni fa, 5 libri nuovi', books(12, NOW - 100 * DAY).concat(books(5, NOW - 2 * DAY).map((b, i) => Object.assign(b, { id: 'n' + i, w: false }))), NOW - 30 * DAY, false],
     ['ultimo backup 46 giorni fa', books(12, NOW - 100 * DAY), NOW - 46 * DAY, true],
-    ['ultimo backup 10 giorni fa, 20 libri nuovi', books(12, NOW - 100 * DAY).concat(books(20, NOW - 2 * DAY).map((b, i) => Object.assign(b, { id: 'n' + i, w: false }))), NOW - 10 * DAY, true]
+    ['ultimo backup 10 giorni fa, 25 libri nuovi', books(12, NOW - 100 * DAY).concat(books(25, NOW - 2 * DAY).map((b, i) => Object.assign(b, { id: 'n' + i, w: false }))), NOW - 10 * DAY, false],
+    ['ultimo backup 10 giorni fa, 40 libri nuovi', books(12, NOW - 100 * DAY).concat(books(40, NOW - 2 * DAY).map((b, i) => Object.assign(b, { id: 'n' + i, w: false }))), NOW - 10 * DAY, true]
   ];
   for (const [name, bs, last, due] of cases) {
     p = await newPage({ books: bs, updated: NOW }, { name: 'Piero R.', installed: true, swiped: true, lastBackup: last });
