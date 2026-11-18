@@ -48,6 +48,13 @@ function testo(x: N): string {
       return "📚 " + chi + " ha aggiunto " + (x.titolo || "un libro") + (n > 3 ? " e altri" : "") + (n === 1 ? ", che è nei tuoi Desideri" : ", che sono nei tuoi Desideri");
     }
     case "avviso": return (x.rif ? x.rif + ": " : "") + (x.titolo || "");   // avviso importante di Next Libris (giro 8): rif = titolo, titolo = testo
+    case "messaggi": {   // riassunto della chat (giro 9): rif = «messaggi:chat:richieste», titolo = i primi nomi di chi ha scritto
+      const [n, , r] = String(x.rif).split(":").map((v) => Number(v) || 0);
+      const da = x.titolo ? " da " + x.titolo : "";
+      if (r > 0 && r >= n) return r === 1 ? "💬 Hai una richiesta di messaggio" + da : "💬 Hai " + r + " richieste di messaggio" + da;
+      return n === 1 ? "💬 Hai un messaggio nuovo" + da : "💬 Hai " + n + " messaggi nuovi" + da;
+    }
+    case "segnalazione": return "Nuova segnalazione" + (x.titolo ? " su " + x.titolo : "");   // solo all'amministratore (giro 9)
     default: return "Hai una novità in Next Libris";
   }
 }
