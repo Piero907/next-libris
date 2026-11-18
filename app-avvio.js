@@ -892,7 +892,8 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
    Un modulo si toglie cancellando i suoi file e le sue righe in index.html e sw.js (vedi togli_modulo.py nel ramo prove). ---- */
 window.NL = {
   setKey: function (v) { setSvc('key', v); }, openDon: function () { openDon(); },   // dalla guida della chiave (18/11/2026)
-  ownKey: function () { return mine('key'); },   // la TUA chiave, anche mentre usi quella di un amico (giro 8)
+  ownKey: function () { return mine('key'); },
+  qThumb: function (c) { return qThumb(c); },   // miniatura della foto di una citazione (profilo, 18/11/2026)   // la TUA chiave, anche mentre usi quella di un amico (giro 8)
   renderOwner: function () { renderOwner(); }, emit: function (n, a) { emit(n, a); },   // (nella 104.8 queste due erano finite dentro il commento: rimesse)
   on: function (name, fn) { (hooks[name] || (hooks[name] = [])).push(fn); },
   L: L, esc: esc, $: $, ls: ls, toast: toast, eur: eur, hue: hue, bigImg: bigImg, authorsOf: authorsOf, coll: coll, PROVA: PROVA, COPIA: COPIA,

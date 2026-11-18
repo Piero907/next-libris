@@ -66,7 +66,7 @@ function stats() {
 }
 function myQuotes() {
   var out = [];
-  mine().forEach(function (b) { (b.qs || []).forEach(function (c, i) { if (c && c.x) out.push({ x: c.x, pg: c.pg || '', d: c.d || 0, t: b.t || '', a: b.a || '', b: b.id, i: i, pin: !!c.pin }); }); });
+  mine().forEach(function (b) { (b.qs || []).forEach(function (c, i) { if (c && (c.x || (c.phs && c.phs.length))) out.push({ x: c.x || '', pg: c.pg || '', d: c.d || 0, t: b.t || '', a: b.a || '', b: b.id, i: i, pin: !!c.pin, phs: c.phs || [] }); }); });
   return out.sort(function (a, b) { return b.d - a.d; });
 }
 function myPins() { return myQuotes().filter(function (q) { return q.pin; }).slice(0, PINS); }   // le citazioni in evidenza (puntina)
@@ -160,12 +160,12 @@ async function fromGoogle() {
 function sheet() {
   var el = document.getElementById('profSheet'); if (el) return el;
   el = document.createElement('div'); el.className = 'sheet fri prof'; el.id = 'profSheet'; el.hidden = true;
-  el.innerHTML = '<div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="profH"><h2 id="profH">Profilo</h2><div id="profBody"></div>' +
-    '<input type="file" id="profFile" accept="image/*" hidden><div class="row-btns"><button class="btn" type="button" id="profClose">Chiudi</button></div></div>';
+  el.innerHTML = '<div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="profH"><h2 id="profH" class="sr">Profilo</h2><div id="profBody"></div>' +
+    '<input type="file" id="profFile" accept="image/*" hidden><input type="file" id="profCam" accept="image/*" capture="user" hidden><div class="row-btns"><button class="btn" type="button" id="profClose">Chiudi</button></div></div>';
   document.body.appendChild(el);
   el.addEventListener('click', function (e) { if (e.target === el) close(); else onClick(e); });
-  el.querySelector('#profClose').addEventListener('click', close);
-  el.querySelector('#profFile').addEventListener('change', function (e) { fromFile(e.target.files && e.target.files[0]); e.target.value = ''; });
+  el.querySelector('#profClose').addEventListener('click', function () { if (mode) { mode = ''; paint(); } else close(); });   // da «Scegli le citazioni» si torna al profilo (Piero, 18/11/2026)
+  ['#profFile', '#profCam'].forEach(function (s) { el.querySelector(s).addEventListener('change', function (e) { fromFile(e.target.files && e.target.files[0]); e.target.value = ''; }); });
   return el;
 }
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var el = document.getElementById('profSheet'); if (el && !el.hidden) { if (mode) { mode = ''; paint(); } else close(); } } });
@@ -185,7 +185,8 @@ async function open(id) {
 }
 function quoteHTML(c) {
   var src = [c.a, c.t].filter(Boolean).join(', ');
-  return '<blockquote class="pf-q"><p>«' + esc(c.x) + '»</p>' + (src || c.pg ? '<footer>' + (src ? '— ' + esc(src) : '') + (c.pg ? (src ? ' · ' : '') + 'pagina ' + esc(c.pg) : '') + '</footer>' : '') + '</blockquote>';
+  var ph = c.phs && c.phs.length && NL.qThumb ? NL.qThumb(c) : '';     // le tue foto della pagina (restano sul telefono: agli amici solo il testo)
+  return '<blockquote class="pf-q' + (ph ? ' has-ph' : '') + '">' + ph + (c.x ? '<p>«' + esc(c.x) + '»</p>' : '<p class="pf-qph">Foto della pagina</p>') + (src || c.pg ? '<footer>' + (src ? '— ' + esc(src) : '') + (c.pg ? (src ? ' · ' : '') + 'pagina ' + esc(c.pg) : '') + '</footer>' : '') + '</blockquote>';
 }
 function numsLine(st) {
   var y = new Date().getFullYear(), p = ['<b>' + nf(st.n) + '</b> ' + (st.n === 1 ? 'libro' : 'libri')];
@@ -220,7 +221,10 @@ function statsHTML(st, own, rel) {
   return '<section class="fr-sec"><h3 class="fr-h">' + (own ? 'I tuoi numeri' : 'I suoi numeri') + '</h3><dl class="pf-dl">' + r.join('') + '</dl></section>';
 }
 function head(id, name, when) {
-  return '<div class="pf-top">' + avatar(id, name, true) + '<div class="pf-id"><b class="pf-name">' + esc(name || 'Senza nome') + '</b>' + (when ? '<small>Su Next Libris da ' + esc(when) + '</small>' : '') + '</div></div>';
+  var av = avatar(id, name, true);
+  if (!id) av = '<button type="button" class="pf-avbtn" data-p="photo" aria-expanded="' + photoOpen + '" aria-label="' + (my.foto ? 'Cambia la foto' : 'Metti una foto') + '">' + av +
+    '<span class="pf-cam" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></button>';   // il tocco sulla foto apre la scelta (Piero, 18/11/2026)
+  return '<div class="pf-top">' + av + '<div class="pf-id"><b class="pf-name">' + esc(name || 'Senza nome') + '</b>' + (when ? '<small>Su Next Libris da ' + esc(when) + '</small>' : '') + '</div></div>';
 }
 /* una fila di copertine scorrevole (In lettura, Preferiti, Consigliati): il tocco apre il libro */
 function strip(title, books, hint) {
@@ -245,7 +249,7 @@ function paint() {
     var est = stats(), els = lists(), eq = myPins();
     h = head('esempio', EX_NAME, 'novembre 2026') + numsLine(est) +
       '<div class="pf-go"><button class="btn" type="button" data-p="lib">Libreria</button><button class="btn" type="button" data-p="wish">Desideri</button></div>' +
-      strip('In lettura', els.let) + strip('Preferiti', els.pref) + strip('Consigliati', els.cons);
+      strip('In lettura', els.let) + strip('Consigliati', els.cons);   // via i Preferiti (Piero, 18/11/2026)
     if (eq.length) h += '<section class="fr-sec"><h3 class="fr-h">Citazioni in evidenza</h3><div class="pf-qlist">' + eq.map(quoteHTML).join('') + '</div></section>';
     h += statsHTML(est, true) + '<p class="fr-small">È un profilo inventato: il tuo lo trovi nel Menu, con la tua foto e i tuoi numeri.</p>';
   } else if (cur) {                                     /* ----- il profilo di un amico ----- */
@@ -269,7 +273,7 @@ function paint() {
       if (data.desideri) h += '<section class="fr-sec pf-fol"><button class="btn' + (data.segue ? '' : ' primary') + '" type="button" data-p="segui" aria-pressed="' + !!data.segue + '">' + (data.segue ? 'Stai seguendo i suoi Desideri ✓' : 'Segui i suoi Desideri') + '</button>' +
         '<p class="fr-small">' + (data.segue ? 'Ti scriviamo al massimo una volta al giorno, solo quando c\'è qualcosa di nuovo. ' + esc(name) + ' non lo sa. Tocca per smettere.'
           : esc(name) + ' ti mostra già i suoi Desideri: seguili e scopri cosa sogna di leggere. Magari ci trovi il regalo giusto, o il tuo prossimo libro. Ti scriviamo al massimo una volta al giorno, solo quando c\'è qualcosa di nuovo, e ' + esc(name) + ' non lo saprà.') + '</p></section>';
-      var rows = strip('In lettura', data.let) + strip('Preferiti', data.pref) + strip('Consigliati', data.cons);
+      var rows = strip('In lettura', data.let) + strip('Consigliati', data.cons);
       h += rows;
       if (ev.length) h += '<section class="fr-sec"><h3 class="fr-h">Citazioni in evidenza</h3><div class="pf-qlist">' + ev.slice(0, PINS).map(quoteHTML).join('') + '</div></section>';
       if (data.cits && data.cits.length) h += '<ul class="fr-list fr-box"><li class="fr-row fr-go"><button class="fr-who fr-open" type="button" data-p="cits">Tutte le citazioni<small>' + data.cits.length + (data.cits.length === 1 ? ' citazione' : ' citazioni') + '</small></button><span class="n" aria-hidden="true">›</span></li></ul>';
@@ -284,26 +288,48 @@ function paint() {
         qs.slice(0, 300).map(function (q) { return '<button type="button" class="pf-qpick" data-p="pin" data-b="' + esc(q.b) + '" data-i="' + q.i + '" aria-pressed="' + q.pin + '">' + quoteHTML(q) + '</button>'; }).join('') + '</div>';
     } else {
       h = head(null, nm, since((me && me.creato) || firstTs()));
-      h += '<p class="pf-acts"><button class="link" type="button" data-p="photo" aria-expanded="' + photoOpen + '">' + (my.foto ? 'Cambia la foto' : 'Metti una foto') + '</button></p>';
-      if (photoOpen) h += '<div class="pf-photo"><button class="btn" type="button" data-p="file">Scatta o scegli una foto</button>' + (uid() ? '<button class="btn" type="button" data-p="google">Usa quella di Google</button>' : '') +
+      if (photoOpen) h += '<div class="pf-photo"><button class="btn" type="button" data-p="file">Dalla galleria</button><button class="btn" type="button" data-p="cam">Fotocamera</button>' + (uid() ? '<button class="btn" type="button" data-p="google">Usa quella di Google</button>' : '') +
         (my.foto ? '<button class="link" type="button" data-p="nofoto">Togli la foto</button>' : '') + '<p class="fr-small">' + (uid() ? 'La vedono solo i tuoi amici.' : 'Resta su questo telefono: con l\'account la vedono i tuoi amici.') + '</p></div>';
       h += numsLine(st);
-      h += strip('In lettura', ls.let) + strip('Preferiti', ls.pref) + strip('Consigliati', ls.cons, 'Nella pagina di un libro tocca la coccarda accanto alla stella: «Lo consiglio».');
+      h += strip('In lettura', ls.let) + strip('Consigliati', ls.cons, 'Nella pagina di un libro tocca la coccarda accanto alla stella: «Lo consiglio».');
       h += '<section class="fr-sec"><h3 class="fr-h">Citazioni in evidenza' + (pins.length ? ' <span class="fr-n">' + pins.length + '</span>' : '') + '</h3>' +
         (pins.length ? '<div class="pf-qlist">' + pins.map(quoteHTML).join('') + '</div>' : '<p class="fr-small">' + (qs.length ? 'Scegli fino a ' + PINS + ' citazioni da mettere in evidenza con la puntina.' : 'Quando salvi una citazione da un libro, con la puntina puoi metterla in evidenza qui (fino a ' + PINS + ').') + '</p>') +
         (qs.length ? '<p class="pf-acts"><button class="link" type="button" data-p="pick">' + (pins.length ? 'Cambia' : 'Scegli le citazioni') + '</button></p>' : '') + '</section>';
       if (qs.length) h += '<ul class="fr-list fr-box"><li class="fr-row fr-go"><button class="fr-who fr-open" type="button" data-p="allq">Tutte le citazioni<small>' + qs.length + (qs.length === 1 ? ' citazione' : ' citazioni') + '</small></button><span class="n" aria-hidden="true">›</span></li></ul>';
       h += statsHTML(st, true);
-      if (A() && A().keys) h += '<ul class="fr-list fr-box"><li class="fr-row fr-go"><button class="fr-who fr-open" type="button" data-p="keys">Chiave Google e worker<small>Per trovare più libri, anche agli amici</small></button><span class="n" aria-hidden="true">›</span></li></ul>';   // 18/11/2026
-      if (uid() && has018()) {
-        var vis = [], lib = !!me.libreria;
-        if ('p_let' in me) { if (lib && me.p_let !== false) vis.push('cosa leggi'); if (lib && me.p_pref !== false) vis.push('i preferiti'); if (lib && me.p_cons !== false) vis.push('i consigliati'); }
-        if (me.p_cit) vis.push('le citazioni in evidenza'); if (me.p_stat && lib) vis.push('i numeri'); if (me.p_cits) vis.push('tutte le citazioni');
-        h += '<ul class="fr-list fr-box"><li class="fr-row fr-go"><button class="fr-who fr-open" type="button" data-p="privacy">Cosa vedono gli amici<small>' + esc('La foto' + (vis.length ? ', ' + vis.join(', ') : ' e nient\'altro')) + '</small></button><span class="n" aria-hidden="true">›</span></li></ul>';
-      } else if (!uid()) h += '<p class="fr-small">Con l\'account e gli amici puoi mostrare loro la foto e, se vuoi, cosa leggi, citazioni e numeri.</p>';
+      h += setRows(me);   // scorciatoie alle impostazioni personali (Piero, 18/11/2026)
     }
   }
   body.innerHTML = h;
+}
+/* ---------- scorciatoie alle impostazioni personali (Piero, 18/11/2026): Account, Amici e privacy, Notifiche, Chiave Google e worker.
+   La finestra si apre sopra e, quando si chiude, torna il profilo. ---------- */
+function setRow(k, t, sub) { return '<li class="fr-row fr-go"><button class="fr-who fr-open" type="button" data-p="' + k + '">' + t + '<small>' + esc(sub) + '</small></button><span class="n" aria-hidden="true">›</span></li>'; }
+function setRows(me) {
+  var r = '', S = window.NLSocial, au = S && S.auth && S.auth();
+  if (S && S.open) r += setRow('acc', 'Account e sincronizzazione', au ? (au.email || 'Entrato con Google') : 'Entra per salvare i libri online');
+  if (A()) {
+    var vis = [];
+    if (uid() && has018() && me) {
+      var lib = !!me.libreria;
+      if ('p_let' in me) { if (lib && me.p_let !== false) vis.push('cosa leggi'); if (lib && me.p_cons !== false) vis.push('i consigliati'); }
+      if (me.p_cit) vis.push('le citazioni in evidenza'); if (me.p_stat && lib) vis.push('i numeri'); if (me.p_cits) vis.push('tutte le citazioni');
+    }
+    r += setRow('privacy', 'Amici e privacy', uid() ? 'Gli amici vedono la foto' + (vis.length ? ', ' + vis.join(', ') : ' e nient\'altro') : 'Con l\'account scegli cosa vedono gli amici');
+  }
+  if (window.NLPush && document.getElementById('goPush')) r += setRow('push', 'Notifiche', (document.getElementById('goPushTxt') || {}).textContent || 'Avvisi anche ad app chiusa');
+  if (A() && A().keys) r += setRow('keys', 'Chiave Google e worker', 'Per trovare più libri, anche agli amici');
+  r += setRow('menu', 'Menu', 'Le altre impostazioni e le info');
+  return '<section class="fr-sec pf-set"><h3 class="fr-h">Impostazioni</h3><ul class="fr-list fr-box">' + r + '</ul></section>';
+}
+var RET_WIN = { acc: '#accSheet', privacy: '#friSheet', push: '#optSheet', keys: '#kwSheet' };
+function via(k, fn) {          // chiude il profilo, apre la finestra e, quando quella si chiude, riapre il profilo
+  close(); fn();
+  setTimeout(function () {
+    var w = document.querySelector(RET_WIN[k]); if (!w || w.hidden) return;
+    var mo = new MutationObserver(function () { if (!w.hidden) return; mo.disconnect(); setTimeout(function () { if (!document.querySelector('.sheet:not([hidden])') && !(NL.guest && NL.guest())) open(); }, 60); });
+    mo.observe(w, { attributes: true, attributeFilter: ['hidden'] });
+  }, 80);
 }
 /* dal profilo dell'amico alla sua libreria (o ai desideri, o a un libro) */
 function goGuest(id, tab, book) {
@@ -321,13 +347,17 @@ async function onClick(e) {
   if (a === 'back') { mode = ''; paint(); }
   else if (a === 'photo') { photoOpen = !photoOpen; paint(); }
   else if (a === 'file') document.getElementById('profFile').click();
+  else if (a === 'cam') document.getElementById('profCam').click();
   else if (a === 'google') { b.disabled = true; await fromGoogle(); }
   else if (a === 'nofoto') { setFoto(''); NL.toast('Foto tolta.'); }
   else if (a === 'pick' || a === 'cits') { mode = a; paint(); var si = document.querySelector('#profSheet .sheet-in'); if (si) si.scrollTop = 0; }
   else if (a === 'pin') { if (NL.togglePin) NL.togglePin(b.dataset.b, Number(b.dataset.i)); paint(); }
   else if (a === 'allq') { close(); NL.openQuotes(); }
-  else if (a === 'privacy') { close(); A().open(true); }
-  else if (a === 'keys') { close(); A().keys(); }
+  else if (a === 'privacy') via('privacy', function () { A().open(true); });
+  else if (a === 'keys') via('keys', function () { A().keys(); });
+  else if (a === 'acc') via('acc', function () { window.NLSocial.open(); });
+  else if (a === 'push') via('push', function () { NL.openOptions('push'); });
+  else if (a === 'menu') { close(); NL.openMenu(); }
   else if (a === 'segui' && cur && data) { b.disabled = true; var on = !data.segue; if (await A().follow(cur, on)) data.segue = on; paint(); }
   else if (id === 'esempio' && (a === 'lib' || a === 'wish')) { close(); NL.setTab(a); window.scrollTo({ top: 0 }); NL.emit('guest'); }
   else if (id === 'esempio' && a === 'book') { var eb = b.dataset.id; close(); NL.openCard(eb); }

@@ -68,3 +68,13 @@ html.guest .tag.loan.recv{pointer-events:none}
 .pf-menu > span:nth-child(2){flex:1;min-width:0}
 .pf-menu .pf-menu-av{flex:none;display:grid;margin-right:12px}
 .pf-menu .pf-av{width:34px;height:34px;font-size:15px}
+
+/* 18/11/2026 (Piero): la tua foto è un tasto, con la piccola macchina fotografica; citazioni con la foto della pagina */
+.prof .pf-avbtn{all:unset;position:relative;flex:none;cursor:pointer;border-radius:50%}
+.prof .pf-avbtn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.prof .pf-cam{position:absolute;right:-4px;bottom:-4px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);border:2px solid var(--surface)}
+.prof .pf-cam svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+.prof .pf-q.has-ph{grid-template-columns:minmax(0,1fr) auto;column-gap:12px;align-items:start}
+.prof .pf-q.has-ph .qimg-w{grid-column:2;grid-row:1 / span 2}
+.prof .pf-q.has-ph .qimg{width:52px;height:70px}
+.prof .pf-q .pf-qph{font:500 14px/1.4 var(--font-body);color:var(--muted)}

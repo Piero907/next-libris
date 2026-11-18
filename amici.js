@@ -312,7 +312,7 @@ function paintMenu() {
     var h = document.createElement('h3'); h.id = 'friMenuH'; h.textContent = 'Amici';
     m = document.createElement('div'); m.className = 'dlist dmenu'; m.id = 'friMenu';
     m.innerHTML = '<button type="button" class="dopt dgo" id="goFri"><span><b>I tuoi amici</b><small id="goFriTxt"></small></span><span class="n" aria-hidden="true">›</span></button>';   // «Invita» sta nella finestra Amici (17/11/2026)
-    var at = top;   // dopo Sostieni (Piero, 17/11/2026: Sostieni sopra Amici)
+    var at = document.querySelector('#drawerOpts .ddon') || top;   // Sostieni sempre al centro, sopra Amici (Piero, 18/11/2026)
     at.parentNode.insertBefore(h, at.nextSibling); h.parentNode.insertBefore(m, h.nextSibling);
     m.querySelector('#goFri').addEventListener('click', function () { NL.fromMenu(open); });
     /* «Il mio profilo» sta in cima al Menu (giro 7, profilo.js) */
@@ -727,9 +727,8 @@ function optsView() {
     '<label class="check fr-wish"><input type="checkbox" id="friWish"' + (me.desideri ? ' checked' : '') + '><span>Gli amici vedono i miei desideri<small>Così sanno cosa regalarti; chi ti farà un regalo resta una sorpresa.</small></span></label>' +
     '<label class="check fr-wish"><input type="checkbox" id="friRegali"' + (me.regali !== false ? ' checked' : '') + '><span>Gli amici vedono i regali che prenoto<small>Quando dici «Te lo regalo io», gli altri amici vedono il tuo nome. Se la togli vedono solo «Regalo prenotato». Il festeggiato non lo vede mai.</small></span></label>' +
     '<label class="check fr-wish"><input type="checkbox" id="friAmici"' + (me.amici !== false ? ' checked' : '') + '><span>Gli amici vedono i miei amici<small>Solo i nomi, così trovate altri amici e possono chiedervi l\'amicizia. Se la togli, vedono solo gli amici che avete in comune.</small></span></label></div></section>';
-  if ('p_cit' in me) h += '<section class="fr-sec"><h3 class="fr-h">Nel tuo profilo</h3><div class="fr-share"><p class="fr-small">La tua foto la vedono solo gli amici. Il resto, solo se lo scegli qui.</p>' +
+  if ('p_cit' in me) h += '<section class="fr-sec"><h3 class="fr-h">Nel tuo profilo</h3><div class="fr-share"><p class="fr-small">La tua foto la vedono solo gli amici. Il resto è acceso di partenza, tranne tutte le citazioni: togli quello che non vuoi mostrare.</p>' +
     ('p_let' in me ? '<label class="check fr-wish"><input type="checkbox" id="friPLet"' + (me.p_let !== false ? ' checked' : '') + '><span>Gli amici vedono cosa sto leggendo<small>I libri «In lettura». Solo se vedono anche la libreria.</small></span></label>' +
-    '<label class="check fr-wish"><input type="checkbox" id="friPPref"' + (me.p_pref !== false ? ' checked' : '') + '><span>Gli amici vedono i miei preferiti<small>I libri con la stella. Solo se vedono anche la libreria.</small></span></label>' +
     '<label class="check fr-wish"><input type="checkbox" id="friPCons"' + (me.p_cons !== false ? ' checked' : '') + '><span>Gli amici vedono i libri che consiglio<small>Quelli con la coccarda «Lo consiglio». Solo se vedono anche la libreria.</small></span></label>' : '') +
     '<label class="check fr-wish"><input type="checkbox" id="friPCit"' + (me.p_cit ? ' checked' : '') + '><span>Gli amici vedono le mie citazioni in evidenza<small>Quelle con la puntina (fino a 3), con titolo e autore del libro.</small></span></label>' +
     '<label class="check fr-wish"><input type="checkbox" id="friPStat"' + (me.p_stat ? ' checked' : '') + '><span>Gli amici vedono i miei numeri<small>Libri e pagine lette, autore e genere più letti, paesi, libri prestati. Solo se vedono anche la libreria.</small></span></label>' +
