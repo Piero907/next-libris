@@ -23,7 +23,7 @@
 <link rel="manifest" href="manifest.json?v=36" crossorigin="use-credentials">
 <link rel="icon" type="image/png" href="icons/next-libris-192.png">
 <link rel="apple-touch-icon" href="icons/next-libris-192.png">
-<script src="indirizzo.js"></script><!-- vecchio indirizzo: solo la pagina del trasloco -->
+<script src="indirizzo.js"></script><!-- vecchio indirizzo: solo «Ci siamo spostati» -->
 <script src="avvio.js"></script><!-- aspetto e tema prima di disegnare; mai dentro la cornice di un altro sito -->
 <link rel="preload" href="vendor/fonts/literata-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>/* schermata d'apertura: qui e non nel CSS, cosi' e' la primissima cosa disegnata */
@@ -671,6 +671,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
           <input type="text" id="gbKey" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Incolla la chiave (inizia con AIza)">
           <button class="btn svc-show" type="button" id="gbShow" aria-pressed="false" hidden>Mostra</button>
         </div>
+        <p class="hint svc-uff">Incolla la chiave solo in Next Libris, su nextlibris.github.io. Non te la chiederemo mai per email o messaggio.</p>
         <div class="svc-acts">
           <button class="btn svc-clear" id="gbClear" type="button" hidden>Cancella</button>
           <div class="svc-saved" id="gbSaved" hidden></div>

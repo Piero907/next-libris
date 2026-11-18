@@ -302,7 +302,10 @@ function menu() {
   a.innerHTML = '<span><b>Come si usa</b><small>La guida in nove schermate</small></span><span class="n" aria-hidden="true">›</span>';
   var b = document.createElement('button'); b.type = 'button'; b.className = 'dopt'; b.id = 'goEsempio';
   b.innerHTML = '<span><b>Guarda una libreria di esempio</b><small>Prova l\'app senza i tuoi libri</small></span><span class="n" aria-hidden="true">›</span>';
-  list.insertBefore(b, list.firstChild); list.insertBefore(a, b);
+  // indirizzo ufficiale (Piero, 18/11/2026): contro le copie dell'app ad altri indirizzi
+  var u = document.createElement('p'); u.className = 'gd-uff'; u.id = 'nlUfficiale';
+  u.innerHTML = 'Next Libris è solo su <b>nextlibris.github.io</b>. Una copia a un altro indirizzo non è nostra: non darle la tua chiave né i tuoi dati.';
+  list.insertBefore(u, list.firstChild); list.insertBefore(b, u); list.insertBefore(a, b);
   a.addEventListener('click', function () { NL.fromMenu(function () { open(0); }); });
   b.addEventListener('click', function () { NL.fromMenu(function () { enter(-1, ''); }); });
   var sm = document.querySelector('#goInfo small'); if (sm) sm.textContent = 'Guida, condividi, installa, contatti';

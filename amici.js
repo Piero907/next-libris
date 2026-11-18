@@ -798,7 +798,8 @@ function keysInner(full) {
   if ((own.gb || own.sbn) && fr.length) {
     h += '<p class="fr-small">Prestarli non ti costa niente e puoi smettere quando vuoi. Tocca un amico per scegliere cosa prestargli.</p>' +   // testo approvato (giro 5)
       pickerHTML(fr, 'data-f="keyshare" data-id', function (x) { return !!outKey(x.id); }, function (x) { var k = outKey(x.id); return k ? lentLabel(k) : ''; }) +
-      '<p class="fr-small kw-n">' + lentText(lentCount()) + '.</p>';
+      '<p class="fr-small kw-n">' + lentText(lentCount()) + '.</p>' +
+      '<p class="fr-small kw-uff">Incolla la chiave solo in Next Libris, su nextlibris.github.io. Non te la chiederemo mai per email o messaggio.</p>';   // indirizzo ufficiale (Piero, 18/11/2026)
   }
   inn.forEach(function (k) {
     var using = b && b.da === k.da, what = k.gb_key && k.sbn ? 'la sua chiave Google e il worker SBN' : k.gb_key ? 'la sua chiave Google' : 'il suo worker SBN';
