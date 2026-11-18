@@ -203,7 +203,7 @@ const base = 'http://localhost:' + CFG.port(8309);
     await B.shot('109-6-finestra-bruno-' + tag);
     await B.click$('#kwBody [data-kw="guide"]'); await wait(400);
     assert(await B.vis('#kgSheet') && await B.top('#kgSheet'), 'guida sopra la finestra');
-    assert(/non dipendi dalla chiave di un amico/.test(await B.txt('#kgWhy')));
+    assert(/Con una chiave tua l'app trova molti più libri/.test(await B.txt('#kgWhy')));   // testo unico (18/11/2026)
     await B.shot('109-7-guida-' + tag);
     await B.click$('#kgClose'); await wait(200);
     await B.click$('#kwBody [data-f="keyoff"]'); await wait(500);

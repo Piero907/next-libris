@@ -145,6 +145,19 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   await p.evaluate(() => document.querySelector('#exBar [data-t="wish"]').click()); await wait(400);
   const w = await p.evaluate(() => ({ tab: window.NL.tab(), n: document.querySelectorAll('#list [data-id]').length, owner: document.getElementById('owner').textContent }));
   assert(w.tab === 'wish' && /Desideri di esempio/.test(w.owner), 'Desideri dell\'esempio: ' + JSON.stringify(w));
+  // 5c) barra in basso dentro l'esempio (18/11/2026): Libreria/Desideri dell'esempio, Profilo di esempio, + con l'avviso
+  const nav = (l) => p.evaluate((l) => { const b = document.querySelector('#layNav [data-l="' + l + '"]'); if (b) b.click(); return !!b; }, l);
+  if (await nav('lib')) {
+    await wait(300);
+    assert(await p.evaluate(() => window.NL.esempio() && window.NL.tab() === 'lib'), 'Libreria resta nell\'esempio');
+    await nav('add'); await wait(300);
+    assert(await p.evaluate(() => { const s = document.getElementById('layAdd'); return (!s || s.hidden) && window.NL.esempio(); }), '+ nell\'esempio: solo l\'avviso');
+    await nav('prof'); await wait(400);
+    const pr = await p.evaluate(() => { const s = document.getElementById('profSheet'); return s && !s.hidden ? s.textContent : ''; });
+    assert(/Profilo di esempio/.test(pr) && /Lettore di esempio/.test(pr) && /Quel ramo del lago di Como/.test(pr) && /Il fu Mattia Pascal/.test(pr), 'Profilo di esempio: ' + pr.slice(0, 200));
+    await p.click('#profSheet [data-p="wish"]'); await wait(300);
+    assert(await p.evaluate(() => window.NL.esempio() && window.NL.tab() === 'wish' && document.getElementById('profSheet').hidden), 'dal profilo ai Desideri dell\'esempio');
+  }
   const wide = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   assert(wide <= 0, 'esempio a 360 senza scorrimento di lato');
   console.log('[fuori]', p.fuori.length ? p.fuori.join(' ') : 'nessuna richiesta');

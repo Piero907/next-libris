@@ -63,13 +63,10 @@ const books = [
   console.log('[volumi]', JSON.stringify(vol)); assert(vol.open && vol.after); assert.deepStrictEqual(vol.ids, ['m1', 'm3', 'm2'], 'in ordine di numero');
   assert(await p.evaluate(() => Object.keys(window.__app.settings.grpOpen).some(k => /^p:lib:ser:/.test(k))), 'aperta e ricordata');
 
-  // 9) icona della chiave nella propria libreria: sulla riga del nome, apre la finestra della chiave
-  const key = await p.evaluate(() => { const k = document.getElementById('ownKey'), m = document.querySelector('header.top .top-meta'), o = document.getElementById('owner');
-    if (!k || k.hidden || !m.contains(k)) return null; const r = k.getBoundingClientRect(), ro = o.getBoundingClientRect(), rm = m.getBoundingClientRect();
-    return { mid: Math.abs((r.top + r.bottom) / 2 - (ro.top + ro.bottom) / 2), right: rm.right - r.right, over: m.scrollWidth - m.clientWidth, label: k.getAttribute('aria-label') }; });
-  console.log('[chiave]', JSON.stringify(key)); assert(key && key.mid < 6 && key.right < 12 && key.over <= 0, 'icona sulla riga del nome, a destra');
-  if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-chiave-412.png'), clip: { x: 0, y: 0, width: 412, height: 160 } });
-  await p.click('#ownKey'); await wait(400);
+  // 9) chiave: non piu' in testata (18/11/2026), ma nel Menu e nel profilo; apre la finestra della chiave
+  await p.evaluate(() => NL.openMenu()); await wait(300);
+  assert(await p.evaluate(() => !document.getElementById('ownKey') && !!document.getElementById('goKeys')), 'chiave nel Menu, non in testata');
+  await p.click('#goKeys'); await wait(500);
   assert(await p.evaluate(() => { const s = document.getElementById('kwSheet'); return s && !s.hidden && /Crea la tua chiave Google/.test(s.textContent); }), 'finestra della chiave con la guida');
   await hideAll();
 
@@ -153,7 +150,6 @@ const books = [
     { id: 'g3', t: 'Le città invisibili', a: 'Italo Calvino', ts: 3 }], { id: 'x', comuni: 0, libVis: true })); await wait(600);
   const pills = () => p.evaluate(() => [...document.querySelectorAll('#guestBar .chip')].map(b => b.textContent + (b.getAttribute('aria-pressed') === 'true' ? '*' : '')));
   console.log('[pillole]', (await pills()).join(' | ')); assert.deepStrictEqual(await pills(), ['Solo quelli che non hai', 'In comune']);
-  assert(await p.evaluate(() => document.getElementById('ownKey').hidden), 'da amico niente icona della tua chiave');
   const ids = () => p.evaluate(() => [...document.querySelectorAll('#list .cover[data-id], #list .row[data-id]')].map(x => x.dataset.id).sort().join());
   await p.click('#guestBar [data-g="common"]'); await wait(300);
   assert.deepStrictEqual(await pills(), ['Solo quelli che non hai', 'In comune*']); assert.strictEqual(await ids(), 'g1,g3');
@@ -164,7 +160,7 @@ const books = [
   assert(await p.evaluate(() => { const t = document.querySelector('.row[data-id="g1"] .tag.warn'); return t && !t.dataset.act; }), 'da amico «Da verificare» non si tocca');
   assert(await p.evaluate(() => window.__app.settings.viewDef === 'grid'), 'da amico la vista non si salva');
   await p.evaluate(() => NL.guestExit()); await wait(400);
-  assert(await p.evaluate(() => !document.getElementById('ownKey').hidden), 'tornati ai propri: la chiave c\'è');
+  assert(await p.evaluate(() => !document.getElementById('ownKey')), 'tornati ai propri: niente chiave in testata');
 
   assert.deepStrictEqual(errors, []);
   console.log('e2e120 OK');

@@ -137,13 +137,19 @@ let gHits = [], sbnHits = 0, coverHits = [];
   await A.click('#ntBody [data-n="nl1"]'); await wait(500);
   assert(await A.$eval('#kgSheet', x => !x.hidden), 'guida aperta');
   const g = await A.$eval('#kgSheet', x => x.innerText.replace(/\s+/g, ' ')); console.log('[5 guida]', g.slice(0, 220));
-  assert(/È gratis/.test(g) && /1\.000 ricerche al giorno, solo per te/.test(g) && /La chiave di Bruno ha finito/.test(g) && /Abilita/.test(g) && /Crea credenziali/.test(g));
+  assert(/È gratis/.test(g) && /1\.000 ricerche al giorno, solo per te/.test(g) && /Con una chiave tua l'app trova molti più libri/.test(g) && /Abilita/.test(g) && /Crea credenziali/.test(g));
   const links = await A.$$eval('#kgSheet a', a => a.map(x => x.href)); assert(links.some(h => h.includes('books.googleapis.com')) && links.some(h => h.includes('apis/credentials')));
   const side = await A.evaluate(() => { const si = document.querySelector('#kgSheet .sheet-in'); return Math.max(si.scrollWidth - si.clientWidth, document.documentElement.scrollWidth - document.documentElement.clientWidth); });
   assert(side <= 0, 'niente scorrimento di lato a 360');
   await A.screenshot({ path: CFG.OUT + '/ricerche-guida-360.png' });
-  // 6) «Ho già la chiave»: Impostazioni › Ricerca dei libri, con il totale condiviso
-  await A.click('#kgPaste'); await wait(700);
+  // 6) campo della chiave nella guida (18/11/2026): chiave sbagliata → avviso; giusta → salvata; poi Impostazioni › Ricerca dei libri, con il totale condiviso
+  await A.type('#kgKey', 'ciao'); await A.click('#kgSave'); await wait(200);
+  assert(await A.evaluate(() => !document.getElementById('kgErr').hidden && !document.getElementById('kgSheet').hidden), 'chiave sbagliata: avviso');
+  const k0 = await A.evaluate(() => window.NL.settings.gbKey), kn = 'AIzaProvaDellaGuida_0123456789abcdefgh';
+  await A.evaluate(() => { document.getElementById('kgKey').value = ''; }); await A.type('#kgKey', ' ' + kn + ' '); await A.click('#kgSave'); await wait(300);
+  assert(await A.evaluate((k) => document.getElementById('kgSheet').hidden && window.NL.settings.gbKey === k, kn), 'chiave salvata dalla guida');
+  await A.evaluate((k) => NL.setKey(k), k0); await wait(200);   // si torna alla chiave di prima per il resto della prova
+  await A.evaluate(() => { NL.openOptions('search'); NL.svcFold('key', true); }); await wait(700);
   const cnt = await A.$eval('#gbCount', x => x.textContent); console.log('[6 impostazioni]', cnt);
   assert(/con chi usa la stessa chiave/.test(cnt) && /Limite quasi raggiunto/.test(cnt));
   // schermate: 412 scuro e 1280
