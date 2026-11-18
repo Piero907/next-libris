@@ -177,6 +177,29 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   await p.evaluate(() => document.querySelector('#exBar [data-ex="out"]').click()); await wait(400);
   assert(await p.evaluate(() => !window.NL.esempio() && document.getElementById('exBar').hidden), 'Esci');
 
+  // 18/11/2026 sera (Piero): «Prova adesso» sulla chiave = dietro la libreria di esempio; «Più tardi» riporta da solo alla guida
+  await p.evaluate(() => window.NLGuida.open(2)); await wait(300);
+  assert.strictEqual((await slide(p)).h, 'Trova più libri (facoltativo)');
+  await p.click('#gdStage .gd-try'); await wait(900);
+  g = await p.evaluate(() => ({ kg: !document.getElementById('kgSheet').hidden, ex: window.NL.esempio(), open: !document.getElementById('guida').hidden }));
+  assert(g.kg && g.ex && !g.open, 'guida della chiave sopra la libreria di esempio: ' + JSON.stringify(g));
+  await p.click('#kgClose'); await wait(1400);
+  g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio(), kg: !document.getElementById('kgSheet').hidden }));
+  assert(g.open && g.n === '3 di 9' && !g.ex && !g.kg, '«Più tardi» torna da solo alla guida: ' + JSON.stringify(g));
+  // nell'esempio (Trova e ordina) Indietro del telefono riporta alla guida
+  await p.evaluate(() => window.NLGuida.open(4)); await wait(300);
+  await p.click('#gdStage .gd-try'); await wait(1000);
+  assert(await p.evaluate(() => window.NL.esempio() && document.getElementById('guida').hidden), 'nell\'esempio');
+  await p.goBack().catch(() => {}); await wait(900);
+  g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio() }));
+  assert(g.open && g.n === '5 di 9' && !g.ex, 'Indietro dall\'esempio torna alla guida: ' + JSON.stringify(g));
+  // «‹ Guida» nella striscia fa lo stesso
+  await p.click('#gdStage .gd-try'); await wait(1000);
+  await p.evaluate(() => document.querySelector('#exBar [data-ex="guide"]').click()); await wait(900);
+  g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio() }));
+  assert(g.open && g.n === '5 di 9' && !g.ex, '«‹ Guida»: ' + JSON.stringify(g));
+  await p.click('.gd-skip'); await wait(300);
+
   assert.deepStrictEqual(errors, []);
   console.log('e2e123 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

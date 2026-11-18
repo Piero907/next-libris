@@ -42,7 +42,7 @@ function books(n, ts) { const out = []; for (let i = 0; i < n; i++) out.push({ i
   assert(await profOpen(p), 'la foto in testata apre il profilo');
   await closeAll(p);
   const nav = await p.evaluate(() => [...document.querySelectorAll('#layNav button')].map(b => b.dataset.l));
-  assert.deepStrictEqual(nav, ['lib', 'wish', 'add', 'you', 'prof', 'menu'], 'Profilo nella barra in basso: ' + nav);
+  assert.deepStrictEqual(nav, ['lib', 'wish', 'add', 'you', 'prof'], 'barra a 5 tasti, via Menu (18/11/2026): ' + nav);
   const fit = await p.evaluate(() => [...document.querySelectorAll('#layNav button span')].every(s => s.scrollWidth <= s.parentNode.clientWidth + 1));
   assert(fit, 'le scritte della barra stanno nei tasti a 360');
   await p.click('#layNav [data-l="prof"]'); await wait(500);

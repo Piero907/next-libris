@@ -82,11 +82,11 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     return { items, bad, don: document.getElementById('donMenu').getBoundingClientRect().top / innerHeight };
   });
   console.log('[2 menu]', mn.items.join(' | '), '· Sostieni a', Math.round(mn.don * 100) + '%');
-  assert.deepStrictEqual(mn.items, ['Sostieni Next Libris', 'Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', '## Amici', 'I tuoi amici', 'Chiave Google e worker', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
+  assert.deepStrictEqual(mn.items, ['Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', 'Chiave Google e worker', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
     'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
     'Info e aiuto', '  Come si usa', '  Guarda una libreria di esempio', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);   // voci della guida (giro 4)
   assert.deepStrictEqual(mn.bad, [], 'sottotitoli su una riga');
-  assert(mn.don < 0.3, 'Sostieni in cima al Menu (18/11/2026)');
+  assert(mn.don > 0.3 && mn.don < 0.7, 'Sostieni al centro del Menu, sopra Amici (18/11/2026 sera)');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-412.png') });
 
   // 3a) Impostazioni aperte, menu scorso, Aspetto (finestra con cronologia) → Indietro → Menu come prima

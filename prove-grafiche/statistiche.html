@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Statistiche del profilo: tre proposte</title>
+<style>
+@font-face{font-family:"Bricolage Grotesque";src:url(../../next-libris/vendor/fonts/bricolage-latin.woff2) format("woff2");font-weight:600 700}
+@font-face{font-family:"IBM Plex Sans";src:url(../../next-libris/vendor/fonts/plex-latin-400.woff2) format("woff2");font-weight:400}
+@font-face{font-family:"IBM Plex Sans";src:url(../../next-libris/vendor/fonts/plex-latin-500.woff2) format("woff2");font-weight:500}
+@font-face{font-family:"IBM Plex Sans";src:url(../../next-libris/vendor/fonts/plex-latin-600.woff2) format("woff2");font-weight:600}
+:root{--bg:#EDF1EE;--surface:#FFFFFF;--surface2:#F3F6F3;--ink:#16262A;--muted:#55656A;--line:#D3DBD6;--accent:#1B6A4F;--accent-ink:#fff;--accent-soft:#DCEEE6;--gold:#B8860B;
+  --fd:"Bricolage Grotesque",system-ui,sans-serif;--fb:"IBM Plex Sans",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font:400 15px/1.4 var(--fb);color:var(--ink)}
+.ph{width:360px;padding:18px 16px 22px;background:var(--surface)}
+.lab{font:700 13px/1 var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+h2{font:700 22px/1.15 var(--fd);margin:0 0 14px}
+h3{font:700 17px/1.2 var(--fd);margin:18px 0 10px}
+small{color:var(--muted)}
+/* ---------- A: tessere ---------- */
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.tile{border-radius:16px;padding:12px 12px 11px;background:var(--surface2);border:1px solid var(--line);min-width:0}
+.tile.big{grid-column:span 2;background:var(--accent);color:var(--accent-ink);border:0;display:flex;align-items:center;gap:14px}
+.tile .n{font:700 30px/1 var(--fd)}
+.tile.big .n{font-size:44px}
+.tile .t{font:500 13px/1.3 var(--fb);color:var(--muted);margin-top:4px}
+.tile.big .t{color:#ffffffd0;font-size:14px}
+.tile .v{font:600 15px/1.25 var(--fb);overflow-wrap:anywhere}
+.tile .ic{font-size:20px;line-height:1;margin-bottom:6px}
+.bar{height:8px;border-radius:4px;background:#ffffff40;overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:#fff;border-radius:4px}
+.flags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;font-size:18px}
+/* ---------- B: anello e barre ---------- */
+.ring{display:flex;align-items:center;gap:16px}
+.ring svg{flex:none}
+.ring .rt b{font:700 26px/1 var(--fd);display:block}
+.mb{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;align-items:end;height:84px;margin-top:6px}
+.mb i{display:block;background:var(--accent);border-radius:4px 4px 0 0;opacity:.85}
+.mb i.z{background:var(--line)}
+.ml{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;font:500 11px/1.6 var(--fb);color:var(--muted);text-align:center}
+.hb{display:grid;gap:8px}
+.hb div{display:grid;grid-template-columns:96px minmax(0,1fr) 26px;gap:8px;align-items:center;font-size:14px}
+.hb span.b{height:12px;border-radius:6px;background:var(--accent-soft);overflow:hidden}
+.hb span.b i{display:block;height:100%;background:var(--accent);border-radius:6px}
+.hb b{text-align:right;font-weight:600}
+/* ---------- C: racconto ---------- */
+.story{border-radius:20px;background:linear-gradient(160deg,#1B6A4F,#0F4433);color:#fff;padding:18px 18px 16px}
+.story p{margin:0 0 10px;font:400 17px/1.45 var(--fd)}
+.story b{font-weight:700;color:#FFE7A3}
+.story .big{font:700 52px/1 var(--fd);color:#fff;display:block;margin:2px 0 6px}
+.shelf{display:flex;align-items:flex-end;gap:3px;height:70px;margin:12px 0 4px;padding:0 4px;border-bottom:3px solid #ffffff60}
+.shelf i{display:block;width:12px;border-radius:2px 2px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);font:500 14px/1 var(--fb)}
+.chip b{font-weight:700}
+.note{font-size:13px;color:var(--muted);margin:14px 0 0}
+</style></head><body>
+
+<!-- ===================== A · TESSERE ===================== -->
+<div class="ph" id="A">
+  <p class="lab">Proposta A · Tessere</p>
+  <h2>I tuoi numeri</h2>
+  <div class="tiles">
+    <div class="tile big"><div><div class="n">18</div><div class="t">libri letti nel 2026</div></div>
+      <div style="flex:1;min-width:0"><div style="font:600 14px var(--fb)">Obiettivo 24</div><div class="bar"><i style="width:75%"></i></div><div class="t" style="margin-top:6px">5.240 pagine</div></div></div>
+    <div class="tile"><div class="ic">📚</div><div class="n">124</div><div class="t">libri in libreria</div></div>
+    <div class="tile"><div class="ic">📖</div><div class="n">31.870</div><div class="t">pagine lette</div></div>
+    <div class="tile"><div class="ic">✍️</div><div class="v">Italo Calvino</div><div class="t">autore più letto · 7 libri</div></div>
+    <div class="tile"><div class="ic">🏷️</div><div class="v">Romanzo</div><div class="t">genere più letto · 42 libri</div></div>
+    <div class="tile"><div class="ic">🏁</div><div class="v">«Palomar»</div><div class="t">ultimo libro letto</div></div>
+    <div class="tile"><div class="ic">🐘</div><div class="v">«Guerra e pace»</div><div class="t">il più lungo · 1.374 pagine</div></div>
+    <div class="tile" style="grid-column:span 2"><div class="ic">🌍</div><div class="v">9 paesi</div><div class="flags">🇮🇹 🇫🇷 🇷🇺 🇬🇧 🇺🇸 🇨🇴 🇦🇷 🇯🇵 🇩🇪</div></div>
+    <div class="tile"><div class="ic">🤝</div><div class="n">3</div><div class="t">libri prestati adesso</div></div>
+    <div class="tile"><div class="ic">📅</div><div class="v">marzo 2026</div><div class="t">su Next Libris da</div></div>
+  </div>
+  <p class="note">Ogni numero è una tessera con un'icona; in cima la tessera grande dell'anno, con l'obiettivo (facoltativo).</p>
+</div>
+
+<!-- ===================== B · GRAFICI ===================== -->
+<div class="ph" id="B">
+  <p class="lab">Proposta B · Grafici</p>
+  <h2>I tuoi numeri</h2>
+  <div class="ring">
+    <svg width="104" height="104" viewBox="0 0 104 104"><circle cx="52" cy="52" r="44" fill="none" stroke="#DCEEE6" stroke-width="12"/>
+      <circle cx="52" cy="52" r="44" fill="none" stroke="#1B6A4F" stroke-width="12" stroke-linecap="round" stroke-dasharray="207 277" transform="rotate(-90 52 52)"/>
+      <text x="52" y="50" text-anchor="middle" font-family="Bricolage Grotesque" font-weight="700" font-size="26" fill="#16262A">18</text>
+      <text x="52" y="68" text-anchor="middle" font-family="IBM Plex Sans" font-size="11" fill="#55656A">su 24</text></svg>
+    <div class="rt"><b>18 libri</b><small>letti nel 2026 · 5.240 pagine</small><br><small>Totale: 96 libri · 31.870 pagine</small></div>
+  </div>
+  <h3>Mese per mese</h3>
+  <div class="mb"><i style="height:30%"></i><i style="height:45%"></i><i style="height:20%"></i><i style="height:60%"></i><i style="height:35%"></i><i style="height:80%"></i><i style="height:100%"></i><i style="height:55%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:25%"></i><i class="z" style="height:4%"></i></div>
+  <div class="ml"><span>G</span><span>F</span><span>M</span><span>A</span><span>M</span><span>G</span><span>L</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+  <h3>Autori più letti</h3>
+  <div class="hb">
+    <div><span>Calvino</span><span class="b"><i style="width:100%"></i></span><b>7</b></div>
+    <div><span>Pirandello</span><span class="b"><i style="width:71%"></i></span><b>5</b></div>
+    <div><span>García Márquez</span><span class="b"><i style="width:57%"></i></span><b>4</b></div>
+  </div>
+  <h3>Generi</h3>
+  <div class="hb">
+    <div><span>Romanzo</span><span class="b"><i style="width:100%"></i></span><b>42</b></div>
+    <div><span>Giallo</span><span class="b"><i style="width:40%"></i></span><b>17</b></div>
+    <div><span>Fantascienza</span><span class="b"><i style="width:26%"></i></span><b>11</b></div>
+  </div>
+  <p class="note">Un anello per l'anno, le barre dei mesi e le classifiche corte (prime tre). Paesi con le bandierine sotto, come oggi.</p>
+</div>
+
+<!-- ===================== C · RACCONTO ===================== -->
+<div class="ph" id="C">
+  <p class="lab">Proposta C · Racconto</p>
+  <h2>I tuoi numeri</h2>
+  <div class="story">
+    <p>Nel 2026 hai letto</p>
+    <span class="big">18 libri</span>
+    <p>cioè <b>5.240 pagine</b>: impilate, sono alte come <b>un tavolo</b>.</p>
+    <div class="shelf">
+      <i style="height:60%;background:#E9C46A"></i><i style="height:80%;background:#F4A261"></i><i style="height:70%;background:#fff"></i><i style="height:95%;background:#8AB17D"></i><i style="height:55%;background:#E76F51"></i><i style="height:85%;background:#E9C46A"></i><i style="height:65%;background:#fff"></i><i style="height:90%;background:#2A9D8F"></i><i style="height:75%;background:#F4A261"></i><i style="height:60%;background:#8AB17D"></i><i style="height:100%;background:#E9C46A"></i><i style="height:70%;background:#fff"></i><i style="height:80%;background:#E76F51"></i><i style="height:58%;background:#2A9D8F"></i><i style="height:88%;background:#F4A261"></i><i style="height:66%;background:#fff"></i><i style="height:92%;background:#8AB17D"></i><i style="height:72%;background:#E9C46A"></i>
+    </div>
+    <p style="font-size:15px">Il tuo autore dell'anno è <b>Italo Calvino</b> (4 libri) e hai viaggiato in <b>9 paesi</b> 🇮🇹 🇫🇷 🇷🇺 🇨🇴 🇯🇵 …</p>
+  </div>
+  <div class="chips">
+    <span class="chip">📚 <b>124</b> in libreria</span><span class="chip">📖 <b>31.870</b> pagine in tutto</span>
+    <span class="chip">🏷️ <b>Romanzo</b></span><span class="chip">🐘 <b>Guerra e pace</b> · 1.374 p.</span>
+    <span class="chip">🏁 <b>Palomar</b></span><span class="chip">🤝 <b>3</b> prestati</span>
+  </div>
+  <p class="note">Una scheda colorata che racconta l'anno a parole (un libro = un dorso sullo scaffale), sotto il resto in pillole.</p>
+</div>
+</body></html>

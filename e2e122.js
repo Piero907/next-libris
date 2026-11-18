@@ -128,7 +128,10 @@ const base = 'http://localhost:' + CFG.port(8322);
   assert(new RegExp('3 libri · 1 letto nel ' + y).test(t), 'riga dei numeri: ' + t);
   assert(/Libri letti 2 620 pagine/.test(t) && /Autore più letto Umberto Eco 1 libro|Autore più letto Italo Calvino 1 libro/.test(t) && /Genere più letto Romanzo 2 libri/.test(t) && /Libri prestati 1 adesso/.test(t), 'i numeri: ' + t);
   assert(/Tutte le citazioni 2 citazioni/.test(t) && /Scegli le citazioni/.test(t), 'citazioni: ' + t);
-  assert(/Cosa vedono gli amici La foto e nient.altro/.test(t), 'cosa vedono gli amici: ' + t);
+  assert(/Amici e privacy Gli amici vedono la foto e nient.altro/.test(t), 'cosa vedono gli amici (scorciatoia, 18/11/2026): ' + t);
+  assert.deepStrictEqual(await A.$$eval('#profBody .pf-set [data-p]', a => a.map(x => x.dataset.p)), ['acc', 'privacy', 'push', 'keys', 'menu'], 'scorciatoie del profilo');
+  assert(!/Metti una foto/.test(t) && !/Preferiti/.test(t), 'via «Metti una foto» e i Preferiti');
+  assert(await A.$eval('#profH', x => x.classList.contains('sr')), 'titolo «Il tuo profilo» solo per i lettori di schermo');
   await wait(600);
   assert.strictEqual(DB.prof.uA.stat && DB.prof.uA.stat.l, 2, 'i numeri arrivano al profilo online'); assert.strictEqual(DB.prof.uA.stat.n, 3);
   const posts0 = DB.posts; await A.evaluate(() => window.NLProfilo.push()); await wait(300); assert.strictEqual(DB.posts, posts0, 'senza cambi non rimanda niente');
@@ -138,7 +141,8 @@ const base = 'http://localhost:' + CFG.port(8322);
   await shot(A, 'profilo-scegli-citazione-360');
   await A.click('#profBody .pf-qpick'); await wait(600);     // dal giro 6 la preferita è una citazione in evidenza (puntina): prova completa in e2e125
   assert.strictEqual(await A.$eval('#profBody .pf-qpick', x => x.getAttribute('aria-pressed')), 'true', 'la citazione scelta ha la puntina');
-  await A.click('#profBody [data-p="back"]'); await wait(300);
+  await A.click('#profClose'); await wait(300);   // «Chiudi» da «Scegli le citazioni» torna al profilo (18/11/2026)
+  assert(await A.$eval('#profSheet', x => !x.hidden), 'il profilo resta aperto');
   t = await txt(A, '#profBody'); assert(/Citazioni in evidenza 1 «Leggere il mondo come un libro» — Italo Calvino, Palomar · pagina 33/.test(t), 'in evidenza nel profilo: ' + t);
   assert.strictEqual(await A.evaluate(() => window.NL.get('a1').qs[0].pin), 1, 'la puntina sta nel libro'); assert(!/appunto/.test(JSON.stringify(DB.prof.uA)), 'mai gli appunti');
   // foto: quella di Google, poi una scelta

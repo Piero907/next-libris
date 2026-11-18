@@ -187,8 +187,8 @@ const base = 'http://localhost:' + CFG.port(8325);
   // ---- il tuo profilo ----
   await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(600);
   let t = await txt(A, '#profBody');
-  assert(/In lettura 1/.test(t) && /Preferiti 1/.test(t) && /Consigliati 1/.test(t), 'le tre file: ' + t);
-  assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['a3', 'a2', 'a1']);
+  assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 1/.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
+  assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['a3', 'a1']);   // In lettura, Consigliati (via i Preferiti)
   assert(/Citazioni in evidenza 3 «Prima citazione» — Italo Calvino, Palomar · pagina 33 «Seconda citazione»/.test(t) && /«Stat rosa pristina nomine»/.test(t) && /Cambia/.test(t), 'citazioni in evidenza: ' + t);
   assert(/Ultimo libro letto «Palomar» Italo Calvino/.test(t) && /Libro più lungo letto «Il nome della rosa» 500 pagine/.test(t) && new RegExp('Autore più letto nel ' + y + ' Italo Calvino 1 libro').test(t), 'numeri nuovi: ' + t);
   await noSide(A, '#profSheet .sheet-in', 'il tuo profilo a 360'); await shot(A, 'profilo-mio-360');
@@ -202,11 +202,13 @@ const base = 'http://localhost:' + CFG.port(8325);
 
   // ---- «Amici e privacy»: tre interruttori nuovi, accesi di partenza ----
   await A.evaluate(() => window.NLAmici.open(true)); await wait(700);
-  assert.deepStrictEqual(await A.$$eval('#friPLet, #friPPref, #friPCons', x => x.map(i => i.checked)), [true, true, true], 'accesi di partenza');
+  assert.deepStrictEqual(await A.$$eval('#friPLet, #friPCons', x => x.map(i => i.checked)), [true, true], 'accesi di partenza');
+  assert(!(await A.$('#friPPref')), 'niente più «preferiti» (18/11/2026)');
   assert.deepStrictEqual(await A.$$eval('#friPCit, #friPStat, #friPCits', x => x.map(i => i.checked)), [false, false, false], 'citazioni e numeri spenti di partenza');
   t = await A.body(); assert(/Gli amici vedono cosa sto leggendo/.test(t) && /Gli amici vedono i libri che consiglio/.test(t) && /Gli amici vedono le mie citazioni in evidenza Quelle con la puntina \(fino a 3\)/.test(t), 'testi: ' + t);
-  await A.evaluate(() => document.querySelector('#friPPref').scrollIntoView({ block: 'center' })); await wait(200);
-  await A.click('#friPPref'); await wait(500); assert.strictEqual(DB.prof.uA.p_pref, false, 'preferiti nascosti agli amici');
+  await A.evaluate(() => document.querySelector('#friPCons').scrollIntoView({ block: 'center' })); await wait(200);
+  await A.click('#friPCons'); await wait(500); assert.strictEqual(DB.prof.uA.p_cons, false, 'consigliati nascosti agli amici');
+  await A.click('#friPCons'); await wait(500); assert.strictEqual(DB.prof.uA.p_cons, true);
   await noSide(A, '#friSheet .sheet-in', 'Amici e privacy a 360'); await shot(A, 'privacy-360');
   await A.keyboard.press('Escape'); await wait(200);
 
@@ -223,8 +225,8 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-icos > button', x => x.map(b => b.dataset.p + (b.classList.contains('gb-drop') ? '!' : '') + ':' + b.getAttribute('aria-label'))), ['swap:Prestiti e regali tra te e Bruno', 'drop!:Togli Bruno dagli amici'], 'icone (la chiave solo se ne hai una)');
   assert.strictEqual(await A.$eval('#profBody [data-p="drop"]', x => getComputedStyle(x).color), await A.evaluate(() => { const d = document.createElement('i'); d.style.color = 'var(--bad)'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; }), '«togli dagli amici» in rosso');
   assert(/Segui i suoi Desideri Bruno ti mostra già i suoi Desideri: seguili e scopri cosa sogna di leggere\. Magari ci trovi il regalo giusto, o il tuo prossimo libro\. Ti scriviamo al massimo una volta al giorno, solo quando c.è qualcosa di nuovo, e Bruno non lo saprà\./.test(t), 'frase scelta: ' + t);
-  assert(/In lettura 1/.test(t) && /Preferiti 2/.test(t) && /Consigliati 1/.test(t), 'le sue file: ' + t);
-  assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['b1', 'b2,b3', 'b3']);
+  assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 1/.test(t), 'le sue file: ' + t);
+  assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['b1', 'b3']);
   assert(/Citazioni in evidenza «Una frase con la puntina» — Natalia Ginzburg, Lessico famigliare · pagina 12/.test(t) && !/Senza puntina/.test(t) && !/appunto segreto/.test(t), 'citazioni in evidenza di Bruno: ' + t);
   assert(/I suoi numeri Libri letti 22 6\.100 pagine/.test(t) && new RegExp('Autore più letto nel ' + y + ' Natalia Ginzburg 2 libri').test(t) && /Ultimo libro letto «Lessico famigliare» Natalia Ginzburg/.test(t) && /Libro più lungo letto «Guerra e pace» 1\.400 pagine/.test(t), 'numeri di Bruno: ' + t);
   assert(/In comune con te 2 libri il 5% dei suoi/.test(t) && /Prestiti tra voi 3 2 da te · 1 a te/.test(t), 'numeri tra voi due: ' + t);

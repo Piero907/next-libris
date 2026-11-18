@@ -99,7 +99,7 @@ const base = 'http://localhost:' + CFG.port(8302);
   assert(await A.$('header.top #btnFri') && !(await A.$('#btnFriN')), 'icona Amici in testata, senza numero (il numero è sulla campanella)');
   await A.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
   const menu = await A.evaluate(() => { const o = document.getElementById('drawerOpts'); return { heads: [...o.querySelectorAll('h3')].filter(h => h.getClientRects().length).map(h => h.textContent),
-    m: [...document.getElementById('friMenu').children].map(x => x.id), after: document.getElementById('friMenuH').previousElementSibling.classList.contains('dmain') && document.querySelector('#drawerOpts .ddon').nextElementSibling.classList.contains('dmain'),   // 18/11/2026: Sostieni in cima, Amici dopo Filtri/Statistiche   // dal 17/11 pomeriggio: Sostieni tra Statistiche e Amici
+    m: [...document.getElementById('friMenu').children].map(x => x.id), after: document.getElementById('friMenuH').previousElementSibling.classList.contains('ddon') && document.querySelector('#drawerOpts .ddon').previousElementSibling.classList.contains('dmain'),   // 18/11/2026 sera: Sostieni sempre al centro, sopra Amici   // 18/11/2026: Sostieni in cima, Amici dopo Filtri/Statistiche   // dal 17/11 pomeriggio: Sostieni tra Statistiche e Amici
     acc: document.getElementById('goAcc').parentNode.id, fri: document.getElementById('goFriTxt').textContent }; });
   console.log('[menu]', JSON.stringify(menu));
   assert.deepStrictEqual(menu.heads, ['Amici', 'La tua libreria']); assert(menu.after && menu.m.join() === 'goFri,goKeys', 'Amici subito dopo Filtri/Statistiche e Sostieni («Invita» nella finestra Amici, 17/11/2026)');
