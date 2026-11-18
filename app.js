@@ -366,8 +366,8 @@ function cleanBook(x) {
     xa: L.str(x.xa).slice(0, 80),
     sx: /^[0-9a-f-]{36}$/.test(L.str(x.sx)) ? x.sx : '',                 // prestito o regalo tra amici dell'app (modulo amici, 16/11/2026)
     sk: ['p', 'q', 'r'].indexOf(x.sk) >= 0 ? x.sk : '', sda: L.str(x.sda).slice(0, 30),   // q: prestito ricevuto che hai restituito, da confermare da chi l'ha prestato;   // ricevuto: in prestito (p) o in regalo (r), da chi
-    fav: !!x.fav,                                   // preferito
-    lc: !!x.lc && !x.w,                             // «Lo consiglio» (giro 6): gli amici lo vedono nel profilo; solo libri della Libreria
+    fav: (!!x.lc || !!x.fav) && !x.w,              // giro 10 (Piero, 18/11/2026): via i preferiti, la stella vuol dire «Lo consiglio»; fav resta uguale a lc
+    lc: (!!x.lc || !!x.fav) && !x.w,               // «Lo consiglio»: gli amici lo vedono nel profilo; solo libri della Libreria (i vecchi preferiti diventano consigliati)
     fr: L.str(x.fr).slice(0, 30), fl: L.str(x.fl).slice(0, 40),     // ricevuto da (nome) e da quale lista
     ds: L.str(x.ds).slice(0, L.DESC_MAX + 1), dsf: x.dsf === 'g' || x.dsf === 'o' ? x.dsf : '',   // descrizione e fonte (Google, Open Library)
     dsl: /^[a-z]{2}$/.test(L.str(x.dsl)) ? x.dsl : '', dsn: Number(x.dsn) || 0, dsq: x.dsq ? 1 : 0,                     // lingua; quando non e' stata trovata
