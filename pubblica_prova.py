@@ -8,7 +8,7 @@ APP = os.path.abspath(os.environ.get('APP_DIR') or os.path.join(here, '..', 'nex
 DST = os.path.abspath(os.environ.get('PROVA_DIR') or os.path.join(here, '..', 'next-libris-prova'))
 note = [a.strip() for a in sys.argv[1:] if a.strip()] or ['aggiornamento']
 nota = note[0]
-FILES = ['index.html', 'app.js', 'app-aggiungi.js', 'app-vista.js', 'app-scheda.js', 'app-per-te.js', 'app-elenco.js', 'app-finestre.js', 'app-filtri.js', 'app-strumenti.js', 'app-avvio.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt', '.nojekyll', 'cloudflare-sbn-worker.js', 'privacy.html', 'indirizzo.js', 'avvio.js', 'trasloco.html', 'trasloco.js']
+FILES = ['index.html', 'app.js', 'app-aggiungi.js', 'app-vista.js', 'app-scheda.js', 'app-per-te.js', 'app-elenco.js', 'app-finestre.js', 'app-filtri.js', 'app-strumenti.js', 'app-wiki.js', 'app-avvio.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt', '.nojekyll', 'cloudflare-sbn-worker.js', 'privacy.html', 'indirizzo.js', 'avvio.js', 'trasloco.html', 'trasloco.js']
 DIRS = ['icons', 'vendor']
 assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository della copia di prova: ' + DST
 MODULES = ['wrap.js', 'wrap.css', 'layout.js', 'layout.css', 'schede.js', 'schede.css', 'social.js', 'social.css', 'amici.js', 'amici.css', 'notifiche.js', 'notifiche.css', 'ricerche.js', 'ricerche.css', 'push.js', 'push.css']        # moduli che si possono togliere (togli_modulo.py): se non ci sono piu' nell'app, spariscono anche qui
