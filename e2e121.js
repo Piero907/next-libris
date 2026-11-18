@@ -37,9 +37,11 @@ const v = (o) => { const r = {}; Object.keys(o).forEach(k => { r[k] = { type: 'l
 const E = 'http://www.wikidata.org/entity/';
 const INFO = {
   Q12807: [v({ k: 'c', iso: 'IT' }), v({ k: 'b', iso: 'IT' }),
-    v({ k: 'f', f: E + 'Q1', fLabel: 'Il nome della rosa', d: '1986-10-16T00:00:00Z', dirLabel: 'Jean-Jacques Annaud', tv: '0', w: E + 'Q172850', art: 'https://it.wikipedia.org/wiki/Il_nome_della_rosa_(film)' }),
-    v({ k: 'f', f: E + 'Q2', fLabel: 'Il nome della rosa', d: '2019-03-04T00:00:00Z', dirLabel: 'Giacomo Battiato', tv: '1', w: E + 'Q172850' }),
-    v({ k: 'f', f: E + 'Q3', fLabel: 'Q3', tv: '0', w: E + 'Q172850' }),                    // senza titolo: non si mostra
+    v({ k: 'f', f: E + 'Q1', fLabel: 'Il nome della rosa', d: '1986-10-16T00:00:00Z', dirLabel: 'Jean-Jacques Annaud', t: E + 'Q11424', w: E + 'Q172850', art: 'https://it.wikipedia.org/wiki/Il_nome_della_rosa_(film)' }),
+    v({ k: 'f', f: E + 'Q2', fLabel: 'Il nome della rosa', d: '2019-03-04T00:00:00Z', dirLabel: 'Giacomo Battiato', t: E + 'Q1259759', w: E + 'Q172850' }),
+    v({ k: 'f', f: E + 'Q4', fLabel: 'La Abadía del Crimen', d: '1987-01-01T00:00:00Z', t: E + 'Q7889', w: E + 'Q172850' }),      // videogioco: tipo da chiedere, non è un film
+    v({ k: 'f', f: E + 'Q5', fLabel: 'Il nome della rosa a cartoni', d: '1999-01-01T00:00:00Z', t: E + 'Q777', w: E + 'Q172850' }),  // tipo nuovo che è un film
+    v({ k: 'f', f: E + 'Q3', fLabel: 'Q3', t: E + 'Q11424', w: E + 'Q172850' }),                    // senza titolo: non si mostra
     v({ k: 'w', w: E + 'Q172850', wl: 'Il nome della rosa' }), v({ k: 'w', w: E + 'Q172850', wl: 'The Name of the Rose' })],
   Q1001: [v({ k: 'c', iso: 'IT' }), v({ k: 'b', iso: 'CU' })],                             // nato a Cuba: Italia (nascita: Cuba)
   Q7243: [v({ k: 'b', iso: 'RU' })],                                                       // solo Impero russo (scartato dalla domanda): paese di nascita
@@ -47,16 +49,16 @@ const INFO = {
   Q34670: [v({ k: 'c', iso: 'FR', end: '1960-01-04T00:00:00Z' }), v({ k: 'c', iso: 'DZ', end: '1950-01-01T00:00:00Z' }), v({ k: 'c', iso: 'FR', pref: '1' }), v({ k: 'b', iso: 'DZ' })]
 };
 const WORKS = {
-  Q12807: [v({ w: E + 'Q172850', wLabel: 'Il nome della rosa', it: 'Il nome della rosa', d: '1980-01-01T00:00:00Z', ser: '0' }),
-    v({ w: E + 'Q500', wLabel: 'Il pendolo di Foucault', it: 'Il pendolo di Foucault', d: '1988-01-01T00:00:00Z', ser: '0' }),
-    v({ w: E + 'Q501', wLabel: 'L\'isola del giorno prima', it: 'L\'isola del giorno prima', d: '1994-01-01T00:00:00Z', ser: '0' }),
-    v({ w: E + 'Q502', wLabel: 'Q502', ser: '0' }),                                          // senza titolo: scartata
-    v({ w: E + 'Q503', wLabel: 'The Prague Cemetery', d: '2010-01-01T00:00:00Z', ser: '0' })],  // senza titolo italiano: «titolo originale»
-  Q1001: [v({ w: E + 'Q600', wLabel: 'Il barone rampante', it: 'Il barone rampante', d: '1957-01-01T00:00:00Z', ser: '0' }), v({ w: E + 'Q601', wLabel: 'Palomar', it: 'Palomar', d: '1983-01-01T00:00:00Z', ser: '0' })]
+  Q12807: [v({ w: E + 'Q172850', wLabel: 'Il nome della rosa', it: 'Il nome della rosa', d: '1980-01-01T00:00:00Z', t: E + 'Q7725634' }),
+    v({ w: E + 'Q500', wLabel: 'Il pendolo di Foucault', it: 'Il pendolo di Foucault', d: '1988-01-01T00:00:00Z', t: E + 'Q7725634' }),
+    v({ w: E + 'Q501', wLabel: 'L\'isola del giorno prima', it: 'L\'isola del giorno prima', d: '1994-01-01T00:00:00Z', t: E + 'Q7725634' }),
+    v({ w: E + 'Q502', wLabel: 'Q502', t: E + 'Q7725634' }),                                          // senza titolo: scartata
+    v({ w: E + 'Q503', wLabel: 'The Prague Cemetery', d: '2010-01-01T00:00:00Z', t: E + 'Q7725634' })],  // senza titolo italiano: «titolo originale»
+  Q1001: [v({ w: E + 'Q600', wLabel: 'Il barone rampante', it: 'Il barone rampante', d: '1957-01-01T00:00:00Z', t: E + 'Q7725634' }), v({ w: E + 'Q601', wLabel: 'Palomar', it: 'Palomar', d: '1983-01-01T00:00:00Z', t: E + 'Q7725634' })]
 };
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
-  const errors = [], asked = { info: 0, works: 0 };
+  const errors = [], asked = { info: 0, works: 0, types: [] };
   const wait = H.wait;
   const p = await (await browser.createBrowserContext()).newPage();
   await p.setViewport({ width: 412, height: 915, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
@@ -80,8 +82,15 @@ const WORKS = {
       return json(r, { type: 'standard', title: t.replace(/_/g, ' '), description: w[1], extract: t.replace(/_/g, ' ') + ' è stato uno scrittore.', wikibase_item: w[0], thumbnail: { source: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/' + t + '.jpg/330px-' + t + '.jpg' } });
     }
     if (u.startsWith('https://query.wikidata.org/sparql')) {
-      const q = decodeURIComponent(u.split('query=')[1] || ''), id = (/wd:(Q\d+)/.exec(q) || [])[1], works = q.indexOf('wdt:P31 ?t') > 0;
+      const q = decodeURIComponent(u.split('query=')[1] || ''), id = (/wd:(Q\d+)/.exec(q) || [])[1], works = q.indexOf('FILTER(?t IN') > 0;
       assert(/^SELECT /.test(q) && u.indexOf('format=json') > 0, 'domanda a Wikidata scritta male');
+      assert(q.indexOf('wdt:P31/wdt:P279*') < 0, 'niente percorso P31/P279* (lentissimo sul servizio vero)');
+      if (q.indexOf('wdt:P279*') > 0) {                                                      // tipi nuovi: film o serie TV?
+        const ts = (q.match(/VALUES \?t \{([^}]*)\}/) || ['', ''])[1].trim().split(/\s+/).map(x => x.replace('wd:', ''));
+        asked.types.push(ts.join());
+        return json(r, { results: { bindings: ts.filter(t => t === 'Q777').map(t => v({ t: E + t, cls: E + 'Q11424' })) } });
+      }
+      if (id === 'Q7243' && !asked.fail) { asked.fail = 1; return json(r, {}, 502); }          // il servizio vero ogni tanto risponde 502: si riprova da solo
       asked[works ? 'works' : 'info']++;
       return json(r, { results: { bindings: (works ? WORKS : INFO)[id] || [] } });
     }
@@ -92,7 +101,8 @@ const WORKS = {
   await p.goto(base + '/', { waitUntil: 'load' }); await wait(1500); await hideAll();
 
   // i dati degli autori si cercano da soli, uno alla volta, e si salvano sul telefono
-  await p.waitForFunction(() => { try { const m = JSON.parse(localStorage.getItem('catalogo-libri-auwd') || '{}'); return Object.keys(m).length >= 7; } catch (e) { return false; } }, { polling: 300, timeout: 40000 });
+  await p.waitForFunction(() => { try { const m = JSON.parse(localStorage.getItem('catalogo-libri-auwd') || '{}'); return Object.keys(m).filter(k => k[0] !== '~').length >= 6; } catch (e) { return false; } }, { polling: 300, timeout: 40000 });
+  await wait(600);
   const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-auwd')));
   console.log('[salvati]', Object.keys(saved).filter(k => k[0] !== '~').map(k => k + '=' + (saved[k].c || '-') + (saved[k].b ? '(' + saved[k].b + ')' : '')).join(' · '));
   assert.strictEqual(saved['umberto eco'].c, 'IT'); assert(!saved['umberto eco'].b, 'nascita uguale: non si ripete');
@@ -101,8 +111,11 @@ const WORKS = {
   assert.strictEqual(saved['vladimir nabokov'].c, 'US'); assert.strictEqual(saved['vladimir nabokov'].b, 'RU');
   assert.strictEqual(saved['albert camus'].c, 'FR', 'tra più paesi vince quello ancora valido'); assert.strictEqual(saved['albert camus'].b, 'DZ');
   assert(saved['tizio sconosciuto'] && !saved['tizio sconosciuto'].q, 'autore senza voce: segnato come non trovato');
-  assert.strictEqual(saved['umberto eco'].f.length, 2, 'due film/serie con il titolo (quello senza titolo scartato)');
+  assert.deepStrictEqual(saved['umberto eco'].f.map(f => f.q + (f.s ? 's' : 'f')), ['Q1f', 'Q5f', 'Q2s'], 'film e serie: via quello senza titolo e il videogioco, in ordine di anno');
+  assert.deepStrictEqual(asked.types, ['Q7889,Q777'], 'una sola domanda per i tipi nuovi (film e miniserie sono già noti)');
+  assert.deepStrictEqual(saved['~ty'], { Q7889: '', Q777: 'f' }, 'i tipi chiesti restano salvati');
   assert.strictEqual(asked.info, 5, 'una sola domanda a Wikidata per autore');
+  assert.strictEqual(asked.fail, 1, 'la risposta 502 è stata riprovata');
 
   // 12) Raggruppa per Paese: copertine con la bandiera, un solo paese per autore
   await p.evaluate(() => { const s = document.querySelector('#grp'); s.value = 'pae'; s.dispatchEvent(new Event('change', { bubbles: true })); }); await wait(400);
@@ -176,7 +189,7 @@ const WORKS = {
   const fb = await p.$eval('#list .filmbox[data-film="r1"]', e => ({ hidden: e.hidden, txt: e.textContent.replace(/\s+/g, ' ').trim(), a: [...e.querySelectorAll('a')].map(x => x.getAttribute('href')), vis: e.getBoundingClientRect().height > 0 }));
   console.log('[film]', fb.txt);
   assert.strictEqual(fb.hidden, false); assert(fb.vis, 'la riga dei film si vede nella scheda');
-  assert.strictEqual(fb.txt, 'Al cinema: Il nome della rosa (1986, Jean-Jacques Annaud)Serie TV: Il nome della rosa (2019, Giacomo Battiato)');
+  assert.strictEqual(fb.txt, 'Al cinema: Il nome della rosa (1986, Jean-Jacques Annaud) · Il nome della rosa a cartoni (1999)Serie TV: Il nome della rosa (2019, Giacomo Battiato)');
   assert.deepStrictEqual(fb.a, ['https://it.wikipedia.org/wiki/Il_nome_della_rosa_(film)'], 'link solo alla voce italiana');
   await noOverflow('#list', 'scheda con i film');
   if (SHOTS) { await p.$eval('#list .filmbox[data-film="r1"]', e => e.scrollIntoView({ block: 'center' })); await wait(200); await p.screenshot({ path: path.join(SHOTS, 'film-scheda-412.png') }); }
@@ -187,12 +200,12 @@ const WORKS = {
   // «Dai tuoi libri al cinema» in «Per te»
   await p.click('#layNav [data-l="you"]'); await wait(400);
   const you = await p.$$eval('#layYouList [data-l]', a => a.map(x => x.dataset.l + ':' + x.querySelector('small').textContent));
-  assert(you.some(x => x === 'films:2 film e serie tratti dai tuoi libri'), 'voce «Dai tuoi libri al cinema» in Per te: ' + you.join(' | '));
+  assert(you.some(x => x === 'films:3 film e serie tratti dai tuoi libri'), 'voce «Dai tuoi libri al cinema» in Per te: ' + you.join(' | '));
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'film-per-te-412.png') });
   await p.click('#layYouList [data-l="films"]'); await wait(500);
   const fl = await p.$eval('#filmBody', e => [...e.querySelectorAll('.fm-row')].map(r => r.querySelector('.fm-bt b').textContent + ': ' + [...r.querySelectorAll('.fm-films li')].map(l => l.textContent.replace(/\s+/g, ' ').trim()).join(' / ')));
   console.log('[cinema]', fl.join(' · '));
-  assert.deepStrictEqual(fl, ['Il nome della rosa: Film Il nome della rosa (1986, Jean-Jacques Annaud) / Serie TV Il nome della rosa (2019, Giacomo Battiato)']);
+  assert.deepStrictEqual(fl, ['Il nome della rosa: Film Il nome della rosa (1986, Jean-Jacques Annaud) / Film Il nome della rosa a cartoni (1999) / Serie TV Il nome della rosa (2019, Giacomo Battiato)']);
   assert.strictEqual(await p.$eval('#filmSheet', e => !!e.querySelector('.sh-x')), true, 'la finestra ha la ×');
   await noOverflow('#filmSheet .sheet-in', 'finestra dei film');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'film-finestra-412.png') });
