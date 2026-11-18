@@ -1,3 +1,5 @@
+> **Aggiornamento 18/11/2026 (versione vera 105):** fatti e nella vera anche 25 Chat (con gruppi), 28 Foto del profilo, 31 Pagina del profilo, 33 Avviso sui desideri, 13 Guida di primo avvio, 22 chiave prestata nascosta (resta R5 per il worker), 36 app.js diviso in moduli. Resta da sistemare la prova e2e40 (incerta). Le altre voci qui sotto valgono ancora.
+
 # Next Libris: cose in sospeso
 
 Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i problemi che Piero ha chiesto di **tenere in sospeso**, con quanto serve per ripartire anche in una sessione nuova.
