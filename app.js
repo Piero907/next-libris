@@ -321,11 +321,20 @@ function apiFetch(url, init) {
   return fetch(url, init);
 }
 /* worker SBN prestato (026, Piero 18/11/2026): l'indirizzo vero resta sul server, la funzione «libri» fa la richiesta */
+/* giro 11A (Piero 18/11/2026): 3.000 ricerche al giorno per amico col worker prestato (giorno UTC, come Cloudflare); poi x-nl-stop: mio */
+var LENTW_STOP = 'catalogo-libri-prestato-w-stop', lentWStopD = '';
+try { lentWStopD = ls.get(LENTW_STOP) || ''; } catch (e) { nlErr(e); }
+function lentWOut() { rollQuota(); return !!lentWStopD && lentWStopD === quota.ds && /worker-prestato\.invalid/.test(settings.sbnUrl || ''); }
 function lentWorker(da, isbn) {
   var S = window.NLSocial, no = { ok: false, status: 503, local: true, json: function () { return Promise.resolve({}); } };
-  if (!S || !S.raw || !S.auth()) return Promise.resolve(no);
+  if (!S || !S.raw || !S.auth() || lentWOut()) return Promise.resolve(no);
   return S.raw('/functions/v1/libri?da=' + da + '&isbn=' + encodeURIComponent(isbn)).then(function (r) {
-    if ((r.headers.get('x-nl-stop') || '') === 'no') emit('lentGone');
+    var stop = r.headers.get('x-nl-stop') || '';
+    if (stop === 'no') emit('lentGone');
+    else if (stop === 'mio' && lentWStopD !== quota.ds) {
+      rollQuota(); lentWStopD = quota.ds; ls.set(LENTW_STOP, lentWStopD);
+      toast('Per oggi hai finito le ricerche con il worker di ' + (lent().nome || 'un amico') + '. Fino a domattina l\'app cerca in Open Library e con Google.');
+    }
     return r;
   });
 }
@@ -344,7 +353,7 @@ function svcPurge(vals) {
   backupReady = null; saveSettings();
   if (!$('#optSheet').hidden) renderSvc();
 }
-function lookupOpts() { return { gbKey: settings.gbKey, sbnUrl: settings.sbnUrl && sUsed() < S_STOP ? settings.sbnUrl : '', fetch: apiFetch, lean: !googleLeft(true) }; }
+function lookupOpts() { return { gbKey: settings.gbKey, sbnUrl: settings.sbnUrl && sUsed() < S_STOP && !lentWOut() ? settings.sbnUrl : '', fetch: apiFetch, lean: !googleLeft(true) }; }
 /* ricerca per ISBN: prima l'archivio comune (modulo ricerche.js: libri gia' cercati da altri, senza Google), poi le banche dati; il risultato va nell'archivio */
 async function findIsbn(code) {
   var A = window.NL && window.NL.archive;
