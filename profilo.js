@@ -44,18 +44,20 @@ function top(map) { var k = '', n = 0; Object.keys(map).forEach(function (x) { i
 function inLib(b) { return !b.w && !b.xs && b.sk !== 'p' && b.sk !== 'q'; }    // come il database: non desiderio, non uscito, non preso in prestito
 function stats() {
   var y = String(new Date().getFullYear()), bs = mine().filter(function (b) { return !b.w; });
-  var read = bs.filter(function (b) { return b.rs === 'ok'; }), au = {}, auy = {}, ge = {}, pa = {}, ul = null, lu = null;
+  var read = bs.filter(function (b) { return b.rs === 'ok'; }), au = {}, auy = {}, ge = {}, pa = {}, pay = {}, ul = null, lu = null;
   var st = { n: bs.filter(function (b) { return !b.xs; }).length, l: read.length, ly: 0, y: Number(y), pg: 0, pgy: 0, pr: bs.filter(function (b) { return b.p && !b.xs; }).length };
   read.forEach(function (b) {
     var pg = Number(b.pg) || 0, thisY = String(b.rd || '').slice(0, 4) === y;
     st.pg += pg; if (thisY) { st.ly++; st.pgy += pg; }
     var a0 = (NL.authorsOf(b) || [])[0]; if (a0) { au[a0] = (au[a0] || 0) + 1; if (thisY) auy[a0] = (auy[a0] || 0) + 1; }
     if (b.gen) ge[b.gen] = (ge[b.gen] || 0) + 1;
-    var c = NL.wdBookCountry ? NL.wdBookCountry(b) : ''; if (c) pa[c] = (pa[c] || 0) + 1;
+    var c = NL.wdBookCountry ? NL.wdBookCountry(b) : ''; if (c) { pa[c] = (pa[c] || 0) + 1; if (thisY) pay[c] = (pay[c] || 0) + 1; }
     if (b.t && b.rd && (!ul || b.rd > ul.rd || (b.rd === ul.rd && (Number(b.ts) || 0) > (Number(ul.ts) || 0)))) ul = b;   // ultimo libro letto
     if (b.t && pg && (!lu || pg > (Number(lu.pg) || 0))) lu = b;                                                        // il più lungo
   });
   var ta = top(au), tg = top(ge), ty = top(auy);
+  st.pay = Object.keys(pay).sort(function (a, b) { return pay[b] - pay[a] || a.localeCompare(b); }).slice(0, 40);   // paesi dell'anno (scheda dell'anno)
+  if (cur !== 'esempio' && my.ob && my.ob.y === st.y && my.ob.n > 0) st.ob = my.ob.n;                              // obiettivo dell'anno (facoltativo)
   if (ta[1]) { st.au = ta[0].slice(0, 60); st.aun = ta[1]; }
   if (ty[1]) { st.auy = ty[0].slice(0, 60); st.auyn = ty[1]; }
   if (tg[1]) { st.ge = tg[0].slice(0, 40); st.gen = tg[1]; }
@@ -169,7 +171,7 @@ function sheet() {
   return el;
 }
 document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var el = document.getElementById('profSheet'); if (el && !el.hidden) { if (mode) { mode = ''; paint(); } else close(); } } });
-function close() { var el = document.getElementById('profSheet'); if (el) el.hidden = true; cur = null; data = null; mode = ''; photoOpen = false; }
+function close() { var el = document.getElementById('profSheet'); if (el) el.hidden = true; cur = null; data = null; mode = ''; photoOpen = false; goalOpen = false; }
 async function open(id) {
   var el = sheet(); cur = id || null; data = null; mode = ''; photoOpen = false; el.hidden = false; paint();
   var si = el.querySelector('.sheet-in'); if (si) si.scrollTop = 0;
@@ -194,31 +196,69 @@ function numsLine(st) {
   var np = (st.pa || []).length; if (np) p.push('<b>' + np + '</b> ' + (np === 1 ? 'paese' : 'paesi'));
   return '<p class="pf-nums">' + p.join(' · ') + '</p>';
 }
-/* i numeri: st = quelli scelti da mostrare (o null); rel = quelli tra te e l'amico (libri in comune, prestiti tra voi) */
+/* ---------- i numeri (18/11/2026, scelta di Piero: «misto»): in cima la scheda colorata dell'anno (con l'obiettivo, facoltativo),
+   sotto le tessere con le icone. st = numeri scelti da mostrare (o null); rel = quelli tra te e l'amico ---------- */
+var goalOpen = false;
+function plur(n, a, b) { return nf(n) + ' ' + (n === 1 ? a : b); }
+function flags(list, max) {
+  list = (list || []).filter(function (c) { return /^[A-Z]{2}$/.test(c); });
+  return '<span class="pf-flags">' + list.slice(0, max).map(function (c) { return '<span title="' + esc(NL.wdCName ? NL.wdCName(c) : c) + '">' + (NL.wdFlagImg ? NL.wdFlagImg(c) : NL.wdFlag ? NL.wdFlag(c) : c) + '</span>'; }).join(' ') + (list.length > max ? ' …' : '') + '</span>';
+}
+function pileTxt(pages, books) {   // carta ~0,05 mm a pagina, copertina ~4 mm
+  var cm = Math.round(pages * 0.005 + books * 0.4); if (cm < 5) return '';
+  var cmp = cm >= 170 ? 'più di una persona' : cm >= 75 ? 'come un tavolo' : cm >= 45 ? 'come una sedia' : cm >= 30 ? 'come un righello' : cm >= 10 ? 'come una tazza' : '';
+  return ': impilati sono alti circa <b>' + (cm >= 100 ? (cm / 100).toFixed(1).replace('.', ',') + ' m' : cm + ' cm') + '</b>' + (cmp ? ', ' + cmp : '');
+}
+function yearCard(st, own, name) {
+  var y = new Date().getFullYear(), ly = st.y === y ? st.ly || 0 : 0, pgy = st.y === y ? st.pgy || 0 : 0, h = '';
+  var ed = own && cur !== 'esempio';   // l'obiettivo si cambia solo nel tuo profilo
+  h += '<p class="pf-yl">Nel ' + y + (own ? ' hai letto' : ' ' + esc(name || '') + ' ha letto') + '</p><b class="pf-yn">' + plur(ly, 'libro', 'libri') + '</b>';
+  var ob = Number(st.ob) || 0;
+  if (ob) h += '<div class="pf-goal"' + (ed ? ' role="button" tabindex="0" data-p="goal"' : '') + '><span>Obiettivo ' + nf(ob) + (ly >= ob ? ' · raggiunto! 🎉' : ' · ' + Math.round(ly / ob * 100) + '%') + '</span><span class="pf-gbar"><i style="width:' + Math.min(100, Math.round(ly / ob * 100)) + '%"></i></span></div>';
+  if (ed && goalOpen) h += '<div class="pf-gedit"><label class="sr" for="pfGoal">Obiettivo di libri per il ' + y + '</label><input type="number" id="pfGoal" min="1" max="365" inputmode="numeric" value="' + (ob || '') + '" placeholder="es. 24">' +
+    '<button class="btn sm" type="button" data-p="goalok">Salva</button>' + (ob ? '<button class="link" type="button" data-p="goaloff">Togli</button>' : '') + '</div>';
+  else if (ed && !ob) h += '<button class="link pf-gadd" type="button" data-p="goal">Metti un obiettivo per il ' + y + '</button>';
+  if (pgy) h += '<p class="pf-yt">cioè <b>' + nf(pgy) + ' pagine</b>' + pileTxt(pgy, ly) + '.</p>';
+  if (ly) {
+    var sp = '', n = Math.min(ly, 40), seed = (name || 'me').length;
+    for (var i = 0; i < n; i++) { var hh = (seed * 47 + i * 67) % 360, ht = 55 + ((i * 37 + seed * 13) % 45); sp += '<i style="height:' + ht + '%;background:hsl(' + hh + ' 55% ' + (62 + (i % 3) * 8) + '%)"></i>'; }
+    h += '<div class="pf-shelf" aria-hidden="true">' + sp + '</div>';
+  } else h += '<p class="pf-yt">' + (own ? 'Quando finisci un libro, segnalo «Letto»: lo trovi qui.' : 'Ancora nessun libro finito quest\'anno.') + '</p>';
+  var bits = [];
+  if (st.auy && st.y === y) bits.push((own ? 'Il tuo autore dell\'anno' : 'Il suo autore dell\'anno') + ' è <b>' + esc(st.auy) + '</b> (' + plur(st.auyn, 'libro', 'libri') + ')');
+  var py = (st.pay || []).filter(function (c) { return /^[A-Z]{2}$/.test(c); });
+  if (py.length) bits.push((own ? 'hai viaggiato in ' : 'ha viaggiato in ') + '<b>' + plur(py.length, 'paese', 'paesi') + '</b> ' + flags(py, 6));
+  if (bits.length) h += '<p class="pf-yt">' + bits.join(' e ') + '.</p>';
+  return '<div class="pf-year">' + h + '</div>';
+}
+function tile(ico, big, txt, wide, val) {
+  return '<div class="pf-tile' + (wide ? ' wide' : '') + '"><span class="pf-ti" aria-hidden="true">' + ico + '</span>' + (val ? '<span class="pf-tv">' + big + '</span>' : '<span class="pf-tn">' + big + '</span>') + '<span class="pf-tt">' + txt + '</span></div>';
+}
 function statsHTML(st, own, rel) {
-  var y = new Date().getFullYear(), r = [];
-  function row(k, v, sub, wrap) { r.push('<div class="pf-st"><dt>' + k + '</dt><dd>' + v + (sub ? ' <small' + (wrap ? ' class="w"' : '') + '>' + sub + '</small>' : '') + '</dd></div>'); }
+  var t = [], card = '';
   if (st) {
-    row('Libri letti', nf(st.l), st.pg ? nf(st.pg) + ' pagine' : '');
-    if (st.y === y) row('Nel ' + y, nf(st.ly), st.pgy ? nf(st.pgy) + ' pagine' : '');
-    if (st.au) row('Autore più letto', esc(st.au), st.aun + (st.aun === 1 ? ' libro' : ' libri'));
-    if (st.auy && st.y === y) row('Autore più letto nel ' + y, esc(st.auy), st.auyn + (st.auyn === 1 ? ' libro' : ' libri'));
-    if (st.ge) row('Genere più letto', esc(st.ge), st.gen + (st.gen === 1 ? ' libro' : ' libri'));
-    if (st.ul && st.ul.t) row('Ultimo libro letto', '«' + esc(st.ul.t) + '»', st.ul.a ? esc(st.ul.a) : '', true);
-    if (st.lu && st.lu.t) row('Libro più lungo letto', '«' + esc(st.lu.t) + '»', st.lu.pg ? nf(st.lu.pg) + ' pagine' : '', true);
-    if ((st.pa || []).length && NL.wdFlag) row('Paesi dei libri letti', '<span class="pf-flags">' + st.pa.filter(function (c) { return /^[A-Z]{2}$/.test(c); }).map(function (c) { return '<span title="' + esc(NL.wdCName ? NL.wdCName(c) : c) + '">' + (NL.wdFlagImg ? NL.wdFlagImg(c) : NL.wdFlag(c)) + '</span>'; }).join(' ') + '</span>');
-    row('Libri prestati', nf(st.pr), st.pr ? 'adesso' : '');
+    card = yearCard(st, own, own ? '' : (cur && A() && A().friendName ? A().friendName(cur) : ''));
+    t.push(tile('📚', nf(st.n), st.n === 1 ? 'libro in libreria' : 'libri in libreria'));
+    t.push(tile('📖', nf(st.pg), 'pagine lette' + (st.l ? ' · ' + plur(st.l, 'libro', 'libri') : '')));
+    if (st.au) t.push(tile('✍️', esc(st.au), 'autore più letto · ' + plur(st.aun, 'libro', 'libri'), false, true));
+    if (st.ge) t.push(tile('🏷️', esc(st.ge), 'genere più letto · ' + plur(st.gen, 'libro', 'libri'), false, true));
+    if (st.ul && st.ul.t) t.push(tile('🏁', '«' + esc(st.ul.t) + '»', 'ultimo libro letto' + (st.ul.a ? ' · ' + esc(st.ul.a) : ''), false, true));
+    if (st.lu && st.lu.t) t.push(tile('🐘', '«' + esc(st.lu.t) + '»', 'il più lungo' + (st.lu.pg ? ' · ' + nf(st.lu.pg) + ' pagine' : ''), false, true));
+    var pa = (st.pa || []).filter(function (c) { return /^[A-Z]{2}$/.test(c); });
+    if (pa.length) t.push(tile('🌍', plur(pa.length, 'paese', 'paesi'), flags(pa, 60), true, true));
+    t.push(tile('🤝', nf(st.pr), st.pr === 1 ? 'libro prestato adesso' : 'libri prestati adesso'));
   }
   if (rel) {
     if (rel.comuni != null) {
       var pc = st && st.n ? Math.min(100, Math.round(rel.comuni / st.n * 100)) : 0;
-      row('In comune con te', nf(rel.comuni) + (rel.comuni === 1 ? ' libro' : ' libri'), rel.comuni && pc ? 'il ' + pc + '% dei suoi' : '');
+      t.push(tile('🔗', nf(rel.comuni), (rel.comuni === 1 ? 'libro' : 'libri') + ' in comune con te' + (rel.comuni && pc ? ' · il ' + pc + '% dei suoi' : '')));
     }
     var d = Number(rel.tra && rel.tra.dati) || 0, v = Number(rel.tra && rel.tra.avuti) || 0;
-    if (d + v) row('Prestiti tra voi', nf(d + v), nf(d) + ' da te · ' + nf(v) + ' a te', true);
+    if (d + v) t.push(tile('⇄', nf(d + v), (d + v === 1 ? 'prestito' : 'prestiti') + ' tra voi · ' + nf(d) + ' da te, ' + nf(v) + ' a te'));
   }
-  if (!r.length) return '';
-  return '<section class="fr-sec"><h3 class="fr-h">' + (own ? 'I tuoi numeri' : 'I suoi numeri') + '</h3><dl class="pf-dl">' + r.join('') + '</dl></section>';
+  if (!t.length && !card) return '';
+  if (t.length % 2) { var k = t.length - 1; t[k] = t[k].replace('class="pf-tile"', 'class="pf-tile wide"'); }   // niente buco in fondo
+  return '<section class="fr-sec pf-num"><h3 class="fr-h">' + (own ? 'I tuoi numeri' : 'I suoi numeri') + '</h3>' + card + '<div class="pf-tiles">' + t.join('') + '</div></section>';
 }
 function head(id, name, when) {
   var av = avatar(id, name, true);
@@ -346,6 +386,13 @@ async function onClick(e) {
   var a = b.dataset.p, id = cur;
   if (a === 'back') { mode = ''; paint(); }
   else if (a === 'photo') { photoOpen = !photoOpen; paint(); }
+  else if (a === 'goal') { goalOpen = !goalOpen; paint(); if (goalOpen) setTimeout(function () { var g = document.getElementById('pfGoal'); if (g) g.focus(); }, 30); }
+  else if (a === 'goalok' || a === 'goaloff') {
+    var gv = a === 'goaloff' ? 0 : Math.round(Number((document.getElementById('pfGoal') || {}).value) || 0);
+    if (a === 'goalok' && !(gv >= 1 && gv <= 365)) { NL.toast('Scrivi un numero di libri da 1 a 365.'); return; }
+    my.ob = gv ? { y: new Date().getFullYear(), n: gv } : null; my.t = Date.now(); save(); goalOpen = false; paint(); push();
+    NL.toast(gv ? 'Obiettivo: ' + plur(gv, 'libro', 'libri') + ' nel ' + new Date().getFullYear() + '.' : 'Obiettivo tolto.');
+  }
   else if (a === 'file') document.getElementById('profFile').click();
   else if (a === 'cam') document.getElementById('profCam').click();
   else if (a === 'google') { b.disabled = true; await fromGoogle(); }

@@ -58,7 +58,7 @@ async function load(force) {
         try { p = await S.call('/rest/v1/profili?select=' + cols[ci] + '&id=eq.' + encodeURIComponent(uid()), { user: true }); break; }
         catch (e0) { if ((e0 && e0.code === 'net') || ci === cols.length - 1) throw e0; }
       }
-      me = (p && p[0]) || { utente: null, nome: '', desideri: false };
+      me = (p && p[0]) || { utente: null, nome: '', desideri: true, libreria: true };   // accese di partenza (022, 18/11/2026)
       list = abc(await rpc('miei_amici'));
       try { nums = {}; ((await rpc('amici_numeri')) || []).forEach(function (x) { nums[x.id] = x; }); } catch (e) { if (window.nlErr) nlErr(e); }
       try { swaps = (await rpc('miei_scambi')) || []; await applySwaps(); } catch (e) { if (window.console) console.warn('scambi', e); }
