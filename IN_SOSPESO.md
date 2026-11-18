@@ -257,7 +257,7 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
    5. Prestiti, Desideri e **Amici** (aggiunta da valutare: account, amici, campanella);
    6. Per te: suggerimenti, statistiche, la tua stagione in libri; il backup.
 2. **Forma:** un giro da sfogliare col dito, come «La tua stagione in libri», con «Salta» sempre visibile. Alla prima apertura dopo l'installazione; si riapre dal menu («Come si usa»). Chi aggiorna non la vede da sola: per lui c'è «Cosa c'è di nuovo».
-3. **Tenerla aggiornata:** modulo a parte (`guida.js`/`guida.css`, solo `window.NL`); **un test** che per ogni schermata controlla che esista la parte di app di cui parla; **regola nelle note:** a ogni novità importante si decide se va nella guida.
+3. **Tenerla aggiornata:** modulo a parte (`guida.js`/`guida.css`, solo `window.NL`); **un test** che per ogni schermata controlla che esista la parte di app di cui parla; **regola di Piero (18/11/2026):** a ogni pubblicazione nella **vera** la guida si aggiorna con le funzioni nuove; nella prova non serve.
 4. **Ordine di lavoro:** prima i testi scritti in chat per Piero, poi la guida nella prova, poi nella vera.
 
 ### 16. Guida per il worker SBN e la chiave di Google Libri (chiesto il 16/11/2026)
