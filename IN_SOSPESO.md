@@ -246,6 +246,8 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 ### 13. Guida di primo avvio (chiesto il 16/11/2026; piano concordato con Piero)
 
+**FATTA nel giro 4 (18/11/2026, ramo `prova`):** modulo `guida.js` con 7 schermate e libreria di esempio (dettagli in CLAUDE.md, «Stato dei passi»). Resta: tenerla aggiornata a ogni versione vera.
+
 **Richiesta di Piero:** una guida che illustri le funzioni dell'app al primo avvio, da **aggiornare man mano**. (Era prevista prima della versione 98; Piero ha poi scelto di pubblicare la 98 prima della guida.)
 
 **Piano (Piero d'accordo, da riprendere):**
@@ -330,6 +332,8 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 ---
 
 ### 30. Versioni accessibili per chi non distingue i colori (chiesto il 17/11/2026)
+
+**Verifica fatta nel giro 4 (18/11/2026), scelta di Piero: niente per ora.** Il colore è quasi sempre accompagnato da una parola o un segno; si confondono solo verde/rosso di «Ce l'hai/Non ce l'hai» (c'è ✓/✗) e oro/rosso dei cerchietti della campanella (il limite ha «!»). Punti deboli se si riprende: campi dedotti nella scheda (`.f.is-guess`, spiegazione solo nel `title`) → scritta «da verificare»; tipo di notifica nel cerchietto `.nt-ico` solo dal colore → simbolo piccolo. Rapporto completo nel documento del progetto claude.ai `claude/giro-4-guida-e-colori.md`.
 
 **Richiesta di Piero:** versioni dell'app adatte ai daltonici, prima **verificando se si può fare**. Nulla fatto.
 

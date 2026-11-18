@@ -11,7 +11,7 @@ nota = note[0]
 FILES = ['index.html', 'app.js', 'app-aggiungi.js', 'app-vista.js', 'app-scheda.js', 'app-per-te.js', 'app-elenco.js', 'app-finestre.js', 'app-filtri.js', 'app-strumenti.js', 'app-wiki.js', 'app-avvio.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt', '.nojekyll', 'cloudflare-sbn-worker.js', 'privacy.html', 'indirizzo.js', 'avvio.js', 'trasloco.html', 'trasloco.js']
 DIRS = ['icons', 'vendor']
 assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository della copia di prova: ' + DST
-MODULES = ['wrap.js', 'wrap.css', 'layout.js', 'layout.css', 'schede.js', 'schede.css', 'social.js', 'social.css', 'profilo.js', 'profilo.css', 'amici.js', 'amici.css', 'notifiche.js', 'notifiche.css', 'ricerche.js', 'ricerche.css', 'push.js', 'push.css']        # moduli che si possono togliere (togli_modulo.py): se non ci sono piu' nell'app, spariscono anche qui
+MODULES = ['wrap.js', 'wrap.css', 'layout.js', 'layout.css', 'schede.js', 'schede.css', 'social.js', 'social.css', 'profilo.js', 'profilo.css', 'amici.js', 'amici.css', 'notifiche.js', 'notifiche.css', 'ricerche.js', 'ricerche.css', 'push.js', 'push.css', 'guida.js', 'guida.css']        # moduli che si possono togliere (togli_modulo.py): se non ci sono piu' nell'app, spariscono anche qui
 for f in FILES + MODULES:
     if os.path.exists(os.path.join(APP, f)): shutil.copy2(os.path.join(APP, f), os.path.join(DST, f))
     elif f in MODULES and os.path.exists(os.path.join(DST, f)): os.remove(os.path.join(DST, f))

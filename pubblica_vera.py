@@ -11,7 +11,7 @@ nota = ' '.join(a.strip() for a in sys.argv[1:] if a.strip()) or 'aggiornamento'
 assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository del sito: ' + DST
 FILES = ['index.html', 'app.js', 'app-aggiungi.js', 'app-vista.js', 'app-scheda.js', 'app-per-te.js', 'app-elenco.js', 'app-finestre.js', 'app-filtri.js', 'app-strumenti.js', 'app-wiki.js', 'app-avvio.js', 'lib.js', 'style.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt',
          'cloudflare-sbn-worker.js', 'privacy.html', 'indirizzo.js', 'avvio.js', 'trasloco.html', 'trasloco.js']
-MODULES = ['wrap', 'layout', 'schede', 'social', 'profilo', 'amici', 'notifiche', 'ricerche', 'push']   # .js e .css, se ci sono nell'app
+MODULES = ['wrap', 'layout', 'schede', 'social', 'profilo', 'amici', 'notifiche', 'ricerche', 'push', 'guida']   # .js e .css, se ci sono nell'app
 DIRS = ['icons', 'vendor']
 TENERE = {'.git', '.nojekyll', 'README.md'}
 copia = [f for f in FILES if os.path.exists(os.path.join(APP, f))]

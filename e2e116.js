@@ -98,7 +98,7 @@ let wiki = 0;
   console.log('[2 tasti]', JSON.stringify(pk)); assert(pk.sel.every(Boolean) && pk.btn[0] === 'Più recenti' && pk.btn[1] === 'Raggruppa: Autore', 'tendine nascoste, tasti con la scelta');
   await p.evaluate(() => document.querySelectorAll('.dpick')[1].click()); await wait(200);
   const pop = await p.evaluate(() => ({ o: [...document.querySelectorAll('#pickPop .pk-o')].map(x => x.textContent + (x.getAttribute('aria-selected') === 'true' ? '*' : '')), focus: document.activeElement.textContent }));
-  console.log('[2 finestrella]', JSON.stringify(pop)); assert.deepStrictEqual(pop.o, ['Nessun gruppo', 'Autore*', 'Genere', 'Genere, poi autore', 'Lettura']);
+  console.log('[2 finestrella]', JSON.stringify(pop)); assert.deepStrictEqual(pop.o, ['Nessun gruppo', 'Autore*', 'Genere', 'Genere, poi autore', 'Paese dell\'autore', 'Lettura']);   // «Paese dell'autore» dal giro 2
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'finestrella-412.png') });
   await p.evaluate(() => [...document.querySelectorAll('#pickPop .pk-o')][2].click()); await wait(300);
   const af = await p.evaluate(() => ({ v: document.getElementById('grp').value, g: JSON.parse(localStorage.getItem('prova:catalogo-libri-set')).grp, t: document.querySelectorAll('.dpick .dp-t')[1].textContent, hid: document.getElementById('pickPop').hidden }));
