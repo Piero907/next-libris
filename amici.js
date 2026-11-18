@@ -312,7 +312,7 @@ function paintMenu() {
     var h = document.createElement('h3'); h.id = 'friMenuH'; h.textContent = 'Amici';
     m = document.createElement('div'); m.className = 'dlist dmenu'; m.id = 'friMenu';
     m.innerHTML = '<button type="button" class="dopt dgo" id="goFri"><span><b>I tuoi amici</b><small id="goFriTxt"></small></span><span class="n" aria-hidden="true">›</span></button>';   // «Invita» sta nella finestra Amici (17/11/2026)
-    var at = document.querySelector('#drawerOpts .ddon') || top;   // dopo Sostieni (Piero, 17/11/2026: Sostieni sopra Amici)
+    var at = top;   // dopo Sostieni (Piero, 17/11/2026: Sostieni sopra Amici)
     at.parentNode.insertBefore(h, at.nextSibling); h.parentNode.insertBefore(m, h.nextSibling);
     m.querySelector('#goFri').addEventListener('click', function () { NL.fromMenu(open); });
     /* «Il mio profilo» sta in cima al Menu (giro 7, profilo.js) */

@@ -36,14 +36,15 @@ var S = [
     p: ['Cerca per titolo o autore, usa i <b>Filtri</b> e <b>Ordina · Raggruppa</b> (per autore, genere, paese…). Scegli tra copertine ed elenco; sulle copertine <b>due dita</b> le ingrandiscono o le rimpiccioliscono.',
       'Serie e copie dello stesso libro stanno insieme. Tocca il nome di un autore per <b>Info Autore</b>.'] },
   { ico: 'loan', h: 'Prestiti', go: 'loan',   // giro 7: Prestiti e Desideri in due schermate (testi approvati da Piero il 18/11/2026)
-    p: ['Segna a chi hai prestato un libro e chi l\'ha prestato a te. Quando te lo restituiscono, tocca <b>Restituiscilo</b>.'] },
+    p: ['Tieni il conto dei libri che presti e di quelli che ti prestano. Quando ridai un libro a un amico, tocca <b>Restituiscilo</b>; quando un tuo libro torna a casa, tocca <b>È tornato</b>.'] },
   { ico: 'towish', h: 'Desideri', go: 'wish',
     p: ['Metti nei <b>Desideri</b> i libri che vorresti leggere. Gli amici possono vederli e trovare l\'idea giusta per un regalo. Se un amico ce l\'ha già, te lo diciamo: magari ve lo prestate.'] },
   { ico: 'user', h: 'Amici e profilo', go: 'friends', mod: 'NLAmici',
     p: ['Con <b>Accedi con Google</b> i tuoi libri si salvano anche online e puoi trovare gli amici per nome. Guarda le loro librerie, chiedi <b>Me lo presti?</b> e segui i loro desideri.',
       'La <b>campanella</b> ti avvisa delle novità. Tocca il tuo nome in alto per vedere il tuo <b>profilo</b>.'] },
-  { ico: 'chart', h: 'Per te',
-    p: ['Suggerimenti sui tuoi autori, novità, film tratti dai tuoi libri, statistiche e <b>La tua stagione in libri</b>.', 'Ogni tanto ti ricordiamo di fare un <b>backup</b>: con un tocco lo mandi su Drive, WhatsApp o email, foto comprese.'],
+  { ico: 'chart', h: 'Per te', go: 'don', btn: 'Sostieni Next Libris',   // Sostieni (Piero, 18/11/2026)
+   
+    p: ['Suggerimenti sui tuoi autori, novità, film tratti dai tuoi libri, statistiche e <b>La tua stagione in libri</b>.', 'Ogni tanto ti ricordiamo di fare un <b>backup</b>: con un tocco lo mandi su Drive, WhatsApp o email, foto comprese.', 'Next Libris è gratis per tutti: se ti piace, puoi sostenerla.'],
     end: 'Rivedi questa guida quando vuoi: Menu › Info e aiuto › <b>Come si usa</b>.' }
 ];
 /* per la prova e2e123: ogni schermata dice quale parte dell'app deve esistere */
@@ -130,7 +131,7 @@ var fromGuide = -1;
 function tryIt(what) {
   var at = G.i;
   close(false, true);
-  var real = what === 'add' || what === 'key' || what === 'friends';
+  var real = what === 'add' || what === 'key' || what === 'friends' || what === 'don';
   setTimeout(function () {
     if (real) pillOn(at);
     if (what === 'add') {
@@ -140,6 +141,8 @@ function tryIt(what) {
     } else if (what === 'key') {
       if (window.NLRicerche && window.NLRicerche.guide) window.NLRicerche.guide();
       else if (NL.openOptions) NL.openOptions('search');
+    } else if (what === 'don') {
+      if (NL.openDon) NL.openDon();
     } else if (what === 'friends') {
       if (window.NLAmici && window.NLAmici.open) window.NLAmici.open();
     } else if (what === 'book' || what === 'sort' || what === 'wish' || what === 'loan') {
