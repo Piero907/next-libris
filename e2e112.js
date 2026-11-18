@@ -85,7 +85,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   assert.deepStrictEqual(mn.items, ['Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', 'Chiave Google e worker', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
     'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
     'Info e aiuto', '  Come si usa', '  Guarda una libreria di esempio', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);   // voci della guida (giro 4)
-  assert.deepStrictEqual(mn.bad, [], 'sottotitoli su una riga');
+  assert.deepStrictEqual(mn.bad.filter(x => !/birra/.test(x)), [], 'sottotitoli su una riga (tranne Sostieni, che si legge tutto: 18/11/2026)');
   assert(mn.don > 0.3 && mn.don < 0.7, 'Sostieni al centro del Menu, sopra Amici (18/11/2026 sera)');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-412.png') });
 
@@ -97,7 +97,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   await p.click('#setList .dopt[data-sec="look"]'); await wait(400);
   let s = await st(p); assert(s.win && !s.drawer, 'Aspetto aperto');
   await back(p); s = await st(p); console.log('[3a Indietro da Aspetto]', JSON.stringify(s));
-  assert(s.drawer && !s.win && s.sets && Math.abs(s.top - top0) <= 30 && /drawer/.test(s.state), 'Menu riaperto nello stesso punto');   // 18/11/2026: con Sostieni in cima il tocco su Aspetto fa scorrere un poco il Menu prima di aprire
+  assert(s.drawer && !s.win && s.sets && Math.abs(s.top - top0) <= 60 && /drawer/.test(s.state), 'Menu riaperto nello stesso punto');   // 18/11/2026: con Sostieni in cima il tocco su Aspetto fa scorrere un poco il Menu prima di aprire   // 60: dalla 105.2 la frase di Sostieni va su più righe
   // 3b) Statistiche (senza cronologia) → Indietro → Menu
   await p.evaluate(() => { document.getElementById('drawerBody').scrollTop = 0; });
   await p.click('#goStats'); await wait(400);
@@ -201,7 +201,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     if (SHOTS) await q.screenshot({ path: path.join(SHOTS, 'testata-campanella-' + w + '.png'), clip: { x: 0, y: 0, width: w, height: 170 } });
     await openMenu(q);
     const bad = await q.evaluate(() => [...document.querySelectorAll('#drawerOpts .dopt small')].filter(s => s.offsetParent && s.getBoundingClientRect().height > 20).map(s => s.textContent));
-    assert.deepStrictEqual(bad, [], w + ': sottotitoli su una riga');
+    assert.deepStrictEqual(bad.filter(x => !/birra/.test(x)), [], w + ': sottotitoli su una riga');
     const out = await q.evaluate(() => { document.getElementById('goSettings').click(); document.getElementById('goInfo').click(); const d = document.getElementById('drawer').getBoundingClientRect().right;
       return [...document.querySelectorAll('#drawerOpts .dopt')].filter(x => x.offsetParent && x.getBoundingClientRect().right > d + 0.5).map(x => x.textContent.slice(0, 20)); });
     assert.deepStrictEqual(out, [], w + ': voci del menu fuori dal pannello');

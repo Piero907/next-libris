@@ -3,6 +3,7 @@
 // la chiave a chiave_prestata() (solo service_role: controlla prestito e amicizia, conta, 300 al giorno per amico, 950 in tutto),
 // fa la richiesta a Google Libri e rimanda la risposta così com'è. Togliendo il prestito si ferma subito.
 //   GET /functions/v1/libri?da=<id di chi presta>&u=<percorso e domanda di Google, senza chiave>
+//   GET /functions/v1/libri?da=<id di chi presta>&isbn=<ISBN>   (026, 18/11/2026: il worker SBN prestato, il cui indirizzo resta qui)
 //   Intestazioni di risposta: x-nl-tot (ricerche di oggi con quella chiave), x-nl-mio (le tue), x-nl-stop (no | mio | pieno).
 // verify_jwt spento: l'accesso si controlla qui chiedendo l'utente a /auth/v1/user (vale con ogni tipo di chiave del progetto).
 const URL_DB = Deno.env.get("SUPABASE_URL")!;
@@ -54,6 +55,18 @@ async function chiave(uid: string, da: string) {
   return await r.json() as { k?: string; e?: string; tot?: number; mio?: number };
 }
 
+async function worker(uid: string, da: string): Promise<string> {
+  const r = await fetch(URL_DB + "/rest/v1/rpc/worker_prestato", {
+    method: "POST",
+    headers: SR.startsWith("sb_secret_") ? { apikey: SR, "Content-Type": "application/json" }
+      : { apikey: SR, Authorization: "Bearer " + SR, "Content-Type": "application/json" },
+    body: JSON.stringify({ utente: uid, da }),
+  });
+  if (!r.ok) throw new Error("worker_prestato " + r.status);
+  const j = await r.json();
+  return typeof j === "string" ? j : "";
+}
+
 Deno.serve(async (req) => {
   const origine = req.headers.get("origin");
   const h = cors(origine);
@@ -61,6 +74,23 @@ Deno.serve(async (req) => {
   if (req.method !== "GET") return risposta(405, errore(405, "solo GET"), h);
   const q = new URL(req.url).searchParams;
   const da = q.get("da") || "", u = q.get("u") || "";
+  const isbn = (q.get("isbn") || "").replace(/[^0-9Xx]/g, "").toUpperCase();
+  if (q.has("isbn")) {                                   // worker SBN prestato: l'indirizzo non arriva mai al telefono dell'amico
+    if (!UUID.test(da) || !/^(97[89]\d{10}|\d{9}[\dX])$/.test(isbn)) return risposta(400, { error: "richiesta non valida" }, h);
+    let uidW = "";
+    try { uidW = await utente(req); } catch { return risposta(503, { error: "accesso non controllabile" }, h); }
+    if (!uidW) return risposta(401, { error: "accesso scaduto" }, h);
+    let w = "";
+    try { w = await worker(uidW, da); } catch (e) { console.log(String(e)); return risposta(503, { error: "servizio non disponibile" }, h); }
+    if (!w || !/^https:\/\//.test(w)) return risposta(403, { error: "worker non prestato" }, h, { "x-nl-stop": "no" });
+    try {
+      const wu = new URL(w); wu.searchParams.set("isbn", isbn);
+      const r = await fetch(wu.toString(), { headers: { Accept: "application/json" } });
+      return risposta(r.status, (await r.text()).split(wu.origin).join("…"), h);   // l'indirizzo del worker non torna indietro
+    } catch {
+      return risposta(502, { error: "il worker non risponde" }, h);
+    }
+  }
   // solo la ricerca dei volumi di Google Libri, niente altro
   if (!UUID.test(da) || u.length > 1500 || !/^\/books\/v1\/volumes\?/.test(u)) return risposta(400, errore(400, "richiesta non valida"), h);
   let uid = "";
