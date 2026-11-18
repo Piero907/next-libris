@@ -121,6 +121,7 @@ var coll = new Intl.Collator('it', { sensitivity: 'base', numeric: true });
 
 /* ---------- stato ---------- */
 var LS_KEY = 'catalogo-libri-v2', LS_SET = 'catalogo-libri-set', oldApp = false;
+var nlFirstRun = !ls.get(LS_KEY) && !ls.get(LS_SET);   // prima apertura in assoluto (né libri né impostazioni salvate): la guida di primo avvio si apre da sola (giro 4); chi aggiorna non la vede
 /* versione dell'app: la stessa di version.json e del nome della cache in sw.js (si aggiornano insieme) */
 var APP_VERSION = { v: 104, date: '2026-11-17', note: 'Foto degli autori dal nuovo indirizzo di Wikipedia (Flaiano), titolare della privacy' };
 var BUILD = { t: '', n: '', note: '' };   // la copia di prova lo riempie a ogni pubblicazione (pubblica_prova.py): ora, numero («94.9») e nota
@@ -352,6 +353,7 @@ function touch() {
    Indietro o «‹ La tua libreria» tornano ai tuoi, con filtri, ricerca, scheda aperta e vista com'erano. */
 var guest = null;
 function myBooks() { return guest ? guest.mine : state.books; }
+function esempio() { return !!(guest && guest.info && guest.info.esempio); }   // libreria di esempio della guida (giro 4): come un ospite, ma con i tasti visibili e nessuna chiamata
 function bookKeys(b) { var k = []; var i = b.i && (L.toIsbn13(b.i) || b.i); if (i) k.push('i:' + i); var t = L.titleKey(b.t); if (t) k.push('t:' + t + '|' + L.norm(authorsOf(b)[0] || '')); return k; }
 function guestEnter(name, books, info) {
   if (scanning) return false;
@@ -365,7 +367,7 @@ function guestEnter(name, books, info) {
   state.books = (books || []).map(cleanBook).filter(Boolean);
   openState = {}; gridRet = null;
   q = ''; $('#q').value = ''; sortBy = 'recent'; readFlt = '';
-  document.documentElement.classList.add('guest');
+  document.documentElement.classList.add(info && info.esempio ? 'esempio' : 'guest');   // esempio della guida: tasti visibili, i tocchi li ferma guida.js (giro 4)
   setTab('lib');                                   // azzera i filtri e ridisegna
   renderOwner(); updateActiveFilters && updateActiveFilters();
   window.scrollTo(0, 0);
@@ -377,7 +379,7 @@ function guestExit(quiet) {
   var k = guest.keep, y = guest.y;
   state.books = guest.mine; state.updated = guest.upd;
   guest = null;
-  document.documentElement.classList.remove('guest');
+  document.documentElement.classList.remove('guest', 'esempio');
   q = k.q; $('#q').value = q; sortBy = k.sortBy; readFlt = k.readFlt; openState = k.open; gridRet = k.gridRet;
   tab = k.tab === 'wish' ? 'wish' : 'lib'; document.body.classList.toggle('wishtab', tab === 'wish');
   flt = k.flt; shFlt = k.shFlt; genFlt = k.genFlt; autFlt = k.autFlt; autName = k.autName; edFlt = k.edFlt; frFlt = k.frFlt; paFlt = k.paFlt || '';
