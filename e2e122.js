@@ -126,7 +126,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   let t = await txt(A, '#profBody');
   assert(/Anna Su Next Libris da marzo 2026/.test(t), 'nome e «Su Next Libris da marzo 2026»: ' + t.slice(0, 80));
   assert(new RegExp('3 libri · 1 letto nel ' + y).test(t), 'riga dei numeri: ' + t);
-  assert(/Libri letti 2 620 pagine/.test(t) && /Autore più letto Umberto Eco 1 libro|Autore più letto Italo Calvino 1 libro/.test(t) && /Genere più letto Romanzo 2 libri/.test(t) && /Libri che hai prestato 1 adesso/.test(t), 'i numeri: ' + t);
+  assert(/Libri letti 2 620 pagine/.test(t) && /Autore più letto Umberto Eco 1 libro|Autore più letto Italo Calvino 1 libro/.test(t) && /Genere più letto Romanzo 2 libri/.test(t) && /Libri prestati 1 adesso/.test(t), 'i numeri: ' + t);
   assert(/Tutte le citazioni 2 citazioni/.test(t) && /Scegli la citazione/.test(t), 'citazioni: ' + t);
   assert(/Cosa vedono gli amici La foto e nient.altro/.test(t), 'cosa vedono gli amici: ' + t);
   await wait(600);
