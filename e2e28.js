@@ -1,7 +1,7 @@
 const CFG = require("./_config");
 const H = require('./_harness');
 const APPU = /'https:\/\/nextlibris\.github\.io\/';/.test(require('fs').readdirSync(CFG.APP).filter(f => /^app(-[a-z-]+)?\.js$/.test(f)).map(f => require('fs').readFileSync(require('path').join(CFG.APP, f), 'utf8')).join('\n')) ? 'https://nextlibris.github.io/' : 'https://piero907.github.io/next-libris/';   // indirizzo dell'app (dalla versione 100 nextlibris.github.io)
-// preferiti, condivisione di un libro e di una lista, link ricevuto, provenienza
+// consigliati (prima preferiti), condivisione di un libro e di una lista, link ricevuto, provenienza
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -42,13 +42,13 @@ const BOOKS = [
   let p = await open(BASE, {}, BOOKS);
   // 1) preferito: pulsante nella scheda, etichetta nella riga chiusa, filtro
   await tap(p, '#list .row[data-id="b1"] .sum'); await wait(150);
-  assert.strictEqual(await txt(p, '#list .row[data-id="b1"] .acts-main'), 'Prestato Desideri Preferito Lo consiglio Cerca sul web Elimina');
-  await tap(p, '#list .row[data-id="b1"] [data-act="fav"]'); await wait(150);
+  assert.strictEqual(await txt(p, '#list .row[data-id="b1"] .acts-main'), 'Prestato Desideri Lo consiglio Cerca sul web Elimina');
+  await tap(p, '#list .row[data-id="b1"] [data-act="lc"]'); await wait(150);
   assert((await books(p)).find(b => b.id === 'b1').fav === true);
-  assert(await p.$('#list .row[data-id="b1"] [data-act="fav"].on'));
+  assert(await p.$('#list .row[data-id="b1"] [data-act="lc"].on'));
   await p.screenshot({ path: CFG.OUT + '/sh_card.png' });
   await tap(p, '#list .row[data-id="b1"] [data-act="toggle"]'); await wait(150);
-  assert((await txt(p, '#list .row[data-id="b1"] .sum-tags')).includes('Preferito'));
+  assert((await txt(p, '#list .row[data-id="b1"] .sum-tags')).includes('Lo consigli'));
   await p.evaluate(() => { window.__app.state.books.find(b => b.id === 'b2').fav = true; window.__app.openDrawer('flt'); }); await wait(350);
   console.log('[1 menu]', await txt(p, '#drawerFlt .dpills'));
   await tap(p, '#drawerFlt [data-g="flt"][data-v="fav"]'); await wait(150);
@@ -70,14 +70,14 @@ const BOOKS = [
   await tap(p, '#btnShareWish'); await wait(150);
   assert(!(await hid(p, '#shareSheet'))); assert(await hid(p, '#shareTitleBox'));
   console.log('[2 foglio]', await txt(p, '#shareH'), '|', await txt(p, '#shareWhat'), '|', await txt(p, '#sharePrev'));
-  assert.strictEqual(await txt(p, '#sharePrev'), 'Chi riceve vedrà: Una lista di libri preferiti');
+  assert.strictEqual(await txt(p, '#sharePrev'), 'Chi riceve vedrà: Una lista di libri consigliati');
   await p.type('#shareName', 'Piero'); await wait(50);
-  assert.strictEqual(await txt(p, '#sharePrev'), 'Chi riceve vedrà: I preferiti di Piero');
+  assert.strictEqual(await txt(p, '#sharePrev'), 'Chi riceve vedrà: I consigli di Piero');
   await p.screenshot({ path: CFG.OUT + '/sh_send.png' });
   await tap(p, '#shareSend'); await wait(300);
   let sh = (await p.evaluate(() => window.__shared))[0];
   console.log('[2 messaggio]\n' + sh.text + '\n' + sh.url);
-  assert.strictEqual(sh.title, 'I preferiti di Piero'); assert(sh.text.startsWith('I preferiti di Piero (2 libri):')); assert(sh.text.includes('«Il nome della rosa» di Umberto Eco (Bompiani, 2012)')); assert(!/€|Totale/.test(sh.text), 'giro 7: niente prezzi nelle condivisioni');
+  assert.strictEqual(sh.title, 'I consigli di Piero'); assert(sh.text.startsWith('I consigli di Piero (2 libri):')); assert(sh.text.includes('«Il nome della rosa» di Umberto Eco (Bompiani, 2012)')); assert(!/€|Totale/.test(sh.text), 'giro 7: niente prezzi nelle condivisioni');
   assert(sh.url.startsWith(APPU + '#l=z') && /#l=z[\w-]+$/.test(sh.url));
   assert(!/segreta|Marco|Studio/.test(sh.text));
   assert.strictEqual((await set(p)).name, 'Piero'); assert(await hid(p, '#shareSheet'));
@@ -123,14 +123,14 @@ const BOOKS = [
   p = await open(BASE + '#' + favLink, {}, [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', i: '9788845292613', ts: 1 }]);
   assert(!(await hid(p, '#importSheet')), 'il link apre l\'anteprima');
   console.log('[5 anteprima]', await txt(p, '#importH'), '|', await txt(p, '#importMsg'), '|', await txt(p, '#importList'));
-  assert.strictEqual(await txt(p, '#importH'), 'I preferiti di Piero');
+  assert.strictEqual(await txt(p, '#importH'), 'I consigli di Piero');
   assert.strictEqual(p.url(), BASE, 'il link sparisce dall\'indirizzo');
   assert.deepStrictEqual(await p.$$eval('#importList input', a => a.map(c => [c.checked, c.disabled])), [[false, true], [true, false]]);
   await p.screenshot({ path: CFG.OUT + '/sh_import.png' });
   await tap(p, '#importWish'); await wait(300);
   let bs = await books(p), nb = bs.find(b => b.t === 'Il deserto dei Tartari');
   console.log('[5 importato]', JSON.stringify({ w: nb.w, fr: nb.fr, fl: nb.fl, i: nb.i, e: nb.e, y: nb.y, fav: nb.fav, rs: nb.rs }), '|', await toast(p));
-  assert.strictEqual(bs.length, 2); assert.deepStrictEqual([nb.w, nb.fr, nb.fl, nb.i, nb.e, nb.y, nb.fav], [true, 'Piero', 'Preferiti', '9788804668015', 'Mondadori', '2016', false]);
+  assert.strictEqual(bs.length, 2); assert.deepStrictEqual([nb.w, nb.fr, nb.fl, nb.i, nb.e, nb.y, nb.fav], [true, 'Piero', 'Consigliati', '9788804668015', 'Mondadori', '2016', false]);
   console.log('[5 dati in più]', nb.c, nb.gen, nb.pg, nb.img === nb.imgL, nb.img);
   assert.deepStrictEqual([nb.c, nb.gen, nb.pg, nb.imgL, nb.n, nb.sh, nb.rt], [null, 'Narrativa', '240', 'https://covers.openlibrary.org/b/isbn/9788804668015-L.jpg?default=false', '', '', 0]);   // giro 7: il prezzo non viaggia nei link
   assert.strictEqual(await toast(p), '1 libro aggiunto ai Desideri.');

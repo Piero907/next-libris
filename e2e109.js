@@ -134,7 +134,7 @@ const base = 'http://localhost:' + CFG.port(8309);
   assert.deepStrictEqual(await A.svc(), ['lend'], 'Anna: solo «Presta a un amico»');
   console.log('[Anna]', await A.txt('#svcBox'));
   await A.evaluate(() => window.__app.openOptions('share')); await wait(300);
-  assert(/I preferiti di Anna Maria Bellini/.test(await A.txt('#optNameHint')), 'esempio con il suo nome');
+  assert(/I consigli di Anna Maria Bellini/.test(await A.txt('#optNameHint')), 'esempio con il suo nome');
   assert(!(await A.$('#svcShareBtn')) && !(await A.$('#optFriKeys')), 'via i due pulsanti di prima');
   await A.shot('109-1-condivisione-anna-360');
   await A.click$('#svcBox [data-svc="lend"]'); await wait(900);

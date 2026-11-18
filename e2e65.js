@@ -90,7 +90,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   await page.screenshot({ path: CFG.OUT + '/layout_a_perte.png' });
   await page.click('#layYou [data-l="stats"]'); await wait(300);
   assert(await vis('#statsSheet')); await page.keyboard.press('Escape'); await wait(250);
-  await page.click('#layNav [data-l="menu"]'); await wait(400);
+  await page.evaluate(() => window.__app.openDrawer('opt'));   /* dal 18/11 il Menu non è più nella barra in basso */ await wait(400);
   assert(await page.evaluate(() => document.body.classList.contains('drawer-open'))); await page.evaluate(() => window.__app.closeDrawer()); await wait(350);
   // Opzioni › Aspetto: niente scelta della disposizione (la A e' quella dell'app) ne' degli avvisi uno alla volta, riepilogo
   await page.evaluate(() => window.__app.openOptions('look')); await wait(300);

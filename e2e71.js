@@ -41,7 +41,7 @@ const books = [
   console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani · 2012 · 624 pagine/.test(d.page) && d.headHidden);
   // in alto solo preferito, condividi, elimina; sotto, con la scritta: presta, desideri, cerca sul web
   const acts = await page.evaluate(s => { const e = document.querySelector(s); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act + ':' + (getComputedStyle(x.querySelector('.al')).display !== 'none')) }; }, card());
-  console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['fav', 'lc', 'towish', 'share', 'del']);   // dal giro 6 la coccarda «Lo consiglio» dopo la stella assert.deepStrictEqual(acts.low, ['loan:true', 'websearch:true']);
+  console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['lc', 'towish', 'share', 'del']);   // dal giro 6 la coccarda «Lo consiglio» dopo la stella assert.deepStrictEqual(acts.low, ['loan:true', 'websearch:true']);
   const lay = await page.evaluate(s => { const e = document.querySelector(s), t = [...e.querySelectorAll('.acts-main [data-act]')].map(x => Math.round(x.getBoundingClientRect().top)), low = e.querySelector('.cv-acts2'); return { oneRow: new Set(t).size === 1, last: e.lastElementChild === low }; }, card());
   assert(lay.oneRow && lay.last, 'icone su una riga, Presta e Cerca sul web in fondo');
   // descrizione subito sotto i dati, senza riquadro; etichette in fondo, prima di Presta e Cerca sul web
@@ -55,7 +55,7 @@ const books = [
   await page.evaluate(s => document.querySelector(s + ' .cv-dmore').click(), card()); await wait(200);
   dd = await dsc(); assert(dd.open && dd.src !== 'none', 'aperta: fonte visibile');
   // Modifica: icona della matita in alto, sulla stessa riga
-  const pen = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.acts-main .cv-editb'), f = e.querySelector('.acts-main [data-act="fav"]'); return p && Math.round(p.getBoundingClientRect().top) === Math.round(f.getBoundingClientRect().top) && getComputedStyle(p.querySelector('.al')).display === 'none'; }, card());
+  const pen = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.acts-main .cv-editb'), f = e.querySelector('.acts-main [data-act="lc"]'); return p && Math.round(p.getBoundingClientRect().top) === Math.round(f.getBoundingClientRect().top) && getComputedStyle(p.querySelector('.al')).display === 'none'; }, card());
   assert(pen, 'matita in alto, solo icona');
   // lettura e voto: striscia a tutta larghezza subito sotto copertina e titolo, prima della descrizione (proposta C, 16/11/2026)
   const rl = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.cv-page > .cv-readbox.cv-strip'), hero = e.querySelector('.cv-hero'), ds = e.querySelector('.cv-desc'), st = p && p.querySelector('.stars'), d = e.querySelector('.cv-ht .f-rd.cv-rdmeta'), mt = e.querySelector('.cv-ht .cv-meta');
@@ -119,9 +119,8 @@ const books = [
   await page.evaluate(() => window.__app.setTab('wish')); await wait(300);
   await page.evaluate(() => document.querySelector('#list .row[data-id="w1"] .sum').click()); await wait(400);
   const wa = await page.evaluate(() => { const e = document.querySelector('#list .row[data-id="w1"]'); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act) }; });
-  console.log('  desideri', JSON.stringify(wa)); assert.deepStrictEqual(wa.top, ['fav', 'tolib', 'share', 'del']); assert.deepStrictEqual(wa.low, ['loan', 'websearch']);
-  await page.evaluate(() => document.querySelector('#list .row[data-id="w1"] .acts-main [data-act="fav"]').click()); await wait(300);
-  assert.strictEqual(await page.evaluate(() => window.__app.state.books.find(b => b.id === 'w1').fav), true, 'preferito anche nei Desideri');
+  console.log('  desideri', JSON.stringify(wa)); assert.deepStrictEqual(wa.top, ['tolib', 'share', 'del']); assert.deepStrictEqual(wa.low, ['loan', 'websearch']);
+  // dal giro 10 niente stella nei Desideri: «Lo consiglio» vale solo per i libri della Libreria
   await page.screenshot({ path: CFG.OUT + '/scheda_d_desideri.png' });
   // la scelta resta dopo la riapertura
   await page.reload({ waitUntil: 'load' }); await wait(700);

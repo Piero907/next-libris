@@ -31,8 +31,8 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
       bk: document.querySelector('[data-sec="export"]').innerText.replace(/\s+/g, ' ')
     };
   });
-  // dal Menu (barra in basso): impostazioni chiuse
-  await page.click('#layNav [data-l="menu"]'); await wait(450);
+  // dal Menu (ora dal profilo; prima dalla barra in basso): impostazioni chiuse
+  await page.evaluate(() => window.__app.openDrawer('opt'));   /* dal 18/11 il Menu non è più nella barra in basso */ await wait(450);
   let m = await menu(); console.log('[1 menu]', JSON.stringify(m));
   assert.deepStrictEqual(m.heads, ['Amici', 'La tua libreria']);   // parte «Amici» (amici.js) dal 16/11/2026, subito sotto Filtri/Statistiche
   assert(m.rows.indexOf('goFri') >= 0 && m.rows.indexOf('goInv') < 0 && m.rows.indexOf('goFri') < m.rows.indexOf('fix') && m.rows.indexOf('export') < m.rows.indexOf('goSettings'), 'ordine: amici, libreria (con account), impostazioni');
@@ -58,7 +58,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   m = await menu(); assert(m.setOpen, 'tornando dalla voce restano aperte');
   // chiudo e riapro il Menu: di nuovo chiuse
   await page.evaluate(() => window.__app.closeDrawer()); await wait(400);
-  await page.click('#layNav [data-l="menu"]'); await wait(450);
+  await page.evaluate(() => window.__app.openDrawer('opt'));   /* dal 18/11 il Menu non è più nella barra in basso */ await wait(450);
   assert(!(await menu()).setOpen, 'riaprendo il Menu sono chiuse');
   await page.evaluate(() => window.__app.closeDrawer()); await wait(400);
   // l'ingranaggio in alto: dritto alle impostazioni
