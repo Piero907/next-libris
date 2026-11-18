@@ -34,7 +34,7 @@
 /* elenco degli amici: foto e «Segui» */
 .fri .fr-go.fr-av{gap:10px}
 .fri .fr-fol{flex:none;min-height:32px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);font:500 13px var(--font-body);cursor:pointer;white-space:nowrap}
-.fri .fr-fol[aria-pressed="true"]{border-color:var(--accent);color:var(--accent-ink);background:var(--accent-soft)}
+.fri .fr-fol[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:600}
 .fri .fr-segui{margin:4px 0 0}
 /* libreria di un amico: nota sui libri in prestito da te; l'etichetta «Prestato da te» è solo da leggere */
 .guest-bar .gb-note{color:var(--muted)}
