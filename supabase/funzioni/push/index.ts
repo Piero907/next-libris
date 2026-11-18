@@ -47,6 +47,7 @@ function testo(x: N): string {
       const n = Number(String(x.rif).split(":")[0]) || 1;
       return "📚 " + chi + " ha aggiunto " + (x.titolo || "un libro") + (n > 3 ? " e altri" : "") + (n === 1 ? ", che è nei tuoi Desideri" : ", che sono nei tuoi Desideri");
     }
+    case "avviso": return (x.rif ? x.rif + ": " : "") + (x.titolo || "");   // avviso importante di Next Libris (giro 8): rif = titolo, titolo = testo
     default: return "Hai una novità in Next Libris";
   }
 }
