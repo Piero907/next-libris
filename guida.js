@@ -41,7 +41,7 @@ var S = [
     p: ['Metti nei <b>Desideri</b> i libri che vorresti leggere. Gli amici possono vederli e trovare l\'idea giusta per un regalo. Se un amico ce l\'ha già, te lo diciamo: magari ve lo prestate.'] },
   { ico: 'user', h: 'Amici e profilo', go: 'friends', mod: 'NLAmici',
     p: ['Con <b>Accedi con Google</b> i tuoi libri si salvano anche online e puoi trovare gli amici per nome. Guarda le loro librerie, chiedi <b>Me lo presti?</b> e segui i loro desideri.',
-      'La <b>campanella</b> ti avvisa delle novità. Tocca il tuo nome in alto per vedere il tuo <b>profilo</b>.'] },
+      'La <b>campanella</b> ti avvisa delle novità; con il <b>fumetto</b> 💬 scrivi agli amici, anche in gruppo, e vi mandate i libri. Tocca il tuo nome in alto per vedere il tuo <b>profilo</b>.'] },
   { ico: 'chart', h: 'Per te', go: 'don', btn: 'Sostieni Next Libris',   // Sostieni (Piero, 18/11/2026)
    
     p: ['Suggerimenti sui tuoi autori, novità, film tratti dai tuoi libri, statistiche e <b>La tua stagione in libri</b>.', 'Ogni tanto ti ricordiamo di fare un <b>backup</b>: con un tocco lo mandi su Drive, WhatsApp o email, foto comprese.', 'Next Libris è gratis per tutti: se ti piace, puoi sostenerla.'],
