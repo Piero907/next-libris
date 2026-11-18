@@ -842,5 +842,16 @@ if (A0 && A0.onLoad) A0.onLoad(loadNums);                                     //
 else if (uid()) setTimeout(loadNums, 1500);
 S.onAuth(function () { if (!uid()) { chats = []; nums = { nuovi: 0, richieste: 0 }; wr(K, null); close(); } else loadNums(); paintTop(); });
 if (chats.length) numsFromList(); else paintTop();
-window.NLChat = { open: open, to: to, recommend: recommend, groups: groups, grpAv: grpAv, blocked: blocked, load: loadNums, state: function () { return { chats: chats, nums: nums, view: view, cur: cur, msgs: msgs, info: info, draftTo: draftTo }; } };   // per amici.js, profilo.js, notifiche.js e le prove
+/* ---------- amministrazione (giro 9e): admin.js e admin.css si caricano solo se il server dice che sei amministratore ---------- */
+var adminFor = null;
+async function adminCheck() {
+  var u = uid(); if (!u || adminFor === u) return; adminFor = u;
+  var si = false; try { si = (await rpc('admin_sono')) === true; } catch (e) { adminFor = null; return; }
+  if (!si || window.NLAdmin || $('adminJs')) return;
+  var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'admin.css'; document.head.appendChild(l);
+  var sc = document.createElement('script'); sc.src = 'admin.js'; sc.id = 'adminJs'; sc.defer = true; document.head.appendChild(sc);
+}
+S.onAuth(function () { if (uid()) adminCheck(); else { adminFor = null; var g = $('goAdmin'); if (g) g.remove(); if (window.NLAdmin) window.NLAdmin.close(); } });
+if (uid()) setTimeout(adminCheck, 1200);
+window.NLChat = { menu: menu, open: open, to: to, recommend: recommend, groups: groups, grpAv: grpAv, blocked: blocked, load: loadNums, state: function () { return { chats: chats, nums: nums, view: view, cur: cur, msgs: msgs, info: info, draftTo: draftTo }; } };   // per amici.js, profilo.js, notifiche.js e le prove
 })();
