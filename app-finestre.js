@@ -356,8 +356,8 @@ function updateBackupInfo() {
   $('#backupInfo').textContent = 'Ultimo backup: ' + L.agoText(settings.lastBackup) + ' · ' + n + (n === 1 ? ' libro' : ' libri') + ' salvati solo su questo telefono.';
 }
 /* Promemoria (giro 7, scelta di Piero): con almeno 10 libri e modifiche non salvate, ogni 45 giorni dall'ultimo backup
-   (o da quando l'avviso è stato chiuso), oppure dopo 20 libri nuovi (chiuso: si ripresenta dopo 7 giorni). */
-var BK_DAYS = 45, BK_NEW = 20;
+   (o da quando l'avviso è stato chiuso), oppure dopo 40 libri nuovi (chiuso: si ripresenta dopo 7 giorni). */
+var BK_DAYS = 45, BK_NEW = 40;
 function backupDue(ignoreSnooze) {
   var n = storable().length, now = Date.now(), DAY = 86400000, last = settings.lastBackup || 0, sn = ignoreSnooze ? 0 : settings.snooze || 0;
   if (n < 10 || !(state.updated > last)) return false;

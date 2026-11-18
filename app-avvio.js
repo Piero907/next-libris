@@ -802,7 +802,7 @@ function closedNotices() {
   var longLoans = state.books.some(function (b) { return !b.w && b.p && b.pd && now - Date.parse(b.pd) > 30 * DAY; });
   if (longLoans && showing !== 'loan' && now - settings.loanSnooze < 7 * DAY) out.push({ k: 'loan', reopen: function () { settings.loanSnooze = 0; saveSettings(); if (!$('#notice').hidden && noticeKind !== 'loan') $('#notice').hidden = true; noticeKind = ''; checkLoanNag(); } });
   var n = storable().length;
-  if (backupDue(true) && !backupDue() && showing !== 'backup')   // giro 7: stessa regola del promemoria (45 giorni o 20 libri nuovi)
+  if (backupDue(true) && !backupDue() && showing !== 'backup')   // giro 7: stessa regola del promemoria (45 giorni o 40 libri nuovi)
     out.push({ k: 'backup', reopen: function () { settings.snooze = 0; saveSettings(); if ($('#notice').hidden) checkBackupNag(); } });
   var last = nxJustRead();
   if (last && settings.nxSeen === last.id && !state.books.some(function (b) { return !b.w && b.rs === 'in'; }) && nextList().length)
