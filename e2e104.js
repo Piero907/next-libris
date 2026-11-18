@@ -201,7 +201,7 @@ const base = 'http://localhost:' + CFG.port(8304);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(600);
   await A.click('#btnFri'); await wait(600);
   t = await A.$eval('#friBody', x => x.innerText.replace(/\s+/g, ' ')); assert(!/Consigliati dagli amici/.test(t), 'niente più sezione dei consigliati');
-  assert(/Bruno 0 amici in comune · 1 libro in comune/.test(t), 'numeri accanto all\'amico');
+  assert(/Bruno 1 libro in comune/.test(t) && !/0 amici/.test(t), 'numeri accanto all\'amico, senza gli zeri (18/11/2026)');
   await A.screenshot({ path: CFG.OUT + '/amici-finestra.png' });
   await A.keyboard.press('Escape'); await wait(200);
   // ---- chiave Google condivisa: la usano tutti e due ----
