@@ -70,6 +70,7 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/rpc/rispondi_richiesta') { const r = DB.rq.find(x => x.id === body.id && x.a === me && x.stato === 'attesa'); if (r) r.stato = body.si ? 'accettata' : 'rifiutata'; return send(204); }
   if (p === '/rest/v1/rpc/annulla_richiesta') { DB.rq = DB.rq.filter(x => !(x.id === body.id && x.da === me)); return send(204); }
   if (p === '/rest/v1/rpc/mie_richieste') return send(200, DB.rq.filter(x => x.da === me || x.a === me).map(x => Object.assign({ nome_da: DB.prof[x.da].utente, nome_a: DB.prof[x.a].utente }, x)));
+  if (p === '/rest/v1/rpc/chat_scrivi_a') { if (!friendsOk(me, body.a)) return send(400, { message: 'non amici' }); DB.tips.push({ id: 't' + (++DB.n) + '000000-0000-0000-0000-000000000000', da: me, a: body.a, libro: body.libro, testo: body.testo, tipo: body.tipo, creato: now() }); return send(200, { chat: 'c1', id: DB.n, stato: 'attiva' }); }
   if (p === '/rest/v1/rpc/consiglia') { if (!friendsOk(me, body.a)) return send(400, { message: 'non amici' }); DB.tips.push({ id: 't' + (++DB.n) + '000000-0000-0000-0000-000000000000', da: me, a: body.a, libro: body.libro, creato: now() }); return send(200, 'ok'); }
   if (p === '/rest/v1/rpc/miei_consigli') return send(200, DB.tips.filter(x => x.a === me).map(x => ({ id: x.id, da: x.da, nome_da: DB.prof[x.da].utente, libro: x.libro, creato: x.creato })));
   if (p === '/rest/v1/rpc/togli_consiglio') { DB.tips = DB.tips.filter(x => !(x.id === body.id && x.a === me)); return send(204); }
@@ -196,18 +197,12 @@ const base = 'http://localhost:' + CFG.port(8304);
   assert(await B.$eval('#shareExt', x => !x.open), 'il link è in seconda fila');
   await B.screenshot({ path: CFG.OUT + '/amici-condividi.png' });
   await B.click('#shareFriBox [data-share="uA"]'); await B.click('#shareAppGo'); await wait(700);
-  assert.strictEqual(DB.tips.length, 1, 'consigliato');
-  await wait(200);
+  assert.strictEqual(DB.tips.length, 1, 'consigliato'); assert.strictEqual(DB.tips[0].tipo, 'consiglio', 'il consiglio va in chat (giro 9d)');
   await A.evaluate(() => window.NLAmici.load(true)); await wait(600);
-  assert(!(await A.$('#friTip')), 'niente riquadro del consiglio');
-  await A.click('#btnBell'); await wait(500);
-  assert(/Bruno ti consiglia «Il giardino dei Finzi-Contini»/.test(await A.$eval('#ntBody .nt-new', x => x.innerText)), 'consiglio nella campanella, evidenziato');
-  await A.keyboard.press('Escape'); await wait(200);
   await A.click('#btnFri'); await wait(600);
-  t = await A.$eval('#friBody', x => x.innerText.replace(/\s+/g, ' ')); assert(/Consigliati dagli amici 1/.test(t), 'tra i consigliati');
+  t = await A.$eval('#friBody', x => x.innerText.replace(/\s+/g, ' ')); assert(!/Consigliati dagli amici/.test(t), 'niente più sezione dei consigliati');
   assert(/Bruno 0 amici in comune · 1 libro in comune/.test(t), 'numeri accanto all\'amico');
   await A.screenshot({ path: CFG.OUT + '/amici-finestra.png' });
-  await A.click('[data-f="tipdrop"]'); await wait(500); assert.strictEqual(DB.tips.length, 0, 'tolto');
   await A.keyboard.press('Escape'); await wait(200);
   // ---- chiave Google condivisa: la usano tutti e due ----
   await A.evaluate(() => { window.NL.settings.gbKey = 'AIzaChiaveDiAnna'; window.NL.saveSettings(); });
