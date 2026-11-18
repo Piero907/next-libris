@@ -146,13 +146,13 @@ var hooks = {};                              // moduli aggiuntivi (vedi window.N
 function emit(name, arg) { (hooks[name] || []).forEach(function (fn) { try { fn(arg); } catch (e) { if (window.console) console.warn('modulo', name, e); } }); }
 var S = {};                                  // stato di sessione per riga: st, msg, thumb, err, cands, lines, price, retry
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
-var GRP_TXT = { aut: 'per autore', gen: 'per genere', genaut: 'per genere e autore', read: 'per lettura' };   // «Raggruppa per» (17/11/2026)
+var GRP_TXT = { aut: 'per autore', gen: 'per genere', genaut: 'per genere e autore', read: 'per lettura', pae: 'per paese' };   // «Raggruppa per» (17/11/2026)
 var PALS = { inchiostro: ['#EDF0F5', '#10141D'], bordeaux: ['#F2EFEE', '#161112'], bosco: ['#EEF1EE', '#0F1513'] };
 var FONTS_T = ['literata', 'garamond', 'playfair', 'lora', 'merriweather', 'montserrat', 'roboto'], FONTS_B = ['plex', 'roboto', 'lato', 'atkinson', 'lora'];
 var openState = {}, autoOpened = {};
 function collapseCards() { if (!settings.openAll) openState = {}; if (cardPushed) { cardPushed = null; try { history.back(); } catch (e) { nlErr(e); } } }   // quando si filtra l'elenco torna compatto   // schede aperte/chiuse in questa sessione (true/false); se manca vale la regola di isOpen
 var SORTS = ['recent', 'titolo', 'autore', 'editore', 'anno', 'scaffale', 'voto', 'letti'];
-var q = '', sortBy = 'recent', flt = '', tab = 'lib', readFlt = '', shFlt = '', genFlt = '', autFlt = '', autName = '', edFlt = '';   // shFlt, genFlt: chiave normalizzata, NONE = senza   // flt: '' | 'guess' | 'loan'; tab: 'lib' (Libreria) | 'wish' (Desideri)
+var q = '', sortBy = 'recent', flt = '', tab = 'lib', readFlt = '', shFlt = '', genFlt = '', autFlt = '', autName = '', edFlt = '', paFlt = '';   // shFlt, genFlt: chiave normalizzata, NONE = senza   // flt: '' | 'guess' | 'loan'; tab: 'lib' (Libreria) | 'wish' (Desideri)
 var tSave = null, toastTimer = null, scanning = false, offlineNoted = false;
 
 function newId() { return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
@@ -361,7 +361,7 @@ function guestEnter(name, books, info) {
   var mineKeys = {};
   state.books.forEach(function (b) { if (!b.w && !b.xs) bookKeys(b).forEach(function (k) { mineKeys[k] = 1; }); });
   guest = { name: name, info: info || {}, mine: state.books, upd: state.updated, mineKeys: mineKeys, y: window.scrollY,
-    keep: { q: q, sortBy: sortBy, flt: flt, tab: tab, readFlt: readFlt, shFlt: shFlt, genFlt: genFlt, autFlt: autFlt, autName: autName, edFlt: edFlt, frFlt: frFlt, view: settings.view, open: openState, gridRet: gridRet } };
+    keep: { q: q, sortBy: sortBy, flt: flt, tab: tab, readFlt: readFlt, shFlt: shFlt, genFlt: genFlt, autFlt: autFlt, autName: autName, edFlt: edFlt, frFlt: frFlt, paFlt: paFlt, view: settings.view, open: openState, gridRet: gridRet } };
   state.books = (books || []).map(cleanBook).filter(Boolean);
   openState = {}; gridRet = null;
   q = ''; $('#q').value = ''; sortBy = 'recent'; readFlt = '';
@@ -380,7 +380,7 @@ function guestExit(quiet) {
   document.documentElement.classList.remove('guest');
   q = k.q; $('#q').value = q; sortBy = k.sortBy; readFlt = k.readFlt; openState = k.open; gridRet = k.gridRet;
   tab = k.tab === 'wish' ? 'wish' : 'lib'; document.body.classList.toggle('wishtab', tab === 'wish');
-  flt = k.flt; shFlt = k.shFlt; genFlt = k.genFlt; autFlt = k.autFlt; autName = k.autName; edFlt = k.edFlt; frFlt = k.frFlt;
+  flt = k.flt; shFlt = k.shFlt; genFlt = k.genFlt; autFlt = k.autFlt; autName = k.autName; edFlt = k.edFlt; frFlt = k.frFlt; paFlt = k.paFlt || '';
   if (settings.view !== k.view) setView(k.view);
   renderOwner(); renderList(); updateSummary(); updateActiveFilters && updateActiveFilters();
   if (!quiet) window.scrollTo(0, y || 0);
@@ -465,6 +465,8 @@ function loadAll() {
     if (s.grpOpen && typeof s.grpOpen === 'object') Object.keys(s.grpOpen).slice(0, 400).forEach(function (k) { if (typeof k === 'string' && k.length < 200) settings.grpOpen[k] = 1; });
     settings.grpExp = s.grpExp ? 1 : 0; 
     settings.auInv = s.auInv === 0 ? 0 : 1;                                          // autori nei gruppi «Neruda, Pablo» (1, predefinito) o come sono scritti (0) (17/11/2026 notte)
+    settings.auPa = {};                                                              // paese dell'autore corretto a mano: codice di due lettere (giro 2, 18/11/2026)
+    if (s.auPa && typeof s.auPa === 'object') Object.keys(s.auPa).slice(0, 500).forEach(function (k) { var v = String(s.auPa[k]); if (k.length < 200 && /^[A-Z]{2}$/.test(v)) settings.auPa[k] = v; });
     settings.auCut = {};                                                             // cognome corretto a mano: parole del cognome (0 = com'è scritto)
     if (s.auCut && typeof s.auCut === 'object') Object.keys(s.auCut).slice(0, 500).forEach(function (k) { var v = Number(s.auCut[k]); if (k.length < 200 && v >= 0 && v < 10) settings.auCut[k] = Math.floor(v); });
                                              // «Espandi tutto» dei gruppi (17/11/2026 sera)

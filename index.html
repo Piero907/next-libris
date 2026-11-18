@@ -114,6 +114,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
       <option value="aut">Autore</option>
       <option value="gen">Genere</option>
       <option value="genaut" data-s="Genere › autore">Genere, poi autore</option>
+      <option value="pae" data-s="Paese">Paese dell'autore</option>
       <option value="read">Lettura</option>
     </select>
   </div>
@@ -386,13 +387,40 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
     <div class="au-txt" id="auTxt" aria-live="polite"></div>
     <p class="au-src" id="auSrc" hidden>Da Wikipedia, l'enciclopedia libera.</p>
     <div class="au-cut" id="auCut" hidden></div>
+    <div class="au-cut au-pa" id="auPa" hidden></div>
     <div class="au-acts">
+      <button class="btn" type="button" id="auWorks" hidden>Le sue opere ›</button>
       <button class="btn" type="button" id="auMine"></button>
       <button class="btn" type="button" id="auWeb">Cerca sul web</button>
       <a class="btn" id="auWiki" target="_blank" rel="noopener" hidden>Apri su Wikipedia</a>
       <button class="btn" type="button" id="auEdit">Modifica il nome</button>
       <button class="btn" type="button" id="auClose">Chiudi</button>
     </div>
+  </div>
+</div>
+
+<!-- opere di un autore, da Wikidata (giro 2, 18/11/2026): da Info Autore («Le sue opere») e dal + («Per autore») -->
+<div class="sheet" id="woSheet" hidden>
+  <div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="woH">
+    <h2 id="woH">Cerca per autore</h2>
+    <form class="wo-find" id="woFind" hidden>
+      <label class="field"><span>Nome dell'autore</span><input id="woQ" type="text" autocomplete="off" enterkeyhint="search" maxlength="120" placeholder="es. Italo Calvino"></label>
+      <button class="btn primary" type="submit">Cerca</button>
+    </form>
+    <div class="tabs wo-dest" id="woDest" role="tablist" aria-label="Dove aggiungerlo" hidden><button type="button" role="tab" data-dest="lib">In Libreria</button><button type="button" role="tab" data-dest="wish">Nei Desideri</button></div>
+    <p class="msg" id="woMsg" aria-live="polite"></p>
+    <ul class="wo-list" id="woList"></ul>
+    <p class="au-src" id="woSrc" hidden>Elenco da Wikidata, la banca dati libera di Wikipedia: può non essere completo.</p>
+    <div class="row-btns"><button type="button" class="btn" id="woClose">Chiudi</button></div>
+  </div>
+</div>
+<!-- film e serie TV tratti dai tuoi libri, da Wikidata (giro 2, 18/11/2026) -->
+<div class="sheet" id="filmSheet" hidden>
+  <div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="filmH">
+    <h2 id="filmH">Dai tuoi libri al cinema</h2>
+    <div id="filmBody" aria-live="polite"></div>
+    <p class="au-src">Da Wikidata, la banca dati libera di Wikipedia.</p>
+    <div class="row-btns"><button type="button" class="btn" id="filmClose">Chiudi</button></div>
   </div>
 </div>
 
@@ -1025,6 +1053,7 @@ html[data-splash] #splash{position:fixed;top:0;left:0;right:0;bottom:auto;height
 <script src="app-finestre.js" defer></script>
 <script src="app-filtri.js" defer></script>
 <script src="app-strumenti.js" defer></script>
+<script src="app-wiki.js" defer></script>
 <script src="app-avvio.js" defer></script>
 <script src="wrap.js" defer></script><!-- modulo: riepilogo di ogni stagione -->
 <script src="layout.js" defer></script><!-- modulo: disposizione dello schermo -->

@@ -249,6 +249,8 @@ document.addEventListener('keydown', function (e) {
   if (!$('#snap').hidden) { closeSnap(null); return; }
   if (!$('#phView').hidden) { closePh(false); return; }
   if (!$('#logSheet').hidden) { closeLog(); return; }
+  if (!$('#woSheet').hidden) { closeWorks(); return; }
+  if (!$('#filmSheet').hidden) { closeFilms(); return; }
   if (!$('#auSheet').hidden) { closeAuthor(); return; }
   if (!$('#confirmSheet').hidden) { $('#confirmSheet').hidden = true; confirmFn = null; return; }
   if (!$('#bulkSheet').hidden) { $('#bulkSheet').hidden = true; return; }
@@ -428,12 +430,13 @@ $('#statsBody').addEventListener('keydown', function (e) { if (e.key === 'Enter'
 $('#statsBody').addEventListener('click', function (e) {
   if (e.target.closest('#goalSave')) { saveGoal(); return; }
   var sq = e.target.closest('[data-q]');               // serie e collane: come «Vedi i libri della serie», con la ricerca
-  if (sq) { flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = ''; q = sq.dataset.q; $('#q').value = q; $('#statsSheet').hidden = true; collapseCards(); renderList(); updateSummary(); window.scrollTo({ top: 0 }); return; }
+  if (sq) { flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = ''; paFlt = ''; q = sq.dataset.q; $('#q').value = q; $('#statsSheet').hidden = true; collapseCards(); renderList(); updateSummary(); window.scrollTo({ top: 0 }); return; }
   var r = e.target.closest('[data-sf]');
   if (!r) return;
   /* un vero filtro (autore, casa editrice, genere, scaffale), non una ricerca: si vede e si toglie dai filtri del menu (Piero, 16/11/2026) */
   var f = r.dataset.sf, v = r.dataset.sv;
   $('#statsSheet').hidden = true;
+  if (f === 'pa') { applyFacet('pa', v, wdCName(v)); return; }   // paese dell'autore: la chiave e' il codice
   applyFacet(f, facetKey(v), v);
 });
 function openExport() {
@@ -921,6 +924,7 @@ window.NL = {
   setFlt: function (v) { flt = v; collapseCards(); renderList(); updateSummary(); if (typeof updateActiveFilters === 'function') updateActiveFilters(); }, flt: function () { return flt; }, goal: function () { return settings.goal || 0; },
   closeDrawer: function () { closeDrawer(); }, fromMenu: fromMenu, refresh: function () { renderList(); updateSummary(); },
   icon: icon, setTab: function (t) { setTab(t); }, openMenu: function () { openDrawer('opt'); }, openSugg: function (t) { openSugg(t); },
+  wdBookCountry: wdBookCountry, wdFlag: wdFlag, wdCName: wdCName, films: function () { return filmsMine(); }, openFilms: function () { openFilms(); }, openWorks: function () { openWorks('', '', true); },   // Wikidata (giro 2)
   openQuotes: function () { openAllQuotes(); }, openStats: function () { openStats(); }, openExport: function () { openExport(); }, nQuotes: function () { return allQuotes().length; },
   updateStick: function () { updateStick(); }, summary: function () { updateSummary(); }, autosize: function (el) { autosizeAll(el); },
   rdLong: function (v) { return rdLong(v); }, get: function (id) { return get(id); }, itDate: function (d) { return L.itDate(d); }, refreshRow: function (id) { refreshRow(id); },

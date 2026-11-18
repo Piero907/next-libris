@@ -91,12 +91,14 @@ async function openAuthor(id, name) {
   $('#auMine').textContent = mine > 1 ? 'I suoi libri nella tua libreria (' + mine + ')' : 'Il suo libro nella tua libreria';
   $('#auMine').hidden = mine < 2;
   auCutPaint(name);
+  $('#auPa').hidden = true; $('#auWorks').hidden = true;   // paese e «Le sue opere» arrivano con la voce (giro 2)
   $('#auTxt').innerHTML = '<p class="desc-wait"><span class="spin" aria-hidden="true"></span>Cerco le informazioni…</p>';
   $('#auSheet').hidden = false;
   if (navigator.onLine === false) { $('#auTxt').innerHTML = '<p class="desc-none">Senza connessione: le informazioni sull\'autore si cercano online.</p>'; return; }
   try {
     var r = await auLookup(name);
     if (!auNow || auNow.name !== name) return;
+    auWikiMore(name, r);
     if (r.none) { $('#auTxt').innerHTML = '<p class="desc-none">Non ho trovato una voce di Wikipedia su questo autore. Prova «Cerca sul web».</p>'; return; }
     $('#auDesc').textContent = r.desc ? r.desc.charAt(0).toUpperCase() + r.desc.slice(1) : '';
     auPic(r.img || '', name);
@@ -446,7 +448,7 @@ function seriesChanged(b, row, k) {
 }
 function seriesAll(id) {
   var b = get(id); if (!b || !b.se) return;
-  flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = '';
+  flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = ''; paFlt = '';
   q = b.se.trim(); $('#q').value = q; collapseCards(); renderList(); updateSummary(); window.scrollTo({ top: 0 });
   toast('Libri della serie «' + q + '». Svuota la ricerca per vederli tutti.');
 }

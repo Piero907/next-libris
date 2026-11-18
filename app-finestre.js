@@ -119,7 +119,7 @@ function pickTitle(i) {
 function addTitleAsIs() {
   var t = titleText.replace(/\s+/g, ' ').trim();
   if (!t) return;
-  var nb = blankBook({ t: t.slice(0, 300) });
+  var nb = blankBook(woAsIs(titleText) || { t: t.slice(0, 300) });   // dalle opere di un autore: titolo e autore separati (giro 2)
   state.books.push(nb); openState[nb.id] = false;
   $('#isbnSheet').hidden = true; q = ''; $('#q').value = '';
   touch(); renderList(); updateSummary(); addedToast(nb); askPrice(nb.id);

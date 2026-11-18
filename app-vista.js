@@ -20,6 +20,7 @@ function visible() {
   if (genFlt) a = a.filter(function (b) { return facetKey(b.gen) === genFlt; });
   if (autFlt) a = a.filter(function (b) { return authorsOf(b).some(function (n) { return auKey(n) === autFlt; }); });   // autori simili insieme (giro 1)
   if (edFlt) a = a.filter(function (b) { return facetKey(b.e) === edFlt; });
+  if (paFlt) a = a.filter(function (b) { return (wdBookCountry(b) || NONE) === paFlt; });   // paese dell'autore (giro 2, 18/11/2026)
   if (readFlt && tab === 'lib') a = a.filter(function (b) { return readFlt === 'no' ? !b.rs : b.rs === readFlt; });
   if (flt === 'loan') {
     return a.filter(isLoan).sort(function (x, y) { return (x.pd || '9') < (y.pd || '9') ? -1 : (x.pd || '9') > (y.pd || '9') ? 1 : cmpFor('titolo')(x, y); });

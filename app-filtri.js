@@ -26,10 +26,10 @@ function facets(field) {
 function facetName(field, k) { if (k === NONE) return field === 'sh' ? 'senza scaffale' : 'senza genere'; var f = facets(field).find(function (x) { return x.k === k; }); return f ? f.name : ''; }
 var frFlt = '';                 // filtro «ricevuti da»
 var drawerMore = {};            // scaffali / generi: elenco completo aperto con «Altri…»
-function activeCount() { return (flt ? 1 : 0) + (frFlt ? 1 : 0) + (readFlt && tab === 'lib' ? 1 : 0) + (shFlt ? 1 : 0) + (genFlt ? 1 : 0) + (autFlt ? 1 : 0) + (edFlt ? 1 : 0); }
+function activeCount() { return (flt ? 1 : 0) + (frFlt ? 1 : 0) + (readFlt && tab === 'lib' ? 1 : 0) + (shFlt ? 1 : 0) + (genFlt ? 1 : 0) + (autFlt ? 1 : 0) + (edFlt ? 1 : 0) + (paFlt ? 1 : 0); }
 function authorsOf(b) { return String(b.a || '').split(/\s*[,;]\s*/).map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 1; }); }
 function clearFilters() {
-  flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = '';
+  flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = ''; paFlt = '';
   q = ''; $('#q').value = ''; collapseCards();
   renderList(); updateSummary();
   if (drawerOpen) renderDrawer();
@@ -44,6 +44,7 @@ function updateActiveFilters() {
   if (genFlt) chip('gen', genFlt === NONE ? 'Senza genere' : 'Genere: ' + facetName('gen', genFlt));
   if (autFlt) chip('aut', 'Autore: ' + auShow(autName));
   if (edFlt) chip('ed', 'Casa editrice: ' + facetName('e', edFlt));
+  if (paFlt) chip('pa', paChipText());
   $('#activeFlt').innerHTML = o;
   var n = activeCount(), bd = $('#fltBadge');
   bd.hidden = !n; bd.textContent = n;
@@ -57,7 +58,7 @@ $('#activeFlt').addEventListener('click', function (e) {
   if (!x) return;
   var k = x.dataset.clear;
   if (k === 'flt') flt = ''; else if (k === 'read') readFlt = ''; else if (k === 'sh') shFlt = ''; else if (k === 'gen') genFlt = '';
-  else if (k === 'aut') { autFlt = ''; autName = ''; } else if (k === 'ed') edFlt = ''; else if (k === 'fr') frFlt = '';
+  else if (k === 'aut') { autFlt = ''; autName = ''; } else if (k === 'ed') edFlt = ''; else if (k === 'fr') frFlt = ''; else if (k === 'pa') paFlt = '';
   collapseCards(); renderList(); updateSummary();
 });
 function renderDrawer() {
@@ -92,6 +93,7 @@ function renderDrawer() {
       return pill(f[0], x.k, x.k === NONE ? f[2] : x.name, x.n, f[3], x.k === NONE ? ' none-sh' : '');
     }).join('') + (open ? '' : '<button type="button" class="dpill more" data-g="more" data-v="' + f[0] + '">Altri ' + (all.length - shown.length) + '…</button>') + '</div>';
   });
+  o += paDrawerHTML();                                 // paese dell'autore (giro 2, 18/11/2026)
   var frNames = Object.keys(frs).sort(coll.compare);
   if (frNames.length || frFlt) o += '<h3>Ricevuti da</h3><div class="dpills">' + frNames.map(function (n) {
     return '<button type="button" class="dpill" data-g="fr" data-v="' + esc(n) + '" aria-pressed="' + (frFlt === n ? 'true' : 'false') + '">' + esc(n) + '<span class="n">' + frs[n] + '</span></button>';
@@ -131,6 +133,7 @@ $('#drawerFlt').addEventListener('click', function (e) {
   else if (g === 'sh') shFlt = shFlt === v ? '' : v;
   else if (g === 'gen') genFlt = genFlt === v ? '' : v;
   else if (g === 'fr') frFlt = frFlt === v ? '' : v;
+  else if (g === 'pa') paFlt = paFlt === v ? '' : v;
   else if (g === 'aut') { autFlt = ''; autName = ''; }
   else if (g === 'ed') edFlt = '';
   collapseCards(); renderList(); updateSummary(); renderDrawer();

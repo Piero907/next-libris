@@ -338,7 +338,7 @@ function goToQuotes(id) {
   var b = get(id); if (!b) return;
   closeAllQuotes();
   if (!!b.w !== (tab === 'wish')) setTab(b.w ? 'wish' : 'lib');
-  flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = '';
+  flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = ''; paFlt = '';
   q = ''; $('#q').value = '';
   collapseCards(); openState = {}; openState[id] = true; quoteOpen[id] = true;
   if (settings.view === 'grid') { gridRet = { id: id, y: 0 }; setView('list'); }   // le citazioni si vedono nella scheda: chiudendola si torna alle copertine

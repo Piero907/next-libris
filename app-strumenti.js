@@ -488,7 +488,7 @@ function setTab(t) {
   gridRet = null;
   if (selOn) endSel(false);
   tab = t === 'wish' ? 'wish' : 'lib';
-  flt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = '';
+  flt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = ''; paFlt = '';
   $('#tipTxt').textContent = tab === 'wish'
     ? 'Sei nei Desideri: Scansiona, Foto e Digita aggiungono qui i libri da comprare. Un amico ti consiglia un libro? Digita e scrivi il titolo.'
     : 'Scansiona il codice a barre: è il modo più preciso. Dopo ogni libro puoi scrivere il prezzo (facoltativo). Digita per scrivere il titolo o l\'ISBN.';
@@ -588,11 +588,12 @@ function openStats() {
   }).join('') + '</ul></section>' : '';
   $('#statsH').textContent = 'Statistiche · ' + (tab === 'wish' ? 'Desideri' : 'Libreria');
   $('#statsBody').innerHTML = '<div class="tiles">' + tiles + '</div>' + (tab === 'lib' ? goalHTML() : '') + loans + (tab === 'lib' ? seriesStatsHTML() : '') +
-    barsHTML('Autori più presenti', st.topAuthors, 'a') + barsHTML('Case editrici', st.topPublishers, 'e') +
+    barsHTML('Autori più presenti', st.topAuthors, 'a') + wdStatsHTML() + barsHTML('Case editrici', st.topPublishers, 'e') +
     barsHTML('Generi', st.topGenres, 'gen') + barsHTML('Scaffali', st.topShelves, 'sh') + barsHTML('Anno di pubblicazione, per decennio', st.byDecade, false) +
     barsHTML('Libri letti, per anno', st.byReadYear, false) +
     '<p class="msg">Tocca un nome per vedere quei libri.</p>';
   $('#statsSheet').hidden = false;
+  wdKick(0);                                           // i paesi che mancano si cercano adesso (giro 2)
 }
 /* ---------- case editrici: uniforma i nomi ---------- */
 var pubGroups = [];

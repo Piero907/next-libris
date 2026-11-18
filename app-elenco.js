@@ -47,7 +47,7 @@ function authorLinkHTML(b, ex) {
   return out ? '<div class="links">' + out + '</div>' : '';
 }
 var FACET_ICON = { a: 'user', e: 'pub', gen: 'tag', sh: 'shelf' };
-var FACET_WORD = { a: 'Autore', e: 'Casa editrice', gen: 'Genere', sh: 'Scaffale' };
+var FACET_WORD = { a: 'Autore', e: 'Casa editrice', gen: 'Genere', sh: 'Scaffale', pa: 'Paese' };
 function facetsHTML(b, ex) {
   if (ex || !hasData(b)) return '';
   var books = tabBooks(), out = [];
@@ -69,13 +69,14 @@ function facetsHTML(b, ex) {
   return out.length ? '<div class="facets"><span class="facets-h">' + icon('filt') + 'Vedi tutti i libri di</span><div class="fchips">' + out.join('') + '</div></div>' : '';
 }
 function applyFacet(f, key, name) {
-  flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = '';
+  flt = ''; readFlt = ''; shFlt = ''; genFlt = ''; autFlt = ''; autName = ''; edFlt = ''; frFlt = ''; paFlt = '';
   q = ''; $('#q').value = '';
   collapseCards();
   if (f === 'a') { autFlt = key; autName = auCanon(name); }
   else if (f === 'e') edFlt = key;
   else if (f === 'gen') genFlt = key;
   else if (f === 'sh') shFlt = key;
+  else if (f === 'pa') paFlt = key;                    // paese dell'autore, dalle statistiche (giro 2)
   renderList(); updateSummary();
   window.scrollTo(0, 0); setTimeout(function () { window.scrollTo(0, 0); }, 60); setTimeout(function () { window.scrollTo(0, 0); }, 300);   // anche dopo l'Indietro che chiude la scheda
   var n = visible().length;
@@ -167,7 +168,7 @@ function rowHTML(b, dups, ex) {
       (settings.extra ? '<div class="more">' + inp('sh', 'Scaffale', b.sh || '', 'text', 'Scaffale', 80) + inp('gen', 'Genere', b.gen || '', 'text', 'Genere', 80) +
         inp('pg', 'Pagine', b.pg || '', 'numeric', 'Pagine', 5) + ta('n', 'Note', b.n || '', 'Note') + '</div>' +
         '<div class="ser">' + inp('se', 'Serie o collana', b.se || '', 'text', 'Serie o collana', 80) + inp('sn', 'Volume', b.sn || '', 'numeric', 'N.', 3) + inp('sq', 'di', b.sq || '', 'numeric', 'Totale', 3) + '</div>' : '') +
-      seriesHTML(b, ex || busy) + facetsHTML(b, ex || busy) + descHTML(b, ex || busy) + quotesHTML(b, ex || busy) + readHTML(b, ex || busy) + authorLinkHTML(b, ex) +
+      seriesHTML(b, ex || busy) + facetsHTML(b, ex || busy) + descHTML(b, ex || busy) + filmHTML(b, ex || busy) + quotesHTML(b, ex || busy) + readHTML(b, ex || busy) + authorLinkHTML(b, ex) +
       '<div class="foot">' + inp('i', 'ISBN', b.i, 'numeric', 'ISBN', 13) +
       (openCard ? (moreActs ? '<div class="tail">' + moreActs + '</div>' : '') :
         '<div class="tail"><span class="flags">' + flagsHTML(b, dups) + '</span>' +
@@ -334,7 +335,7 @@ function renderLoans(list, vis) {
    Dentro un gruppo vale l'ordine scelto. Un libro con piu' autori sta nel gruppo del primo. ---- */
 var READ_GRP = [['da', 'Da leggere'], ['ok', 'Letti']];   // «In lettura» sta sempre a parte, in cima
 var grpFltShut = '';                                     // «Comprimi tutto» con filtri o ricerca: vale finché non cambiano (17/11/2026 notte)
-function fltSig() { return [tab, q, flt, frFlt, readFlt, shFlt, genFlt, autFlt, edFlt].join('|'); }
+function fltSig() { return [tab, q, flt, frFlt, readFlt, shFlt, genFlt, autFlt, edFlt, paFlt].join('|'); }
 var grpShutX = {};                                       // sezioni chiuse a mano quando e' tutto espanso (solo finche' l'app e' aperta)
 function grpMode() {
   var g = settings.grp || '';
@@ -456,6 +457,7 @@ function grpParts(vis, g) {
   var aut = function (b) { var a0 = authorsOf(b)[0]; return a0 ? auCanon(a0) : ''; }, gen = function (b) { return L.str(b.gen).trim(); };   // autori simili uniti (giro 1)
   var ak = function (n) { return L.sortKeyAuthor(n, settings.auCut); };   // autori per cognome anche nei gruppi (prima per nome intero)
   if (g === 'aut') return groupBy(vis, aut, 'Senza autore', ak);
+  if (g === 'pae') return groupBy(vis, function (b) { var c = wdBookCountry(b); return c ? wdCName(c) : ''; }, 'Paese non trovato');   // paese del primo autore (giro 2, 18/11/2026)
   var gs = groupBy(vis, gen, 'Senza genere');
   if (g === 'genaut') gs.forEach(function (x) { x[3] = groupBy(x[2], aut, 'Senza autore', ak); });
   return gs;
@@ -592,6 +594,7 @@ function grpFace(kind, name, none, small) {
   var url = kind === 'aut' && !none ? aufGet(name) : '';
   var wait = kind === 'aut' && !none && url === null, inner;
   if (none) inner = '<b>?</b>';
+  else if (kind === 'pae') inner = '<span class="gc-flag" aria-hidden="true">' + wdFlag(wdCodeOf(name)) + '</span>' + (small ? '' : '<b class="gc-gn">' + esc(name) + '</b>');   // bandiera del paese (giro 2)
   else if (kind === 'gen') inner = small ? genIco(name) : genIco(name) + '<b class="gc-gn">' + esc(name) + '</b>';
   else if (small) inner = '<b>' + esc(grpInitials(name)) + '</b>';
   else {
@@ -599,7 +602,7 @@ function grpFace(kind, name, none, small) {
     var lw = Math.max.apply(null, sur.split(/\s+/).map(function (w) { return w.length; }));   // la parola piu' lunga del cognome deve stare in una riga
     inner = (giv ? '<small class="gc-nm">' + esc(giv) + '</small>' : '') + '<b class="gc-sur" style="--fs:' + Math.max(12, Math.min(20, Math.floor(94 / (0.8 * Math.max(lw, 4))))) + 'px">' + esc(sur) + '</b>';
   }
-  return '<span class="gc-face' + (small ? ' sm' : '') + (kind === 'gen' ? ' gc-gen' : '') + '"' + (kind === 'aut' && !none ? ' data-aun="' + esc(name) + '"' : '') + (wait ? ' data-auf="' + esc(L.norm(name)) + '"' : '') + '>' +
+  return '<span class="gc-face' + (small ? ' sm' : '') + (kind === 'gen' || kind === 'pae' ? ' gc-gen' : '') + (kind === 'pae' ? ' gc-pae' : '') + '"' + (kind === 'aut' && !none ? ' data-aun="' + esc(name) + '"' : '') + (wait ? ' data-auf="' + esc(L.norm(name)) + '"' : '') + '>' +
     '<span class="ph gc-ph' + (kind === 'aut' ? ' gc-au' : '') + (!small && !none ? ' gc-big' : '') + '" style="--h:' + (none ? 200 : hue(name)) + '">' + inner + '</span>' + (url ? aufImg(url) : '') + '</span>';
 }
 function grpLibri(n) { return n + (n === 1 ? ' libro' : ' libri'); }
@@ -610,7 +613,7 @@ function renderGroups(list, vis, g) {
   var innerNow = function (a) { return isGrid ? '<div class="grid">' + a.map(coverHTML).join('') + '</div>' : a.map(function (b) { return rowHTML(b, dups); }).join(''); };
   var hasOpen = function (a) { return a.some(function (b) { return openState[b.id] && b.t; }); };
   var isOpen = function (key, books) { return exp ? !grpShutX[key] : (!!settings.grpOpen[key] || hasOpen(books)); };
-  var kindOf = function (lvl) { return g === 'aut' || (g === 'genaut' && lvl === 2) ? 'aut' : 'gen'; };
+  var kindOf = function (lvl) { return g === 'pae' ? 'pae' : g === 'aut' || (g === 'genaut' && lvl === 2) ? 'aut' : 'gen'; };
   var lab = function (x, kind) { return kind === 'aut' && x[0] !== '~' ? auShow(x[1]) : x[1]; };   // nome mostrato; x[1] resta il nome vero (foto, «Chi è»)
   /* sezione apribile (gruppi espansi, lettura, generi di Genere › Autore) */
   var sec = function (key, x, body, sub, kind) {
