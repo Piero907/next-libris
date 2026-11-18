@@ -62,7 +62,16 @@ function wdBookCountry(b) { var a0 = authorsOf(b)[0]; return a0 ? wdCountry(a0) 
 function wdCLabel(c) { return wdFlag(c) + ' ' + wdCName(c); }
 
 /* ---------- le domande a Wikidata ---------- */
-function wdAsk(sparql) { return L.getJson(fetch, WD_API + encodeURIComponent(sparql), { waits: [], timeout: 20000 }); }
+/* il servizio ogni tanto risponde 502 o 503 per un attimo (visto il 18/11/2026): si riprova una volta dopo due secondi */
+async function wdAsk(sparql) {
+  var u = WD_API + encodeURIComponent(sparql), o = { waits: [], timeout: 20000 };
+  try { return await L.getJson(fetch, u, o); }
+  catch (e) {
+    if (!(e && e.status >= 500)) throw e;
+    await new Promise(function (ok) { setTimeout(ok, 2000); });
+    return L.getJson(fetch, u, o);
+  }
+}
 function wdRows(j) {
   var b = j && j.results && j.results.bindings;
   return Array.isArray(b) ? b.map(function (r) { var o = {}; Object.keys(r).forEach(function (k) { o[k] = r[k] && typeof r[k].value === 'string' ? r[k].value : ''; }); return o; }) : [];
@@ -134,7 +143,7 @@ function wdFilmList(raw) {                                // dopo wdClassify: re
   }).filter(Boolean).sort(function (a, b) { return (a.y || 9999) - (b.y || 9999); }).slice(0, 60);
 }
 /* cerca e salva i dati di un autore; chi e' gia' salvato torna subito. Senza rete lancia l'errore e non salva niente */
-var wdRun1 = {};
+var wdRun1 = {}, wdLater = {};                           // wdLater: autori la cui ricerca e' fallita poco fa (rete o servizio): si saltano per 5 minuti, cosi' gli altri vanno avanti
 function wdFetch(name) {
   var k = wdKey(name), have = wdEntry(name);
   if (have) return Promise.resolve(have);
@@ -157,7 +166,7 @@ async function wdFetchNow(name, k) {
 /* in sottofondo, uno alla volta: gli autori dei libri che non hanno ancora i dati (anche quelli della libreria di un amico che stai guardando) */
 function wdTodo() {
   var seen = {}, out = [];
-  var add = function (b) { authorsOf(b).slice(0, 2).forEach(function (n) { var k = wdKey(n); if (!seen[k]) { seen[k] = 1; if (!wdEntry(n)) out.push(n); } }); };
+  var add = function (b) { authorsOf(b).slice(0, 2).forEach(function (n) { var k = wdKey(n); if (!seen[k]) { seen[k] = 1; if (!wdEntry(n) && !(wdLater[k] > Date.now())) out.push(n); } }); };
   try { state.books.forEach(add); if (guest) myBooks().forEach(add); } catch (e) { nlErr(e); }
   return out;
 }
@@ -175,7 +184,10 @@ async function wdLoop() {
       try { await wdFetch(todo[0]); wdFails = 0; }
       catch (e) {
         if (e && e.status && e.status !== 429 && e.status < 500) { wdMap()[wdKey(todo[0])] = { t: Date.now() }; wdStore(); }   // risposta d'errore per questo autore: come «non trovato»
-        else if (++wdFails >= 3) { wdFails = 0; setTimeout(function () { wdKick(0); }, 60000); break; }                      // rete debole o servizio occupato: si riprova tra un minuto
+        else {                                                                                                                 // rete debole o servizio occupato: questo autore dopo, intanto gli altri
+          wdLater[wdKey(todo[0])] = Date.now() + 5 * 60000;
+          if (++wdFails >= 3) { wdFails = 0; setTimeout(function () { wdKick(0); }, 60000); break; }                          // tre di fila: pausa di un minuto
+        }
       }
       await new Promise(function (ok) { setTimeout(ok, 1200); });
     }
@@ -196,7 +208,7 @@ function wdChanged() {
     } catch (e) { nlErr(e); }
   }, 700);
 }
-window.addEventListener('online', function () { wdKick(2000); });
+window.addEventListener('online', function () { wdLater = {}; wdKick(2000); });
 
 /* ---------- paese nella finestra dell'autore: «Paese: 🇮🇹 Italia (nascita: 🇨🇺 Cuba) · Correggi» ---------- */
 var auPaOpen = false;
