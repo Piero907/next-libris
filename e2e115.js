@@ -81,8 +81,9 @@ const books = [
   console.log('[1 copertina ricevuta]', bd); assert.strictEqual(bd, 'In prestito');
   // 2) boccale nella testata → Sostieni
   const beer = await p.evaluate(() => { const b = document.getElementById('btnBeer'), r = b.getBoundingClientRect(), h = document.querySelector('.top h1').getBoundingClientRect();
-    return { vis: r.width > 0, y: Math.round(r.top + r.height / 2 - (h.top + h.height / 2)), gap: Math.round(r.left - h.right) }; });
-  console.log('[2 boccale]', JSON.stringify(beer)); assert(beer.vis && Math.abs(beer.y) <= 3 && beer.gap >= 0, 'boccale sulla riga del titolo, senza toccarlo');
+    const m = document.querySelector('.top .top-meta').getBoundingClientRect(), o = document.getElementById('owner').getBoundingClientRect();
+    return { vis: r.width > 0, word: /Sostieni/.test(b.textContent), below: r.top >= h.bottom - 4, gap: Math.round(r.left - o.right), right: Math.round(innerWidth - r.right) }; });
+  console.log('[2 pillola Sostieni]', JSON.stringify(beer)); assert(beer.vis && beer.word && beer.below && beer.gap >= 0, 'pillola «Sostieni» sulla riga del nome, senza toccarlo (18/11/2026)');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 140 } });
   await p.click('#btnBeer'); await wait(400);
   assert(await p.evaluate(() => !document.getElementById('donSheet').hidden), 'Sostieni aperto dal boccale');

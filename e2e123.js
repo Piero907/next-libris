@@ -65,7 +65,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   await p.evaluate(() => { const g = document.querySelector('#gdStage .gd-slide'), ev = (t, x) => g.dispatchEvent(new PointerEvent(t, { clientX: x, clientY: 300, pointerType: 'touch', bubbles: true })); ev('pointerdown', 15); ev('pointerup', 15); }); await wait(100);
   assert.strictEqual(await p.evaluate(() => document.getElementById('gdN').textContent), '4 di 9', 'tocco a sinistra = indietro');
   await p.evaluate(() => window.NLGuida.close()); await wait(200);
-  assert(/^La pagina del libro:book/.test(seen[3]) && /^Prestiti:loan/.test(seen[5]) && /^Desideri:wish/.test(seen[6]) && /^Per te:$/.test(seen[8]), 'Prova adesso al posto giusto');
+  assert(/^La pagina del libro:book/.test(seen[3]) && /^Prestiti:loan/.test(seen[5]) && /^Desideri:wish/.test(seen[6]) && /^Per te:don/.test(seen[8]), 'Prova adesso al posto giusto');
   assert(!(await open(p)), '«Inizia» chiude la guida');
   await p.reload({ waitUntil: 'load' }); await wait(1800);
   assert(!(await open(p)), 'vista una volta, non si riapre da sola');

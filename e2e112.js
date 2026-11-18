@@ -82,11 +82,11 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     return { items, bad, don: document.getElementById('donMenu').getBoundingClientRect().top / innerHeight };
   });
   console.log('[2 menu]', mn.items.join(' | '), '· Sostieni a', Math.round(mn.don * 100) + '%');
-  assert.deepStrictEqual(mn.items, ['Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
+  assert.deepStrictEqual(mn.items, ['Sostieni Next Libris', 'Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', '## Amici', 'I tuoi amici', 'Chiave Google e worker', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
     'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
     'Info e aiuto', '  Come si usa', '  Guarda una libreria di esempio', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);   // voci della guida (giro 4)
   assert.deepStrictEqual(mn.bad, [], 'sottotitoli su una riga');
-  assert(mn.don > 0.15 && mn.don < 0.6, 'Sostieni prima di Amici, nella parte alta-centrale');
+  assert(mn.don < 0.3, 'Sostieni in cima al Menu (18/11/2026)');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-412.png') });
 
   // 3a) Impostazioni aperte, menu scorso, Aspetto (finestra con cronologia) → Indietro → Menu come prima
@@ -97,7 +97,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   await p.click('#setList .dopt[data-sec="look"]'); await wait(400);
   let s = await st(p); assert(s.win && !s.drawer, 'Aspetto aperto');
   await back(p); s = await st(p); console.log('[3a Indietro da Aspetto]', JSON.stringify(s));
-  assert(s.drawer && !s.win && s.sets && s.top === top0 && /drawer/.test(s.state), 'Menu riaperto nello stesso punto');
+  assert(s.drawer && !s.win && s.sets && Math.abs(s.top - top0) <= 30 && /drawer/.test(s.state), 'Menu riaperto nello stesso punto');   // 18/11/2026: con Sostieni in cima il tocco su Aspetto fa scorrere un poco il Menu prima di aprire
   // 3b) Statistiche (senza cronologia) → Indietro → Menu
   await p.evaluate(() => { document.getElementById('drawerBody').scrollTop = 0; });
   await p.click('#goStats'); await wait(400);
@@ -190,9 +190,10 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
       if (!b) { b = document.createElement('button'); b.className = 'ico nt-top'; b.id = 'btnBell'; b.textContent = '•'; document.querySelector('header.top').appendChild(b); }
       b.hidden = false;
       const h = document.querySelector('h1'), t = h.querySelector('.prova-tag'), r = (t || h).getBoundingClientRect().right;
-      const ic = [...document.querySelectorAll('.top .nt-top, .top .fri-top, .top .gear, .top .beer-top')].map(x => x.getBoundingClientRect());
-      const bb = document.getElementById('btnBeer').getBoundingClientRect(), left = bb.left + (bb.width - 24) / 2;   // il boccale (17/11/2026) e' l'icona piu' a sinistra
-      const bl = b.getBoundingClientRect(); if ((bl.left + bl.width / 2) - (bb.left + bb.width / 2) < 30) return { gap: -1, c: 0, beer: 'troppo vicino alla campanella' };   // le zone da toccare si sovrappongono gia' (e2e105): contano i disegni
+      const ic = [...document.querySelectorAll('.top .nt-top, .top .fri-top, .top .gear')].map(x => x.getBoundingClientRect());   // 18/11/2026: Sostieni e' una pillola sulla riga del nome
+      const bl = b.getBoundingClientRect(), left = bl.left + (bl.width - 24) / 2;   // la campanella e' l'icona piu' a sinistra
+      const bb = document.getElementById('btnBeer').getBoundingClientRect(), own = document.getElementById('owner').getBoundingClientRect();
+      if (bb.top < h.getBoundingClientRect().bottom - 4 || bb.left < own.right) return { gap: -1, c: 0, beer: 'pillola fuori posto' };
       return { gap: left - r, c: Math.max(...ic.map(x => Math.abs((x.top + x.height / 2) - (h.getBoundingClientRect().top + h.getBoundingClientRect().height / 2)))) };
     });
     console.log('[' + w + ' con la campanella]', JSON.stringify(ov));

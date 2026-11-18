@@ -49,14 +49,14 @@ const DAY = 864e5;
   await click('#donRowX'); await wait(200); v = await vis(); console.log('[X]', JSON.stringify(v));
   assert(!v.row && Math.abs(v.set.donUntil - Date.now() - 10 * DAY) < 60000);
   // 50 libri: promemoria in cima, riga nascosta
-  await load(50, { donMs: 0 }); v = await vis(); console.log('[50 libri]', JSON.stringify(v)); assert(v.ask && !v.row && v.askT === '50 libri catalogati');
+  await load(50, { donMs: 0 }); v = await vis(); console.log('[50 libri]', JSON.stringify(v)); assert(v.ask && !v.row && v.askT === '50 libri catalogati: grazie!');
   await page.screenshot({ path: CFG.OUT + '/don_ask.png' });
   await click('#donAskLater'); await wait(200); v = await vis(); assert(!v.ask && !v.row && v.set.donUntil > Date.now() + 9 * DAY);
   // 99 libri dopo il promemoria dei 50 non piu' visto (pausa finita): ancora quello dei 50; a 100 «100 libri»
-  await load(100, { donMs: 50 }); v = await vis(); assert(v.ask && v.askT === '100 libri catalogati');
+  await load(100, { donMs: 50 }); v = await vis(); assert(v.ask && v.askT === '100 libri catalogati: grazie!');
   // utente che aveva gia' 230 libri: niente subito, traguardo memorizzato a 200
   await load(230); v = await vis(); console.log('[230 libri, aggiornamento]', JSON.stringify(v)); assert(!v.ask && v.row && v.set.donMs === 200);
-  await load(250, { donMs: 200 }); v = await vis(); assert(v.ask && v.askT === '250 libri catalogati');
+  await load(250, { donMs: 200 }); v = await vis(); assert(v.ask && v.askT === '250 libri catalogati: grazie!');
   // «Non chiedere più»
   await click('#donAskNever'); await wait(200); v = await vis(); console.log('[non chiedere]', JSON.stringify(v)); assert(!v.ask && v.row && v.set.donNever === true);
   await load(300, { donMs: 250, donNever: true }); v = await vis(); assert(!v.ask && v.row);
