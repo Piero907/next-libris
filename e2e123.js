@@ -38,7 +38,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await open(p), 'la guida si apre da sola alla prima apertura');
   const scr = await p.evaluate(() => window.NLGuida.screens());
   console.log('[schermate]', scr.map(s => s.h + (s.go ? ' (' + s.go + ')' : '')).join(' · '));
-  assert.strictEqual(scr.length, 9, 'nove schermate (giro 7: Prestiti e Desideri separati)');
+  assert.strictEqual(scr.length, 10, 'dieci schermate (giro 10: «Installala sul telefono» nel browser)');
   for (const s of scr) {
     if (s.sel) assert(await p.evaluate((q) => q.split(',').some(x => document.querySelector(x.trim())), s.sel), 'la parte di app di «' + s.h + '» esiste: ' + s.sel);
     if (s.mod) assert(await p.evaluate((m) => !!window[m], s.mod), 'modulo ' + s.mod);
@@ -46,7 +46,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await p.evaluate(() => !!(window.NLRicerche && window.NLRicerche.guide) && !!(window.NLAmici && window.NLAmici.open) && !!document.getElementById('sortBar')), 'guida della chiave, amici, Ordina · Raggruppa');
   // sfoglia: tasti e dito
   let seen = [];
-  for (let i = 0; i < 9; i++) {
+  for (let i = 0; i < 10; i++) {
     const s = await slide(p); seen.push(s.h + ':' + s.tries.join('+'));
     const w = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     assert(w <= 0, 'niente scorrimento di lato: ' + s.h);
@@ -63,9 +63,9 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   // tocco a sinistra = indietro
   await p.evaluate(() => window.NLGuida.open(4)); await wait(100);
   await p.evaluate(() => { const g = document.querySelector('#gdStage .gd-slide'), ev = (t, x) => g.dispatchEvent(new PointerEvent(t, { clientX: x, clientY: 300, pointerType: 'touch', bubbles: true })); ev('pointerdown', 15); ev('pointerup', 15); }); await wait(100);
-  assert.strictEqual(await p.evaluate(() => document.getElementById('gdN').textContent), '4 di 9', 'tocco a sinistra = indietro');
+  assert.strictEqual(await p.evaluate(() => document.getElementById('gdN').textContent), '4 di 10', 'tocco a sinistra = indietro');
   await p.evaluate(() => window.NLGuida.close()); await wait(200);
-  assert(/^La pagina del libro:book/.test(seen[3]) && /^Prestiti:loan/.test(seen[5]) && /^Desideri:wish/.test(seen[6]) && /^Per te:don/.test(seen[8]), 'Prova adesso al posto giusto');
+  assert(/^La pagina del libro:book/.test(seen[3]) && /^Prestiti:loan/.test(seen[5]) && /^Desideri:wish/.test(seen[6]) && /^Installala sul telefono:inst/.test(seen[8]) && /^Per te:don/.test(seen[9]), 'Prova adesso al posto giusto');
   assert(!(await open(p)), '«Inizia» chiude la guida');
   await p.reload({ waitUntil: 'load' }); await wait(1800);
   assert(!(await open(p)), 'vista una volta, non si riapre da sola');
@@ -75,19 +75,19 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   await p.evaluate(() => window.NLGuida.open(1)); await wait(300);
   await p.click('#gdStage .gd-try'); await wait(600);
   assert(await p.evaluate(() => !document.getElementById('layAdd').hidden), 'si apre il +');
-  // giro 7: pillola «‹ Torna alla guida · 2/9»; Indietro del telefono chiude il + e riapre la guida dalla stessa schermata
+  // giro 7: pillola «‹ Torna alla guida · 2/10»; Indietro del telefono chiude il + e riapre la guida dalla stessa schermata
   const pl = await p.evaluate(() => { const e = document.getElementById('gdPill'); return e && !e.hidden ? e.textContent : ''; });
-  assert(/Torna alla guida/.test(pl) && /2\/9/.test(pl), 'pillola: ' + pl);
+  assert(/Torna alla guida/.test(pl) && /2\/10/.test(pl), 'pillola: ' + pl);
   const box = await p.evaluate(() => { const r = document.getElementById('gdPill').getBoundingClientRect(); return { r: r.right, b: r.bottom, w: innerWidth, h: innerHeight }; });
   assert(box.r <= box.w && box.b <= box.h, 'pillola dentro lo schermo');
   await p.goBack().catch(() => {}); await wait(600);
   let g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, add: !document.getElementById('layAdd').hidden, pill: !document.getElementById('gdPill').hidden }));
-  assert(g.open && g.n === '2 di 9' && !g.add && !g.pill, 'Indietro torna alla guida: ' + JSON.stringify(g));
+  assert(g.open && g.n === '2 di 10' && !g.add && !g.pill, 'Indietro torna alla guida: ' + JSON.stringify(g));
   // di nuovo «Prova adesso», poi il tocco sulla pillola
   await p.click('#gdStage .gd-try'); await wait(600);
   await p.click('#gdPill .gd-pill-go'); await wait(600);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, add: !document.getElementById('layAdd').hidden }));
-  assert(g.open && g.n === '2 di 9' && !g.add, 'la pillola torna alla guida: ' + JSON.stringify(g));
+  assert(g.open && g.n === '2 di 10' && !g.add, 'la pillola torna alla guida: ' + JSON.stringify(g));
   // la ✕ della pillola: resta dove sei
   await p.click('#gdStage .gd-try'); await wait(600);
   await p.click('#gdPill .gd-pill-x'); await wait(500);
@@ -104,7 +104,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   p = await newPage(MIEI);
   assert(await open(p), 'chi usa già l\'app vede la guida nuova una volta');
   await p.click('.gd-skip'); await wait(300);
-  assert.strictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-guida')).v), 2, 'segnata la versione 2');
+  assert.strictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-guida')).v), 3, 'segnata la versione 3 (giro 10: la rivedono tutti)');
   await p.reload({ waitUntil: 'load' }); await wait(1800);
   assert(!(await open(p)), 'non torna da sola');
   assert(await p.evaluate(() => !!document.getElementById('goGuida') && !!document.getElementById('goEsempio') && /Guida/.test(document.querySelector('#goInfo small').textContent)), 'Come si usa e Libreria di esempio nel Menu');
@@ -122,7 +122,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
     const card = document.querySelector('#list .row.open');
     return { cls: document.documentElement.className, bar: !document.getElementById('exBar').hidden, owner: document.getElementById('owner').textContent,
       friendBar: !!(document.getElementById('guestBar') && !document.getElementById('guestBar').hidden), n: window.NL.books().length,
-      open: card ? card.dataset.id : '', fav: !!(card && card.querySelector('[data-act="fav"]') && card.querySelector('[data-act="fav"]').offsetParent),
+      open: card ? card.dataset.id : '', fav: !!(card && card.querySelector('[data-act="lc"]') && card.querySelector('[data-act="lc"]').offsetParent),
       stars: card ? card.querySelectorAll('[data-act="rt"]').length : 0, film: card ? (card.querySelector('.filmbox:not([hidden])') || {}).textContent || '' : '' };
   });
   console.log('[esempio]', JSON.stringify(ex));
@@ -132,7 +132,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   await p.evaluate(() => document.querySelector('#list .row.open [data-act="rt"][data-v="2"]').click()); await wait(300);
   const t1 = await p.evaluate(() => ({ toast: document.body.innerText.includes('È solo un esempio'), rt: window.NL.get('ex7').rt }));
   assert(t1.toast && t1.rt === 5, 'libricini: avviso e voto uguale');
-  await p.evaluate(() => document.querySelector('#list .row.open [data-act="fav"]').click()); await wait(200);
+  await p.evaluate(() => document.querySelector('#list .row.open [data-act="lc"]').click()); await wait(200);
   assert.strictEqual(await p.evaluate(() => window.NL.get('ex7').fav), true, 'la stella non cambia');
   const inp = await p.evaluate(() => { const i = document.querySelector('#list .row.open input, #list .row.open textarea'); if (!i) return 'nessuno'; i.focus(); return document.activeElement === i ? 'scrive' : 'fermo'; });
   assert(inp !== 'scrive', 'i campi non si scrivono: ' + inp);
@@ -185,19 +185,19 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(g.kg && g.ex && !g.open, 'guida della chiave sopra la libreria di esempio: ' + JSON.stringify(g));
   await p.click('#kgClose'); await wait(1400);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio(), kg: !document.getElementById('kgSheet').hidden }));
-  assert(g.open && g.n === '3 di 9' && !g.ex && !g.kg, '«Più tardi» torna da solo alla guida: ' + JSON.stringify(g));
+  assert(g.open && g.n === '3 di 10' && !g.ex && !g.kg, '«Più tardi» torna da solo alla guida: ' + JSON.stringify(g));
   // nell'esempio (Trova e ordina) Indietro del telefono riporta alla guida
   await p.evaluate(() => window.NLGuida.open(4)); await wait(300);
   await p.click('#gdStage .gd-try'); await wait(1000);
   assert(await p.evaluate(() => window.NL.esempio() && document.getElementById('guida').hidden), 'nell\'esempio');
   await p.goBack().catch(() => {}); await wait(900);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio() }));
-  assert(g.open && g.n === '5 di 9' && !g.ex, 'Indietro dall\'esempio torna alla guida: ' + JSON.stringify(g));
+  assert(g.open && g.n === '5 di 10' && !g.ex, 'Indietro dall\'esempio torna alla guida: ' + JSON.stringify(g));
   // «‹ Guida» nella striscia fa lo stesso
   await p.click('#gdStage .gd-try'); await wait(1000);
   await p.evaluate(() => document.querySelector('#exBar [data-ex="guide"]').click()); await wait(900);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio() }));
-  assert(g.open && g.n === '5 di 9' && !g.ex, '«‹ Guida»: ' + JSON.stringify(g));
+  assert(g.open && g.n === '5 di 10' && !g.ex, '«‹ Guida»: ' + JSON.stringify(g));
   await p.click('.gd-skip'); await wait(300);
 
   assert.deepStrictEqual(errors, []);

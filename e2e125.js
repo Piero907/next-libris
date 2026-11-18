@@ -145,11 +145,12 @@ const base = 'http://localhost:' + CFG.port(8325);
   // ---- «Lo consiglio»: coccarda accanto alla stella, solo in Libreria ----
   await A.openRow('a1'); await wait(500);
   let acts = await A.$$eval('[data-id="a1"] .acts-main > [data-act]', x => x.map(b => b.dataset.act));
-  assert(acts.indexOf('fav') >= 0 && acts.indexOf('lc') === acts.indexOf('fav') + 1 && /^to(wish|lib)$/.test(acts[acts.indexOf('lc') + 1]), 'stella, coccarda, desideri: ' + acts);
+  assert(acts.indexOf('fav') < 0 && acts.indexOf('lc') >= 0 && /^to(wish|lib)$/.test(acts[acts.indexOf('lc') + 1]), 'giro 10: solo la stella «Lo consiglio», poi desideri: ' + acts);
+  assert.strictEqual(await A.evaluate(() => window.NL.get('a2').lc), true, 'giro 10: il vecchio preferito è diventato consigliato');
   assert.strictEqual(await A.$eval('[data-id="a1"] [data-act="lc"]', x => x.getAttribute('aria-label')), 'Lo consiglio: gli amici lo vedono nel tuo profilo');
   await A.evaluate(() => document.querySelector('[data-id="a1"] [data-act="lc"]').click()); await wait(400);
   assert.strictEqual(await A.evaluate(() => window.NL.get('a1').lc), true, 'il libro è consigliato');
-  assert(await A.$eval('[data-id="a1"] [data-act="lc"]', x => x.classList.contains('on') && /Lo consigli: tocca per toglierlo/.test(x.title)), 'coccarda accesa');
+  assert(await A.$eval('[data-id="a1"] [data-act="lc"]', x => x.classList.contains('on') && /Lo consigli: tocca per toglierlo/.test(x.title)), 'stella accesa');
   assert(/Lo consigli: gli amici lo vedono nel tuo profilo\./.test(await toast()), 'avviso: ' + await toast());
   await shot(A, 'scheda-coccarda-360');
   await A.evaluate(() => window.NL.setTab('wish')); await wait(300); await A.openRow('a4'); await wait(400);
@@ -187,8 +188,8 @@ const base = 'http://localhost:' + CFG.port(8325);
   // ---- il tuo profilo ----
   await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(600);
   let t = await txt(A, '#profBody');
-  assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 1/.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
-  assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['a3', 'a1']);   // In lettura, Consigliati (via i Preferiti)
+  assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 2/.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
+  assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['a3', 'a1,a2']);   // In lettura, Consigliati (via i Preferiti)
   assert(/Citazioni in evidenza 3 «Prima citazione» — Italo Calvino, Palomar · pagina 33 «Seconda citazione»/.test(t) && /«Stat rosa pristina nomine»/.test(t) && /Cambia/.test(t), 'citazioni in evidenza: ' + t);
   assert(/«Palomar» ultimo libro letto · Italo Calvino/.test(t) && /«Il nome della rosa» il più lungo · 500 pagine/.test(t) && /Il tuo autore dell'anno è Italo Calvino \(1 libro\)/.test(t), 'numeri nuovi: ' + t);
   await noSide(A, '#profSheet .sheet-in', 'il tuo profilo a 360'); await shot(A, 'profilo-mio-360');

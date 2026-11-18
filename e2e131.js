@@ -47,7 +47,8 @@ function fake(req, res, body, url) {
       return send(204); }
     if (R('admin_sospesi')) return send(200, DB.sosp);
     if (R('admin_riattiva')) { DB.sosp = DB.sosp.filter(x => x.id !== body.utente); return send(204); }
-    if (R('admin_avviso')) { DB.avvisi.push(body); return send(200, 3); }
+    if (R('admin_cerca')) return send(200, [{ id: 'uM', utente: 'Marta R.' }, { id: 'uB', utente: 'Bruno T.' }]);
+    if (R('admin_avviso')) { DB.avvisi.push(body); return send(200, body.persone ? body.persone.length : 3); }
     if (R('admin_archivio_cerca')) { const q = String(body.q).toLowerCase(); return send(200, DB.ar.filter(r => r.isbn === q || (r.dati.t + ' ' + r.dati.a).toLowerCase().includes(q))); }
     if (R('admin_archivio_salva')) { const r = DB.ar.find(x => x.isbn === body.isbn); if (!r) return err('libro non trovato'); r.dati = body.dati; return send(204); }
     if (R('admin_archivio_togli')) { DB.ar = DB.ar.filter(x => x.isbn !== body.isbn); return send(204); }
@@ -160,7 +161,20 @@ const base = 'http://localhost:' + CFG.port(8331);
   await A.click$('#adAvGo'); await wait(200);
   assert(/Lo mando a 3 persone\?/.test(await A.txt('#chMenu')) && /Non si può ritirare/.test(await A.txt('#chMenu')));
   await A.click$('#chMenu [data-i="ok"]'); await wait(700);
-  assert.deepStrictEqual(DB.avvisi, [{ titolo: 'Novità: la chat!', testo: 'Da oggi puoi scrivere ai tuoi amici.' }]);
+  assert.deepStrictEqual(DB.avvisi, [{ titolo: 'Novità: la chat!', testo: 'Da oggi puoi scrivere ai tuoi amici.', persone: null }]);
+  // giro 10: a persone scelte
+  await A.click$('#adTabs [data-t="av"]'); await wait(300);
+  await A.click$('[data-a="avmode"][data-m="scelte"]'); await wait(200);
+  await A.type('#adAvT', 'Prova'); await A.type('#adAvX', 'Solo a te.');
+  assert(await A.evaluate(() => document.getElementById('adAvGo').disabled), 'senza persone non si manda');
+  await A.type('#adAvQ', 'ar'); await wait(700);
+  await A.click$('#adAvR [data-a="avadd"][data-id="uM"]'); await wait(200);
+  assert(/Manda a 1 persona/.test(await A.txt('#adAvGo')) && /Marta R\./.test(await A.txt('#adAvS')));
+  await A.shot('131-4b-avviso-persone');
+  await A.click$('#adAvGo'); await wait(200);
+  assert(/Lo mando a Marta R\.\?/.test(await A.txt('#chMenu')));
+  await A.click$('#chMenu [data-i="ok"]'); await wait(700);
+  assert.deepStrictEqual(DB.avvisi[1], { titolo: 'Prova', testo: 'Solo a te.', persone: ['uM'] });
   // Numeri
   await A.click$('#adTabs [data-t="num"]'); await wait(500);
   b = await A.txt('#adBody'); console.log('[numeri]', b);
