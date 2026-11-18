@@ -72,7 +72,7 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/rpc/chi_ce_lha') return send(200, Object.values(DB.rows).filter(x => x.utente !== me && DB.prof[x.utente].libreria && friendsOk(me, x.utente) && (body.isbn || []).includes(x.dati.i) && x.dati.w !== true).map(x => ({ isbn: x.dati.i, amico: x.utente, utente: DB.prof[x.utente].utente, libro_id: x.id, fuori: !!x.dati.p })));
   if (p === '/rest/v1/rpc/presta_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); DB.keys.push({ da: me, a: body.a, gb_key: body.gb_key, sbn: body.sbn }); return send(204); }
   if (p === '/rest/v1/rpc/riprendi_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); return send(204); }
-  if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: k.gb_key ? 'si' : '', sbn: k.sbn ? 'si' : '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key, sbn: k.sbn }))));
+  if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: k.gb_key ? 'si' : '', sbn: k.sbn ? 'si' : '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key ? 'prestata:' + k.da : '', sbn: k.sbn }))));   // 020 (giro 8): a chi la riceve arriva il segno, mai la chiave
   if (p === '/rest/v1/rpc/mie_notifiche') return send(200, notifOf(me).map(x => Object.assign(x, { letta: !!DB.read[me + x.id] })));
   if (p === '/rest/v1/rpc/notifiche_lette') { notifOf(me).forEach(x => { DB.read[me + x.id] = 1; }); return send(204); }
   if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
@@ -142,7 +142,7 @@ const base = 'http://localhost:' + CFG.port(8309);
   assert(await A.evaluate(() => { const f = document.getElementById('friSheet'); return !f || f.hidden; }), 'non si apre Amici');
   assert(await A.top('#kwSheet'), 'la finestra della chiave sta sopra Condivisione');
   console.log('[finestra Anna]', await A.txt('#kwBody'));
-  assert(/Bruno/.test(await A.txt('#kwBody')) && /Manda con un link/.test(await A.txt('#kwBody')));
+  assert(/Bruno/.test(await A.txt('#kwBody')) && !/Manda con un link/.test(await A.txt('#kwBody')), 'niente link (giro 8)');
   assert(!/Crea la tua chiave/.test(await A.txt('#kwBody')), 'Anna ha la chiave: niente guida');
   await A.shot('109-2-finestra-anna-360');
   await A.click$('#kwBody [data-f="keyshare"][data-id="uB"]'); await wait(300);
@@ -191,7 +191,8 @@ const base = 'http://localhost:' + CFG.port(8309);
     await B.shot('109-4-condivisione-bruno-offerta-' + tag);
     await B.click$('#svcBox [data-svc="offer"]'); await wait(700);
     await B.click$('#kwBody [data-f="keyuse"]'); await wait(700);
-    assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), KEY, 'Bruno usa la chiave di Anna');
+    assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), 'prestata:uA', 'Bruno usa la chiave di Anna, ma sul telefono ha solo il segno (giro 8)');
+    assert(!(await B.evaluate(() => JSON.stringify(localStorage))).includes(KEY), 'la chiave di Anna non è nel telefono di Bruno');
     await B.click$('#kwClose'); await wait(400);
     console.log('[Bruno usa]', await B.txt('#svcBox'));
     assert.deepStrictEqual(await B.svc(), ['used', 'guide'], 'Bruno: «Usi … di Anna» e la guida (caso di Serena)');

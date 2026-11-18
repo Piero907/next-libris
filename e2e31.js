@@ -1,6 +1,6 @@
 const CFG = require("./_config");
 const H = require('./_harness');
-// condividere chiave Google e worker: avviso, link «#k=», conferma di chi riceve
+// chiave Google e worker: «Manda con un link» tolto (giro 8, 18/11/2026); un vecchio link «#k=» dà solo un avviso
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -24,55 +24,36 @@ const W = 'https://sbn-libri.piero.workers.dev', K = 'AIzaSyA1b2C3d4E5f6G7h8I9j0
     await p.goto(url, { waitUntil: 'load' }); await wait(400); return p;
   }
   const tap = (p, s) => p.$eval(s, e => e.click()), hid = (p, s) => p.$eval(s, e => e.hidden), txt = (p, s) => p.$eval(s, e => e.innerText.replace(/\s+/g, ' ').trim());
-  const link = async p => { await tap(p, '#svcBox [data-svc="lend"]'); await wait(300); await tap(p, '#kwBody [data-kw="link"]'); };   // Ricerca dei libri › Con gli amici › Presta a un amico › Manda con un link (17/11/2026)
   const set = p => p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
-  // 1) senza chiave né worker: pulsante disattivato
+  // 1) senza chiave né worker: solo la guida
   let p = await open(BASE, {});
   await p.evaluate(() => window.__app.openOptions('search')); await wait(150);
   assert.deepStrictEqual(await p.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc)), ['guide'], 'niente da prestare: solo la guida (16/11/2026)');
   await p.browserContext().close();
-  // 2) chi invia
+  // 2) con chiave e worker: «Presta a un amico» c'è, ma «Manda con un link» non c'è più (giro 8, Piero 18/11/2026: si presta solo dentro l'app)
   p = await open(BASE, { name: 'Piero', sbnUrl: W, gbKey: K });
   await p.evaluate(() => window.__app.openOptions('search')); await wait(150);
-  await link(p); await wait(150);
-  assert(!(await hid(p, '#svcSheet'))); console.log('[2 foglio]', await txt(p, '#svcWhat'), '|', (await txt(p, '.svc-warn')).slice(0, 60) + '…');
-  await p.screenshot({ path: CFG.OUT + '/svc_send.png' });
-  await tap(p, '#svcForm button[type="submit"]'); await wait(300);
-  const sh = (await p.evaluate(() => window.__shared))[0]; console.log('[2 messaggio]', sh.text, '\n', sh.url.slice(0, 80) + '…');
-  assert(sh.text.startsWith('Piero ti manda la chiave Google e il worker SBN per Next Libris')); assert(/#k=[zj][\w-]+$/.test(sh.url)); assert(!sh.text.includes(K));
-  const lnk = sh.url.split('#')[1];
-  // solo il worker
-  await p.evaluate(() => window.__app.openOptions('search')); await wait(100); await link(p); await wait(100);
-  await p.$eval('#svcKeyOn', e => { e.checked = false; }); await tap(p, '#svcCopy'); await wait(300);
-  const onlyW = (await p.evaluate(() => window.__copied))[0]; assert(onlyW.startsWith('Piero ti manda il worker SBN')); const linkW = onlyW.match(/#(k=[\w-]+)$/)[1];
+  await tap(p, '#svcBox [data-svc="lend"]'); await wait(300);
+  assert(!(await hid(p, '#kwSheet')), 'finestra della chiave aperta');
+  assert.strictEqual(await p.$$eval('#kwBody [data-kw="link"]', a => a.length), 0, 'niente «Manda con un link»');
+  assert(!/link/i.test(await txt(p, '#kwBody')), 'nessun testo sul link: ' + await txt(p, '#kwBody'));
+  assert.strictEqual(await p.$$eval('#svcSheet, #svcInSheet', a => a.length), 0, 'finestre del link tolte dalla pagina');
+  assert.strictEqual(await p.evaluate(() => typeof window.NL.svcShare), 'undefined');
   assert.deepStrictEqual(p.errors, []); await p.browserContext().close();
-  // 3) chi riceve senza impostazioni: «Usali», poi Annulla e di nuovo
-  p = await open(BASE + '#' + lnk, { name: 'Anna' });
-  assert(!(await hid(p, '#svcInSheet'))); console.log('[3 ricevuto]', await txt(p, '#svcInH'), '|', await txt(p, '#svcInList'));
-  assert.strictEqual(await txt(p, '#svcInH'), 'Piero ti manda chiave Google e worker SBN'); assert.strictEqual(p.url(), BASE);
-  await p.screenshot({ path: CFG.OUT + '/svc_in.png' });
-  await tap(p, '#svcInUse'); await wait(150);
-  let st = await set(p); assert.deepStrictEqual([st.sbnUrl, st.gbKey], [W, K]); console.log('[3 usati]', await p.$eval('#toastTxt', e => e.textContent));
-  await tap(p, '#toastBtn'); await wait(100); st = await set(p); assert.deepStrictEqual([st.sbnUrl, st.gbKey], ['', '']);
-  // tra i salvati comunque (Annulla li tiene lì)
-  assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-saved'))), { sbn: [W], key: [K] });
-  await p.browserContext().close();
-  // 4) chi ha già i suoi: «Mettili tra i salvati» non cambia quelli in uso
-  p = await open(BASE + '#' + lnk, { sbnUrl: 'https://mio.anna.workers.dev', gbKey: 'AIzaSyANNAANNAANNAANNAANNAANNAANNAANNAAN' });
-  console.log('[4 lista]', await txt(p, '#svcInList')); assert((await txt(p, '#svcInList')).includes('al posto del tuo'));
-  await tap(p, '#svcInLater'); await wait(150);
-  st = await set(p); assert.strictEqual(st.sbnUrl, 'https://mio.anna.workers.dev');
-  const sv = await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-saved'))); assert(sv.sbn.includes(W) && sv.key.includes(K));
-  // solo worker; «No, grazie» non tocca niente
-  await p.evaluate(h => { location.hash = h; }, linkW); await wait(400);
-  assert.strictEqual(await txt(p, '#svcInH'), 'Piero ti manda il worker SBN'); await tap(p, '#svcInNo'); assert(await hid(p, '#svcInSheet'));
-  // ostile: worker non https e chiave strana -> rifiutato
+  // 3) un vecchio link «#k=» aperto oggi: avviso, niente finestra, impostazioni intatte, indirizzo ripulito
+  const old = 'j' + Buffer.from(JSON.stringify({ v: 1, t: 'svc', n: 'Piero', sb: W, gk: K })).toString('base64url');
+  p = await open(BASE + '#k=' + old, { name: 'Anna', gbKey: 'AIzaSyANNAANNAANNAANNAANNAANNAANNAANNAAN' });
+  const t3 = await p.$eval('#toastTxt', e => e.textContent); console.log('[3 vecchio link]', t3);
+  assert(/non si usano più/.test(t3) && !t3.includes(K));
+  let st = await set(p); assert.deepStrictEqual([st.sbnUrl || '', st.gbKey], ['', 'AIzaSyANNAANNAANNAANNAANNAANNAANNAANNAAN'], 'niente cambiato');
+  assert.strictEqual(p.url(), BASE, 'il codice non resta nell\'indirizzo');
+  const sv = await p.evaluate(() => localStorage.getItem('catalogo-libri-saved') || ''); assert(!sv.includes(K) && !sv.includes(W), 'niente tra i salvati');
+  // ostile: non viene nemmeno letto
   const evil = 'j' + Buffer.from(JSON.stringify({ v: 1, t: 'svc', n: '<img src=x onerror=window.__pwn=1>', sb: 'javascript:alert(1)', gk: '<script>' })).toString('base64url');
   await p.evaluate(h => { location.hash = 'k=' + h; }, evil); await wait(400);
-  assert(await hid(p, '#svcInSheet')); console.log('[4 ostile]', await p.$eval('#toastTxt', e => e.textContent));
-  const evil2 = 'j' + Buffer.from(JSON.stringify({ v: 1, t: 'svc', n: '<img src=x onerror=window.__pwn=1>', sb: W })).toString('base64url');
-  await p.evaluate(h => { location.hash = 'k=' + h; }, evil2); await wait(400);
-  assert.strictEqual(await p.$$eval('#svcInSheet img', a => a.length), 0); assert.strictEqual(await p.evaluate(() => window.__pwn), undefined);
+  assert.strictEqual(await p.evaluate(() => window.__pwn), undefined);
+  // un link di una lista («#l=») funziona ancora dopo
+  assert.strictEqual(await p.evaluate(() => typeof window.NL), 'object');
   assert.deepStrictEqual(p.errors, []); await p.browserContext().close();
   console.log('e2e31 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

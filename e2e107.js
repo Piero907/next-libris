@@ -74,11 +74,10 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     assert.strictEqual(cfg.gbKey, 'AIzaMiaVecchia000000', 'nel backup la mia chiave'); assert.strictEqual(cfg.sbnUrl, '', 'nel backup nessun worker (era di Anna)');
     assert(!JSON.stringify(cfg).includes('AIzaDiAnna') && !JSON.stringify(cfg).includes('sbn-anna'), 'nel backup niente di Anna');
     await P.evaluate(() => window.NL.openOptions('search')); await wait(400);   // chiave e worker in Ricerca dei libri (17/11/2026)
-    assert((await P.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc))).includes('lend'), 'la mia chiave si può ancora mandare');
-    await P.click('#svcBox [data-svc="lend"]'); await wait(500); await P.click('#kwBody [data-kw="link"]'); await wait(300);   // Condivisione › Presta a un amico › Manda con un link (16/11/2026)
-    const what = await P.$eval('#svcWhat', x => x.textContent); assert(/AIzaMi/.test(what) && !/AIzaDi|sbn-anna/.test(what), 'nel link solo la mia: ' + what);
-    assert(await P.$eval('#svcSbnOn', x => x.disabled), 'il worker di Anna non si manda');
-    await P.keyboard.press('Escape'); await wait(200); await P.evaluate(() => { const s = document.getElementById('svcSheet'); if (s) s.hidden = true; }); await P.keyboard.press('Escape'); await wait(300);
+    assert((await P.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc))).includes('lend'), 'la mia chiave si può ancora prestare');
+    await P.click('#svcBox [data-svc="lend"]'); await wait(500);
+    assert.strictEqual(await P.$$eval('#kwBody [data-kw="link"]', a => a.length), 0, 'niente «Manda con un link» (giro 8)');
+    await P.keyboard.press('Escape'); await wait(300);
     // ---- menu: «Info e condivisione» ----
     await P.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
     assert(await P.$eval('#infoList', x => x.hidden), 'chiusa all\'inizio');
