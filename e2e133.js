@@ -27,6 +27,7 @@ function fake(req, res, body, url) {
     const da = q.get('da'), u = q.get('u') || '';
     DB.libri.push({ me, da, u, isbn: q.get('isbn') });
     if (q.has('isbn')) { const k = DB.keys.find(x => x.da === da && x.a === me && x.sbn); if (!k) return send(403, { error: 'worker non prestato' }, { 'x-nl-stop': 'no' });
+      if (DB.wmode === 'mio') return send(429, { error: 'limite del giorno per amico' }, { 'x-nl-stop': 'mio', 'x-nl-mio': '3000' });
       return send(200, { numFound: 0 }); }
     if (!/^\/books\/v1\/volumes\?/.test(u)) return send(400, { error: { code: 400 } });
     const k = DB.keys.find(x => x.da === da && x.a === me && x.gb_key);
@@ -112,6 +113,15 @@ const base = 'http://localhost:' + CFG.port(8333);
   const last = DB.libri[n0]; console.log('[sbn]', JSON.stringify(last));
   assert(last && last.isbn === '9788845278655' && last.da === UA, 'il worker passa dalla funzione');
   assert(!fuori.some(u => /sbn-anna|worker-prestato/.test(u)), 'nessuna richiesta al worker dal telefono: ' + fuori.join(' '));
+  // giro 11A: 3.000 ricerche al giorno col worker prestato, poi avviso e niente più richieste al server fino al giorno dopo
+  DB.wmode = 'mio';
+  await B.evaluate(async () => { await apiFetch('https://worker-prestato.invalid/00000000-0000-0000-0000-0000000000a1?isbn=9788845278655'); });
+  await B.waitForFunction(() => /finito le ricerche con il worker di Anna/.test(document.body.innerText), { polling: 100, timeout: 4000 });
+  const toastW = await B.evaluate(() => (document.body.innerText.match(/Per oggi hai finito[^\n]*/) || [''])[0]);
+  assert.strictEqual(toastW, 'Per oggi hai finito le ricerche con il worker di Anna. Fino a domattina l\'app cerca in Open Library e con Google.', toastW);
+  const n1 = DB.libri.length;
+  const st2 = await B.evaluate(async () => { await apiFetch('https://worker-prestato.invalid/00000000-0000-0000-0000-0000000000a1?isbn=9788845278655'); return { out: lentWOut(), sbn: lookupOpts().sbnUrl }; });
+  assert(st2.out && st2.sbn === '' && DB.libri.length === n1, 'dopo il limite niente worker: ' + JSON.stringify(st2));
   assert.deepStrictEqual(errors, []);
   console.log('OK e2e133');
   await browser.close(); server.close();

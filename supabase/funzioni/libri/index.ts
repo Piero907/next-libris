@@ -4,6 +4,7 @@
 // fa la richiesta a Google Libri e rimanda la risposta così com'è. Togliendo il prestito si ferma subito.
 //   GET /functions/v1/libri?da=<id di chi presta>&u=<percorso e domanda di Google, senza chiave>
 //   GET /functions/v1/libri?da=<id di chi presta>&isbn=<ISBN>   (026, 18/11/2026: il worker SBN prestato, il cui indirizzo resta qui)
+//   Versione 3 (027, giro 11A): worker prestato con 3.000 ricerche al giorno per amico (worker_conta, x-nl-stop: mio).
 //   Intestazioni di risposta: x-nl-tot (ricerche di oggi con quella chiave), x-nl-mio (le tue), x-nl-stop (no | mio | pieno).
 // verify_jwt spento: l'accesso si controlla qui chiedendo l'utente a /auth/v1/user (vale con ogni tipo di chiave del progetto).
 const URL_DB = Deno.env.get("SUPABASE_URL")!;
@@ -55,16 +56,15 @@ async function chiave(uid: string, da: string) {
   return await r.json() as { k?: string; e?: string; tot?: number; mio?: number };
 }
 
-async function worker(uid: string, da: string): Promise<string> {
-  const r = await fetch(URL_DB + "/rest/v1/rpc/worker_prestato", {
+async function worker(uid: string, da: string): Promise<{ w?: string; e?: string; mio?: number }> {
+  const r = await fetch(URL_DB + "/rest/v1/rpc/worker_conta", {
     method: "POST",
     headers: SR.startsWith("sb_secret_") ? { apikey: SR, "Content-Type": "application/json" }
       : { apikey: SR, Authorization: "Bearer " + SR, "Content-Type": "application/json" },
     body: JSON.stringify({ utente: uid, da }),
   });
-  if (!r.ok) throw new Error("worker_prestato " + r.status);
-  const j = await r.json();
-  return typeof j === "string" ? j : "";
+  if (!r.ok) throw new Error("worker_conta " + r.status);
+  return await r.json();
 }
 
 Deno.serve(async (req) => {
@@ -80,13 +80,16 @@ Deno.serve(async (req) => {
     let uidW = "";
     try { uidW = await utente(req); } catch { return risposta(503, { error: "accesso non controllabile" }, h); }
     if (!uidW) return risposta(401, { error: "accesso scaduto" }, h);
-    let w = "";
-    try { w = await worker(uidW, da); } catch (e) { console.log(String(e)); return risposta(503, { error: "servizio non disponibile" }, h); }
+    let c;
+    try { c = await worker(uidW, da); } catch (e) { console.log(String(e)); return risposta(503, { error: "servizio non disponibile" }, h); }
+    const cw = { "x-nl-mio": String(c.mio ?? "") };
+    if (c.e === "mio") return risposta(429, { error: "limite del giorno per amico" }, h, { ...cw, "x-nl-stop": "mio" });
+    const w = c.w || "";
     if (!w || !/^https:\/\//.test(w)) return risposta(403, { error: "worker non prestato" }, h, { "x-nl-stop": "no" });
     try {
       const wu = new URL(w); wu.searchParams.set("isbn", isbn);
       const r = await fetch(wu.toString(), { headers: { Accept: "application/json" } });
-      return risposta(r.status, (await r.text()).split(wu.origin).join("…"), h);   // l'indirizzo del worker non torna indietro
+      return risposta(r.status, (await r.text()).split(wu.origin).join("…"), h, cw);   // l'indirizzo del worker non torna indietro
     } catch {
       return risposta(502, { error: "il worker non risponde" }, h);
     }

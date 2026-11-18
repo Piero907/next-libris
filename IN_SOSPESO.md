@@ -338,7 +338,7 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 **FATTO per la chiave Google nel giro 8 (18/11/2026, nella prova; nella vera con «porta nella vera»):** la chiave prestata non arriva più al telefono dell'amico (segno «prestata:<id>», funzione Supabase `libri`, 300 ricerche al giorno per amico, stop immediato; migrazione 020). **Resta in sospeso solo il worker prestato**, il cui indirizzo arriva ancora al telefono dell'amico (vedi 40, R5).
 
 ### 40. Worker e link della chiave (dal giro 7-8, 18/11/2026)
-- **R5 · limite di richieste per il worker** (in sospeso, scelta di Piero): oggi chiunque conosca l'indirizzo lo può usare da un programma; il piano gratuito si ferma a 100.000 al giorno senza costi, ma SBN potrebbe bloccare il worker. Possibile: un limite per indirizzo IP o un piccolo segreto.
+- **R5 · limite di richieste per il worker** (**worker prestato: FATTO**, 026 + giro 11A del 18/11/2026: passa dal server, 3.000 ricerche al giorno per amico, nella prova con 027; resta solo il worker usato da un programma con l'indirizzo): oggi chiunque conosca l'indirizzo lo può usare da un programma; il piano gratuito si ferma a 100.000 al giorno senza costi, ma SBN potrebbe bloccare il worker. Possibile: un limite per indirizzo IP o un piccolo segreto.
 - **R2 · link con la chiave (`#k=`): TOLTO nel giro 8** (Piero, 18/11/2026: «si condivide solo dentro l'app»). Un vecchio link aperto oggi dà solo un avviso.
 
 ---
