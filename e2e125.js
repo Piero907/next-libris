@@ -221,7 +221,7 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert.strictEqual(await A.$eval('#profH', x => x.textContent), 'Profilo di Bruno');
   t = await txt(A, '#profBody');
   assert(/Bruno Su Next Libris da marzo 2026/.test(t) && new RegExp('40 libri · 5 letti nel ' + y + ' · 2 paesi').test(t), 'testa del profilo: ' + t.slice(0, 120));
-  assert.deepStrictEqual(await A.$$eval('#profBody .pf-go > .btn', x => x.map(b => b.textContent)), ['Libreria', 'Desideri']);
+  assert.deepStrictEqual(await A.$$eval('#profBody .pf-go > .btn', x => x.map(b => b.textContent).filter(t => t !== 'Scrivi')), ['Libreria', 'Desideri']);   // «Scrivi» della chat: e2e128
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-icos > button', x => x.map(b => b.dataset.p + (b.classList.contains('gb-drop') ? '!' : '') + ':' + b.getAttribute('aria-label'))), ['swap:Prestiti e regali tra te e Bruno', 'drop!:Togli Bruno dagli amici'], 'icone (la chiave solo se ne hai una)');
   assert.strictEqual(await A.$eval('#profBody [data-p="drop"]', x => getComputedStyle(x).color), await A.evaluate(() => { const d = document.createElement('i'); d.style.color = 'var(--bad)'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; }), '«togli dagli amici» in rosso');
   assert(/Segui i suoi Desideri Bruno ti mostra già i suoi Desideri: seguili e scopri cosa sogna di leggere\. Magari ci trovi il regalo giusto, o il tuo prossimo libro\. Ti scriviamo al massimo una volta al giorno, solo quando c.è qualcosa di nuovo, e Bruno non lo saprà\./.test(t), 'frase scelta: ' + t);

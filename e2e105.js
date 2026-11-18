@@ -95,7 +95,7 @@ const base = 'http://localhost:' + CFG.port(8305);
   // ---- A: 13 notifiche, 4 nuove ----
   const A = await phone('A', 'uA', 360, 780);
   await A.evaluate(() => { const b = window.NL.clean({ t: 'La coscienza di Zeno', a: 'Italo Svevo', sx: '5a000000-0000-0000-0000-00000000005a', sk: 'p', sda: 'Bruno', rs: 'da' }); window.NL.books().unshift(b); window.NL.save(); window.NL.refresh(); });
-  assert(await A.$('header.top #btnBell + #btnFri'), 'campanella subito prima dell\'icona Amici');
+  assert(await A.$('header.top #btnBell + #btnFri') || await A.$('header.top #btnBell + #btnChat + #btnFri'), 'campanella prima dell\'icona Amici (dal giro 9b con il fumetto della chat in mezzo)');
   assert.strictEqual(await A.$eval('#btnBellN', x => x.hidden ? '' : x.textContent), '4', '4 nuove sul numero');
   assert(!(await A.$('#btnFriN')), 'icona Amici senza numero');
   assert(!(await A.$('#friNote')), 'niente riquadro della richiesta in cima');
