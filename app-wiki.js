@@ -68,20 +68,37 @@ function wdRows(j) {
   return Array.isArray(b) ? b.map(function (r) { var o = {}; Object.keys(r).forEach(function (k) { o[k] = r[k] && typeof r[k].value === 'string' ? r[k].value : ''; }); return o; }) : [];
 }
 function wdQ(u) { var m = /(Q\d{1,12})$/.exec(String(u || '')); return m ? m[1] : ''; }
-/* una sola domanda per autore: cittadinanze (solo stati di oggi), paese del luogo di nascita, film e serie TV tratti dalle sue opere */
+/* una domanda per autore: cittadinanze (solo stati di oggi), paese del luogo di nascita, opere derivate dalle sue (con il loro tipo) e titoli di quelle opere.
+   Provata sul servizio vero il 18/11/2026: niente «wdt:P31/wdt:P279*» (da solo portava la risposta a 40-80 secondi) e l'opera ripetuta in ogni ramo
+   dei titoli (senza, il servizio scorre tutte le etichette); l'ordine scritto e' quello giusto, quindi il servizio non lo cambia (optimizer None). Cosi': 0,5-4 secondi. */
 function wdInfoQuery(qid) {
-  return 'SELECT ?k ?iso ?end ?pref ?f ?fLabel ?d ?dirLabel ?tv ?w ?wl ?art WHERE {' +
+  var base = '?w wdt:P50 wd:' + qid + '. ?f wdt:P144 ?w. ', lang = ' FILTER(LANG(?wl) IN ("it", "en", "fr", "es", "de", "mul"))';
+  return 'SELECT ?k ?iso ?end ?pref ?f ?fLabel ?t ?d ?dirLabel ?w ?wl ?art WHERE { hint:Query hint:optimizer "None". ' +
     '{ BIND("c" AS ?k) wd:' + qid + ' p:P27 ?s. ?s ps:P27 ?c. ?c wdt:P297 ?iso. FILTER NOT EXISTS { ?c wdt:P576 ?x. } FILTER NOT EXISTS { ?s wikibase:rank wikibase:DeprecatedRank. }' +
     ' OPTIONAL { ?s pq:P582 ?end. } OPTIONAL { ?s wikibase:rank wikibase:PreferredRank. BIND(1 AS ?pref) } }' +
     ' UNION { BIND("b" AS ?k) wd:' + qid + ' wdt:P19 ?pl. ?pl wdt:P17 ?bc. ?bc wdt:P297 ?iso. FILTER NOT EXISTS { ?bc wdt:P576 ?x. } }' +
-    ' UNION { BIND("f" AS ?k) ?w wdt:P50 wd:' + qid + '. ?f wdt:P144 ?w. VALUES ?cls { wd:Q11424 wd:Q5398426 } ?f wdt:P31/wdt:P279* ?cls. BIND(IF(?cls = wd:Q5398426, 1, 0) AS ?tv)' +
-    ' OPTIONAL { ?f wdt:P577 ?d. } OPTIONAL { ?f wdt:P580 ?d. } OPTIONAL { ?f wdt:P57 ?dir. } OPTIONAL { ?art schema:about ?f; schema:isPartOf <https://it.wikipedia.org/>. } }' +
-    ' UNION { BIND("w" AS ?k) ?w wdt:P50 wd:' + qid + '. FILTER EXISTS { ?f2 wdt:P144 ?w. } { ?w rdfs:label ?wl. } UNION { ?w skos:altLabel ?wl. } UNION { ?w wdt:P1476 ?wl. } FILTER(LANG(?wl) IN ("it", "en", "fr", "es", "de", "mul")) }' +
-    ' SERVICE wikibase:label { bd:serviceParam wikibase:language "it,mul,en". } } LIMIT 3000';
+    ' UNION { BIND("f" AS ?k) ' + base + '?f wdt:P31 ?t. OPTIONAL { ?f wdt:P577 ?d. } OPTIONAL { ?f wdt:P580 ?d. } OPTIONAL { ?f wdt:P57 ?dir. } OPTIONAL { ?art schema:about ?f; schema:isPartOf <https://it.wikipedia.org/>. } }' +
+    ' UNION { BIND("w" AS ?k) ' + base + '?w rdfs:label ?wl.' + lang + ' }' +
+    ' UNION { BIND("w" AS ?k) ' + base + '?w skos:altLabel ?wl.' + lang + ' }' +
+    ' UNION { BIND("w" AS ?k) ' + base + '?w wdt:P1476 ?wl. }' +
+    ' SERVICE wikibase:label { bd:serviceParam wikibase:language "it,mul,en". } } LIMIT 5000';
+}
+/* film o serie TV? Dipende dal tipo dell'opera derivata (film, film d'animazione, miniserie… ma anche videogiochi, opere liriche, altri libri).
+   I tipi piu' comuni sono gia' scritti qui (letti da Wikidata il 18/11/2026); per quelli nuovi una domanda piccola, e la risposta resta salvata. */
+var WD_TY = { Q11424: 'f', Q202866: 'f', Q506240: 'f', Q653916: 'f', Q18011172: 'f', Q24862: 'f', Q98701476: 'f', Q5398426: 's', Q1259759: 's' };
+function wdTy() { var m = wdMap(); if (!m['~ty'] || typeof m['~ty'] !== 'object' || Object.keys(m['~ty']).length > 600) m['~ty'] = {}; return m['~ty']; }
+function wdTyGet(t) { return WD_TY[t] != null ? WD_TY[t] : wdTy()[t]; }   // 'f' film, 's' serie TV, '' altro; undefined = da chiedere
+function wdTypesQuery(ts) { return 'SELECT ?t ?cls WHERE { VALUES ?t { ' + ts.map(function (t) { return 'wd:' + t; }).join(' ') + ' } VALUES ?cls { wd:Q11424 wd:Q5398426 } ?t wdt:P279* ?cls. }'; }
+async function wdClassify(types) {
+  var ask = types.filter(function (t) { return wdTyGet(t) === undefined; }).slice(0, 60);
+  if (!ask.length) return;
+  var got = {};
+  wdRows(await wdAsk(wdTypesQuery(ask))).forEach(function (r) { var t = wdQ(r.t), c = wdQ(r.cls); if (t) got[t] = c === 'Q5398426' || got[t] === 's' ? 's' : 'f'; });
+  var m = wdTy(); ask.forEach(function (t) { m[t] = got[t] || ''; });
 }
 function wdYear(d) { var m = /^(\d{4})-/.exec(d || ''); return m ? +m[1] : 0; }
 function wdParseInfo(rows) {
-  var cs = [], birth = '', films = {}, labels = {};
+  var cs = [], birth = '', films = {}, labels = {}, types = {};
   rows.forEach(function (r) {
     if (r.k === 'c') { var c = wdCode(r.iso); if (c) cs.push({ c: c, end: !!r.end, pref: !!r.pref }); }
     else if (r.k === 'b') { if (!birth) birth = wdCode(r.iso); }
@@ -89,10 +106,10 @@ function wdParseInfo(rows) {
     else if (r.k === 'f') {
       var f = wdQ(r.f), t = L.str(r.fLabel).trim();
       if (!f || !t || /^Q\d+$/.test(t)) return;          // senza titolo in italiano o in inglese: non si mostra
-      var x = films[f] || (films[f] = { q: f, t: t.slice(0, 160), y: 0, d: [], s: 0, u: '', w: {} });
+      var x = films[f] || (films[f] = { q: f, t: t.slice(0, 160), y: 0, d: [], u: '', w: {}, ty: {} });
       var y = wdYear(r.d); if (y && (!x.y || y < x.y)) x.y = y;
       var dn = L.str(r.dirLabel).trim(); if (dn && !/^Q\d+$/.test(dn) && x.d.indexOf(dn) < 0 && x.d.length < 2) x.d.push(dn.slice(0, 80));
-      if (r.tv === '1') x.s = 1;
+      var ty = wdQ(r.t); if (ty) { x.ty[ty] = 1; types[ty] = 1; }
       if (/^https:\/\/it\.wikipedia\.org\/wiki\/[^\s"'<>]+$/.test(r.art)) x.u = r.art;
       var wq = wdQ(r.w); if (wq) x.w[wq] = 1;
     }
@@ -102,12 +119,19 @@ function wdParseInfo(rows) {
   var live = cs.filter(function (x) { return !x.end; }); if (!live.length) live = cs;
   var pref = live.filter(function (x) { return x.pref; }); if (pref.length) live = pref;
   var c = live.some(function (x) { return x.c === birth; }) ? birth : live.length ? live[0].c : birth;
-  var fl = Object.keys(films).map(function (f) {
+  var raw = Object.keys(films).map(function (f) {
     var x = films[f], ks = {};
     Object.keys(x.w).forEach(function (w) { Object.keys(labels[w] || {}).forEach(function (k) { ks[k] = 1; }); });
-    return { q: x.q, t: x.t, y: x.y, d: x.d.join(', '), s: x.s, u: x.u, k: Object.keys(ks).slice(0, 12) };
-  }).filter(function (x) { return x.k.length; }).sort(function (a, b) { return (a.y || 9999) - (b.y || 9999); }).slice(0, 60);
-  return { c: c || '', b: birth && birth !== c ? birth : '', f: fl };
+    return { q: x.q, t: x.t, y: x.y, d: x.d.join(', '), u: x.u, k: Object.keys(ks).slice(0, 12), ty: Object.keys(x.ty) };
+  }).filter(function (x) { return x.k.length; });
+  return { c: c || '', b: birth && birth !== c ? birth : '', raw: raw, types: Object.keys(types) };
+}
+function wdFilmList(raw) {                                // dopo wdClassify: restano solo film e serie TV
+  return raw.map(function (x) {
+    var kinds = x.ty.map(wdTyGet);
+    if (kinds.indexOf('f') < 0 && kinds.indexOf('s') < 0) return null;
+    return { q: x.q, t: x.t, y: x.y, d: x.d, s: kinds.indexOf('s') >= 0 ? 1 : 0, u: x.u, k: x.k };
+  }).filter(Boolean).sort(function (a, b) { return (a.y || 9999) - (b.y || 9999); }).slice(0, 60);
 }
 /* cerca e salva i dati di un autore; chi e' gia' salvato torna subito. Senza rete lancia l'errore e non salva niente */
 var wdRun1 = {};
@@ -121,7 +145,9 @@ async function wdFetchNow(name, k) {
   var r = await auLookup(auCanon(name)), x = { t: Date.now() };
   if (r && !r.none && r.qid) {
     var info = wdParseInfo(wdRows(await wdAsk(wdInfoQuery(r.qid))));
-    x.q = r.qid; x.c = info.c; if (info.b) x.b = info.b; if (info.f.length) x.f = info.f;
+    await wdClassify(info.types);
+    var fl = wdFilmList(info.raw);
+    x.q = r.qid; x.c = info.c; if (info.b) x.b = info.b; if (fl.length) x.f = fl;
     if (r.img && aufGet(name) === null) aufSave(auCanon(name), r.img);   // gia' che c'e': la foto per le copertine degli autori
   }
   wdMap()[k] = x; wdStore();
@@ -331,27 +357,30 @@ $('#filmBody').addEventListener('click', function (e) {
 });
 
 /* ---------- le opere di un autore: da Info Autore («Le sue opere») e dal + («Per autore») ---------- */
-var WD_WORK_T = 'wd:Q7725634 wd:Q571 wd:Q8261 wd:Q47461344 wd:Q1279564 wd:Q12106333 wd:Q25379 wd:Q149537 wd:Q725377 wd:Q35760 wd:Q277759 wd:Q1667921 wd:Q8274 wd:Q1760610 wd:Q14406742 wd:Q37484 wd:Q20540385 wd:Q116476516';
+var WD_WORK_T = 'wd:Q7725634, wd:Q571, wd:Q8261, wd:Q47461344, wd:Q1279564, wd:Q12106333, wd:Q25379, wd:Q149537, wd:Q725377, wd:Q35760, wd:Q277759, wd:Q1667921, wd:Q8274, wd:Q1760610, wd:Q14406742, wd:Q37484, wd:Q20540385, wd:Q116476516';
+var WD_SER_T = { Q277759: 1, Q1667921: 1, Q14406742: 1 };
+/* provata sul servizio vero il 18/11/2026 (1-5 secondi): i tipi con FILTER e l'ordine scritto (con VALUES il servizio partiva da tutti i libri del mondo: 27 secondi) */
 function wdWorksQuery(qid) {
-  return 'SELECT ?w ?wLabel ?it ?d ?ser WHERE { ?w wdt:P50 wd:' + qid + '; wdt:P31 ?t. VALUES ?t { ' + WD_WORK_T + ' }' +
-    ' OPTIONAL { ?w rdfs:label ?it. FILTER(LANG(?it) = "it") } OPTIONAL { ?w wdt:P577 ?d. } BIND(IF(?t IN (wd:Q277759, wd:Q1667921, wd:Q14406742), 1, 0) AS ?ser)' +
+  return 'SELECT ?w ?wLabel ?it ?d ?t WHERE { hint:Query hint:optimizer "None". ?w wdt:P50 wd:' + qid + '. ?w wdt:P31 ?t. FILTER(?t IN (' + WD_WORK_T + '))' +
+    ' OPTIONAL { ?w rdfs:label ?it. FILTER(LANG(?it) = "it") } OPTIONAL { ?w wdt:P577 ?d. }' +
     ' SERVICE wikibase:label { bd:serviceParam wikibase:language "it,mul,en,fr,es,de". } } LIMIT 2000';
 }
 function wdParseWorks(rows) {
   var m = {};
   rows.forEach(function (r) {
-    var w = wdQ(r.w), t = L.str(r.it || r.wLabel).trim();
+    var w = wdQ(r.w), t = L.str(r.it || r.wLabel).trim().replace(/\s+\([^()]*\)$/, '');   // «Guns. Contro le armi (saggio)» → senza la parentesi
     if (!w || !t || /^Q\d+$/.test(t)) return;
     var x = m[w] || (m[w] = { q: w, t: t.slice(0, 200), y: 0, it: !!r.it, ser: 0 });
     var y = wdYear(r.d); if (y && (!x.y || y < x.y)) x.y = y;
-    if (r.ser === '1') x.ser = 1;
+    if (WD_SER_T[wdQ(r.t)]) x.ser = 1;
   });
   var seen = {}, out = [];
   Object.keys(m).map(function (k) { return m[k]; }).sort(function (a, b) { return (b.it - a.it) || (a.y || 9999) - (b.y || 9999); }).forEach(function (x) {
     var k = L.titleKey(x.t); if (!k || seen[k]) return;   // la stessa opera scritta due volte: resta quella con il titolo italiano
     seen[k] = 1; x.k = k; out.push(x);
   });
-  return out.sort(function (a, b) { return (a.y || 9999) - (b.y || 9999) || coll.compare(a.t, b.t); }).slice(0, 300);
+  /* prima le opere con il titolo in italiano, in ordine di anno; poi quelle che Wikidata ha solo con il titolo originale (spesso racconti o saggi non tradotti) */
+  return out.sort(function (a, b) { return (b.it - a.it) || (a.y || 9999) - (b.y || 9999) || coll.compare(a.t, b.t); }).slice(0, 300);
 }
 var wo = { name: '', qid: '', dest: 'wish', items: null, seq: 0, plus: false, back: false, cache: {}, pend: null, added: {} };
 function woPaintDest() {
