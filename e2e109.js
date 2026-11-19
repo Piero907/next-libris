@@ -175,10 +175,14 @@ const base = 'http://localhost:' + CFG.port(8309);
   assert(/Desideri/.test(await A.txt('#isbnH')));
   await A.evaluate(() => { document.querySelectorAll('.sheet:not([hidden])').forEach(s => { s.hidden = true; }); window.__app.setTab('lib'); });
 
-  // ---- libro con solo l'ISBN: la disposizione di «Modifica» ----
+  // ---- libro con solo l'ISBN: la stessa pagina degli altri libri, con la matita (Piero, 19/11/2026) ----
   const eid = await A.evaluate(() => { const b = window.NL.clean({ t: '', i: '9788842827627' }); window.NL.books().unshift(b); window.NL.save(); window.NL.refresh(); return b.id; });
   await A.evaluate(id => document.querySelector('[data-id="' + id + '"] .sum').click(), eid); await wait(500);
-  assert(await A.$eval('[data-id="' + eid + '"]', e => e.classList.contains('cv-edit')), 'senza titolo: come in Modifica');
+  assert(await A.$eval('[data-id="' + eid + '"]', e => e.classList.contains('cv-view') && !e.classList.contains('cv-edit')), 'senza titolo: pagina del libro');
+  assert(/Senza titolo/.test(await A.txt('[data-id="' + eid + '"] .cv-ht')), 'scritto «Senza titolo»');
+  assert(await A.$('[data-id="' + eid + '"] .acts-main .cv-editb'), 'la matita c\'è');
+  await A.evaluate(id => document.querySelector('[data-id="' + id + '"] .cv-editb').click(), eid); await wait(400);
+  assert(await A.$eval('[data-id="' + eid + '"]', e => e.classList.contains('cv-edit')), 'con la matita: i campi');
 
   // ---- Bruno: niente di suo, Anna gli presta i suoi ----
   for (const [w, dark] of [[360, false], [412, true]]) {

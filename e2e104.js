@@ -125,6 +125,7 @@ const base = 'http://localhost:' + CFG.port(8304);
   // ---- B: due libri, sincronizzati ----
   const B = await phone('B', 'uB');
   const bDue = await B.add({ t: 'Il giardino dei Finzi-Contini', a: 'Giorgio Bassani', i: '9788807900358' });
+  const bVuoto = await B.add({ t: '', a: '', i: '9788868363338' });   // libro con solo l'ISBN (come quello di Victoria, 19/11/2026)
   await B.add({ t: 'Il Gattopardo', a: 'Giuseppe Tomasi di Lampedusa', i: '9788807881794' });
   await B.evaluate(() => window.NLSocial.run(false)); await wait(500);
   // ---- A: un libro (lo stesso Gattopardo) e un desiderio (il Giardino, che ha B) ----
@@ -153,6 +154,16 @@ const base = 'http://localhost:' + CFG.port(8304);
   assert(await A.$eval('[data-id="' + bDue + '"] .acts-main .g-wish', x => x.classList.contains('on')), 'già nei tuoi desideri: icona accesa in alto');
   assert(!(await A.$('[data-id="' + bDue + '"] .cv-editb')) || await A.$eval('[data-id="' + bDue + '"] .cv-editb', x => getComputedStyle(x).display === 'none'), 'niente matita');
   await A.evaluate(() => window.NLCard && window.NLCard.set('d')); await wait(500);
+  // libro dell'amico senza titolo: la stessa pagina degli altri, niente campi da riempire (Piero, 19/11/2026)
+  await A.openRow(bVuoto); await wait(500);
+  t = await A.$eval('[data-id="' + bVuoto + '"]', x => x.innerText.replace(/\s+/g, ' '));
+  console.log('[amico senza titolo]', t.slice(0, 160));
+  assert(await A.$eval('[data-id="' + bVuoto + '"]', x => x.classList.contains('cv-view') && !x.classList.contains('cv-edit')), 'senza titolo: pagina del libro');
+  assert(/Senza titolo/.test(t) && /ISBN 9788868363338/.test(t), 'titolo e ISBN da leggere');
+  assert(!/Da completare|Cerca di nuovo/.test(t), 'niente «Da completare» né «Cerca di nuovo»');
+  assert(await A.$$eval('[data-id="' + bVuoto + '"] input, [data-id="' + bVuoto + '"] textarea', e => e.filter(x => x.offsetParent && !x.closest('.cv-guest')).length) === 0, 'nessun campo visibile');
+  await A.screenshot({ path: CFG.OUT + '/amici-libro-senza-titolo.png' });
+  await A.openRow(bDue); await wait(500);
   await A.evaluate((id) => document.querySelector('[data-id="' + id + '"]').scrollIntoView(), bDue); await A.screenshot({ path: CFG.OUT + '/amici-libreria-amico.png' });
   await A.evaluate(() => window.NLCard && window.NLCard.set('attuale')); await wait(300);
   await A.click('[data-id="' + bDue + '"] .cv-guest [data-g="ask"]'); await wait(700);
