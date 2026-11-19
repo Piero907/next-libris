@@ -107,6 +107,15 @@ const base = 'http://localhost:' + CFG.port(8336);
   await B.evaluate(() => window.NLAmici.load(true)); await wait(600);
   await B.evaluate(() => window.NLAmici.keys()); await wait(500);
   assert(!(await B.$('#kwBody [data-f="keyask"]')) && /Richiesta mandata/.test(await B.txt('#kwBody .kw-ask')), 'resta «Richiesta mandata» anche dopo la riapertura');
+  // «Chiedimela» anche nel profilo dell'amico (Piero, 19/11/2026): Anna sì (già chiesta), Carla no (niente chiave)
+  await B.evaluate(() => { const s = document.getElementById('kwSheet'); if (s) s.hidden = true; }); await wait(200);
+  await B.evaluate((id) => window.NLProfilo.open(id), UA); await wait(900);
+  assert(/Anna ha una chiave Google Libri sua/.test(await B.txt('#profBody .pf-ask')) && /Richiesta mandata/.test(await B.txt('#profBody .pf-ask')) && !(await B.$('#profBody [data-p="ask"]')), 'profilo di Anna: già chiesta');
+  await B.shot('136-2b-profilo');
+  await B.evaluate(() => window.NLProfilo.close()); await wait(300);
+  await B.evaluate((id) => window.NLProfilo.open(id), UC); await wait(900);
+  assert(!(await B.$('#profBody .pf-ask')), 'profilo di Carla: niente «Chiedimela»');
+  await B.evaluate(() => window.NLProfilo.close()); await wait(300);
   await B.browserContext().close();
 
   // ================= 2) Anna: ha la chiave, riceve la richiesta =================
@@ -177,8 +186,14 @@ const base = 'http://localhost:' + CFG.port(8336);
   await C.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); }); await C.shot('136-7-passo2-scuro');
   await C.click$('#percorso [data-pt="askf"]'); await wait(900);
   assert(await C.vis('#kwSheet') && /Chiedila a un amico/.test(await C.txt('#kwBody')) && (await C.pt()) === null, 'finestra della chiave con «Chiedila a un amico»');
-  await C.click$('#kwBody [data-f="keyask"]'); await wait(500);
-  assert(DB.chieste.some(x => x.da === UC && x.a === UA));
+  await C.click$('#kwClose'); await H.sleep(600);
+  await C.evaluate((id) => window.NLProfilo.open(id), UA); await wait(900);   // «Chiedimela» dal profilo di Anna
+  assert.strictEqual(await C.txt('#profBody [data-p="ask"]'), 'Chiedimela');
+  await C.click$('#profBody [data-p="ask"]'); await wait(700);
+  assert(DB.chieste.some(x => x.da === UC && x.a === UA), 'richiesta dal profilo arrivata al server');
+  assert(/Richiesta mandata/.test(await C.txt('#profBody .pf-ask')) && !(await C.$('#profBody [data-p="ask"]')), 'nel profilo: «Richiesta mandata»');
+  await C.evaluate(() => window.NLProfilo.close()); await wait(300);
+  await C.evaluate(() => window.NLAmici.keys()); await wait(500);
   await C.click$('#kwClose'); await H.sleep(1500);
   assert.strictEqual((await C.pt()).n, 'Passo 2 di 3');
   // una chiave arriva (qui: messa a mano): il passo 2 si salta da solo
