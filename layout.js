@@ -58,7 +58,7 @@ function build() {
     '<button type="button" class="dopt" data-l="check"><span class="dico">' + NL.icon('check') + '</span><span><b>Ce l\'ho già?</b><small>Controlla in negozio</small></span><span class="n" aria-hidden="true">›</span></button></div>' +
     '<div class="row-btns"><button type="button" class="btn" data-l="close">Chiudi</button></div></div></div>'));
   document.body.appendChild(el('<div class="sheet" id="layYou" hidden><div class="sheet-in" role="dialog" aria-modal="true" aria-labelledby="layYouH">' +
-    '<h2 id="layYouH">Per te</h2><div class="dlist dmenu" id="layYouList"></div>' +
+    '<h2 id="layYouH">Per te</h2><div class="dlist dmenu" id="layYouList"></div>' +   /* la scheda della stagione si mette sopra l'elenco (paintYou) */
     '<div class="row-btns"><button type="button" class="btn" data-l="close">Chiudi</button></div></div></div>'));
   document.addEventListener('click', onClick);
 }
@@ -105,7 +105,17 @@ function youItems() {
   return out;
 }
 function paintYou() {
-  $('#layYouList').innerHTML = youItems().map(function (x) {
+  /* restyle pezzo 4 (Piero, 19/11/2026): «Per te» e' una pagina; in cima la scheda della stagione in libri, nei suoi colori */
+  var W = window.NLWrap, card = $('#layYouSeason');
+  if (!card) { card = document.createElement('button'); card.type = 'button'; card.id = 'layYouSeason'; card.className = 'lay-season'; card.dataset.l = 'wrap'; $('#layYouList').parentNode.insertBefore(card, $('#layYouList')); }
+  var qs = []; try { qs = W && W.cfg().on ? W.quarters() : []; } catch (e) { if (window.nlErr) nlErr(e); }
+  card.hidden = !qs.length;
+  if (qs.length) {
+    var d = qs[0], pal = W.palette(d.Q.q), n = d.n, pg = d.pages || 0;
+    card.style.setProperty('--sz-bg', pal.t[0]); card.style.setProperty('--sz-ink', pal.ink[0]); card.style.setProperty('--sz-2', pal.t[1]); card.style.setProperty('--sz-3', pal.t[2]);
+    card.innerHTML = '<span class="sz-t"><b>' + esc(d.Q.title) + '</b><small>' + esc(n === 1 ? '1 libro letto' : n + ' libri letti') + (pg ? ' · ' + esc(pg.toLocaleString('it-IT')) + ' pagine' : '') + '</small></span><span class="sz-go" aria-hidden="true">›</span>';
+  }
+  $('#layYouList').innerHTML = youItems().filter(function (x) { return x.l !== 'wrap' || !qs.length; }).map(function (x) {
     return '<button type="button" class="dopt dgo lay-you" data-l="' + x.l + '"><span class="lay-yi">' + svg(x.i) + '</span><span><b>' + esc(x.t) + '</b><small>' + esc(x.s) + '</small></span><span class="n" aria-hidden="true">›</span></button>';
   }).join('');
 }
