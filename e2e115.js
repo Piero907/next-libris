@@ -169,7 +169,7 @@ const books = [
   // ---------- 360 scuro: testata con il boccale e gruppi ----------
   p = await phone(360, 780, true, { seenV: V, wn2: 1, grp: 'aut', grpOpen: { 'aut:lib/italo calvino': 1 } });
   const t3 = await p.evaluate(() => { const h = document.querySelector('.top h1').getBoundingClientRect(), b = document.getElementById('btnBeer').getBoundingClientRect(), o = document.getElementById('btnOpts').getBoundingClientRect();
-    return { gap: Math.round(b.left - h.right), right: Math.round(o.right), over: document.documentElement.scrollWidth - document.documentElement.clientWidth }; });
+    return { gap: b.top >= h.bottom ? 99 : Math.round(b.left - h.right), right: Math.round(o.right), over: document.documentElement.scrollWidth - document.documentElement.clientWidth }; });
   console.log('[360 testata]', JSON.stringify(t3)); assert(t3.gap >= 0 && t3.over <= 0, 'a 360 il titolo non tocca il boccale');
   c = await cards(p); assert(c.length === 4 && c[0].open, 'gruppo aperto ricordato: ' + JSON.stringify(c));
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-autore-360-scuro.png') });

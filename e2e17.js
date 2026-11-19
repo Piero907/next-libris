@@ -21,7 +21,7 @@ const assert = require('assert');
   const wait = H.wait;   // attesa «finché» (_harness.js)
   const st = () => page.evaluate(() => ({ look: document.documentElement.getAttribute('data-look'), theme: document.documentElement.getAttribute('data-theme'), meta: document.querySelector('meta[name="theme-color"]').content, bg: getComputedStyle(document.body).backgroundColor, font: getComputedStyle(document.querySelector('h1')).fontFamily.split(',')[0] }));
   await wait(400);
-  let s = await st(); console.log('[1 predefinito]', s); assert.strictEqual(s.look, 'nuovo'); assert.strictEqual(s.theme, 'light'); assert(s.font.includes('Literata'));
+  let s = await st(); console.log('[1 predefinito]', s); assert.strictEqual(s.look, 'nuovo'); assert.strictEqual(s.theme, 'light'); assert(s.font.includes('Bricolage'));   // restyle «C · Schede» (19/11/2026)
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
   assert(await page.$eval('input[name="theme"][value="light"]', e => e.checked));
   await page.click('.seg-theme input[value="dark"] + span'); await wait(150);
@@ -42,22 +42,22 @@ const assert = require('assert');
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
   assert(!(await page.$eval('#lookNew', e => e.hidden)));
   await page.click('.pal input[value="bordeaux"]').catch(() => page.evaluate(() => { const r = document.querySelector('.pal input[value="bordeaux"]'); r.click(); }));
-  await page.evaluate(() => { const r = document.querySelector('input[name="ft"][value="garamond"]'); r.click(); });
+  await page.evaluate(() => { const r = document.querySelector('input[name="ft"][value="lora"]'); r.click(); });
   await page.evaluate(() => { const r = document.querySelector('input[name="fb"][value="atkinson"]'); r.click(); });
   await wait(200);
   let p = await page.evaluate(() => ({ pal: document.documentElement.getAttribute('data-pal'), ft: document.documentElement.getAttribute('data-ft'), fb: document.documentElement.getAttribute('data-fb'), meta: document.querySelector('meta[name="theme-color"]').content,
     accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), h1: getComputedStyle(document.querySelector('h1')).fontFamily.split(',')[0], body: getComputedStyle(document.body).fontFamily.split(',')[0] }));
-  console.log('[6 bordeaux + garamond + atkinson]', p);
-  assert.deepStrictEqual([p.pal, p.ft, p.fb, p.meta, p.accent], ['bordeaux', 'garamond', 'atkinson', '#F2EFEE', '#85283A']);
-  assert(p.h1.includes('EB Garamond') && p.body.includes('Atkinson'));
+  console.log('[6 bordeaux + lora + atkinson]', p);
+  assert.deepStrictEqual([p.pal, p.ft, p.fb, p.meta, p.accent], ['bordeaux', 'lora', 'atkinson', '#F2EFEE', '#85283A']);
+  assert(p.h1.includes('Lora') && p.body.includes('Atkinson'));
   await page.reload({ waitUntil: 'domcontentloaded' });
   p = await page.evaluate(() => [document.documentElement.getAttribute('data-pal'), document.documentElement.getAttribute('data-ft'), document.documentElement.getAttribute('data-fb')]);
-  assert.deepStrictEqual(p, ['bordeaux', 'garamond', 'atkinson']); await wait(400);
+  assert.deepStrictEqual(p, ['bordeaux', 'lora', 'atkinson']); await wait(400);
   await page.keyboard.press('Escape'); await wait(300);
   await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
   await page.evaluate(() => document.querySelector('#lookReset').click()); await wait(150);
   p = await page.evaluate(() => [document.documentElement.getAttribute('data-pal'), document.documentElement.getAttribute('data-ft'), document.documentElement.getAttribute('data-fb')]);
-  console.log('[7 predefiniti]', p); assert.deepStrictEqual(p, ['bosco', 'literata', 'plex']);
+  console.log('[7 predefiniti]', p); assert.deepStrictEqual(p, ['bosco', 'bricolage', 'plex']);
   console.log('ERRORI:', errors.length ? errors : 'nessuno'); assert(!errors.length);
   console.log('e2e17 OK');
   await browser.close(); server.close();

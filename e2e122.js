@@ -142,7 +142,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   await shot(A, 'profilo-scegli-citazione-360');
   await A.click('#profBody .pf-qpick'); await wait(600);     // dal giro 6 la preferita è una citazione in evidenza (puntina): prova completa in e2e125
   assert.strictEqual(await A.$eval('#profBody .pf-qpick', x => x.getAttribute('aria-pressed')), 'true', 'la citazione scelta ha la puntina');
-  await A.click('#profClose'); await wait(300);   // «Chiudi» da «Scegli le citazioni» torna al profilo (18/11/2026)
+  await A.click('#profSheet .sh-x'); await wait(300);   // stile C: il profilo è una pagina, «Chiudi» è la ×   // «Chiudi» da «Scegli le citazioni» torna al profilo (18/11/2026)
   assert(await A.$eval('#profSheet', x => !x.hidden), 'il profilo resta aperto');
   t = await txt(A, '#profBody'); assert(/Citazioni in evidenza 1 «Leggere il mondo come un libro» — Italo Calvino, Palomar · pagina 33/.test(t), 'in evidenza nel profilo: ' + t);
   assert.strictEqual(await A.evaluate(() => window.NL.get('a1').qs[0].pin), 1, 'la puntina sta nel libro'); assert(!/appunto/.test(JSON.stringify(DB.prof.uA)), 'mai gli appunti');
@@ -216,7 +216,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   await A.click('#profBody [data-p="segui"]'); await wait(500);
   assert(!DB.seg.includes('uA>uB'), 'smette di seguirlo dal profilo'); assert.strictEqual(await A.$eval('#profBody [data-p="segui"]', x => x.getAttribute('aria-pressed')), 'false');
   await A.click('#profBody [data-p="segui"]'); await wait(500); assert(DB.seg.includes('uA>uB'), 'e lo segue di nuovo');
-  await A.click('#profClose'); await wait(200);
+  await A.click('#profSheet .sh-x'); await wait(200);
   DB.prof.uB.libreria = true; DB.prof.uB.desideri = false;
   await A.click('#ownerProf'); await wait(1600);   // i numeri salgono (giro 11C): si legge alla fine
   t = await txt(A, '#profBody');
@@ -225,7 +225,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   assert(await A.$('#profBody [data-p="share"]') === null && (await A.$$('#profBody .pf-board .pf-t')).length >= 1 && (await A.$$('#profBody .pf-list .pf-r')).length > 3, 'tessere ed elenco anche nel profilo dell\'amico');
   assert(!(await A.$('#profBody [data-p="segui"]')), 'se nasconde i desideri il tasto «Segui i suoi Desideri» non c\'è (giro 6)');
   await noSide(A, '#profSheet .sheet-in', 'profilo dell\'amico a 360'); await shot(A, 'profilo-amico-360');
-  await A.click('#profClose'); await wait(200);
+  await A.click('#profSheet .sh-x'); await wait(200);
   await A.evaluate(() => window.NL.guestExit()); await wait(400);
 
   // ---- 16) campanella: il riassunto dei desideri di Bruno; tocco = i suoi desideri ----
