@@ -189,6 +189,19 @@ const base = "http://localhost:" + CFG.port(8340);
     };
     await pg.evaluate(() => { const x = document.getElementById('instCard'); if (x) x.hidden = true; });
     await closeAll(pg); await wait(400);
+    if (process.env.SCHEDA) {                       // restyle pezzo 2: solo la scheda del libro (SCHEDA=1)
+      await pg.evaluate(() => { const b = window.NL.books().find(x => x.id === 'k15'); b.ds = 'Una saga familiare lunga cento anni nel villaggio di Macondo, tra miracoli, guerre civili e solitudini che si ripetono di generazione in generazione. Il romanzo che ha reso celebre il realismo magico.'; b.lc = true; b.rt = 5; b.qs = [{ x: 'Il segreto di una buona vecchiaia non è altro che un patto onesto con la solitudine.', pg: '211', d: 5 }]; b.sh = 'Salotto'; b.n = 'Regalo di Marta'; window.NL.save(); window.NL.refresh(); });
+      await wait(400);
+      for (const [id, n] of [['k15', 'sc1'], ['k16', 'sc2'], ['k3', 'sc3']]) {
+        await pg.evaluate((id) => { const t = document.querySelector('[data-id="' + id + '"] .sum') || document.querySelector('[data-id="' + id + '"]'); t.click(); }, id); await wait(900);
+        await pg.evaluate((id) => { const r = document.querySelector('[data-id="' + id + '"]'); r.scrollIntoView(); window.scrollBy(0, -70); }, id); await wait(300); await sh(n + '-a');
+        if (process.env.DOM && n === 'sc1') fs.writeFileSync(path.join(OUT, nm + '-scheda-dom.html'), await pg.evaluate(() => document.querySelector('.row.open').outerHTML.replace(/<svg[\s\S]*?<\/svg>/g, '<svg/>')));
+        await pg.evaluate(() => window.scrollBy(0, 640)); await wait(300); await sh(n + '-b');
+        if (n === 'sc1') { await pg.evaluate((id) => { document.querySelector('[data-id="' + id + '"] .cv-editb').click(); document.querySelector('[data-id="' + id + '"]').scrollIntoView(); window.scrollBy(0, -70); }, id); await wait(600); await sh(n + '-mod'); await pg.evaluate(() => window.scrollBy(0, 640)); await wait(300); await sh(n + '-mod-b'); await pg.evaluate((id) => document.querySelector('[data-id="' + id + '"] .cv-editb').click(), id); await wait(400); }
+        await pg.evaluate((id) => { const c = document.querySelector('.row.open [data-act="toggle"], .row.open .chev-btn'); if (c) c.click(); }); await wait(700);
+      }
+      await pg.close(); continue;
+    }
     await sh('01-libreria');
     await pg.evaluate(() => window.scrollTo(0, 700)); await wait(300); await sh('02-copertine');
     await pg.evaluate(() => { const b = document.getElementById('btnView'); if (b) b.click(); }); await wait(500);
