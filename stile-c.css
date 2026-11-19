@@ -570,17 +570,17 @@ html[data-look="nuovo"] .guida .gd-pacts .gd-try::after,html[data-look="nuovo"] 
 html[data-look="nuovo"] .guida .gd-later{display:block;margin:14px auto 0;border:0;background:none;color:var(--muted);font:600 14px/1 var(--font-body)}
 
 /* ---------- 19. testata sobria (Piero, 19/11/2026): titolo grande, numeri sotto, tasti tondi a destra ---------- */
-/* titolo «Libreria» / «Desideri» (app-strumenti.js renderOwner); foto e nome stanno nel Profilo; Amici nel Profilo e nel Menu */
+/* titolo «Libreria» / «Desideri» (app-strumenti.js renderOwner); foto e nome stanno nel Profilo; Amici in testata, nel Profilo e nel Menu */
 html[data-look="nuovo"] body header.top{align-items:flex-start;gap:6px;margin:0 0 16px;padding-top:4px!important}
 html[data-look="nuovo"] body header.top h1{order:1;flex:1 1 auto;display:block;font:800 30px/1.05 var(--font-display);letter-spacing:-.02em;padding-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 html[data-look="nuovo"] body header.top h1.h1-long{font-size:23px;padding-top:7px}
 html[data-look="nuovo"] body header.top h1 .prova-tag{display:inline-block;vertical-align:6px;margin-left:2px}
 html[data-look="nuovo"] body header.top>.ico:not(.beer-pill){width:36px;height:36px;min-width:36px;min-height:36px}
 html[data-look="nuovo"] body header.top>.ico:not(.beer-pill) svg{width:19px;height:19px}
-html[data-look="nuovo"] body header.top>.fri-top{display:none!important}
 html[data-look="nuovo"] body header.top>.nt-top{order:3}
 html[data-look="nuovo"] body header.top>.ch-top{order:4}
-html[data-look="nuovo"] body header.top>#btnOpts{order:5}
+html[data-look="nuovo"] body header.top>.fri-top{order:5}   /* Amici torna in testata (Piero, 19/11/2026) */
+html[data-look="nuovo"] body header.top>#btnOpts{order:6}
 /* Sostieni: tasto tondo col boccale, nel colore caldo */
 html[data-look="nuovo"] body header.top .beer-top.beer-pill{order:2;width:36px;min-width:36px;height:36px;min-height:36px;margin:0;padding:0;display:grid;place-items:center;border-radius:50%;background:var(--warn-bg);color:var(--warn)}
 html[data-look="nuovo"] body header.top .beer-top.beer-pill .beer-t{display:none}
