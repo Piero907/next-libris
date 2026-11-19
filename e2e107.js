@@ -3,8 +3,8 @@ const H = require('./_harness');
 // moduli: amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // 16/11/2026, prova 99.5.
 // 1) Chiave e worker PRESTATI da un amico: si usano per cercare, ma non si vedono in Impostazioni › Ricerca (al posto del campo:
-//    «Usi la chiave Google di Anna…»), non finiscono tra i «salvati», né nel backup, né nella condivisione con il link;
-//    la tua chiave tenuta da parte resta la tua (backup e link usano quella).
+//    «Usi l’API Google di Anna…»), non finiscono tra i «salvati», né nel backup, né nella condivisione con il link;
+//    la tua API tenuta da parte resta la tua (backup e link usano quella).
 // 2) Menu › «Info e condivisione» (chiusa all'inizio): Condivisione, Installazione, Privacy, Contatti;
 //    Contatti: indirizzo, «Copia», «Scrivici» (mailto con oggetto, versione e telefono in fondo).
 // Schermate a 360, 412 scuro e 1280; niente scorrimento di lato.
@@ -31,7 +31,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     const page = await (await browser.createBrowserContext()).newPage();
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1, isMobile: w < 700, hasTouch: w < 700 });
     page.on('pageerror', e => errors.push(w + ': ' + e.message));
-    // prima di partire: la mia chiave da parte, quella di Anna in uso (come fa amici.js con «Usala»)
+    // prima di partire: la mia API da parte, quella di Anna in uso (come fa amici.js con «Usala»)
     await page.evaluateOnNewDocument(() => {
       if (localStorage.getItem('prova:e2e107')) return; localStorage.setItem('prova:e2e107', '1');
       localStorage.setItem('prova:catalogo-libri-saved', JSON.stringify({ sbn: [], key: ['AIzaDiAnna0000000000', 'AIzaMiaVecchia000000'] }));   // finita tra i salvati prima della correzione
@@ -51,7 +51,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
   for (const [w, h, dark] of [[360, 780, false], [412, 900, true], [1280, 860, false]]) {
     const tag = w + (dark ? '-scuro' : ''), P = await phone(w, h, dark);
     const shot = (n) => P.screenshot({ path: path.join(OUT, tag + '-' + n + '.png') });
-    // ---- la chiave di Anna si usa ma non si vede ----
+    // ---- l’API di Anna si usa ma non si vede ----
     assert.strictEqual(await P.evaluate(() => window.NL.settings.gbKey), 'AIzaDiAnna0000000000', 'in uso per cercare');
     await P.evaluate(() => { window.NL.openOptions('search'); window.NL.svcFold('key', true); window.NL.svcFold('sbn', true); }); await wait(500);   // sezioni richiudibili (giro 5)
     const sr = await P.evaluate(() => ({
@@ -59,10 +59,10 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
       rowGb: document.querySelector('#svcKey .svc-row').hidden, rowSbn: document.querySelector('#svcSbn .svc-row').hidden,
       txt: document.querySelector('[data-sec="search"]').innerText, saved: document.getElementById('gbSaved').innerText,
       st: document.getElementById('gbSt').textContent, clear: document.getElementById('gbClear').hidden }));
-    assert.strictEqual(sr.gb, '', 'campo della chiave vuoto'); assert.strictEqual(sr.sbn, '', 'campo del worker vuoto');
+    assert.strictEqual(sr.gb, '', 'campo dell’API vuoto'); assert.strictEqual(sr.sbn, '', 'campo del worker vuoto');
     assert(sr.rowGb && sr.rowSbn, 'campi nascosti');
-    assert(/Usi la chiave Google di Anna: non si vede e non si può prestare/.test(sr.txt) && /Usi il worker SBN di Anna/.test(sr.txt), 'al posto del campo');
-    assert(!/AIzaDiAnna|sbn-anna/.test(sr.txt), 'nessuna traccia della chiave o del worker');
+    assert(/Usi l’API Google di Anna: non si vede e non si può prestare/.test(sr.txt) && /Usi il worker SBN di Anna/.test(sr.txt), 'al posto del campo');
+    assert(!/AIzaDiAnna|sbn-anna/.test(sr.txt), 'nessuna traccia dell’API o del worker');
     assert(/AIzaMi/.test(sr.saved) && !/AIzaDi/.test(sr.saved), 'tra le salvate solo la mia: ' + sr.saved);
     assert.strictEqual(sr.st, 'Prestata da Anna'); assert(sr.clear, 'niente «Cancella»');
     assert(await side(P), 'niente scorrimento di lato (ricerca)');
@@ -71,10 +71,10 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     assert(!/AIzaDiAnna/.test(saved), 'tolta dai salvati');
     // backup e condivisione con il link: solo le mie
     const cfg = await P.evaluate(() => window.NL.backupCfg());
-    assert.strictEqual(cfg.gbKey, 'AIzaMiaVecchia000000', 'nel backup la mia chiave'); assert.strictEqual(cfg.sbnUrl, '', 'nel backup nessun worker (era di Anna)');
+    assert.strictEqual(cfg.gbKey, 'AIzaMiaVecchia000000', 'nel backup la mia API'); assert.strictEqual(cfg.sbnUrl, '', 'nel backup nessun worker (era di Anna)');
     assert(!JSON.stringify(cfg).includes('AIzaDiAnna') && !JSON.stringify(cfg).includes('sbn-anna'), 'nel backup niente di Anna');
     await P.evaluate(() => window.NL.openOptions('search')); await wait(400);   // chiave e worker in Ricerca dei libri (17/11/2026)
-    assert((await P.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc))).includes('lend'), 'la mia chiave si può ancora prestare');
+    assert((await P.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc))).includes('lend'), 'la mia API si può ancora prestare');
     await P.click('#svcBox [data-svc="lend"]'); await wait(500);
     assert.strictEqual(await P.$$eval('#kwBody [data-kw="link"]', a => a.length), 0, 'niente «Manda con un link» (giro 8)');
     await P.keyboard.press('Escape'); await wait(300);

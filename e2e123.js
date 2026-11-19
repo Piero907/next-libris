@@ -9,7 +9,7 @@ const H = require('./_harness');
 // 5) schermata 6: i Desideri dell'esempio; schermata 2: si apre il +. Niente scorrimento di lato a 360.
 // Giro 12 (19/11/2026): undici schermate nell'ordine installazione → accesso → chiavi → libri; percorso dopo la guida per chi parte da zero.
 // Giro 7: nove schermate (Prestiti e Desideri separati) e pillola «‹ Torna alla guida» dopo «Prova adesso» sulle parti vere.
-// Giro 5: otto schermate («Trova più libri» con «Crea la chiave»), tocco ai lati per sfogliare; chi usa già l'app la vede una volta dopo l'aggiornamento.
+// Giro 5: otto schermate («Trova più libri» con «Crea l’API»), tocco ai lati per sfogliare; chi usa già l'app la vede una volta dopo l'aggiornamento.
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
 const server = H.serve(CFG.port(8323), CFG.APP);
@@ -44,7 +44,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
     if (s.sel) assert(await p.evaluate((q) => q.split(',').some(x => document.querySelector(x.trim())), s.sel), 'la parte di app di «' + s.h + '» esiste: ' + s.sel);
     if (s.mod) assert(await p.evaluate((m) => !!window[m], s.mod), 'modulo ' + s.mod);
   }
-  assert(await p.evaluate(() => !!(window.NLRicerche && window.NLRicerche.guide) && !!(window.NLAmici && window.NLAmici.open) && !!document.getElementById('sortBar')), 'guida della chiave, amici, Ordina · Raggruppa');
+  assert(await p.evaluate(() => !!(window.NLRicerche && window.NLRicerche.guide) && !!(window.NLAmici && window.NLAmici.open) && !!document.getElementById('sortBar')), 'guida dell’API, amici, Ordina · Raggruppa');
   // sfoglia: tasti e dito
   let seen = [];
   for (let i = 0; i < 8; i++) {
@@ -58,10 +58,10 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   }
   console.log('[sfogliate]', seen.join(' | '));
   assert.strictEqual(seen[1], 'Installala:inst', 'schermata 2: installazione (giro 12)');
-  assert.strictEqual(seen[2], 'Accedi:friends'); assert.strictEqual(seen[4], 'Il prestito della chiave:keys'); assert.strictEqual(seen[5], 'Aggiungi i libri:add', 'il + dopo le chiavi');
-  assert.strictEqual(seen[3], 'La chiave Google:key', 'schermata 4: chiave');
-  assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(4); return document.querySelectorAll('#gdStage .gd-steps li').length + '/' + document.querySelectorAll('#gdStage .gd-note').length; }), '4/1', 'il prestito della chiave a quattro passi, con la nota');
-  assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(3); return document.querySelector('#gdStage .gd-try').textContent; }), 'Crea la chiave');
+  assert.strictEqual(seen[2], 'Accedi:friends'); assert.strictEqual(seen[4], 'Il prestito dell’API:keys'); assert.strictEqual(seen[5], 'Aggiungi i libri:add', 'il + dopo le API');
+  assert.strictEqual(seen[3], 'L’API Google Libri:key', 'schermata 4: chiave');
+  assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(4); return document.querySelectorAll('#gdStage .gd-steps li').length + '/' + document.querySelectorAll('#gdStage .gd-note').length; }), '4/1', 'il prestito dell’API a quattro passi, con la nota');
+  assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(3); return document.querySelector('#gdStage .gd-try').textContent; }), 'Crea la tua API'); assert(await p.evaluate(() => { document.querySelector('#gdStage [data-gd="info"]').click(); const s = document.getElementById('gdInfo'); const ok = s && !s.hidden && /È gratis/.test(s.textContent) && /aiuti Next Libris a crescere/.test(s.textContent) && !/carta di credito/.test(s.textContent); s.hidden = true; return ok; }), '«Scopri di più»: gratis, aiuta l\'app a crescere, niente carta di credito');
   await p.evaluate(() => window.NLGuida.close()); await wait(200);
   // tocco a sinistra = indietro
   await p.evaluate(() => window.NLGuida.open(4)); await wait(100);
@@ -183,12 +183,12 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   await p.evaluate(() => document.querySelector('#exBar [data-ex="out"]').click()); await wait(400);
   assert(await p.evaluate(() => !window.NL.esempio() && document.getElementById('exBar').hidden), 'Esci');
 
-  // 18/11/2026 sera (Piero): «Prova adesso» sulla chiave = dietro la libreria di esempio; «Più tardi» riporta da solo alla guida
+  // 18/11/2026 sera (Piero): «Prova adesso» sull’API = dietro la libreria di esempio; «Più tardi» riporta da solo alla guida
   await p.evaluate(() => window.NLGuida.open(3)); await wait(300);
-  assert.strictEqual((await slide(p)).h, 'La chiave Google');
+  assert.strictEqual((await slide(p)).h, 'L’API Google Libri');
   await p.click('#gdStage .gd-try'); await wait(900);
   g = await p.evaluate(() => ({ kg: !document.getElementById('kgSheet').hidden, ex: window.NL.esempio(), open: !document.getElementById('guida').hidden }));
-  assert(g.kg && g.ex && !g.open, 'guida della chiave sopra la libreria di esempio: ' + JSON.stringify(g));
+  assert(g.kg && g.ex && !g.open, 'guida dell’API sopra la libreria di esempio: ' + JSON.stringify(g));
   await p.click('#kgClose'); await wait(1400);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio(), kg: !document.getElementById('kgSheet').hidden }));
   assert(g.open && g.n === '4 di 8' && !g.ex && !g.kg, '«Più tardi» torna da solo alla guida: ' + JSON.stringify(g));

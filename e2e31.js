@@ -1,6 +1,6 @@
 const CFG = require("./_config");
 const H = require('./_harness');
-// chiave Google e worker: «Manda con un link» tolto (giro 8, 18/11/2026); un vecchio link «#k=» dà solo un avviso
+// API Google e worker: «Manda con un link» tolto (giro 8, 18/11/2026); un vecchio link «#k=» dà solo un avviso
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -25,16 +25,16 @@ const W = 'https://sbn-libri.piero.workers.dev', K = 'AIzaSyA1b2C3d4E5f6G7h8I9j0
   }
   const tap = (p, s) => p.$eval(s, e => e.click()), hid = (p, s) => p.$eval(s, e => e.hidden), txt = (p, s) => p.$eval(s, e => e.innerText.replace(/\s+/g, ' ').trim());
   const set = p => p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
-  // 1) senza chiave né worker: solo la guida
+  // 1) senza API né worker: solo la guida
   let p = await open(BASE, {});
   await p.evaluate(() => window.__app.openOptions('search')); await wait(150);
   assert.deepStrictEqual(await p.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc)), ['guide'], 'niente da prestare: solo la guida (16/11/2026)');
   await p.browserContext().close();
-  // 2) con chiave e worker: «Presta a un amico» c'è, ma «Manda con un link» non c'è più (giro 8, Piero 18/11/2026: si presta solo dentro l'app)
+  // 2) con API e worker: «Presta a un amico» c'è, ma «Manda con un link» non c'è più (giro 8, Piero 18/11/2026: si presta solo dentro l'app)
   p = await open(BASE, { name: 'Piero', sbnUrl: W, gbKey: K });
   await p.evaluate(() => window.__app.openOptions('search')); await wait(150);
   await tap(p, '#svcBox [data-svc="lend"]'); await wait(300);
-  assert(!(await hid(p, '#kwSheet')), 'finestra della chiave aperta');
+  assert(!(await hid(p, '#kwSheet')), 'finestra dell’API aperta');
   assert.strictEqual(await p.$$eval('#kwBody [data-kw="link"]', a => a.length), 0, 'niente «Manda con un link»');
   assert(!/link/i.test(await txt(p, '#kwBody')), 'nessun testo sul link: ' + await txt(p, '#kwBody'));
   assert.strictEqual(await p.$$eval('#svcSheet, #svcInSheet', a => a.length), 0, 'finestre del link tolte dalla pagina');

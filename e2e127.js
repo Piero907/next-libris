@@ -1,11 +1,11 @@
 const CFG = require("./_config");
 const H = require('./_harness');
 // moduli: social, amici, notifiche, ricerche   (senza questi file nell'app la prova si salta: vedi esegui.js)
-// Giro 8 (Piero, 18/11/2026): la chiave Google prestata resta sul server.
-// Anna presta la chiave a Bruno. Bruno ha sul telefono solo il segno «prestata:<id di Anna>»: le ricerche passano dalla funzione
-// «libri» (qui finta), nessuna richiesta va a Google dal suo telefono, la chiave vera non compare mai. 300 al giorno per amico
+// Giro 8 (Piero, 18/11/2026): l’API Google prestata resta sul server.
+// Anna presta l’API a Bruno. Bruno ha sul telefono solo il segno «prestata:<id di Anna>»: le ricerche passano dalla funzione
+// «libri» (qui finta), nessuna richiesta va a Google dal suo telefono, l’API vera non compare mai. 300 al giorno per amico
 // (x-nl-stop: mio) = avviso e stop fino a domani; prestito tolto (x-nl-stop: no) = torna alle sue impostazioni.
-// Anna: guida con «solo Books API, fatturazione già spenta» (R3); «La mia chiave è finita in giro» (R4) aggiorna la chiave anche
+// Anna: guida con «solo Books API, fatturazione già spenta» (R3); «La mia API è finita in giro» (R4) aggiorna l’API anche
 // per gli amici (chiavi_aggiorna). Campanella: avviso importante di Next Libris (titolo e testo, il tocco non porta altrove).
 // SCHERMATE=cartella per le fotografie (360).
 const puppeteer = require('puppeteer-core');
@@ -89,31 +89,31 @@ const base = 'http://localhost:' + CFG.port(8327);
   }
   const G = 'https://www.googleapis.com/books/v1/volumes?q=isbn:9788845278655&maxResults=5&printType=books';
 
-  // ================= Anna: la sua chiave =================
+  // ================= Anna: la sua API =================
   const A = await phone('A', UA);
   await A.evaluate((k) => { const s = window.NL.settings; s.gbKey = k; s.name = 'Anna'; window.NL.saveSettings(); }, KEY);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(800);
   await A.evaluate(() => { window.__app.openOptions('search'); window.NL.svcFold('key', true); }); await wait(500);
-  // R3: guida (in Ricerca dei libri e nella finestra «Crea la tua chiave»)
+  // R3: guida (in Ricerca dei libri e nella finestra «Crea la tua API»)
   const how = await A.$eval('#svcKey .svc-how', e => e.textContent.replace(/\s+/g, ' '));
   assert(/scegli solo Books API/.test(how) && /di partenza è già spenta, non devi fare niente/.test(how) && /non si paga mai niente/.test(how), 'R3 in Ricerca: ' + how);
   await A.evaluate(() => window.NLRicerche.guide()); await wait(300);
   const steps = await A.$$eval('#kgSheet .kg-steps li', a => a.map(x => x.innerText.replace(/\s+/g, ' ')));
-  assert.strictEqual(steps.length, 5, 'cinque passi'); assert(/Limita la chiave: in «Restrizioni API» scegli solo Books API\. La fatturazione non va attivata \(di partenza è già spenta, non devi fare niente\): così non si paga mai niente, qualunque cosa succeda\./.test(steps[3]), steps[3]);
+  assert.strictEqual(steps.length, 5, 'cinque passi'); assert(/Limita l’API: in «Restrizioni API» scegli solo Books API\. La fatturazione non va attivata \(di partenza è già spenta, non devi fare niente\): così non si paga mai niente, qualunque cosa succeda\./.test(steps[3]), steps[3]);
   assert.strictEqual(await A.wide(), 0); await A.shot('127-1-guida-chiave');
   await A.click$('#kgClose'); await wait(200);
-  // R4: «La mia chiave è finita in giro»
-  assert(await A.vis('#gbLeak'), 'il tasto c\'è per chi ha la sua chiave');
+  // R4: «La mia API è finita in giro»
+  assert(await A.vis('#gbLeak'), 'il tasto c\'è per chi ha la sua API');
   await A.shot('127-2-ricerca-anna');
   await A.click$('#gbLeak'); await wait(300);
   assert(await A.vis('#klSheet'));
   const kl = await A.txt('#klSheet'); console.log('[finita in giro]', kl);
-  assert(/Niente paura\. Una chiave Google Libri fa solo ricerche di libri e non costa niente/.test(kl) && /Rigenera chiave/.test(kl) && /Gli amici a cui la presti continuano a cercare senza fare niente/.test(kl));
+  assert(/Niente paura\. Un’API Google Libri fa solo ricerche di libri e non costa niente/.test(kl) && /Rigenera chiave/.test(kl) && /Gli amici a cui la presti continuano a cercare senza fare niente/.test(kl));
   assert.strictEqual(await A.wide(), 0); await A.shot('127-3-finita-in-giro');
   await A.$eval('#klKey', (e, k) => { e.value = k; }, KEY); await A.click$('#klSave'); await wait(200);
-  assert(/chiave di prima/.test(await A.txt('#klErr')), 'la stessa chiave non va bene');
+  assert(/chiave di prima/.test(await A.txt('#klErr')), 'la stessa API non va bene');
   await A.$eval('#klKey', e => { e.value = 'ciao'; }); await A.click$('#klSave'); await wait(200);
-  assert(/Non sembra una chiave Google/.test(await A.txt('#klErr')));
+  assert(/Non sembra un’API Google/.test(await A.txt('#klErr')));
   await A.$eval('#klKey', (e, k) => { e.value = ' ' + k + ' '; }, KEY2); await A.click$('#klSave'); await wait(900);
   assert(!(await A.vis('#klSheet')), 'chiusa');
   assert.strictEqual(await A.evaluate(() => window.NL.settings.gbKey), KEY2, 'chiave nuova in uso');
@@ -122,7 +122,7 @@ const base = 'http://localhost:' + CFG.port(8327);
   console.log('[dopo]', await A.$eval('#toastTxt', e => e.textContent));
   await A.browserContext().close();
 
-  // ================= Bruno: usa la chiave di Anna =================
+  // ================= Bruno: usa l’API di Anna =================
   const B = await phone('B', UB);
   await B.evaluate(() => window.NLAmici.load(true)); await wait(800);
   await B.evaluate(() => window.NLAmici.keys()); await wait(500);
@@ -130,28 +130,28 @@ const base = 'http://localhost:' + CFG.port(8327);
   await B.click$('#kwBody [data-f="keyuse"]'); await wait(700);
   await B.click$('#kwClose'); await wait(300);
   assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), 'prestata:' + UA, 'sul telefono solo il segno');
-  assert(await B.evaluate(() => !document.getElementById('gbLeak') || document.getElementById('gbLeak').hidden), 'niente «finita in giro» per chi non ha una chiave sua');
+  assert(await B.evaluate(() => !document.getElementById('gbLeak') || document.getElementById('gbLeak').hidden), 'niente «finita in giro» per chi non ha un’API sua');
   // una ricerca: passa dalla funzione, non da Google
   let r = await B.evaluate(async (g) => { const x = await apiFetch(g + '&key=' + encodeURIComponent(settings.gbKey)); const j = await x.json(); return { st: x.status, n: (j.items || []).length, used: gUsed() }; }, G);
   assert.deepStrictEqual(r, { st: 200, n: 1, used: 41 }, 'risposta di Google dal server e totale condiviso: ' + JSON.stringify(r));
   assert.strictEqual(DB.libri.length, 1); assert.deepStrictEqual([DB.libri[0].me, DB.libri[0].da], [UB, UA]);
-  assert.strictEqual(DB.libri[0].u, '/books/v1/volumes?q=isbn:9788845278655&maxResults=5&printType=books', 'domanda senza chiave: ' + DB.libri[0].u);
+  assert.strictEqual(DB.libri[0].u, '/books/v1/volumes?q=isbn:9788845278655&maxResults=5&printType=books', 'domanda senza API: ' + DB.libri[0].u);
   // ricerca vera dell'app per ISBN
   const libro = await B.evaluate(async () => JSON.stringify(await findIsbn('9788845278655')));
   console.log('[findIsbn]', libro.slice(0, 160));
-  assert(/Il nome della rosa/.test(libro), 'dati arrivati con la chiave prestata');
+  assert(/Il nome della rosa/.test(libro), 'dati arrivati con l’API prestata');
   assert(DB.libri.length >= 2 && DB.libri.every(x => !/key=/.test(x.u)));
-  await wait(3500);   // il contatore del telefono non conta la chiave prestata (lo fa il server)
-  assert.strictEqual(DB.conta.filter(x => /^g:/.test(x.chiave) && x.n > 0).length, 0, 'nessun conta_ricerche per la chiave prestata');
+  await wait(3500);   // il contatore del telefono non conta l’API prestata (lo fa il server)
+  assert.strictEqual(DB.conta.filter(x => /^g:/.test(x.chiave) && x.n > 0).length, 0, 'nessun conta_ricerche per l’API prestata');
   assert.strictEqual(fuori.filter(u => /googleapis\.com/.test(u)).length, 0, 'nessuna richiesta a Google dal telefono: ' + fuori.filter(u => /googleapis/.test(u)).join(' '));
   const tutto = await B.evaluate(() => JSON.stringify(localStorage) + JSON.stringify(window.NL.backupCfg()));
-  assert(!tutto.includes(KEY) && !tutto.includes(KEY2), 'la chiave vera non è mai nel telefono di Bruno');
+  assert(!tutto.includes(KEY) && !tutto.includes(KEY2), 'l’API vera non è mai nel telefono di Bruno');
   assert(!/prestata:/.test(await B.evaluate(() => JSON.stringify(window.NL.backupCfg()))), 'nel backup niente segno');
   // 300 al giorno: avviso e stop fino a domani
   DB.mode = 'mio'; const prima = DB.libri.length;
   r = await B.evaluate(async (g) => { const x = await apiFetch(g + '&key=' + encodeURIComponent(settings.gbKey)); return { st: x.status, left: googleLeft(false), toast: document.getElementById('toastTxt').textContent }; }, G);
   console.log('[300]', r.toast);
-  assert.strictEqual(r.st, 429); assert.strictEqual(r.left, false); assert(/Per oggi hai finito le ricerche con la chiave di Anna/.test(r.toast));
+  assert.strictEqual(r.st, 429); assert.strictEqual(r.left, false); assert(/Per oggi hai finito le ricerche con l’API di Anna/.test(r.toast));
   r = await B.evaluate(async (g) => { const x = await apiFetch(g + '&key=' + encodeURIComponent(settings.gbKey)); return { st: x.status, local: !!x.local }; }, G);
   assert.deepStrictEqual(r, { st: 429, local: true }, 'dopo lo stop non si chiama più il server'); assert.strictEqual(DB.libri.length, prima + 1);
   // prestito tolto: il server dice no, il telefono torna alle sue impostazioni
@@ -160,7 +160,7 @@ const base = 'http://localhost:' + CFG.port(8327);
   await B.evaluate(() => { const s = window.NL.settings; if (!s.gbKey) throw new Error('già tolta prima della ricerca'); });
   r = await B.evaluate(async (g) => { const x = await apiFetch(g + '&key=' + encodeURIComponent(settings.gbKey)); return x.status; }, G).catch(e => String(e));
   await wait(1500);
-  assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey || ''), '', 'chiave prestata tolta dopo il no del server (stato ' + r + ')');
+  assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey || ''), '', 'API prestata tolta dopo il no del server (stato ' + r + ')');
 
   // ================= campanella: avviso importante =================
   DB.avvisi = [{ id: 'av1', da: null, nome: null, tipo: 'avviso', rif: 'Aggiornamento importante', titolo: 'Apri Next Libris e tocca «Aggiorna»: la versione nuova sistema la ricerca dei libri.', creata: new Date().toISOString(), letta: false }];

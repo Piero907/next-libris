@@ -6,8 +6,8 @@ const H = require('./_harness');
 // 2) bandiere come piccole immagini dell'app (vendor/flags), non emoji: si scaricano solo quelle che servono;
 // 3) film nella scheda del libro, sezione «Dal libro» (🎬/📺, anno, regia, › verso Wikipedia);
 // 4) Ricerca dei libri: Google Libri sopra il worker, sezioni richiudibili (stato, due righe, «Come si crea…»), «Prestata da …»;
-//    «Presta a un amico» con il contatore degli amici; 5) testo della finestra «Chiave Google e worker»;
-// 8) chiave Google coperta nel campo («AIza…7Gt») con «Mostra».
+//    «Presta a un amico» con il contatore degli amici; 5) testo della finestra «API Google e worker»;
+// 8) API Google coperta nel campo («AIza…7Gt») con «Mostra».
 // (6 e 7, guida di 8 schermate e mostrata una volta a chi usa già l'app: e2e123.)
 // Con SCHERMATE=cartella: ricerca con la X, Ricerca dei libri chiusa e aperta, scheda con i film, gruppi per paese.
 const puppeteer = require('puppeteer-core');
@@ -114,8 +114,8 @@ const KEY = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQr7Gt';
   assert(!rs.kOpen && !rs.sOpen && rs.exp === 'false', 'sezioni chiuse');
   assert.strictEqual(rs.kSt, 'In uso'); assert.strictEqual(rs.sSt, 'Non impostato');
   assert(!rs.kGuide && rs.sGuide, 'la guida solo dove manca (qui il worker)');
-  assert.strictEqual(rs.kDesc, 'Trova titoli, copertine e descrizioni nell\'archivio di Google. Senza chiave l\'app usa solo Open Library e trova meno libri.');
-  assert(!rs.txt.includes(KEY), 'la chiave non si vede');
+  assert.strictEqual(rs.kDesc, 'Trova titoli, copertine e descrizioni nell\'archivio di Google. Senza API l\'app usa solo Open Library e trova meno libri.');
+  assert(!rs.txt.includes(KEY), 'l’API non si vede');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'ricerca-chiusa-360.png') });
   // aperta: chiave coperta, «Mostra», tocco sul campo
   await p.click('#svcKey .svc-tog'); await wait(200);
@@ -125,10 +125,10 @@ const KEY = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQr7Gt';
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'ricerca-aperta-360.png') });
   await p.click('#gbShow'); await wait(150);
   f = await p.evaluate(() => ({ v: document.getElementById('gbKey').value, ro: document.getElementById('gbKey').readOnly, show: document.getElementById('gbShow').textContent }));
-  assert.deepStrictEqual(f, { v: KEY, ro: false, show: 'Nascondi' }, '«Mostra» scopre la chiave');
+  assert.deepStrictEqual(f, { v: KEY, ro: false, show: 'Nascondi' }, '«Mostra» scopre l’API');
   await p.click('#gbShow'); await wait(150);
   assert.strictEqual(await p.$eval('#gbKey', e => e.value), 'AIza…7Gt', '«Nascondi» la copre');
-  // una change sul campo coperto non tocca la chiave
+  // una change sul campo coperto non tocca l’API
   await p.evaluate(() => document.getElementById('gbKey').dispatchEvent(new Event('change')));
   assert.strictEqual(await p.evaluate(() => window.NL.settings.gbKey), KEY, 'chiave intatta');
   await p.click('#svcKey .svc-tog'); await wait(150);
@@ -143,13 +143,13 @@ const KEY = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQr7Gt';
     window.NL.settings.gbKey = 'AIzaDiSerena00000000'; window.NL.saveSettings(); renderSvc();
   }); await wait(100);
   const lent = await p.evaluate(() => ({ st: document.getElementById('gbSt').textContent, on: document.getElementById('gbSt').classList.contains('on'), show: document.getElementById('gbShow').hidden, guide: !document.getElementById('gbGuide').hidden }));
-  assert.deepStrictEqual(lent, { st: 'Prestata da Serena B.', on: true, show: true, guide: true }, 'chiave prestata');
+  assert.deepStrictEqual(lent, { st: 'Prestata da Serena B.', on: true, show: true, guide: true }, 'API prestata');
   await hideAll();
 
-  // 5) finestra «Chiave Google e worker»: testo approvato e contatore
+  // 5) finestra «API Google e worker»: testo approvato e contatore
   await p.evaluate(() => window.NLAmici.keys()); await wait(400);
   const kw = await p.$eval('#kwBody', e => e.innerText.replace(/\s+/g, ' '));
-  assert(kw.startsWith('Una chiave Google Libri fa 1.000 ricerche al giorno. Con un uso normale bastano per te e per decine di amici. Il primo giorno, quando un amico carica la sua libreria, ne consuma di più: puoi aiutare fino a 6 amici nuovi al giorno (50 libri ciascuno). Il worker ne regge migliaia.'), 'testo della finestra: ' + kw);
+  assert(kw.startsWith('Un’API Google Libri fa 1.000 ricerche al giorno. Con un uso normale bastano per te e per decine di amici. Il primo giorno, quando un amico carica la sua libreria, ne consuma di più: puoi aiutare fino a 6 amici nuovi al giorno (50 libri ciascuno). Il worker ne regge migliaia.'), 'testo della finestra: ' + kw);
   assert.deepStrictEqual(await p.evaluate(() => [0, 1, 2].map(n => window.NLAmici.lentText(n))), ['Non la usa ancora nessun amico', 'La usa 1 amico', 'La usano 2 amici']);
   assert.strictEqual(await p.evaluate(() => window.NLAmici.lentCount()), -1, 'senza account il contatore non si mostra');
   await hideAll();

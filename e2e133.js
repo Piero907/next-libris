@@ -1,7 +1,7 @@
 const CFG = require("./_config");
 const H = require('./_harness');
 // moduli: social, amici, notifiche, ricerche   (senza questi file nell'app la prova si salta: vedi esegui.js)
-// 026 (Piero, 18/11/2026 sera): Bruno ha sul telefono la chiave e il worker di Anna come se fossero suoi (copiati prima del giro 8,
+// 026 (Piero, 18/11/2026 sera): Bruno ha sul telefono l’API e il worker di Anna come se fossero suoi (copiati prima del giro 8,
 // anche tra i «salvati»). All'apertura il server (chiavi_controlla) dice che sono di Anna: spariscono dal telefono, Bruno li usa dal server
 // («prestata:…» e worker-prestato.invalid), non può prestarli (niente elenco «Presta a un amico»; presta_chiavi = «non tua»).
 // La ricerca SBN passa dalla funzione «libri» (?da=&isbn=), l'indirizzo del worker non arriva mai al telefono.
@@ -77,7 +77,7 @@ const base = 'http://localhost:' + CFG.port(8333);
     await page.evaluateOnNewDocument((u, id) => {
       window.NL_SOCIAL = { url: u, key: 'chiave-finta', gClient: 'client-finto' };
       if (!localStorage.getItem('prova:catalogo-libri-social-auth')) localStorage.setItem('prova:catalogo-libri-social-auth', JSON.stringify({ at: 'AT-' + id, rt: 'RT-' + id, exp: Date.now() + 3e6, uid: id, email: 'x@esempio.it' }));
-      if (id.endsWith('b2') && !localStorage.getItem('prova:e2e133')) { localStorage.setItem('prova:e2e133', '1');   // Bruno: la chiave e il worker di Anna salvati come suoi
+      if (id.endsWith('b2') && !localStorage.getItem('prova:e2e133')) { localStorage.setItem('prova:e2e133', '1');   // Bruno: l’API e il worker di Anna salvati come suoi
         localStorage.setItem('prova:catalogo-libri-set', JSON.stringify({ gbKey: 'AIzaANNA0123456789abcdefghijklmnopq', sbnUrl: 'https://sbn-anna.esempio.workers.dev', name: 'Bruno', welcomed: 1, donSeen: 1 }));
         localStorage.setItem('prova:catalogo-libri-saved', JSON.stringify({ key: ['AIzaANNA0123456789abcdefghijklmnopq', 'AIzaBRUNOsua000000000000000000000001'], sbn: ['https://sbn-anna.esempio.workers.dev'] })); }
       if (!localStorage.getItem('prova:catalogo-libri-layout')) { localStorage.setItem('prova:catalogo-libri-layout', JSON.stringify({ v: 'a' })); localStorage.setItem('prova:catalogo-libri-card', JSON.stringify({ v: 'd' })); }
@@ -98,9 +98,9 @@ const base = 'http://localhost:' + CFG.port(8333);
   const st = await B.evaluate(() => ({ gb: window.NL.settings.gbKey, sbn: window.NL.settings.sbnUrl, saved: localStorage.getItem('prova:catalogo-libri-saved'), all: JSON.stringify(localStorage) }));
   console.log('[bruno]', st.gb, st.sbn, st.saved);
   assert.strictEqual(st.gb, 'prestata:' + UA, 'chiave dal server'); assert.strictEqual(st.sbn, 'https://worker-prestato.invalid/' + UA, 'worker dal server');
-  assert(!st.all.includes(KEY) && !st.all.includes(W), 'sul telefono di Bruno non restano né la chiave né il worker di Anna');
-  assert(st.saved.includes('AIzaBRUNOsua'), 'la sua chiave salvata resta');
-  // non può prestarli: niente «Presta a un amico» nella finestra della chiave
+  assert(!st.all.includes(KEY) && !st.all.includes(W), 'sul telefono di Bruno non restano né l’API né il worker di Anna');
+  assert(st.saved.includes('AIzaBRUNOsua'), 'la sua API salvata resta');
+  // non può prestarli: niente «Presta a un amico» nella finestra dell’API
   await B.evaluate(() => window.NLAmici.keys()); await wait(300);
   const kw = await B.txt('#kwBody'); console.log('[finestra]', kw.slice(0, 200));
   assert(!/Tocca un amico per scegliere/.test(kw) && /Anna condivide con te/.test(kw) && /La stai usando/.test(kw), 'niente prestito di quelle degli altri');

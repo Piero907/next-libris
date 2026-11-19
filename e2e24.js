@@ -68,7 +68,7 @@ const W1 = 'https://sbn-libri.piero.workers.dev', W0 = 'https://vecchio.piero.wo
   const [ch] = await Promise.all([p.waitForFileChooser(), p.$eval('.welcome [data-act="restore"]', b => b.click())]);
   await ch.accept([CFG.OUT + '/backup_cfg.json']); await wait(500);
   const toast = await p.$eval('#toastTxt', e => e.textContent); console.log('[3 ripristino]', toast);
-  assert.strictEqual(toast, '1 libro ripristinato. Tornano in uso anche il worker SBN e la chiave Google.');
+  assert.strictEqual(toast, '1 libro ripristinato. Tornano in uso anche il worker SBN e l’API Google.');
   let st = await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
   assert.strictEqual(st.sbnUrl, W1); assert.strictEqual(st.gbKey, K1);
   assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-saved'))), { sbn: [W1, W0], key: [K1] });

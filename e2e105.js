@@ -84,8 +84,8 @@ const base = 'http://localhost:' + CFG.port(8305);
   const headOk = (P) => P.evaluate(() => {          // titolo e stato non finiscono sotto le icone
     // dalla 99.10 a 360 px le icone sono più strette e le zone da toccare si sovrappongono un poco: si guardano i disegni (svg)
     const box = (id) => { const b = document.getElementById(id), g = b.querySelector('svg'); return (g || b).getBoundingClientRect(); };
-    const bell = box('btnBell'), h = document.querySelector('header.top h1').getBoundingClientRect(), fri = box('btnFri'), gear = box('btnOpts');
-    return h.right <= bell.left + 1 && bell.right <= fri.left + 8 && fri.right <= gear.left + 8 && Math.abs(bell.top - gear.top) < 2;
+    const bell = box('btnBell'), h = document.querySelector('header.top h1').getBoundingClientRect(), gear = box('btnOpts');   // testata sobria (19/11/2026): Amici non è più in testata
+    return h.right <= bell.left + 1 && bell.right <= gear.left + 8 && Math.abs(bell.top - gear.top) < 2;
   });
 
   // ---- senza account: niente campanella ----
@@ -104,7 +104,7 @@ const base = 'http://localhost:' + CFG.port(8305);
   await A.click('#btnBell'); await wait(600);
   const t = await A.$eval('#ntBody', x => x.innerText.replace(/\s+/g, ' ')); console.log('[campanella]', t.slice(0, 300) + '…');
   for (const r of [/Carla Bianchi dei Monti vuole essere tuo amico/, /Bruno ti ha prestato «La coscienza di Zeno»/, /Bruno ti consiglia «Il nome della rosa/,
-    /Bruno condivide con te la sua chiave per cercare i libri/, /Dario ti ha regalato «Il barone rampante»/, /Bruno dice di averti restituito «Il Gattopardo»/,
+    /Bruno condivide con te la sua API per cercare i libri/, /Dario ti ha regalato «Il barone rampante»/, /Bruno dice di averti restituito «Il Gattopardo»/,
     /Bruno conferma di aver riavuto «Se questo è un uomo»/, /Bruno dice di non avere ancora ricevuto «Lessico famigliare»/,
     /Bruno ha segnato come restituito «Il sentiero dei nidi di ragno»/, /Dario ti chiede in prestito «Le città invisibili»/, /Bruno ti presta «Marcovaldo»/,
     /Dario ora non può prestarti «La luna e i falò»/, /Bruno ha accettato la tua amicizia/, /adesso|1 min fa/, /12 min fa/, /5 ore fa/, /ieri/, /3 giorni fa/]) assert(r.test(t), 'testo: ' + r);

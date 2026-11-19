@@ -67,11 +67,11 @@ const W1 = 'https://sbn-libri.piero.workers.dev', K1 = 'AIzaSyA1b2C3d4E5f6G7h8I9
   await tap('#gbClear'); await wait(100);
   let st = await set(); assert.strictEqual(st.sbnUrl, ''); assert.strictEqual(st.gbKey, '');
   assert.strictEqual(await val('#sbnUrl'), ''); assert.strictEqual(await val('#gbKey'), '');
-  assert.strictEqual(await txt('#sbnSt'), 'Non impostato'); assert.strictEqual(await txt('#gbSt'), 'Nessuna chiave');
+  assert.strictEqual(await txt('#sbnSt'), 'Non impostato'); assert.strictEqual(await txt('#gbSt'), 'Nessuna API');
   assert(await hidden('#sbnClear'));
   console.log('[3 salvati]', await txt('#sbnSaved'), '|', await txt('#gbSaved'), '| pulsante:', await txt('#svcRestore'));
-  assert.strictEqual(await txt('#svcRestore'), 'Rimetti chiave e worker salvati');
-  assert((await txt('#gbCount')).includes('senza chiave'));
+  assert.strictEqual(await txt('#svcRestore'), 'Rimetti API e worker salvati');
+  assert((await txt('#gbCount')).includes('senza API'));
   await page.screenshot({ path: CFG.OUT + '/k_off.png' });
   const s0 = sHits;
   await page.evaluate(() => window.__app.addIsbn('9788806219000'));
@@ -90,9 +90,9 @@ const W1 = 'https://sbn-libri.piero.workers.dev', K1 = 'AIzaSyA1b2C3d4E5f6G7h8I9
   // un tasto salvato alla volta
   await tap('#sbnSaved .schip-use'); await wait(100);
   st = await set(); assert.strictEqual(st.sbnUrl, W1); assert.strictEqual(st.gbKey, '');
-  assert.strictEqual(await txt('#svcRestore'), 'Rimetti la chiave salvata');
+  assert.strictEqual(await txt('#svcRestore'), 'Rimetti l’API salvata');
 
-  // 4) sostituire la chiave: la vecchia resta tra le salvate e si può rimettere
+  // 4) sostituire l’API: la vecchia resta tra le salvate e si può rimettere
   await page.evaluate(K2 => { const i = document.querySelector('#gbKey'); i.value = '  ' + K2 + ' '; i.dispatchEvent(new Event('change')); }, K2); await wait(100);
   st = await set(); assert.strictEqual(st.gbKey, K2);
   console.log('[4 nuova chiave]', await txt('#toastTxt'), '| salvate:', await txt('#gbSaved'));

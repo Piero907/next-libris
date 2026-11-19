@@ -141,7 +141,7 @@ const base = 'http://localhost:' + CFG.port(8310);
     // ---- nella libreria di Bruno: l'icona Amici c'è ----
     await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
     assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Bruno');
-    assert(await A.shown('#btnFri'), 'icona Amici anche nella libreria di un amico');
+    assert(!(await A.shown('#btnFri')), 'testata sobria (19/11/2026): l\'icona Amici non è più in testata, nemmeno da un amico');
     await A.shot('110-1-libreria-bruno-' + tag);
     // ---- «amici in comune» apre gli amici di Bruno ----
     await A.click$('#guestBar [data-g="ff"]'); await wait(700);

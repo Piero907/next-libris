@@ -4,8 +4,8 @@ const HN = require('./_harness');
 // modulo «Ricerche condivise» (ricerche.js) con un Supabase finto, 16/11/2026:
 // archivio comune (libro già cercato: niente Google; libro nuovo: una sola ricerca Google, poi nell'archivio solo i dati pubblici);
 // copertina grande dallo stesso indirizzo di Google (zoom=3; zoom=0 tolto il 17/11/2026), senza la richiesta /volumes/; descrizione assente = nessuna altra richiesta finche' non si apre il riquadro (giro 11B);
-// contatore condiviso della chiave prestata da Bruno (sha256, mai la chiave) e del worker; a 950 notifica «limite» nella campanella,
-// Google si ferma (dati da Open Library); la notifica apre la guida «Crea la tua chiave Google Libri: è gratis» (360, 412 scuro, 1280).
+// contatore condiviso dell’API prestata da Bruno (sha256, mai l’API) e del worker; a 950 notifica «limite» nella campanella,
+// Google si ferma (dati da Open Library); la notifica apre la guida «Crea la tua API Google Libri: è gratis» (360, 412 scuro, 1280).
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
 const assert = require('assert');
@@ -112,13 +112,13 @@ let gHits = [], sbnHits = 0, coverHits = [];
   assert(!b.ds && !b.dsn, 'senza descrizione, da cercare a richiesta');
   const put = DB.puts.find(x => x.isbn === '9788845292613'); console.log('[2 archiviato]', JSON.stringify(put && put.dati));
   assert(put && put.dati.t === 'Il nome della rosa' && put.dati.e === 'Bompiani' && !('c' in put.dati) && !('n' in put.dati) && !('id' in put.dati), 'nell\'archivio solo i dati pubblici');
-  // 3) contatore condiviso: per sha256 della chiave e del worker, con il nome di chi la presta; mai la chiave
+  // 3) contatore condiviso: per sha256 dell’API e del worker, con il nome di chi la presta; mai l’API
   await A.evaluate(() => window.NLRicerche.flush(false)); await wait(800);
   const gk = 'g:' + H(KEY), sk = 's:' + H(SBN);
   console.log('[3 contatore]', JSON.stringify(DB.counts));
   assert(DB.counts[gk] >= 1 && DB.calls.some(c => c.chiave === gk && c.di === 'Bruno') && DB.counts[sk] >= 1, 'contato per hash');
-  assert(!JSON.stringify(DB.calls).includes(KEY), 'la chiave non esce dal telefono');
-  // 4) gli altri che usano la chiave arrivano a 949: un'altra ricerca supera 950 → notifica, e Google si ferma
+  assert(!JSON.stringify(DB.calls).includes(KEY), 'l’API non esce dal telefono');
+  // 4) gli altri che usano l’API arrivano a 949: un'altra ricerca supera 950 → notifica, e Google si ferma
   DB.counts[gk] = 949; gHits = [];
   await A.addWait('9788804668015', 1500);
   await A.evaluate(() => window.NLRicerche.flush(false)); await wait(1500);
@@ -132,26 +132,26 @@ let gHits = [], sbnHits = 0, coverHits = [];
   // 5) la notifica apre la guida «è gratis»
   await A.click('#btnBell'); await wait(500);
   const nt = await A.$eval('#ntBody', x => x.innerText.replace(/\s+/g, ' ')); console.log('[5 campanella]', nt);
-  assert(/La chiave Google di Bruno ha finito le ricerche di oggi: creane una tua, è gratis/.test(nt));
+  assert(/L’API Google di Bruno ha finito le ricerche di oggi: creane una tua, è gratis/.test(nt));
   await A.screenshot({ path: CFG.OUT + '/ricerche-notifica-360.png' });
   await A.click('#ntBody [data-n="nl1"]'); await wait(500);
   assert(await A.$eval('#kgSheet', x => !x.hidden), 'guida aperta');
   const g = await A.$eval('#kgSheet', x => x.innerText.replace(/\s+/g, ' ')); console.log('[5 guida]', g.slice(0, 220));
-  assert(/È gratis/.test(g) && /1\.000 ricerche al giorno, solo per te/.test(g) && /Con una chiave tua l'app trova molti più libri/.test(g) && /Abilita/.test(g) && /Crea credenziali/.test(g));
+  assert(/È gratis/.test(g) && /1\.000 ricerche al giorno, solo per te/.test(g) && /Con un’API tua l'app trova molti più libri/.test(g) && /Abilita/.test(g) && /Crea credenziali/.test(g));
   const links = await A.$$eval('#kgSheet a', a => a.map(x => x.href)); assert(links.some(h => h.includes('books.googleapis.com')) && links.some(h => h.includes('apis/credentials')));
   const side = await A.evaluate(() => { const si = document.querySelector('#kgSheet .sheet-in'); return Math.max(si.scrollWidth - si.clientWidth, document.documentElement.scrollWidth - document.documentElement.clientWidth); });
   assert(side <= 0, 'niente scorrimento di lato a 360');
   await A.screenshot({ path: CFG.OUT + '/ricerche-guida-360.png' });
-  // 6) campo della chiave nella guida (18/11/2026): chiave sbagliata → avviso; giusta → salvata; poi Impostazioni › Ricerca dei libri, con il totale condiviso
+  // 6) campo dell’API nella guida (18/11/2026): chiave sbagliata → avviso; giusta → salvata; poi Impostazioni › Ricerca dei libri, con il totale condiviso
   await A.type('#kgKey', 'ciao'); await A.click('#kgSave'); await wait(200);
   assert(await A.evaluate(() => !document.getElementById('kgErr').hidden && !document.getElementById('kgSheet').hidden), 'chiave sbagliata: avviso');
   const k0 = await A.evaluate(() => window.NL.settings.gbKey), kn = 'AIzaProvaDellaGuida_0123456789abcdefgh';
   await A.evaluate(() => { document.getElementById('kgKey').value = ''; }); await A.type('#kgKey', ' ' + kn + ' '); await A.click('#kgSave'); await wait(300);
   assert(await A.evaluate((k) => document.getElementById('kgSheet').hidden && window.NL.settings.gbKey === k, kn), 'chiave salvata dalla guida');
-  await A.evaluate((k) => NL.setKey(k), k0); await wait(200);   // si torna alla chiave di prima per il resto della prova
+  await A.evaluate((k) => NL.setKey(k), k0); await wait(200);   // si torna all’API di prima per il resto della prova
   await A.evaluate(() => { NL.openOptions('search'); NL.svcFold('key', true); }); await wait(700);
   const cnt = await A.$eval('#gbCount', x => x.textContent); console.log('[6 impostazioni]', cnt);
-  assert(/con chi usa la stessa chiave/.test(cnt) && /Limite quasi raggiunto/.test(cnt));
+  assert(/con chi usa la stessa API/.test(cnt) && /Limite quasi raggiunto/.test(cnt));
   // schermate: 412 scuro e 1280
   for (const [w, h, dark] of [[412, 900, true], [1280, 860, false]]) {
     const P = await phone(w, h, dark);

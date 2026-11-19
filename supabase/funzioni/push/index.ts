@@ -38,8 +38,8 @@ function testo(x: N): string {
     case "richiesta_si": return chi + " ti presta " + libro;
     case "richiesta_no": return chi + " ora non può prestarti " + libro;
     case "consiglio": return chi + " ti consiglia " + libro;
-    case "chiavi": return chi + " condivide con te la sua chiave per cercare i libri";
-    case "chiedi_chiavi": return "🔑 " + chi + " ti chiede in prestito la chiave Google Libri";   // «Chiedimela» (giro 12, 030)
+    case "chiavi": return chi + " condivide con te la sua API per cercare i libri";   // nome «API» (Piero, 19/11/2026, versione 7)
+    case "chiedi_chiavi": return "🔑 " + chi + " ti chiede in prestito l’API Google Libri";   // «Chiedimela» (giro 12, 030)
     case "desideri": {   // riassunto del giorno di un amico che segui: rif = quanti, titolo = i primi tre titoli già tra «»
       const n = Number(x.rif) || 1;
       return chi + (n === 1 ? " ha un nuovo desiderio: " : " ha " + n + " nuovi desideri: ") + (x.titolo || "") + (n > 3 ? " e altri" : "");

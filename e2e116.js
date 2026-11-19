@@ -118,7 +118,7 @@ let wiki = 0;
     nav: [...document.querySelectorAll('#layNav .on')].length }));
   console.log('[4 striscia]', JSON.stringify(gb));
   assert.deepStrictEqual(gb.tabs, ['Libreria 3*', 'Desideri 1']);
-  assert(!gb.pill.some(t => /Prest/.test(t)) && !/^Prestat/.test(gb.key) && gb.nav === 0, 'icona della chiave spenta se non è prestata (17/11/2026), nessun tasto in basso acceso');
+  assert(!gb.pill.some(t => /Prest/.test(t)) && !/^Prestat/.test(gb.key) && gb.nav === 0, 'icona dell’API spenta se non è prestata (17/11/2026), nessun tasto in basso acceso');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-412.png') });
   await p.evaluate(() => { const s = document.getElementById('grp'); s.value = ''; s.dispatchEvent(new Event('change', { bubbles: true })); }); await wait(300);
   await p.click('#btnView'); await wait(400);
@@ -138,7 +138,7 @@ let wiki = 0;
   await p.click('#layNav [data-l="lib"]'); await wait(400);
   st = await p.evaluate(() => [NL.guest(), NL.tab(), document.querySelectorAll('#list .row, #list .cover').length]);
   assert.deepStrictEqual(st, [null, 'lib', 3], 'Libreria in basso: la tua');
-  assert(await p.evaluate(() => { const k = document.getElementById('guestKey'); return !k || k.hidden; }), 'icona della chiave via fuori dalla libreria dell\'amico');
+  assert(await p.evaluate(() => { const k = document.getElementById('guestKey'); return !k || k.hidden; }), 'icona dell’API via fuori dalla libreria dell\'amico');
   // «Per te» dalla libreria di un amico: le tue statistiche
   await p.evaluate(() => NL.guestEnter('Anna', [{ id: 'g1', t: 'Uno', a: 'X', ts: 1 }], { id: 'x' })); await wait(400);
   await p.click('#layNav [data-l="you"]'); await wait(300); await p.click('#layYou [data-l="stats"]'); await wait(500);

@@ -1,8 +1,8 @@
 const CFG = require("./_config");
 const H = require('./_harness');
 // moduli: social, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
-// Condivisione › «Chiave Google e worker» su misura e finestra della chiave (Piero, 16/11/2026); interruttore Libreria/Desideri nel +; scheda di un libro senza titolo (17/11/2026).
-// Anna ha chiave e worker: «Presta a un amico» apre la finestra della chiave (non Amici); presta a Bruno; chiudendo si torna a Condivisione.
+// Condivisione › «API Google e worker» su misura e finestra dell’API (Piero, 16/11/2026); interruttore Libreria/Desideri nel +; scheda di un libro senza titolo (17/11/2026).
+// Anna ha chiave e worker: «Presta a un amico» apre la finestra dell’API (non Amici); presta a Bruno; chiudendo si torna a Condivisione.
 // Bruno non ha niente: vede «Anna ti presta …» e la guida; la usa e vede «Usi … di Anna» + guida (il caso di Serena); smette dalla finestra.
 // Il +: «In Libreria | Nei Desideri», parte dalla scheda in cui sei. Un libro con solo l'ISBN si apre nella disposizione di «Modifica».
 // SCHERMATE=cartella per le fotografie (360, 412 scuro).
@@ -72,7 +72,7 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/rpc/chi_ce_lha') return send(200, Object.values(DB.rows).filter(x => x.utente !== me && DB.prof[x.utente].libreria && friendsOk(me, x.utente) && (body.isbn || []).includes(x.dati.i) && x.dati.w !== true).map(x => ({ isbn: x.dati.i, amico: x.utente, utente: DB.prof[x.utente].utente, libro_id: x.id, fuori: !!x.dati.p })));
   if (p === '/rest/v1/rpc/presta_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); DB.keys.push({ da: me, a: body.a, gb_key: body.gb_key, sbn: body.sbn }); return send(204); }
   if (p === '/rest/v1/rpc/riprendi_chiavi') { DB.keys = DB.keys.filter(k => !(k.da === me && k.a === body.a)); return send(204); }
-  if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: k.gb_key ? 'si' : '', sbn: k.sbn ? 'si' : '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key ? 'prestata:' + k.da : '', sbn: k.sbn }))));   // 020 (giro 8): a chi la riceve arriva il segno, mai la chiave
+  if (p === '/rest/v1/rpc/chiavi_mie') return send(200, DB.keys.filter(k => k.da === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.a].utente, gb_key: k.gb_key ? 'si' : '', sbn: k.sbn ? 'si' : '' })).concat(DB.keys.filter(k => k.a === me).map(k => ({ da: k.da, a: k.a, nome: DB.prof[k.da].utente, gb_key: k.gb_key ? 'prestata:' + k.da : '', sbn: k.sbn }))));   // 020 (giro 8): a chi la riceve arriva il segno, mai l’API
   if (p === '/rest/v1/rpc/mie_notifiche') return send(200, notifOf(me).map(x => Object.assign(x, { letta: !!DB.read[me + x.id] })));
   if (p === '/rest/v1/rpc/notifiche_lette') { notifOf(me).forEach(x => { DB.read[me + x.id] = 1; }); return send(204); }
   if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
@@ -138,19 +138,19 @@ const base = 'http://localhost:' + CFG.port(8309);
   assert(!(await A.$('#svcShareBtn')) && !(await A.$('#optFriKeys')), 'via i due pulsanti di prima');
   await A.shot('109-1-condivisione-anna-360');
   await A.click$('#svcBox [data-svc="lend"]'); await wait(900);
-  assert(await A.vis('#kwSheet'), 'si apre la finestra della chiave');
+  assert(await A.vis('#kwSheet'), 'si apre la finestra dell’API');
   assert(await A.evaluate(() => { const f = document.getElementById('friSheet'); return !f || f.hidden; }), 'non si apre Amici');
-  assert(await A.top('#kwSheet'), 'la finestra della chiave sta sopra Condivisione');
+  assert(await A.top('#kwSheet'), 'la finestra dell’API sta sopra Condivisione');
   console.log('[finestra Anna]', await A.txt('#kwBody'));
   assert(/Bruno/.test(await A.txt('#kwBody')) && !/Manda con un link/.test(await A.txt('#kwBody')), 'niente link (giro 8)');
-  assert(!/Crea la tua chiave/.test(await A.txt('#kwBody')), 'Anna ha la chiave: niente guida');
+  assert(!/Crea la tua API/.test(await A.txt('#kwBody')), 'Anna ha l’API: niente guida');
   await A.shot('109-2-finestra-anna-360');
   await A.click$('#kwBody [data-f="keyshare"][data-id="uB"]'); await wait(300);
   assert(await A.vis('#keySheet') && await A.top('#keySheet'), '«Presta a Bruno» sopra la finestra');
   await A.click$('#keyGo'); await wait(800);
   assert.strictEqual(DB.keys.length, 1, 'prestata a Bruno');
   assert(await A.evaluate(() => document.getElementById('keySheet').hidden) && await A.vis('#kwSheet'));
-  assert(/Prestati: chiave API e worker/.test(await A.txt('#kwBody')));
+  assert(/Prestati: API Google e worker/.test(await A.txt('#kwBody')));
   await A.click$('#kwClose'); await wait(300);
   assert(await A.vis('#optSheet') && !(await A.evaluate(() => { const f = document.getElementById('friSheet'); return f && !f.hidden; })), 'chiudendo si torna a Condivisione');
   assert.strictEqual(await A.wide(), 0, 'niente scorrimento di lato (Anna)');
@@ -191,30 +191,30 @@ const base = 'http://localhost:' + CFG.port(8309);
     await B.evaluate(() => { window.NL.settings.name = 'Bruno'; window.NL.saveSettings(); window.__app.openOptions('search'); }); await wait(900);
     console.log('[Bruno ' + tag + ']', await B.txt('#svcBox'));
     assert.deepStrictEqual(await B.svc(), ['offer', 'guide'], 'Bruno: offerta di Anna e guida');
-    assert(/Anna Maria Bellini ti presta chiave Google e worker/.test(await B.txt('#svcBox')));
+    assert(/Anna Maria Bellini ti presta API Google e worker/.test(await B.txt('#svcBox')));
     await B.shot('109-4-condivisione-bruno-offerta-' + tag);
     await B.click$('#svcBox [data-svc="offer"]'); await wait(700);
     await B.click$('#kwBody [data-f="keyuse"]'); await wait(700);
-    assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), 'prestata:uA', 'Bruno usa la chiave di Anna, ma sul telefono ha solo il segno (giro 8)');
-    assert(!(await B.evaluate(() => JSON.stringify(localStorage))).includes(KEY), 'la chiave di Anna non è nel telefono di Bruno');
+    assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), 'prestata:uA', 'Bruno usa l’API di Anna, ma sul telefono ha solo il segno (giro 8)');
+    assert(!(await B.evaluate(() => JSON.stringify(localStorage))).includes(KEY), 'l’API di Anna non è nel telefono di Bruno');
     await B.click$('#kwClose'); await wait(400);
     console.log('[Bruno usa]', await B.txt('#svcBox'));
     assert.deepStrictEqual(await B.svc(), ['used', 'guide'], 'Bruno: «Usi … di Anna» e la guida (caso di Serena)');
-    assert(/Usi la chiave Google e il worker SBN di Anna Maria Bellini/.test(await B.txt('#svcBox')));
+    assert(/Usi l’API Google e il worker SBN di Anna Maria Bellini/.test(await B.txt('#svcBox')));
     assert.strictEqual(await B.wide(), 0, 'niente scorrimento di lato (Bruno)');
     await B.shot('109-5-condivisione-bruno-usa-' + tag);
     await B.click$('#svcBox [data-svc="used"]'); await wait(600);
-    assert(/Non usarla più/.test(await B.txt('#kwBody')) && /Crea la tua chiave/.test(await B.txt('#kwBody')));
+    assert(/Non usarla più/.test(await B.txt('#kwBody')) && /Crea la tua API/.test(await B.txt('#kwBody')));
     await B.shot('109-6-finestra-bruno-' + tag);
     await B.click$('#kwBody [data-kw="guide"]'); await wait(400);
     assert(await B.vis('#kgSheet') && await B.top('#kgSheet'), 'guida sopra la finestra');
-    assert(/Con una chiave tua l'app trova molti più libri/.test(await B.txt('#kgWhy')));   // testo unico (18/11/2026)
+    assert(/Con un’API tua l'app trova molti più libri/.test(await B.txt('#kgWhy')));   // testo unico (18/11/2026)
     await B.shot('109-7-guida-' + tag);
     await B.click$('#kgClose'); await wait(200);
     await B.click$('#kwBody [data-f="keyoff"]'); await wait(500);
     await B.click$('#kwClose'); await wait(300);
     assert.deepStrictEqual(await B.svc(), ['offer', 'guide'], 'smesso: torna l\'offerta');
-    assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey || ''), '', 'tornato senza chiave');
+    assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey || ''), '', 'tornato senza API');
   }
   if (errors.length) { console.log(errors); throw new Error('errori nella pagina'); }
   console.log('e2e109 OK');

@@ -2,11 +2,11 @@ const CFG = require("./_config");
 const H = require('./_harness');
 // moduli: social, amici, notifiche, ricerche, guida   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // Giro 12 (Piero, 19/11/2026), Supabase finto.
-// 1) Bruno (account, niente chiave): il telefono dice al server «non ho una chiave» (chiavi_dichiara); in «Chiave Google e worker» c'è
-//    «Chiedila a un amico» con Anna (ha una chiave sua) e non con Carla (non ce l'ha); «Chiedimela» → chiedi_chiavi, poi «Richiesta mandata».
-// 2) Anna (chiave sua): dichiara sì; nella campanella «Bruno ti chiede in prestito la chiave Google Libri» con «Prestala» → «Presta a Bruno».
+// 1) Bruno (account, niente chiave): il telefono dice al server «non ho un’API» (chiavi_dichiara); in «API Google e worker» c'è
+//    «Chiedila a un amico» con Anna (ha un’API sua) e non con Carla (non ce l'ha); «Chiedimela» → chiedi_chiavi, poi «Richiesta mandata».
+// 2) Anna (API sua): dichiara sì; nella campanella «Bruno ti chiede in prestito l’API Google Libri» con «Prestala» → «Presta a Bruno».
 // 3) Chi installa da zero: guida, poi il percorso a schermo intero (Passo 1 di 3 Accedi · 2 chiave · 3 primo libro); «Più tardi» salta;
-//    «Crea la tua» apre la guida della chiave e, chiusa, il percorso riprende; «Aggiungi un libro» apre il + e il percorso finisce.
+//    «Crea la tua» apre la guida dell’API e, chiusa, il percorso riprende; «Aggiungi un libro» apre il + e il percorso finisce.
 // 4) Percorso con l'account: il passo 1 si salta da solo, al passo 2 c'è anche «Chiedila a un amico».
 // SCHERMATE=cartella per le fotografie (360).
 const puppeteer = require('puppeteer-core');
@@ -94,8 +94,8 @@ const base = 'http://localhost:' + CFG.port(8336);
   assert.strictEqual(DB.dette.length, 1, 'il sì/no si manda una volta sola finché non cambia');
   await B.evaluate(() => window.NLAmici.keys()); await wait(500);
   let kw = await B.txt('#kwBody'); console.log('[Bruno, chiave]', kw.slice(-260));
-  assert(/Crea la tua chiave Google/.test(kw) && /Chiedila a un amico/.test(kw), 'crea oppure chiedi');
-  assert.deepStrictEqual(await B.$$eval('#kwBody .kw-ask .fr-who', a => a.map(x => x.textContent)), ['Anna'], 'solo chi ha una chiave sua (non Carla)');
+  assert(/Crea la tua API Google/.test(kw) && /Chiedila a un amico/.test(kw), 'crea oppure chiedi');
+  assert.deepStrictEqual(await B.$$eval('#kwBody .kw-ask .fr-who', a => a.map(x => x.textContent)), ['Anna'], 'solo chi ha un’API sua (non Carla)');
   assert.strictEqual(await B.txt('#kwBody [data-f="keyask"]'), 'Chiedimela');
   assert.strictEqual(await B.wide(), 0); await B.shot('136-1-chiedila');
   await B.click$('#kwBody [data-f="keyask"]'); await wait(600);
@@ -110,7 +110,7 @@ const base = 'http://localhost:' + CFG.port(8336);
   // «Chiedimela» anche nel profilo dell'amico (Piero, 19/11/2026): Anna sì (già chiesta), Carla no (niente chiave)
   await B.evaluate(() => { const s = document.getElementById('kwSheet'); if (s) s.hidden = true; }); await wait(200);
   await B.evaluate((id) => window.NLProfilo.open(id), UA); await wait(900);
-  assert(/Anna ha una chiave Google Libri sua/.test(await B.txt('#profBody .pf-ask')) && /Richiesta mandata/.test(await B.txt('#profBody .pf-ask')) && !(await B.$('#profBody [data-p="ask"]')), 'profilo di Anna: già chiesta');
+  assert(/Anna ha un’API Google Libri sua/.test(await B.txt('#profBody .pf-ask')) && /Richiesta mandata/.test(await B.txt('#profBody .pf-ask')) && !(await B.$('#profBody [data-p="ask"]')), 'profilo di Anna: già chiesta');
   await B.shot('136-2b-profilo');
   await B.evaluate(() => window.NLProfilo.close()); await wait(300);
   await B.evaluate((id) => window.NLProfilo.open(id), UC); await wait(900);
@@ -118,19 +118,19 @@ const base = 'http://localhost:' + CFG.port(8336);
   await B.evaluate(() => window.NLProfilo.close()); await wait(300);
   await B.browserContext().close();
 
-  // ================= 2) Anna: ha la chiave, riceve la richiesta =================
+  // ================= 2) Anna: ha l’API, riceve la richiesta =================
   const A = await phone('A', { uid: UA });
   await A.evaluate((k) => { const s = window.NL.settings; s.gbKey = k; window.NL.saveSettings(); }, KEY);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(900);
-  assert.deepStrictEqual(DB.dette.filter(x => x.me === UA).pop(), { me: UA, gb: true, sbn: false }, 'Anna dice «sì» (mai la chiave)');
-  assert(!JSON.stringify(DB.dette).includes(KEY), 'la chiave non viaggia');
+  assert.deepStrictEqual(DB.dette.filter(x => x.me === UA).pop(), { me: UA, gb: true, sbn: false }, 'Anna dice «sì» (mai l’API)');
+  assert(!JSON.stringify(DB.dette).includes(KEY), 'l’API non viaggia');
   await A.evaluate(() => window.NLAmici.keys()); await wait(400);
-  assert(!/Chiedila a un amico/.test(await A.txt('#kwBody')), 'chi ha la sua chiave non vede «Chiedila a un amico»');
+  assert(!/Chiedila a un amico/.test(await A.txt('#kwBody')), 'chi ha la sua API non vede «Chiedila a un amico»');
   await A.click$('#kwClose'); await wait(200);
   await A.evaluate(() => window.NLNotifiche.load()); await wait(600);
   await A.evaluate(() => window.NLNotifiche.open()); await wait(400);
   const nt = await A.txt('#ntBody'); console.log('[Anna, campanella]', nt);
-  assert(/Bruno ti chiede in prestito la chiave Google Libri/.test(nt) && /Prestala/.test(nt));
+  assert(/Bruno ti chiede in prestito l’API Google Libri/.test(nt) && /Prestala/.test(nt));
   assert.strictEqual(await A.wide(), 0); await A.shot('136-3-prestala');
   await A.click$('#ntBody [data-lendkey]'); await wait(600);
   assert(await A.vis('#keySheet') && !(await A.vis('#ntSheet')), 'si apre «Presta a …»');
@@ -159,9 +159,9 @@ const base = 'http://localhost:' + CFG.port(8336);
   s = await N.pt();
   assert.deepStrictEqual(s, { n: 'Passo 2 di 3', h: 'Trova più libri', b: ['Crea la tua (gratis)'] }, 'senza account niente «Chiedila a un amico»: ' + JSON.stringify(s));
   await N.click$('#percorso [data-pt="make"]'); await wait(700);
-  assert(await N.vis('#kgSheet') && (await N.pt()) === null, 'guida della chiave');
+  assert(await N.vis('#kgSheet') && (await N.pt()) === null, 'guida dell’API');
   await N.click$('#kgClose'); await H.sleep(1500);
-  assert.strictEqual((await N.pt()).n, 'Passo 2 di 3', 'chiusa senza chiave: di nuovo il passo 2');
+  assert.strictEqual((await N.pt()).n, 'Passo 2 di 3', 'chiusa senza API: di nuovo il passo 2');
   // riapertura a metà: il percorso riprende dal passo 2, la guida non torna
   await N.reload({ waitUntil: 'load' }); await H.sleep(3200);
   assert(await N.evaluate(() => { const g = document.getElementById('guida'); return !g || g.hidden; }), 'la guida non torna');
@@ -185,7 +185,7 @@ const base = 'http://localhost:' + CFG.port(8336);
   assert.strictEqual(await C.wide(), 0); await C.shot('136-6-passo2');
   await C.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); }); await C.shot('136-7-passo2-scuro');
   await C.click$('#percorso [data-pt="askf"]'); await wait(900);
-  assert(await C.vis('#kwSheet') && /Chiedila a un amico/.test(await C.txt('#kwBody')) && (await C.pt()) === null, 'finestra della chiave con «Chiedila a un amico»');
+  assert(await C.vis('#kwSheet') && /Chiedila a un amico/.test(await C.txt('#kwBody')) && (await C.pt()) === null, 'finestra dell’API con «Chiedila a un amico»');
   await C.click$('#kwClose'); await H.sleep(600);
   await C.evaluate((id) => window.NLProfilo.open(id), UA); await wait(900);   // «Chiedimela» dal profilo di Anna
   assert.strictEqual(await C.txt('#profBody [data-p="ask"]'), 'Chiedimela');
@@ -196,9 +196,9 @@ const base = 'http://localhost:' + CFG.port(8336);
   await C.evaluate(() => window.NLAmici.keys()); await wait(500);
   await C.click$('#kwClose'); await H.sleep(1500);
   assert.strictEqual((await C.pt()).n, 'Passo 2 di 3');
-  // una chiave arriva (qui: messa a mano): il passo 2 si salta da solo
+  // un’API arriva (qui: messa a mano): il passo 2 si salta da solo
   await C.evaluate((k) => { const st = window.NL.settings; st.gbKey = k; window.NL.saveSettings(); window.NLGuida.pathShow(); }, KEY); await wait(400);
-  assert.strictEqual((await C.pt()).n, 'Passo 3 di 3', 'con la chiave si passa al primo libro');
+  assert.strictEqual((await C.pt()).n, 'Passo 3 di 3', 'con l’API si passa al primo libro');
 
   if (errors.length) { console.log(errors); throw new Error('errori nella pagina'); }
   console.log('e2e136 OK');

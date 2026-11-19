@@ -4,14 +4,14 @@ const H = require('./_harness');
 // Giro 1 (18/11/2026), novità della libreria scelte da Piero:
 // 1) libreria di un amico: pillola «In comune» (esclude «Solo quelli che non hai» e viceversa);
 // 5) «Da verificare» nella riga chiusa dell'elenco: un tocco verifica senza aprire la scheda (con «Annulla»); da amico solo da leggere;
-// 9) icona della chiave sempre nella propria libreria, in alto a destra sulla riga «Libreria di …»: apre la finestra della chiave;
+// 9) icona dell’API sempre nella propria libreria, in alto a destra sulla riga «Libreria di …»: apre la finestra dell’API;
 // 11) «Chi è» diventa «Info Autore»;
 // 6) dimensione delle copertine: cursore in Aspetto (2-5 per riga) e due dita sulle copertine, ricordata;
 // 7) l'app ricorda l'ultima vista (copertine/elenco) e l'ultimo ordine;
 // 4) copie dello stesso libro (stesso titolo e autore) in una copertina con «N copie»;
 // 10) serie sempre raggruppate: copertina del primo volume e bollino; volumi in ordine di numero; nell'elenco «Serie: … · N volumi»;
 // 3) autori con nomi simili («U. Eco» e «Umberto Eco») uniti nei gruppi e nei filtri; i libri restano come sono scritti.
-// Con SCHERMATE=cartella: copertine con serie e copie, elenco, testata con la chiave.
+// Con SCHERMATE=cartella: copertine con serie e copie, elenco, testata con l’API.
 const puppeteer = require('puppeteer-core');
 const fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -63,11 +63,11 @@ const books = [
   console.log('[volumi]', JSON.stringify(vol)); assert(vol.open && vol.after); assert.deepStrictEqual(vol.ids, ['m1', 'm3', 'm2'], 'in ordine di numero');
   assert(await p.evaluate(() => Object.keys(window.__app.settings.grpOpen).some(k => /^p:lib:ser:/.test(k))), 'aperta e ricordata');
 
-  // 9) chiave: non piu' in testata (18/11/2026), ma nel Menu e nel profilo; apre la finestra della chiave
+  // 9) chiave: non piu' in testata (18/11/2026), ma nel Menu e nel profilo; apre la finestra dell’API
   await p.evaluate(() => NL.openMenu()); await wait(300);
   assert(await p.evaluate(() => !document.getElementById('ownKey') && !!document.getElementById('goKeys')), 'chiave nel Menu, non in testata');
   await p.click('#goKeys'); await wait(500);
-  assert(await p.evaluate(() => { const s = document.getElementById('kwSheet'); return s && !s.hidden && /Crea la tua chiave Google/.test(s.textContent); }), 'finestra della chiave con la guida');
+  assert(await p.evaluate(() => { const s = document.getElementById('kwSheet'); return s && !s.hidden && /Crea la tua API Google/.test(s.textContent); }), 'finestra dell’API con la guida');
   await hideAll();
 
   // 7) vista ricordata: Elenco, poi si riapre in elenco; ordine ricordato

@@ -208,6 +208,8 @@ const base = "http://localhost:" + CFG.port(8340);
       await pg.evaluate(() => window.NLChat.open()); await wait(1400); await sh('a4-chat');
       await pg.evaluate(() => { const r = document.querySelector('#chSheet [data-c="c1"], #chSheet [data-id="c1"], #chSheet .ch-row'); if (r) r.click(); }); await wait(1400); await sh('a5-chat-aperta');
       await pg.evaluate(() => { const s = document.getElementById('chSheet'); if (s) s.hidden = true; document.documentElement.classList.remove('ch-open'); }); await wait(300);
+      await pg.evaluate(() => window.NLGuida.open(3)); await wait(900); await sh('a6-guida-api');
+      await pg.evaluate(() => document.querySelector('#gdStage [data-gd="info"]').click()); await wait(500); await sh('a6-guida-info'); await pg.evaluate(() => { document.getElementById('gdInfo').hidden = true; });
       await pg.evaluate(() => window.NLGuida.open(4)); await wait(900); await sh('a6-guida');
       await pg.evaluate(() => window.NLGuida.close()); await wait(400);
       await pg.evaluate(() => window.NLGuida.pathShow && window.NLGuida.pathShow(2)); await wait(900); await sh('a7-percorso');
