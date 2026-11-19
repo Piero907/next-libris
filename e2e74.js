@@ -34,12 +34,12 @@ const books = [{ id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompia
     // la matita: campi in colonna, niente tabella
     await page.evaluate(() => document.querySelector('#list .row[data-id="r1"] .cv-editb').click()); await wait(400);
     const ed = await page.evaluate(() => { const r = document.querySelector('#list .row[data-id="r1"]'), R = r.getBoundingClientRect(), t = r.querySelector('[data-k="t"]').getBoundingClientRect(), a = r.querySelector('.f.au-view, [data-k="a"]').getBoundingClientRect(), e = r.querySelector('[data-k="e"]').getBoundingClientRect();
-      return { stacked: a.top >= t.bottom - 1 && e.top >= a.bottom - 1, titleW: Math.round(t.width), out: [...r.querySelectorAll('*')].filter(x => { const q = x.getBoundingClientRect(); return q.width > 0 && q.right > R.right + 1; }).length, done: !!r.querySelector('.cv-done') }; });
+      return { stacked: a.top >= t.bottom - 1 && e.top >= a.bottom - 1, titleW: Math.round(t.width), out: [...r.querySelectorAll('*')].filter(x => { const q = x.getBoundingClientRect(); return q.width > 0 && q.right > R.right + 1; }).length, done: !!r.querySelector('.cv-page .cv-hero [data-k="t"]') && !r.querySelector('.cv-done') }; });
     console.log('[' + name + ' ' + w + '×' + h + ']', JSON.stringify(m), JSON.stringify(ed));
     await page.screenshot({ path: CFG.OUT + '/schermo_' + name + '.png' });
     assert(!m.hscroll, name + ': niente scorrimento orizzontale'); assert.strictEqual(m.out, 0, name + ': niente fuori dalla scheda'); assert.strictEqual(m.order, m.visOrder, name + ': stesso ordine del telefono');
     assert(m.pageW > m.rowW - 60, name + ': la pagina del libro usa tutta la scheda (' + m.pageW + ' di ' + m.rowW + ')'); assert(!m.lbl); assert(Math.abs(m.topLeft) < 3, name + ': icone in alto allineate');
-    assert(ed.stacked && ed.out === 0 && ed.done && ed.titleW > 200, name + ': modifica in colonna');
+    assert(ed.stacked && ed.out === 0 && ed.done && ed.titleW > 150, name + ': modifica nella pagina');
     check(m); await ctx.close();
   };
   await at(360, 740, 'tel_piccolo', m => { assert(!m.twoCols && m.navSpan > 300); });

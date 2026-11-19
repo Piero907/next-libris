@@ -182,7 +182,7 @@ const base = 'http://localhost:' + CFG.port(8309);
   assert(/Senza titolo/.test(await A.txt('[data-id="' + eid + '"] .cv-ht')), 'scritto «Senza titolo»');
   assert(await A.$('[data-id="' + eid + '"] .acts-main .cv-editb'), 'la matita c\'è');
   await A.evaluate(id => document.querySelector('[data-id="' + id + '"] .cv-editb').click(), eid); await wait(400);
-  assert(await A.$eval('[data-id="' + eid + '"]', e => e.classList.contains('cv-edit')), 'con la matita: i campi');
+  assert(await A.$eval('[data-id="' + eid + '"]', e => e.classList.contains('cv-ed') && !!e.querySelector('.cv-page [data-k="t"]')), 'con la matita: i campi nella pagina');
 
   // ---- Bruno: niente di suo, Anna gli presta i suoi ----
   for (const [w, dark] of [[360, false], [412, true]]) {

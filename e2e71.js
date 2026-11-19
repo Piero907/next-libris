@@ -92,10 +92,22 @@ const books = [
   assert(await page.evaluate(() => !document.querySelector('#auSheet').hidden), 'finestra dell\'autore');
   await page.keyboard.press('Escape'); await wait(300);
   await page.screenshot({ path: CFG.OUT + '/scheda_d_prova.png' });
+  // matita: la stessa pagina con i dati da scrivere nel loro posto (19/11/2026: niente piu' scheda a campi)
   await page.evaluate(s => document.querySelector(s + ' .cv-editb').click(), card()); await wait(300);
-  assert(await page.evaluate(s => { const e = document.querySelector(s); return !e.querySelector('.cv-page') && getComputedStyle(e.querySelector('.head')).display !== 'none' && !!e.querySelector('.cv-done'); }, card()));
-  await page.evaluate(s => document.querySelector(s + ' .cv-done').click(), card()); await wait(300);
-  assert(await page.evaluate(s => !!document.querySelector(s + ' .cv-page'), card()));
+  const edv = await page.evaluate(s => { const e = document.querySelector(s); return { page: !!e.querySelector('.cv-page .cv-hero [data-k="t"]'), au: !!e.querySelector('.cv-page [data-k="a"]'), isbn: !!e.querySelector('.cv-page [data-k="i"]'), head: getComputedStyle(e.querySelector('.head')).display, done: !!e.querySelector('.cv-done'), ex: [...e.querySelectorAll('.cv-exr .cv-exl')].map(x => x.textContent), adds: [...e.querySelectorAll('.cv-add')].map(x => x.textContent), on: e.querySelector('.cv-editb').classList.contains('on') }; }, card());
+  console.log('  modifica', JSON.stringify(edv));
+  assert(edv.page && edv.au && edv.isbn && edv.head === 'none' && !edv.done && edv.on, 'modifica nella pagina');
+  assert(edv.ex.includes('Genere') && edv.ex.includes('Scaffale') && edv.ex.includes('Serie o collana'), 'campi pieni come righe');
+  await page.evaluate(s => { const t = document.querySelector(s + ' .cv-page [data-k="t"]'); t.focus(); t.value = t.value + ' bis'; t.dispatchEvent(new Event('input', { bubbles: true })); }, card());
+  assert(/ bis$/.test((await book()).t), 'il titolo si salva');
+  if (edv.adds.some(x => /Nota/.test(x))) { await page.evaluate(s => [...document.querySelectorAll(s + ' .cv-add')].find(x => /Nota/.test(x.textContent)).click(), card()); await wait(150); assert(await page.evaluate(s => document.activeElement === document.querySelector(s + ' .cv-exr-n [data-k="n"]'), card()), '+ Nota apre il campo'); }
+  await page.screenshot({ path: CFG.OUT + '/scheda_d_modifica.png' });
+  await page.evaluate(s => document.querySelector(s + ' .cv-editb').click(), card()); await wait(300);
+  assert(await page.evaluate(s => !!document.querySelector(s + ' .cv-page h3') && !document.querySelector(s + ' .cv-page [data-k="t"]'), card()), 'di nuovo la matita: si torna a leggere');
+  await page.evaluate(s => { const b = window.NL.get(document.querySelector(s).dataset.id); b.t = b.t.replace(/ bis$/, ''); b.g = ['e']; window.NL.save(); window.NL.refreshRow(b.id); }, card()); await wait(200);
+  assert(/da verificare/.test(await page.$eval(card() + ' .cv-meta', e => e.textContent)), 'da verificare accanto all\'editore');
+  await page.evaluate(s => document.querySelector(s + ' .cv-meta .cv-guess').click(), card()); await wait(200);
+  assert.deepStrictEqual((await book()).g, [], 'il tocco lo conferma');
   // un'etichetta e' un filtro: «Narrativa» mostra i libri di quel genere; la pagina va in cima (prima tornava a meta' elenco, 16/11/2026)
   await page.evaluate(s => document.querySelector(s).scrollIntoView({ block: 'center' }), card()); await wait(200);
   console.log('  scroll prima', await page.evaluate(() => Math.round(scrollY)));
