@@ -72,7 +72,14 @@ const books = [
   assert(img.aw === 1080 && img.ah === 1920 && img.bw === 1080 && img.bh === 1080 && img.u > 20000 && /^La mia estate in libri/.test(img.t) && img.pal === 'estate');
   assert.strictEqual(await page.$$eval('[data-w="share"]', e => e.map(x => x.dataset.f + ':' + x.textContent).join()), 'story:Storia,square:Quadrata');
   await page.click('[data-w="share"][data-f="square"]'); await wait(1200);
-  console.log('  condividi:', await txt('#toast'));
+  // anteprima prima di condividere (19/11/2026): l'immagine si vede, Quadrata scelta, Indietro torna alla stagione
+  assert(await page.$eval('.wp-ov .wp-img img', i => i.naturalWidth === 1080 && i.naturalHeight === 1080), 'anteprima quadrata');
+  assert.strictEqual(await page.$eval('.wp-ov [data-f="square"]', b => b.getAttribute('aria-pressed')), 'true');
+  await page.click('.wp-ov [data-f="story"]'); await wait(1200);
+  assert(await page.$eval('.wp-ov .wp-img img', i => i.naturalHeight === 1920), 'passa a Storia');
+  await page.goBack(); await wait(400);
+  assert(!(await page.$('.wp-ov')), 'Indietro chiude l\'anteprima');
+  assert(/estate/i.test(await txt('#wStage')), 'resta la stagione in libri');
   // rivedi -> prima schermata; stagione prima
   await page.click('[data-w="again"]'); await wait(200);
   assert(/La tua estate/.test(await txt('#wStage')));

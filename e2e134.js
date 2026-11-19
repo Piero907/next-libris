@@ -67,7 +67,14 @@ const books = [
     assert.strictEqual(await page.$$eval('#profBody .pf-share .btn', l => l.map(b => b.textContent).join()), 'Storia,Quadrata');
     await page.screenshot({ path: path.join(CFG.OUT, 'e2e134-condividi.png') });
     await tap('#profBody [data-p="shs"]'); await wait(1500);
-    await tap('#profBody [data-p="share"]'); await wait(200); await tap('#profBody [data-p="shq"]'); await wait(1500);
+    assert(await page.$eval('.wp-ov .wp-img img', i => i.naturalWidth === 1080 && i.naturalHeight === 1920), 'anteprima storia');
+    assert.strictEqual(await page.evaluate(() => (window.__sh || []).length), 0, 'non condivide da sola');
+    await page.screenshot({ path: path.join(CFG.OUT, 'e2e134-anteprima.png') });
+    await tap('.wp-ov [data-pv="send"]'); await wait(800);
+    await tap('.wp-ov [data-f="square"]'); await wait(1500);
+    await tap('.wp-ov [data-pv="send"]'); await wait(800);
+    await tap('.wp-ov [aria-label="Chiudi"]'); await wait(300);
+    assert(!(await page.$('.wp-ov')) && await page.$eval('#profBody', e => !!e.offsetParent), 'chiusa: resta il profilo');
     const sh = await page.evaluate(() => window.__sh || []);
     console.log('[4 condividi]', JSON.stringify(sh));
     assert(sh.length === 2 && sh[0].w === 1080 && sh[0].h === 1920 && sh[1].w === 1080 && sh[1].h === 1080);
