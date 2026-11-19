@@ -196,8 +196,10 @@ const base = "http://localhost:" + CFG.port(8340);
         await pg.evaluate((id) => { const t = document.querySelector('[data-id="' + id + '"] .sum') || document.querySelector('[data-id="' + id + '"]'); t.click(); }, id); await wait(900);
         await pg.evaluate((id) => { const r = document.querySelector('[data-id="' + id + '"]'); r.scrollIntoView(); window.scrollBy(0, -70); }, id); await wait(300); await sh(n + '-a');
         if (process.env.DOM && n === 'sc1') fs.writeFileSync(path.join(OUT, nm + '-scheda-dom.html'), await pg.evaluate(() => document.querySelector('.row.open').outerHTML.replace(/<svg[\s\S]*?<\/svg>/g, '<svg/>')));
-        await pg.evaluate(() => window.scrollBy(0, 640)); await wait(300); await sh(n + '-b');
-        if (n === 'sc1') { await pg.evaluate((id) => { document.querySelector('[data-id="' + id + '"] .cv-editb').click(); document.querySelector('[data-id="' + id + '"]').scrollIntoView(); window.scrollBy(0, -70); }, id); await wait(600); await sh(n + '-mod'); await pg.evaluate(() => window.scrollBy(0, 640)); await wait(300); await sh(n + '-mod-b'); await pg.evaluate((id) => document.querySelector('[data-id="' + id + '"] .cv-editb').click(), id); await wait(400); }
+        const scr = (y) => pg.evaluate((y) => { const r = document.querySelector('.row.open.cv-full'); if (r) r.scrollTop = y; else window.scrollBy(0, y); }, y);
+        await scr(640); await wait(300); await sh(n + '-b'); await scr(1280); await wait(300); await sh(n + '-c'); await scr(0);
+        if (n === 'sc2') { await pg.evaluate(() => document.querySelector('.cv-morebtn').click()); await wait(300); await sh(n + '-piu'); await pg.evaluate(() => document.querySelector('.cv-morebtn').click()); }
+        if (n === 'sc1') { await pg.evaluate((id) => { document.querySelector('[data-id="' + id + '"] .cv-editb').click(); document.querySelector('[data-id="' + id + '"]').scrollIntoView(); window.scrollBy(0, -70); }, id); await wait(600); await sh(n + '-mod'); await scr(640); await wait(300); await sh(n + '-mod-b'); await pg.evaluate((id) => document.querySelector('[data-id="' + id + '"] .cv-editb').click(), id); await wait(400); }
         await pg.evaluate((id) => { const c = document.querySelector('.row.open [data-act="toggle"], .row.open .chev-btn'); if (c) c.click(); }); await wait(700);
       }
       await pg.close(); continue;

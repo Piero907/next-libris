@@ -38,17 +38,18 @@ const books = [
   // D: pagina del libro; Modifica mostra i campi, Fatto torna alla pagina
   await pick('d'); await open();
   const d = await page.evaluate(s => { const e = document.querySelector(s); const p = e.querySelector('.cv-page'); return { page: p ? p.innerText.replace(/\s+/g, ' ') : '', headHidden: getComputedStyle(e.querySelector('.head')).display === 'none' }; }, card());
-  console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani · 2012 · 624 pagine/.test(d.page) && d.headHidden);
+  console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani\s*(· )?2012\s*(· )?624 pagine/.test(d.page) && d.headHidden);
   // in alto solo preferito, condividi, elimina; sotto, con la scritta: presta, desideri, cerca sul web
   const acts = await page.evaluate(s => { const e = document.querySelector(s); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act + ':' + (getComputedStyle(x.querySelector('.al')).display !== 'none')) }; }, card());
   console.log('  azioni', JSON.stringify(acts)); assert.deepStrictEqual(acts.top, ['lc', 'towish', 'share', 'del']);   // dal giro 6 la coccarda «Lo consiglio» dopo la stella assert.deepStrictEqual(acts.low, ['loan:true', 'websearch:true']);
-  const lay = await page.evaluate(s => { const e = document.querySelector(s), t = [...e.querySelectorAll('.acts-main [data-act]')].map(x => Math.round(x.getBoundingClientRect().top)), low = e.querySelector('.cv-acts2'); return { oneRow: new Set(t).size === 1, last: e.lastElementChild === low }; }, card());
-  assert(lay.oneRow && lay.last, 'icone su una riga, Presta e Cerca sul web in fondo');
+  // restyle pezzo 2 (19/11/2026): pagina intera; «Presta» nel riquadro Prestito, «Cerca sul web» nel ⋯ in alto
+  const lay = await page.evaluate(s => { const e = document.querySelector(s), t = [...e.querySelectorAll('.acts-main [data-act]')].map(x => Math.round(x.getBoundingClientRect().top)); return { oneRow: new Set(t).size === 1, loan: !!e.querySelector('.cv-loan [data-act="loan"]'), web: !!e.querySelector('.cv-bar .cv-pop [data-act="websearch"]'), full: e.classList.contains('cv-full') && getComputedStyle(e).position === 'fixed' }; }, card());
+  assert(lay.oneRow && lay.loan && lay.web && lay.full, 'icone su una riga, Presta nel riquadro Prestito, Cerca sul web nel ⋯, pagina intera');
   // descrizione subito sotto i dati, senza riquadro; etichette in fondo, prima di Presta e Cerca sul web
   const order = await page.evaluate(s => { const e = document.querySelector(s); const kids = [...e.querySelector('.cv-page').children].map(x => x.className.split(' ')[0] || x.tagName); const all = [...e.children].map(x => x.className.split(' ')[0]); return { page: kids, card: all.slice(-2), desc: e.querySelector('.cv-desc .desc-t') ? e.querySelector('.cv-desc .desc-t').textContent : '' }; }, card());
   console.log('  ordine', JSON.stringify(order));
-  assert.strictEqual(order.page[0], 'cv-hero'); assert.strictEqual(order.page[1], 'read'); assert.strictEqual(order.page[2], 'desc'); assert(/frate Guglielmo/.test(order.desc));
-  assert.deepStrictEqual(order.card, ['cv-tags', 'cv-acts2']);
+  assert.strictEqual(order.page[0], 'cv-hero'); assert.strictEqual(order.page[1], 'acts-main'); assert.strictEqual(order.page[2], 'read'); assert.strictEqual(order.page[3], 'desc'); assert(/frate Guglielmo/.test(order.desc));   // restyle pezzo 2: tasti tondi sotto il titolo
+  assert.strictEqual(order.page[order.page.length - 1], 'cv-tags'); assert(order.card.every(c => ['links', 'foot'].includes(c)), 'in fondo alla pagina «Vedi tutti i libri di»');
   // descrizione: anteprima, fonte e «rimuovila» solo aperta, con la freccetta
   const dsc = () => page.evaluate(s => { const d = document.querySelector(s + ' .cv-desc'); return { src: getComputedStyle(d.querySelector('.desc-src')).display, open: d.classList.contains('cv-open'), more: !!d.querySelector('.cv-dmore') }; }, card());
   let dd = await dsc(); assert(dd.more && !dd.open && dd.src === 'none', 'anteprima senza fonte');
@@ -58,10 +59,10 @@ const books = [
   const pen = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.acts-main .cv-editb'), f = e.querySelector('.acts-main [data-act="lc"]'); return p && Math.round(p.getBoundingClientRect().top) === Math.round(f.getBoundingClientRect().top) && getComputedStyle(p.querySelector('.al')).display === 'none'; }, card());
   assert(pen, 'matita in alto, solo icona');
   // lettura e voto: striscia a tutta larghezza subito sotto copertina e titolo, prima della descrizione (proposta C, 16/11/2026)
-  const rl = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.cv-page > .cv-readbox.cv-strip'), hero = e.querySelector('.cv-hero'), ds = e.querySelector('.cv-desc'), st = p && p.querySelector('.stars'), d = e.querySelector('.cv-ht .f-rd.cv-rdmeta'), mt = e.querySelector('.cv-ht .cv-meta');
-    return { ok: !!p && !!p.querySelector('[data-act="rs"]') && !!st && !!d, afterHero: !!p && hero.nextElementSibling === p, aboveDesc: !!p && p.getBoundingClientRect().bottom <= ds.getBoundingClientRect().top + 1, full: !!p && Math.abs(p.getBoundingClientRect().width - e.querySelector('.cv-page').getBoundingClientRect().width) < 2,
-      dateUnderMeta: !!d && !!mt && mt.nextElementSibling === d && getComputedStyle(d).fontSize === getComputedStyle(mt).fontSize && getComputedStyle(d.querySelector('.lbl')).fontSize === getComputedStyle(mt).fontSize }; }, card());
-  console.log('  striscia', JSON.stringify(rl)); assert(rl.ok && rl.afterHero && rl.aboveDesc && rl.full && rl.dateUnderMeta, '«Letto il» in piccolo sotto casa editrice e anno, stesso stile (16/11/2026)');
+  const rl = await page.evaluate(s => { const e = document.querySelector(s), p = e.querySelector('.cv-page > .cv-readbox.cv-strip'), hero = e.querySelector('.cv-hero'), ds = e.querySelector('.cv-desc'), st = p && p.querySelector('.stars'), d = p && p.querySelector('.f-rd.cv-rdmeta');
+    return { ok: !!p && !!p.querySelector('[data-act="rs"]') && !!st && !!d, afterHero: !!p && hero.nextElementSibling.nextElementSibling === p, aboveDesc: !!p && p.getBoundingClientRect().bottom <= ds.getBoundingClientRect().top + 1, full: !!p && Math.abs(p.getBoundingClientRect().width - e.querySelector('.cv-page').getBoundingClientRect().width) < 2,
+      dateUnderMeta: !!d && p.lastElementChild === d }; }, card());   // restyle pezzo 2: «Letto il» in fondo al riquadro della lettura (schermata 6 scelta da Piero)
+  console.log('  striscia', JSON.stringify(rl)); assert(rl.ok && rl.afterHero && rl.aboveDesc && rl.full && rl.dateUnderMeta, 'lettura in un riquadro sotto i tasti tondi, con «Letto il» in fondo');
   // voto a libricini con la parola (16/11/2026)
   const rw = await page.evaluate(s => { const e = document.querySelector(s); return { bk: e.querySelectorAll('.cv-readbox .star.bk svg').length, on: e.querySelectorAll('.cv-readbox .star.bk.on').length, w: e.querySelector('.cv-readbox .rt-word').textContent, lbl: e.querySelector('.cv-readbox .star.bk[data-v="5"]').getAttribute('aria-label') }; }, card());
   console.log('  libricini', JSON.stringify(rw)); assert(rw.bk === 5 && rw.on === 5 && rw.w === 'Capolavoro' && rw.lbl === '5 libricini: Capolavoro');
@@ -134,8 +135,8 @@ const books = [
   // nei Desideri: anche preferito e Presta, vendi o regala, come nella scheda normale
   await page.evaluate(() => window.__app.setTab('wish')); await wait(300);
   await page.evaluate(() => document.querySelector('#list .row[data-id="w1"] .sum').click()); await wait(400);
-  const wa = await page.evaluate(() => { const e = document.querySelector('#list .row[data-id="w1"]'); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-acts2 [data-act]')].map(x => x.dataset.act) }; });
-  console.log('  desideri', JSON.stringify(wa)); assert.deepStrictEqual(wa.top, ['tolib', 'share', 'del']); assert.deepStrictEqual(wa.low, ['loan', 'websearch']);
+  const wa = await page.evaluate(() => { const e = document.querySelector('#list .row[data-id="w1"]'); return { top: [...e.querySelectorAll('.acts-main [data-act]')].map(x => x.dataset.act), low: [...e.querySelectorAll('.cv-loan [data-act="loan"], .cv-pop [data-act]')].map(x => x.dataset.act) }; });   // restyle pezzo 2: Prestito e ⋯
+  console.log('  desideri', JSON.stringify(wa)); assert.deepStrictEqual(wa.top, ['tolib', 'share', 'del']); assert.deepStrictEqual(wa.low.sort(), ['loan', 'websearch']);
   // dal giro 10 niente stella nei Desideri: «Lo consiglio» vale solo per i libri della Libreria
   await page.screenshot({ path: CFG.OUT + '/scheda_d_desideri.png' });
   // la scelta resta dopo la riapertura
