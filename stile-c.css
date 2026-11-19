@@ -1,0 +1,170 @@
+/* Next Libris · stile «C · Schede» (restyle generale, Piero 19/11/2026). Regole in claude/stile-base.md del progetto.
+   Si carica per ultimo e vale per tutti: riquadri arrotondati su fondo colorato, barra in basso sospesa, tasti tondi in testata,
+   titoli in Bricolage Grotesque e testo in IBM Plex Sans. Solo le variabili dei colori, mai colori scritti a mano.
+   Pezzo 1: basi comuni, librerie (tua e dell'amico) e profili. Pezzi 2-4: scheda del libro, Menu e finestre, chat/amici/Per te/guida. */
+
+/* ---------- 1. caratteri ---------- */
+html[data-look="nuovo"]{--font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;--ft-k:1;
+  --c-sh:0 1px 2px rgba(0,0,0,.06);--c-r:20px}
+html[data-look="nuovo"][data-ft="bricolage"]{--font-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;--ft-k:1}
+.fs.ft-bricolage{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-weight:700;font-size:19px}
+html[data-look="nuovo"] body{font-size:15px}
+html[data-look="nuovo"] svg{stroke-width:1.8}
+
+/* ---------- 2. testata ---------- */
+/* una riga: nome dell'app e tasti tondi; sotto: foto, nome, numeri e la pillola «Sostieni» */
+html[data-look="nuovo"] body header.top{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:0!important;margin:0 0 14px;--h1-fs:21px}
+html[data-look="nuovo"] body header.top>div:first-child{display:contents}
+html[data-look="nuovo"] body header.top h1{order:1;flex:1 1 auto;min-width:0;margin:0;font:700 21px/1.1 var(--font-display);letter-spacing:-.01em;display:flex;align-items:center;gap:6px}
+html[data-look="nuovo"] body header.top h1 .prova-tag{margin:0;padding:3px 7px;font-size:10px;letter-spacing:.04em;border-radius:999px}
+html[data-look="nuovo"] body header.top>.ico:not(.beer-pill){order:2;position:relative;top:auto;right:auto;left:auto;flex:none;width:38px;height:38px;min-width:38px;min-height:38px;padding:0;
+  display:grid;place-items:center;border:0;border-radius:50%;background:var(--surface);color:var(--ink);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] body header.top>.ico:not(.beer-pill) svg{width:20px;height:20px}
+html[data-look="nuovo"] body header.top>.ico .nt-badge{top:-2px;right:-2px}
+html[data-look="nuovo"] body header.top .top-meta{order:3;flex:1 1 calc(100% - 140px);min-width:0;margin:6px 0 0!important;font-size:13.5px;color:var(--muted);position:relative}
+html[data-look="nuovo"]:not(.guest):not(.esempio) body header.top .top-meta{padding-right:0}
+html[data-look="nuovo"] body header.top .owner{font:600 15px/1.25 var(--font-body);color:var(--ink)}
+html[data-look="nuovo"] body header.top .owner .link{font-size:15px}
+html[data-look="nuovo"] body header.top .owner .owner-av .pf-av{width:40px;height:40px}
+html[data-look="nuovo"] body header.top .beer-top.beer-pill{order:4;position:static;align-self:center;margin:6px 0 0 auto;height:34px;padding:0 12px 0 9px;border:0;border-radius:999px;
+  background:var(--warn-bg);color:var(--warn);box-shadow:none}
+html[data-look="nuovo"] body header.top .sync{order:5;flex:1 1 100%}
+@media (max-width:380px){
+  html[data-look="nuovo"] body header.top{gap:4px}
+  html[data-look="nuovo"] body header.top h1{font-size:19px}
+  html[data-look="nuovo"] body header.top>.ico:not(.beer-pill){width:36px;height:36px;min-width:36px;min-height:36px}
+}
+
+/* ---------- 3. ricerca, ordine, chip ---------- */
+html[data-look="nuovo"] .tools{gap:8px;flex-wrap:nowrap;align-items:center;margin:0 0 10px}
+html[data-look="nuovo"] .tools .qwrap{position:relative}
+html[data-look="nuovo"] .tools .qwrap::before{content:"";position:absolute;left:14px;top:50%;width:18px;height:18px;transform:translateY(-50%);pointer-events:none;background:var(--muted);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") center/contain no-repeat}
+html[data-look="nuovo"] .tools #q{height:44px;min-height:44px;padding-left:42px;border:0;border-radius:14px;background:var(--surface);box-shadow:var(--c-sh);font-size:15px}
+html[data-look="nuovo"] .tools #q:focus{outline:none;box-shadow:0 0 0 2px var(--accent)}
+html[data-look="nuovo"] .tools #btnView,html[data-look="nuovo"][data-layout="a"] .stick.stuck #btnView{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;border:0;border-radius:14px;background:var(--surface);color:var(--ink);box-shadow:var(--c-sh)}
+/* «Filtri» passa nella riga di «Ordina · Raggruppa» (layout.js): tre pillole */
+html[data-look="nuovo"] .sortbar{gap:8px;margin:0 0 12px}
+html[data-look="nuovo"] .sortbar .sb-dot{display:none}
+html[data-look="nuovo"] .sortbar .dpick,html[data-look="nuovo"] .sortbar #btnFilters{min-height:34px;height:34px;padding:0 11px;gap:5px;border:0;border-radius:999px;background:var(--surface);color:var(--ink);
+  box-shadow:var(--c-sh);font:500 13.5px var(--font-body)}
+html[data-look="nuovo"][data-layout="a"] .sortbar #btnFilters{font-size:13.5px;min-width:0;min-height:34px;padding:0 12px}
+html[data-look="nuovo"] .sortbar #btnFilters svg{width:17px;height:17px}
+html[data-look="nuovo"] .sortbar #btnFilters[aria-pressed="true"],html[data-look="nuovo"] .sortbar #btnFilters:has(.badge:not([hidden])){background:var(--accent);color:var(--accent-ink)}
+html[data-look="nuovo"] .sortbar #btnFilters .badge{position:static;margin:0;background:var(--accent-ink);color:var(--accent)}
+html[data-look="nuovo"] .sortbar .dpick.sb-on .sb-ic{stroke:var(--accent)}
+html[data-look="nuovo"] .stick.stuck .sortbar{margin:0 0 8px}
+html[data-look="nuovo"] .stick.stuck .sortbar .dpick,html[data-look="nuovo"] .stick.stuck .sortbar #btnFilters{min-height:32px;height:32px}
+html[data-look="nuovo"] .stick{background:var(--bg)}
+html[data-look="nuovo"] .stick.stuck{box-shadow:0 6px 14px -10px rgba(0,0,0,.3)}
+/* pillole (avvisi e scelte) */
+html[data-look="nuovo"] .chips .chip,html[data-look="nuovo"] .quick{min-height:34px;padding:0 12px;border:0;border-radius:999px;background:var(--surface);color:var(--ink);box-shadow:var(--c-sh);font:500 13.5px var(--font-body)}
+html[data-look="nuovo"] .chips .chip[aria-pressed="true"],html[data-look="nuovo"] .quick[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+html[data-look="nuovo"] .chips .chip.share,html[data-look="nuovo"] .chips #btnNews{background:var(--accent-soft);color:var(--accent);box-shadow:none;font-weight:600}
+
+/* ---------- 4. riquadri in pagina ---------- */
+html[data-look="nuovo"] #list>.shelf{margin:0 -4px 12px;padding:4px 12px 14px;border-radius:var(--c-r);background:var(--surface)}
+html[data-look="nuovo"] #list>.shelf>.shelf-h{min-height:46px;margin:0;padding:6px 2px;border-bottom:0;font:700 16px/1.2 var(--font-display);letter-spacing:-.005em}
+html[data-look="nuovo"] #list>.shelf>.shelf-h[aria-expanded="true"]{margin-bottom:6px}
+html[data-look="nuovo"] #list>.shelf>.shelf-h .sh-n{min-width:0;padding:0;background:none;color:var(--muted);font:500 13px var(--font-body)}
+html[data-look="nuovo"] #list>.shelf>.shelf-h svg.sh-ic{width:18px;height:18px}
+html[data-look="nuovo"] #list>.shelf .shelf.grp>.shelf-h{border-bottom-color:var(--line)}
+html[data-look="nuovo"] .grp-tools .gx{min-height:32px;padding:0 12px;border:0;border-radius:999px;background:var(--surface2);color:var(--ink);font:500 13px var(--font-body);box-shadow:none}
+/* avvisi in cima: stessi angoli dei riquadri */
+html[data-look="nuovo"] main>.notice,html[data-look="nuovo"] .inst-card,html[data-look="nuovo"] .nx-box,html[data-look="nuovo"] .wrap-ask,html[data-look="nuovo"] .don-ask,html[data-look="nuovo"] .pu-ask{border-radius:var(--c-r)}
+
+/* ---------- 5. copertine ---------- */
+html[data-look="nuovo"] #list .grid{gap:16px 12px}
+html[data-look="nuovo"] .cover .art{border:0;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.14)}
+html[data-look="nuovo"] .cover:hover .art,html[data-look="nuovo"] .cover:focus-visible .art{box-shadow:0 0 0 2px var(--accent)}
+html[data-look="nuovo"] .cover .cap{font:600 13px/1.25 var(--font-body);margin-top:4px}
+html[data-look="nuovo"] .cover .cap2{font-size:12px}
+html[data-look="nuovo"] .cover .badge{left:6px;bottom:6px;padding:4px 7px;border:0;border-radius:999px;background:var(--surface);color:var(--accent);font:700 10.5px/1 var(--font-body);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+html[data-look="nuovo"] .cover .badge.warn,html[data-look="nuovo"] .cover .badge.loan{background:var(--warn-bg);color:var(--warn)}
+html[data-look="nuovo"] .gcard .gc-n{background:var(--accent);color:var(--accent-ink);box-shadow:0 1px 4px rgba(0,0,0,.2)}
+
+/* ---------- 6. elenco: righe dentro il riquadro, separate da una linea ---------- */
+html[data-look="nuovo"] #list>.shelf .row:not(.open){margin:0;border:0;border-top:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+html[data-look="nuovo"] #list>.shelf .shelf-b>.row:first-child:not(.open),html[data-look="nuovo"] #list>.shelf .shelf-b>.list>.row:first-child:not(.open){border-top:0}
+html[data-look="nuovo"] #list>.shelf .row.open{margin:6px 0;border-radius:16px}
+html[data-look="nuovo"] .sum-t{font:600 15px/1.25 var(--font-body)}
+html[data-look="nuovo"] #list>.shelf .grow{border-radius:0}
+
+/* ---------- 7. barra in basso sospesa ---------- */
+html[data-look="nuovo"][data-layout="a"] .lay-nav{left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));padding:6px 4px;border:0;border-radius:24px;background:var(--surface);
+  box-shadow:0 8px 24px rgba(0,0,0,.14);align-items:center}
+html[data-look="nuovo"] .lay-nav button{min-height:52px;font:500 11px var(--font-body);gap:3px}
+html[data-look="nuovo"] .lay-nav button.on{font-weight:700}
+html[data-look="nuovo"] .lay-nav .lay-plus{flex:0 0 46px;width:46px;height:46px;min-height:0;margin:0 6px;border-radius:16px;box-shadow:none}
+html[data-look="nuovo"][data-layout="a"] .toast{bottom:calc(96px + env(safe-area-inset-bottom))}
+@media (min-width:760px){ html[data-look="nuovo"][data-layout="a"] .lay-nav{left:max(12px,calc(50% - 280px));right:max(12px,calc(50% - 280px));padding-left:4px;padding-right:4px} }
+@media (max-height:480px){
+  html[data-look="nuovo"][data-layout="a"] .lay-nav{bottom:calc(6px + env(safe-area-inset-bottom));padding:2px 4px}
+  html[data-look="nuovo"] .lay-nav button{min-height:40px}
+  html[data-look="nuovo"] .lay-nav .lay-plus{flex:0 0 40px;width:40px;height:40px}
+}
+/* profilo aperto: la voce «Profilo» è quella accesa */
+html:has(#profSheet:not([hidden])) .lay-nav [data-l="lib"].on,html:has(#profSheet:not([hidden])) .lay-nav [data-l="wish"].on{color:var(--muted);font-weight:500}
+html:has(#profSheet:not([hidden])) .lay-nav [data-l="prof"]{color:var(--accent);font-weight:700}
+
+/* ---------- 8. libreria di un amico: stesso layout della tua ---------- */
+html[data-look="nuovo"] .guest-bar{gap:6px;margin:0 0 12px;padding:0;border-bottom:0}
+html[data-look="nuovo"] .guest-bar .gb-num,html[data-look="nuovo"] .guest-bar .gb-line{font-size:13.5px}
+html[data-look="nuovo"] .guest-bar .gb-tabs,html[data-look="nuovo"] .tabs{display:flex;width:auto;margin:6px 0 4px;padding:3px;gap:0;border:0;border-radius:14px;background:var(--surface);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .guest-bar .gb-tabs button,html[data-look="nuovo"] .tabs button{flex:1 1 0;justify-content:center;min-height:38px;padding:0 10px;border:0;border-radius:11px;background:none;
+  color:var(--muted);font:600 14px var(--font-body)}
+html[data-look="nuovo"] .guest-bar .gb-tabs button[aria-selected="true"],html[data-look="nuovo"] .tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);box-shadow:none}
+html[data-look="nuovo"] .guest-bar .gb-tabs button[aria-selected="true"] .cnt,html[data-look="nuovo"] .tabs button[aria-selected="true"] .cnt{color:inherit;opacity:.85}
+html[data-look="nuovo"] .guest-bar .gb-chips .chip{min-height:34px;padding:0 12px;border:0;border-radius:999px;background:var(--surface);color:var(--ink);box-shadow:var(--c-sh);font:500 13.5px var(--font-body)}
+html[data-look="nuovo"] .guest-bar .gb-chips .chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+/* ---------- 9. profilo: una pagina con riquadri (tuo, dell'amico e di esempio) ---------- */
+html[data-look="nuovo"] #profSheet{padding:0;background:var(--bg);align-items:stretch}
+html[data-look="nuovo"] #profSheet>.sheet-in{width:100%;max-width:none;max-height:none;height:100%;border-radius:0;background:var(--bg);padding:14px max(12px,calc(50% - 300px)) calc(110px + env(safe-area-inset-bottom));align-content:start}
+html[data-look="nuovo"] #profSheet>.sheet-in::before{display:none}
+html[data-look="nuovo"] #profSheet>.sheet-in>.sh-x{width:38px;height:38px;min-width:38px;margin:0 0 -38px;font-size:24px;box-shadow:var(--c-sh)}
+html[data-look="nuovo"] #profSheet>.sheet-in>.row-btns{display:none}
+/* la barra in basso resta sopra il profilo (non sopra le altre finestre) */
+html[data-look="nuovo"]:has(#profSheet:not([hidden])):not(:has(.sheet:not([hidden]):not(#profSheet))) .lay-nav{z-index:31}
+html[data-look="nuovo"] .prof #profBody{gap:12px}
+html[data-look="nuovo"] .prof .pf-card{display:grid;justify-items:center;gap:10px;padding:20px 14px 16px;border-radius:24px;background:var(--surface);text-align:center}
+html[data-look="nuovo"] .prof .pf-card .pf-top{flex-direction:column;gap:10px}
+html[data-look="nuovo"] .prof .pf-card .pf-av.big{width:92px;height:92px;font:700 36px/1 var(--font-display)}
+html[data-look="nuovo"] .prof .pf-card .pf-id{justify-items:center}
+html[data-look="nuovo"] .prof .pf-card .pf-name{font:700 24px/1.15 var(--font-display);letter-spacing:-.01em}
+html[data-look="nuovo"] .prof .pf-card .pf-id small{font-size:13.5px}
+html[data-look="nuovo"] .prof .pf-cam{right:0;bottom:2px;width:30px;height:30px;background:var(--surface);color:var(--ink);border:0;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+html[data-look="nuovo"] .prof .pf-cam svg{width:16px;height:16px}
+html[data-look="nuovo"] .prof .pf-card .pf-nums{padding:0;border:0;font-size:14px;color:var(--muted)}
+html[data-look="nuovo"] .prof .pf-card .pf-nums b{color:var(--ink)}
+html[data-look="nuovo"] .prof .pf-card .pf-photo{width:100%;justify-content:center;border:0;background:var(--surface2)}
+html[data-look="nuovo"] .prof .pf-card .pf-go{justify-content:center;gap:8px;width:100%}
+html[data-look="nuovo"] .prof .pf-go .btn{min-height:40px;padding:0 16px;border:0;border-radius:14px;background:var(--surface2);color:var(--ink);font:600 14px var(--font-body)}
+html[data-look="nuovo"] .prof .pf-go .btn.pf-chat{background:var(--accent);color:var(--accent-ink)}
+html[data-look="nuovo"] .prof .pf-card .pf-icos{margin:0;gap:8px}
+html[data-look="nuovo"] .prof .pf-icos .gb-key{width:40px;height:40px;min-width:40px;border:0;border-radius:14px;background:var(--surface2)}
+html[data-look="nuovo"] .prof .pf-icos .gb-drop{background:var(--bad-bg);color:var(--bad)}
+/* sezioni come riquadri bianchi */
+html[data-look="nuovo"] .prof #profBody>.fr-sec:not(.pf-num),html[data-look="nuovo"] .prof #profBody>.fr-list.fr-box{padding:14px;border:0;border-radius:var(--c-r);background:var(--surface)}
+html[data-look="nuovo"] .prof #profBody>.fr-list.fr-box{padding:0 0 0 0}
+html[data-look="nuovo"] .prof .fr-h{font:700 16px/1.2 var(--font-display);margin:0}
+html[data-look="nuovo"] .prof .fr-h .fr-n{background:none;color:var(--muted);font:500 13px var(--font-body);padding:0}
+html[data-look="nuovo"] .prof .pf-fol{background:var(--accent-soft)!important}
+html[data-look="nuovo"] .prof .pf-fol .btn{border:0;border-radius:14px}
+html[data-look="nuovo"] .prof .pf-fol .fr-small{color:var(--accent)}
+html[data-look="nuovo"] .prof .pf-strip{gap:12px}
+html[data-look="nuovo"] .prof .pf-bk,html[data-look="nuovo"] .prof .pf-cv{width:92px}
+html[data-look="nuovo"] .prof .pf-cv{border-radius:8px}
+html[data-look="nuovo"] .prof .pf-cap{font:600 12.5px/1.25 var(--font-body);color:var(--ink)}
+html[data-look="nuovo"] .prof .pf-set .fr-box{border:0;background:none}
+html[data-look="nuovo"] .prof .pf-set .fr-box .fr-go{padding:0 2px}
+/* numeri: le tessere stanno sulla pagina, «Da sempre» in un riquadro */
+html[data-look="nuovo"] .prof .pf-num>.fr-h{margin:6px 4px 0;font-size:17px}
+html[data-look="nuovo"] .prof .pf-t,html[data-look="nuovo"] .prof .pf-t.big{border-radius:var(--c-r)}
+html[data-look="nuovo"] .prof .pf-t.pf-out{background:var(--surface);border:0}
+html[data-look="nuovo"] .prof .pf-sep{margin:8px 4px 0;padding:0;border:0;font:700 13px/1 var(--font-body);color:var(--muted)}
+html[data-look="nuovo"] .prof .pf-list{margin:0;padding:2px 14px;border-radius:var(--c-r);background:var(--surface)}
+html[data-look="nuovo"] .prof .pf-r dd{font:600 15px/1.25 var(--font-body);color:var(--ink)}
+html[data-look="nuovo"] .prof .pf-r dt{font-size:14px}
+html[data-look="nuovo"] .prof .pf-share .btn{border:0;border-radius:14px;background:var(--surface)}

@@ -151,7 +151,7 @@ var S = {};                                  // stato di sessione per riga: st, 
 var settings = { gbKey: '', price: true, extra: true, lastBackup: 0, snooze: 0, view: 'grid', viewDef: 'grid', openAll: false, sbnUrl: '', loanSnooze: 0, look: 'nuovo', theme: 'light', pal: 'bosco', ft: 'literata', fb: 'plex' };
 var GRP_TXT = { aut: 'per autore', gen: 'per genere', genaut: 'per genere e autore', read: 'per lettura', pae: 'per paese' };   // «Raggruppa per» (17/11/2026)
 var PALS = { inchiostro: ['#EDF0F5', '#10141D'], bordeaux: ['#F2EFEE', '#161112'], bosco: ['#EEF1EE', '#0F1513'] };
-var FONTS_T = ['literata', 'garamond', 'playfair', 'lora', 'merriweather', 'montserrat', 'roboto'], FONTS_B = ['plex', 'roboto', 'lato', 'atkinson', 'lora'];
+var FONTS_T = ['bricolage', 'literata', 'lora', 'roboto'], FONTS_B = ['plex', 'atkinson', 'roboto'];   // restyle «C · Schede» (19/11/2026): Bricolage + Plex di partenza, poche alternative
 var openState = {}, autoOpened = {};
 function collapseCards() { if (!settings.openAll) openState = {}; if (cardPushed) { cardPushed = null; try { history.back(); } catch (e) { nlErr(e); } } }   // quando si filtra l'elenco torna compatto   // schede aperte/chiuse in questa sessione (true/false); se manca vale la regola di isOpen
 var SORTS = ['recent', 'titolo', 'autore', 'editore', 'anno', 'scaffale', 'voto', 'letti'];
@@ -537,8 +537,10 @@ function loadAll() {
     settings.themeV2 = true;
     settings.pal = s.palV2 && PALS[s.pal] ? s.pal : 'bosco';   // da questa versione il verde (Bosco) e' la palette principale
     settings.palV2 = true;
-    settings.ft = FONTS_T.indexOf(s.ft) >= 0 ? s.ft : 'literata';
+    // restyle (19/11/2026, Piero): tutti a Bricolage + Plex, una volta sola; chi aveva scelto Lora o Roboto li tiene (Literata era la partenza di prima)
+    settings.ft = s.ftV3 ? (FONTS_T.indexOf(s.ft) >= 0 ? s.ft : 'bricolage') : (s.ft === 'lora' || s.ft === 'roboto' ? s.ft : 'bricolage');
     settings.fb = FONTS_B.indexOf(s.fb) >= 0 ? s.fb : 'plex';
+    settings.ftV3 = true;
     settings.installed = s.installed === true && s.instScope === location.pathname.replace(/[^/]*$/, '');   // installata a questo indirizzo (non a uno vecchio)
     settings.instScope = settings.installed ? s.instScope : '';
     settings.name = L.str(s.name).replace(/\s+/g, ' ').trim().slice(0, 30);

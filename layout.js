@@ -87,6 +87,7 @@ function sheetOpen(id) { var s = $(id); s.hidden = false; if (id === '#layYou') 
 function sheetsClose() { ['#layAdd', '#layYou'].forEach(function (k) { var s = $(k); if (s) s.hidden = true; }); }
 function act(l) {
   sheetsClose();
+  if (l !== 'prof' && window.NLProfilo && window.NLProfilo.close) { var ps = document.getElementById('profSheet'); if (ps && !ps.hidden && ['lib', 'wish', 'add', 'you'].indexOf(l) >= 0) window.NLProfilo.close(); }   // il profilo è una pagina: gli altri tasti della barra lo chiudono (stile C, 19/11/2026)
   // libreria di esempio (guida): la barra resta dentro l'esempio (Piero, 18/11/2026)
   if (NL.esempio && NL.esempio()) {
     if (l === 'lib' || l === 'wish') { NL.setTab(l); window.scrollTo({ top: 0 }); paintNav(); NL.emit('guest'); return; }
@@ -228,3 +229,6 @@ NL.on('reopen', function () { noteIdx = 0; notes(); });   // avvisi riaperti dal
 apply();
 window.NLLayout = { get: function () { return cur; }, set: function (v) { cur = v; save(); apply(); }, list: LAYOUTS };
 })();
+
+/* stile «C · Schede» (19/11/2026): «Filtri» sta nella riga di «Ordina · Raggruppa», come pillola; la ricerca ha la riga tutta per sé */
+(function () { var sb = document.getElementById('sortBar'), f = document.getElementById('btnFilters'); if (sb && f && f.parentNode !== sb) sb.insertBefore(f, sb.firstChild); })();
