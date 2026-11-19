@@ -66,7 +66,6 @@ function wrapData(books, quotes, Q, now) {
   d.longest = lg ? { t: lg.t, a: lg.a, pg: pages(lg) } : null;
   var bs = read.filter(function (b) { return b.rt > 0; }).sort(function (x, y) { return y.rt - x.rt || (y.rd > x.rd ? 1 : -1); })[0];
   d.best = bs ? { t: bs.t, a: bs.a, rt: bs.rt } : null;
-  d.value = added.reduce(function (a, b) { return a + (b.c || 0); }, 0);
   var q1 = qs.slice().sort(function (x, y) { return y.c.d - x.c.d; })[0];
   d.quote = q1 ? { x: q1.c.x.length > 200 ? q1.c.x.slice(0, 197).replace(/\s+\S*$/, '') + '…' : q1.c.x, t: q1.b.t } : null;
   var who = {}; loans.forEach(function (b) { var k = L.norm(b.p); (who[k] || (who[k] = { name: b.p, n: 0 })).n++; });
@@ -121,7 +120,7 @@ function slides(d) {
       (d.best ? '<p class="w-kick w-gap">Quello che ti è piaciuto di più</p><p class="w-mid">«' + esc(d.best.t) + '»</p><p class="w-sub">' + esc(d.best.a) + '</p><p class="w-stars" aria-label="' + d.best.rt + ' stelle su 5">' + stars(d.best.rt) + '</p>' : '') });
   }
   if (d.added || d.quotes || d.loans) {
-    out.push({ cls: 'w-c5', html: '<p class="w-kick">In libreria</p>' + (d.added ? '<p class="w-num w-num-s">' + d.added + '</p><p class="w-unit">' + (d.added === 1 ? 'libro nuovo' : 'libri nuovi') + (d.value ? ', ' + esc(NL.eur(d.value)) : '') + '</p>' : '') +
+    out.push({ cls: 'w-c5', html: '<p class="w-kick">In libreria</p>' + (d.added ? '<p class="w-num w-num-s">' + d.added + '</p><p class="w-unit">' + (d.added === 1 ? 'libro nuovo' : 'libri nuovi') + '</p>' : '') +
       '<ul class="w-facts">' + (d.wish ? '<li><b>' + d.wish + '</b> nei Desideri</li>' : '') + (d.loans ? '<li><b>' + d.loans + '</b> ' + (d.loans === 1 ? 'libro prestato' : 'libri prestati') + (d.lender ? ', soprattutto a ' + esc(d.lender.name) : '') + '</li>' : '') +
       (d.quotes ? '<li><b>' + d.quotes + '</b> ' + (d.quotes === 1 ? 'citazione salvata' : 'citazioni salvate') + '</li>' : '') + '</ul>' +
       (d.quote ? '<blockquote class="w-q">' + esc(d.quote.x) + '<cite>' + esc(d.quote.t) + '</cite></blockquote>' : '') });
