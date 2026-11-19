@@ -17,6 +17,8 @@ const DB = { prof: { [UA]: { utente: 'Piero R.' }, [UB]: { utente: 'Bruno' }, [U
   seg: [{ id: 's1', creata: new Date(Date.now() - 7200e3).toISOString(), stato: 'aperta', motivo: 'Offese o molestie: mi insulta', messaggio: 12, da_id: UB, da_nome: 'Bruno', su_id: UC, su_nome: 'Carla', persone: 3, fermo: 'fermo', chiusa_il: null,
            copia: [{ id: 10, da: UB, nome: 'Bruno', tipo: 'testo', testo: 'Ciao, me lo presti?', creato: '2026-11-18T10:00:00Z', el: false }, { id: 11, da: UC, nome: 'Carla', tipo: 'testo', testo: '', creato: '2026-11-18T10:01:00Z', el: true }, { id: 12, da: UC, nome: 'Carla', tipo: 'testo', testo: '<img src=x onerror=alert(1)>brutta parola', creato: '2026-11-18T10:02:00Z', el: false }] },
          { id: 's2', creata: new Date(Date.now() - 90000e3).toISOString(), stato: 'aperta', motivo: 'Spam o pubblicità', messaggio: 20, da_id: UA, da_nome: 'Piero R.', su_id: UB, su_nome: 'Bruno', persone: 1, fermo: '', chiusa_il: null, copia: [{ id: 20, da: UB, nome: 'Bruno', tipo: 'libro', testo: 'compralo!', libro: 'Il Gattopardo', creato: '2026-11-17T10:00:00Z', el: false }] }],
+  prop: [{ isbn: '9798333295538', utente: UB, nome: 'Bruno', dati: { t: 'Investigazioni Pernice', a: 'Nicolò Zuliani', e: 'Amazon (pubblicazione in proprio)' }, creato: '2026-11-19T10:00:00Z', simili: 1 },
+         { isbn: '9798000000007', utente: UC, nome: 'Carla', dati: { t: 'Libro finto', a: 'Nessuno' }, creato: '2026-11-19T11:00:00Z', simili: 1 }],
   sosp: [{ id: UC, nome: 'Carla', tipo: 'fermo', dal: '2026-11-18T10:05:00Z', automatico: true }],
   ar: [{ isbn: '9788807900341', dati: { t: 'Il Gattopardo', a: 'Tomasi di Lampedusa', e: 'Feltrinelli', y: '1958', img: 'https://covers.openlibrary.org/b/id/1-M.jpg', imgL: 'https://covers.openlibrary.org/b/id/1-L.jpg', ds: 'Romanzo.', pg: '330' }, aggiornato: '2026-11-17T10:00:00Z' }] };
 const nome = id => (DB.prof[id] || {}).utente || '';
@@ -49,6 +51,9 @@ function fake(req, res, body, url) {
     if (R('admin_riattiva')) { DB.sosp = DB.sosp.filter(x => x.id !== body.utente); return send(204); }
     if (R('admin_cerca')) return send(200, [{ id: 'uM', utente: 'Marta R.' }, { id: 'uB', utente: 'Bruno T.' }]);
     if (R('admin_avviso')) { DB.avvisi.push(body); return send(200, body.persone ? body.persone.length : 3); }
+    if (R('admin_proposte')) return send(200, { tot: DB.prop.length, elenco: DB.prop });
+    if (R('admin_proposta_approva')) { DB.prop = DB.prop.filter(x => x.isbn !== body.isbn); DB.ar.push({ isbn: body.isbn, dati: body.dati, aggiornato: new Date().toISOString() }); return send(204); }
+    if (R('admin_proposta_scarta')) { DB.prop = DB.prop.filter(x => !(x.isbn === body.isbn && x.utente === body.utente)); return send(204); }
     if (R('admin_archivio_cerca')) { const q = String(body.q).toLowerCase(); return send(200, DB.ar.filter(r => r.isbn === q || (r.dati.t + ' ' + r.dati.a).toLowerCase().includes(q))); }
     if (R('admin_archivio_salva')) { const r = DB.ar.find(x => x.isbn === body.isbn); if (!r) return err('libro non trovato'); r.dati = body.dati; return send(204); }
     if (R('admin_archivio_togli')) { DB.ar = DB.ar.filter(x => x.isbn !== body.isbn); return send(204); }
@@ -180,8 +185,25 @@ const base = 'http://localhost:' + CFG.port(8331);
   b = await A.txt('#adBody'); console.log('[numeri]', b);
   assert(/3 utenti/.test(b) && /1\.240 libri/.test(b) && /12,5 MB su 500 MB/.test(b) && /230 ricerche Google oggi/.test(b) && /180 su 1\.000/.test(b));
   await A.shot('131-5-numeri');
+  // Archivio › Da controllare (029): approva con correzione, scarta con conferma
+  await A.click$('#adTabs [data-t="ar"]'); await wait(600);
+  assert(/Da controllare \(2\)/.test(await A.txt('#adBody')) && /Investigazioni Pernice/.test(await A.txt('#adBody')), 'proposte in cima');
+  assert(/Archivio\s*2/.test(await A.txt('#adTabs [data-t="ar"]')), 'numero sulla scheda Archivio');
+  await A.shot('131-5a-da-controllare');
+  await A.click$('#adBody [data-a="pred"]'); await wait(300);
+  assert(/Libro da controllare/.test(await A.txt('#adHead')) && /proposto da Bruno/.test(await A.txt('#adBody')));
+  await A.shot('131-5b-proposta');
+  await A.evaluate(() => { document.getElementById('adAr_t').value = 'Investigazioni Pernice: Storie di corna, omicidi e bei sentimenti'; });
+  await A.click$('#adFoot [data-a="prok"]'); await wait(700);
+  assert.strictEqual(DB.prop.length, 1); assert.strictEqual(DB.ar[1].dati.t, 'Investigazioni Pernice: Storie di corna, omicidi e bei sentimenti');
+  assert.strictEqual(DB.ar[1].dati.a, 'Nicolò Zuliani');
+  assert(/Da controllare \(1\)/.test(await A.txt('#adBody')), 'dopo Approva si torna all\'elenco');
+  await A.click$('#adBody [data-a="pred"]'); await wait(300);
+  await A.click$('#adFoot [data-a="prscarta"]'); await wait(200);
+  await A.click$('#chMenu [data-i="ok"]'); await wait(700);
+  assert(!DB.prop.length && !/Da controllare/.test(await A.txt('#adBody')));
+  DB.ar.pop();
   // Archivio: cerca, correggi, togli
-  await A.click$('#adTabs [data-t="ar"]'); await wait(300);
   await A.type('#adArQ', 'gatto'); await A.click$('#adArF button'); await wait(500);
   assert(/Il Gattopardo/.test(await A.txt('#adBody')));
   await A.click$('#adBody [data-a="ared"]'); await wait(300);
