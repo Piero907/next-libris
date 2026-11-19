@@ -84,8 +84,8 @@ const base = 'http://localhost:' + CFG.port(8305);
   const headOk = (P) => P.evaluate(() => {          // titolo e stato non finiscono sotto le icone
     // dalla 99.10 a 360 px le icone sono più strette e le zone da toccare si sovrappongono un poco: si guardano i disegni (svg)
     const box = (id) => { const b = document.getElementById(id), g = b.querySelector('svg'); return (g || b).getBoundingClientRect(); };
-    const bell = box('btnBell'), h = document.querySelector('header.top h1').getBoundingClientRect(), gear = box('btnOpts');   // testata sobria (19/11/2026): Amici non è più in testata
-    return h.right <= bell.left + 1 && bell.right <= gear.left + 8 && Math.abs(bell.top - gear.top) < 2;
+    const bell = box('btnBell'), h = document.querySelector('header.top h1').getBoundingClientRect(), fri = box('btnFri'), gear = box('btnOpts');   // Amici di nuovo in testata (19/11/2026)
+    return h.right <= bell.left + 1 && bell.right <= fri.left + 8 && fri.right <= gear.left + 8 && Math.abs(bell.top - gear.top) < 2;
   });
 
   // ---- senza account: niente campanella ----
