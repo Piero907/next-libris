@@ -286,7 +286,6 @@ function pathShow() {
     '<div class="gd-acts gd-pacts">' + T.b.map(function (b, k) { return '<button type="button" class="btn primary gd-try' + (k ? ' gd-try2' : '') + '" data-pt="' + b[0] + '">' + esc(b[1]) + '</button>'; }).join('') + '</div>' +
     '<button type="button" class="gd-later" data-pt="later">Più tardi</button></div>';
   PT.el.hidden = false; document.body.classList.add('guida-open');
-  setTimeout(function () { try { PT.el.querySelector('.gd-try').focus({ preventScroll: true }); } catch (e) { if (window.nlErr) nlErr(e); } }, 30);
 }
 function pathDo(a) {
   var n = cfg.path || 0;

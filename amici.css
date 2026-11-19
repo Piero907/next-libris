@@ -192,5 +192,5 @@ html:not(.guest) header.top .top-meta .gb-icos{top:-8px;margin-top:0}
 
 /* «Chiedila a un amico» (giro 12) */
 .fri .kw-askh{margin-top:16px}
-.fri .kw-ask .fr-row{align-items:center}
+.fri .kw-ask .fr-row{align-items:center;padding:8px 10px 8px 14px}
 .fri .kw-asked{font-size:13px;color:var(--muted)}
