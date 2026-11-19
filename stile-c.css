@@ -157,8 +157,8 @@ html[data-look="nuovo"] .prof .pf-strip{gap:12px}
 html[data-look="nuovo"] .prof .pf-bk,html[data-look="nuovo"] .prof .pf-cv{width:92px}
 html[data-look="nuovo"] .prof .pf-cv{border-radius:8px}
 html[data-look="nuovo"] .prof .pf-cap{font:600 12.5px/1.25 var(--font-body);color:var(--ink)}
-html[data-look="nuovo"] .prof .pf-set .fr-box{border:0;background:none}
-html[data-look="nuovo"] .prof .pf-set .fr-box .fr-go{padding:0 2px}
+html[data-look="nuovo"] .prof :is(.pf-set,.pf-fri) .fr-box{border:0;background:none}
+html[data-look="nuovo"] .prof :is(.pf-set,.pf-fri) .fr-box .fr-go{padding:0 2px}
 /* numeri: le tessere stanno sulla pagina, «Da sempre» in un riquadro */
 html[data-look="nuovo"] .prof .pf-num>.fr-h{margin:6px 4px 0;font-size:17px}
 html[data-look="nuovo"] .prof .pf-t,html[data-look="nuovo"] .prof .pf-t.big{border-radius:var(--c-r)}
@@ -590,8 +590,11 @@ html[data-look="nuovo"] body header.top .top-meta{order:10;flex:1 1 100%;margin:
 html[data-look="nuovo"] body header.top .top-meta .owner{display:none}
 html[data-look="nuovo"] body header.top .top-meta .summary{font-size:14px}
 @media (max-width:380px){
-  html[data-look="nuovo"] body header.top h1{font-size:26px}
+  html[data-look="nuovo"] body header.top{gap:4px}
+  html[data-look="nuovo"] body header.top h1{font-size:26px;position:relative;overflow:visible}
   html[data-look="nuovo"] body header.top h1.h1-long{font-size:20px}
+  /* con Amici in testata il titolo ha meno posto: «PROVA» piccola sopra il titolo, così «Libreria» si legge tutta */
+  html[data-look="nuovo"] body header.top h1 .prova-tag{position:absolute;left:0;top:-11px;margin:0;padding:1px 5px;font-size:8.5px;vertical-align:0}
   html[data-look="nuovo"] body header.top>.ico:not(.beer-pill),html[data-look="nuovo"] body header.top .beer-top.beer-pill{width:34px;height:34px;min-width:34px;min-height:34px}
 }
 /* pillole: una riga sola, leggere (solo il bordo), scorrono di lato se non entrano */
