@@ -180,7 +180,7 @@ const base = 'http://localhost:' + CFG.port(8332);
   await pg.reload({ waitUntil: 'load' }); await wait(1200);
   assert.strictEqual(await pg.evaluate(() => window.__app.settings.cols), 5, 'dopo la prima volta la scelta resta');
   const cap = await pg.evaluate(() => { const g = [...document.querySelectorAll('#list .gcard')]; const noImg = g.find(x => !x.querySelector('.gc-img')); return noImg ? getComputedStyle(noImg.querySelector('.cap')).display : 'nessuna'; });
-  assert.strictEqual(cap, 'none', 'a 5 per riga niente scritta sotto le copertine senza foto');
+  assert.notStrictEqual(cap, 'none', 'a 5 per riga la scritta sotto resta anche sulle copertine senza foto (Piero, 19/11/2026)');
   const fit = await pg.evaluate(() => [...document.querySelectorAll('#list .gc-sur')].filter(b => b.offsetParent).every(b => b.scrollWidth <= b.parentNode.clientWidth + 1));
   assert(fit, 'i cognomi entrano nella copertina');
   // riepilogo: il triangolino sta nell'ultimo pezzo, che non va a capo
