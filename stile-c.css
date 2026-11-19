@@ -619,3 +619,8 @@ html[data-look="nuovo"] #notice #noticeX{order:6}
 html[data-look="nuovo"]:is(.guest,.esempio) body header.top h1 .prova-tag{display:none}
 html[data-look="nuovo"] .guida .gd-slide{margin:0 auto}
 html[data-look="nuovo"].guest body header.top h1{cursor:pointer}
+/* «Scopri di più» sull'API: finestra sopra la guida */
+html[data-look="nuovo"] .gd-info{margin:12px 0 0}
+.gd-infosheet{z-index:70}
+html[data-look="nuovo"] .gd-ilist{margin:0;padding:14px 16px 14px 34px;border-radius:var(--c-r);background:var(--surface);box-shadow:var(--c-sh);display:grid;gap:10px;font-size:15px;line-height:1.4}
+html[data-look="nuovo"] .gd-ilist li::marker{color:var(--accent)}
