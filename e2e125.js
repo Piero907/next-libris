@@ -186,6 +186,7 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert(!/appunto/.test(JSON.stringify(DB.prof.uA)), 'mai gli appunti');
 
   // ---- il tuo profilo ----
+  await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: la scheda aperta e' una pagina intera
   await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(1400);   // i numeri salgono (giro 11C)
   let t = await txt(A, '#profBody');
   assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 2/.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
@@ -248,6 +249,7 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert.strictEqual(await A.evaluate(() => window.NL.guest() + '/' + window.NL.tab()), 'Bruno/lib'); assert(await isOpen('b3'), 'il libro di Bruno è aperto');
   assert(await A.$eval('#guestDrop', x => x.classList.contains('gb-drop') && !x.hidden), 'anche nella sua libreria l\'icona «togli» è rossa');
   // dal nome in testata di nuovo al profilo, poi i Desideri
+  await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
   await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(800);
   assert.strictEqual(await A.$eval('#profH', x => x.textContent), 'Profilo di Bruno');
   await A.click('#profBody [data-p="wish"]'); await wait(700);

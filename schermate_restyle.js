@@ -108,6 +108,15 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/rpc/togli_amicizia') { DB.am = DB.am.filter(f => !((f.da === me && f.a === body.altro) || (f.a === me && f.da === body.altro))); return send(200); }
   if (p === '/rest/v1/rpc/mie_notifiche') return send(200, DB.noti.filter(n => n.utente === me).map(n => Object.assign({ nome: DB.prof[n.da].utente }, n)));
   if (p === '/rest/v1/rpc/miei_scambi') return send(200, DB.sw.filter(x => x.da === me || x.a === me).map(x => Object.assign({ nome_da: DB.prof[x.da].utente, nome_a: DB.prof[x.a].utente }, x)));
+  // chat finte per le schermate del pezzo 4
+  const U = (id, da, testo, min) => ({ id, da, nome: DB.prof[da].utente, tipo: 'testo', testo, libro: null, su: null, creato: new Date(Date.now() - min * 60000).toISOString(), el: false });
+  if (p === '/rest/v1/rpc/chat_mie') return send(200, [
+    { id: 'c1', tipo: 'due', nome: 'Davide Pica', altro: 'uB', stato: 'attiva', silenziata: false, membri: null, nl: false, bloccato: false, nuovi: 2, ultimo: U(3, 'uB', 'Te lo presto sabato!', 12) },
+    { id: 'c2', tipo: 'gruppo', nome: 'Lettori di gialli', altro: null, stato: 'attiva', silenziata: false, membri: 4, nl: false, bloccato: false, nuovi: 1, ultimo: U(9, 'uE', 'Chi ha letto l\'ultimo?', 70) },
+    { id: 'c3', tipo: 'due', nome: 'Serena B.', altro: 'uE', stato: 'attiva', silenziata: false, membri: null, nl: false, bloccato: false, nuovi: 0, ultimo: U(7, 'uA', 'Grazie del consiglio', 3000) }]);
+  if (p === '/rest/v1/rpc/chat_numeri') return send(200, { nuovi: 2, richieste: 1 });
+  if (p === '/rest/v1/rpc/chat_leggi') return send(200, { chat: body.chat, tipo: 'due', stato: 'attiva', scrivibile: true, altri: false,
+    messaggi: [U(1, 'uB', 'Ciao! Ho visto che hai Il Gattopardo 😍', 40), U(2, 'uA', 'Sì, ed è bellissimo. Vuoi che te lo presti?', 36), U(3, 'uB', 'Te lo presto sabato! Intanto metto questo nei Desideri', 12)].map(m => Object.assign({ su_nome: '', nl: false, nasc: false }, m)) });
   if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
   send(404, { message: 'finto: ' + p });
 }
@@ -189,6 +198,21 @@ const base = "http://localhost:" + CFG.port(8340);
     };
     await pg.evaluate(() => { const x = document.getElementById('instCard'); if (x) x.hidden = true; });
     await closeAll(pg); await wait(400);
+    if (process.env.ALTRO) {                        // restyle pezzo 4: amici, chat, Per te, Desideri, guida (ALTRO=1)
+      await pg.evaluate(() => document.querySelector('#layNav [data-l="wish"]').click()); await wait(700); await sh('a1-desideri');
+      await pg.evaluate(() => window.scrollTo(0, 600)); await wait(300); await sh('a1-desideri-b'); await pg.evaluate(() => { window.scrollTo(0, 0); document.querySelector('#layNav [data-l="lib"]').click(); }); await wait(500);
+      await pg.evaluate(() => document.querySelector('#layNav [data-l="you"]').click()); await wait(700); await sh('a2-perte'); await closeAll(pg); await wait(300);
+      await pg.evaluate(() => window.NLAmici.open()); await wait(1400); await sh('a3-amici');
+      await pg.evaluate(() => { const s = document.querySelector('#friSheet .sheet-in'); if (s) s.scrollTop = 640; }); await wait(300); await sh('a3-amici-b');
+      await pg.evaluate(() => { const s = document.getElementById('friSheet'); if (s) s.hidden = true; }); await wait(300);
+      await pg.evaluate(() => window.NLChat.open()); await wait(1400); await sh('a4-chat');
+      await pg.evaluate(() => { const r = document.querySelector('#chSheet [data-c="c1"], #chSheet [data-id="c1"], #chSheet .ch-row'); if (r) r.click(); }); await wait(1400); await sh('a5-chat-aperta');
+      await pg.evaluate(() => { const s = document.getElementById('chSheet'); if (s) s.hidden = true; document.documentElement.classList.remove('ch-open'); }); await wait(300);
+      await pg.evaluate(() => window.NLGuida.open(4)); await wait(900); await sh('a6-guida');
+      await pg.evaluate(() => window.NLGuida.close()); await wait(400);
+      await pg.evaluate(() => window.NLGuida.pathShow && window.NLGuida.pathShow(2)); await wait(900); await sh('a7-percorso');
+      await pg.close(); continue;
+    }
     if (process.env.MENU) {                         // restyle pezzo 3: Menu, Impostazioni, finestre dal basso (MENU=1)
       const ds = async (n, sel) => { for (const [k, y] of [['a', 0], ['b', 640], ['c', 1280]]) { const h = await pg.evaluate((sel, y) => { const e = document.querySelector(sel); if (!e) return -1; e.scrollTop = y; return e.scrollHeight - e.clientHeight; }, sel, y); if (h < 0) break; await wait(250); await sh(n + '-' + k); if (h <= y + 640) break; } };
       await pg.evaluate(() => window.__app.openDrawer('opt')); await wait(700); await ds('m1-menu', '#drawerBody');
