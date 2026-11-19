@@ -541,6 +541,7 @@ function loadAll() {
     settings.instScope = settings.installed ? s.instScope : '';
     settings.name = L.str(s.name).replace(/\s+/g, ' ').trim().slice(0, 30);
     settings.instSnooze = Number(s.instSnooze) || 0;
+    settings.iosWeb = s.iosWeb === true;                                           // iPhone: ha scelto «Continua nel browser» (giro 11F)
     settings.goal = Math.max(0, Math.min(999, parseInt(s.goal, 10) || 0));          // obiettivo di lettura
     settings.newsAuto = s.newsAuto !== false;                                       // novita' degli autori: controllo automatico
     settings.sumEur = s.sumEur === true;                                            // riepilogo in alto: valore in euro (spento di predefinito)
