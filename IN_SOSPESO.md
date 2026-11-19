@@ -1,5 +1,3 @@
-> **Aggiornamento 18/11/2026 (versione vera 105):** fatti e nella vera anche 25 Chat (con gruppi), 28 Foto del profilo, 31 Pagina del profilo, 33 Avviso sui desideri, 13 Guida di primo avvio, 22 chiave prestata nascosta (resta R5 per il worker), 36 app.js diviso in moduli. Resta da sistemare la prova e2e40 (incerta). Le altre voci qui sotto valgono ancora.
-
 # Next Libris: cose in sospeso
 
 Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i problemi che Piero ha chiesto di **tenere in sospeso**, con quanto serve per ripartire anche in una sessione nuova.
@@ -8,18 +6,18 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **37**.
 
-Ultimo aggiornamento: **17/11/2026 sera**, vera **104**, prova **104.1** (uguali).
+Ultimo aggiornamento: **19/11/2026**, vera **107**, prova **107.6**. Da sistemare anche: prova e2e40 incerta.
 
 ## Indice
 
 - **A. In attesa di Piero**: niente
 - **B. Da verificare sul telefono**: foto di Flaiano (104)
 - **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine (in lavorazione) · 38 risolvere gli ISBN non trovati
-- **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki · 12 nazionalità degli autori · 6 film dai libri
+- **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki
 - **E. Statistiche e svago:** 3 traguardi, sfide e curiosità
-- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 25 chat · 26 libri condivisi con un testo · 28 foto del profilo · 31 pagina del profilo · 32 premio per chi usa chiave e worker suoi · 33 avviso sui desideri di un amico · 37 libro del mese · 39 bacheca
-- **G. Guide:** 13 guida di primo avvio · 16 «Prova la chiave / Prova il worker»
-- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 21 dominio proprio ed email · 22 chiavi prestate davvero nascoste · 30 colori per daltonici · 34 copertine grandi «large» di Google · 35 Google per ultimo nella ricerca · 36 dividere app.js in moduli
+- **F. Amici, prestiti, ex-libris:** 14 libri ricevuti in prestito · 15 ex-libris · 24 compleanni degli amici · 26 libri condivisi con un testo · 32 premio per chi usa chiave e worker suoi · 37 libro del mese · 39 bacheca
+- **G. Guide:** 16 «Prova la chiave / Prova il worker»
+- **H. Dati, backup, servizi:** 7 backup automatico · 5 quanti dispositivi · 18 proposte rimaste dalla simulazione · 21 dominio proprio ed email · 30 colori per daltonici · 34 copertine grandi «large» di Google
 - **Fatti** (tolti dall'elenco)
 
 ---
@@ -118,30 +116,6 @@ Le quattro voci usano la stessa fonte: conviene farle insieme o almeno con la st
 - **Wikisource:** testo libero dei classici fuori diritti (link «Leggilo gratis»);
 - usi: statistiche più ricche (secoli, nazionalità, lingue originali, premiati), mappa dei luoghi dei libri, linea del tempo.
 
-### 12. Nazionalità degli autori (chiesto il 16/11/2026)
-
-**Richiesta di Piero:** se abbiamo la nazionalità degli autori, usarla nelle **statistiche**, nel **trimestre** e nelle **visualizzazioni**.
-
-**Da dove:** Wikidata (cittadinanza P27, luogo di nascita P19, lingua P1412), raggiungibile dalla voce di Wikipedia che l'app già trova (`auLookup`); da salvare una volta per autore, non a ogni apertura.
-
-**Idee da proporre (nessuna costruita):**
-- Statistiche: «Da quali paesi vengono i tuoi autori» (barre per paese, toccando si filtra), percentuale di italiani e stranieri, continenti;
-- Trimestre: «Hai viaggiato in N paesi» con le bandierine dei paesi letti;
-- Visualizzazioni: mappa del mondo con i paesi colorati per numero di libri; filtro «Paese dell'autore».
-
-### 6. Film tratti dai libri (chiesto il 15/11/2026, «per dopo»)
-
-**Domanda di Piero:** l'app può cercare i film ispirati o tratti dai libri in libreria o nei Desideri?
-
-**Idea (da proporre quando la riprende):**
-- **Fonte: Wikidata**, gratuita, senza chiave (query.wikidata.org). Ogni film ha «basato su» (P144) che punta all'opera letteraria.
-- Collegare il libro all'opera: dall'ISBN (P212/P957) all'edizione, e da lì all'opera («edizione di», P629); senza ISBN, per titolo e autore (etichetta in italiano + P50). Poi: film e serie con P144 = quell'opera, con anno, regista, titolo italiano e pagina di Wikipedia.
-- **Dove:** nella scheda del libro una riga «🎬 Ne hanno tratto un film: Il nome della rosa (1986, Jean-Jacques Annaud)»; in Suggerimenti una scheda «Dai tuoi libri al cinema», magari con «Visto» / «Da vedere».
-- Ricerca a gruppi in sottofondo, una volta sola per libro, risultato salvato.
-- **Limiti:** Wikidata è ricca per i classici e i libri famosi, povera per le edizioni minori. Alternativa con più film ma con chiave: TMDB.
-
----
-
 ## E. Statistiche e svago
 
 ### 3. Traguardi, sfide e curiosità (proposta del 14/11/2026, «conserva queste idee»)
@@ -202,39 +176,15 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 **Note tecniche:** colonna in `profili` (es. `nascita` come «mm-gg»), lavoro giornaliero con pg_cron (c'è già nella prova, `push-attese`) che scrive in `notifiche` un tipo nuovo `compleanno`; tocco → libreria dell'amico sui Desideri. Va scritto in privacy.html.
 
-### 25. Chat tra amici (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** un **sistema di chat**. Nulla di costruito.
-
-**Prima di costruire, chiedere:** solo tra amici e uno a uno, o anche gruppi; messaggi legati ai libri (es. da una scheda) o liberi; quanto tempo si tengono i messaggi; avvisi nella campanella e con le push; foto o solo testo.
-
-**Limiti da tenere presenti (piano gratuito di Supabase):** Realtime 200 connessioni e 2 milioni di messaggi al mese (oggi niente Realtime: gli avvisi arrivano alla riapertura, ogni ~3 minuti e con le push); spazio 500 MB in tutto. Senza Realtime la chat non sarebbe «in diretta»: si potrebbe controllare più spesso solo con la chat aperta.
-
 ### 26. Condividere libri con un testo (chiesto il 17/11/2026)
 
 **Richiesta di Piero:** poter **condividere dei libri accompagnandoli con del testo** (un messaggio scritto da chi manda). Nulla di costruito.
 
 **Prima di costruire, chiedere:** un libro alla volta o più libri insieme; solo verso amici dentro l'app («Manda a un amico», tabella `consigli`) o anche nel link esterno; lunghezza massima del testo; dove lo legge chi riceve (campanella, push, scheda del consiglio). Si collega alla chat (25): decidere se è una cosa sola.
 
-### 28. Foto del profilo, poi l'ex-libris (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** prima la **foto del profilo**, **dopo** l'ex-libris (voce 15). Nulla di costruito.
-
-**Prima di costruire, chiedere:** foto dalla galleria o dalla fotocamera, con ritaglio tondo; in alternativa l'immagine dell'account Google (che arriva già con l'accesso) o le iniziali colorate come oggi; dove si vede (elenco amici, striscia dell'amico, campanella, richieste); chi la vede (solo gli amici o anche chi ti cerca per nome).
-
-**Limiti e note:** oggi non ci sono file online (Storage di Supabase 1 GB, 50 MB a file): la foto va rimpicciolita sul telefono (es. 256×256 WebP, ~15-25 kB) prima di salvarla; con poche centinaia di utenti è poco spazio. Regole di accesso sul file (solo amici) o una cartella pubblica con nomi non indovinabili: da decidere. Va scritto in privacy.html. L'ex-libris (15) può usare lo stesso sistema per le immagini.
-
-### 31. Pagina del profilo (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** una **pagina del profilo** con la **raccolta delle citazioni** e la **citazione preferita**; se la libreria è visibile, anche le **statistiche**, mostrate «in modo cool». Si lega alla voce 28 (foto del profilo). Nulla di costruito. **Prima di costruire, chiedere:** chi la vede (solo tu o anche gli amici: oggi le citazioni non sono mai visibili agli amici), come si sceglie la citazione preferita, quali statistiche e in che stile, dove si apre (testata, Menu, finestra Amici).
-
 ### 32. Premio per chi usa chiave Google e worker suoi (chiesto il 17/11/2026)
 
 **Richiesta di Piero:** un **riconoscimento («reward»)** per chi ha la sua chiave API e il suo worker (non pesa sulla chiave «della casa», vedi la simulazione degli utenti). Nulla di costruito. **Prima di costruire, chiedere:** che premio (distintivo nel profilo e nella libreria vista dagli amici, colori o temi in più, ringraziamento), se conta anche chi li presta agli amici, come si verifica che sono davvero suoi.
-
-### 33. Avviso quando un amico aggiunge un libro ai desideri (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** poter chiedere una **notifica quando un amico aggiunge un libro ai suoi desideri**, scegliendolo **già nella richiesta di amicizia** e **dopo, con un tasto apposito** (per ogni amico). Vale **solo se l'amico rende visibili i desideri** (Impostazioni › Amici e privacy). Nulla di costruito. **Prima di costruire, chiedere:** dove sta il tasto (finestra dell'amico, sua libreria), se l'avviso va nella campanella, nelle notifiche push o in tutte e due, se un avviso per libro o uno riassuntivo al giorno, se l'amico sa di essere «seguito». Serve il database (tabella o colonna delle preferenze, avviso creato dal server quando arriva un desiderio nuovo): prima nella prova.
 
 ### 37. Il libro del mese (chiesto il 17/11/2026)
 
@@ -245,24 +195,6 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 **Richiesta di Piero:** una «bacheca». Nulla di costruito e niente dettagli. **Prima di costruire, chiedere** cosa deve contenere (novità degli amici: libri aggiunti, letti, voti; avvisi; consigli) e chi la vede.
 
 ## G. Guide
-
-### 13. Guida di primo avvio (chiesto il 16/11/2026; piano concordato con Piero)
-
-**FATTA nel giro 4 (18/11/2026, ramo `prova`):** modulo `guida.js` con 7 schermate e libreria di esempio (dettagli in CLAUDE.md, «Stato dei passi»). Resta: tenerla aggiornata a ogni versione vera.
-
-**Richiesta di Piero:** una guida che illustri le funzioni dell'app al primo avvio, da **aggiornare man mano**. (Era prevista prima della versione 98; Piero ha poi scelto di pubblicare la 98 prima della guida.)
-
-**Piano (Piero d'accordo, da riprendere):**
-1. **Contenuto prima della forma:** sei schermate brevi, ognuna con un disegnino, una o due frasi semplici e «Prova adesso» che apre la cosa vera:
-   1. Benvenuto: cos'è Next Libris (**niente frase sui «dati solo nel telefono»**: ora ci sono gli account);
-   2. Aggiungere i libri: il **+** (Scansiona, Foto, Digita, Ce l'ho già?);
-   3. La pagina del libro: stato di lettura, libricini, stella del preferito, segnalibro, matita per modificare;
-   4. Trovare i libri: ricerca, filtri, etichette, Copertine/Elenco;
-   5. Prestiti, Desideri e **Amici** (aggiunta da valutare: account, amici, campanella);
-   6. Per te: suggerimenti, statistiche, la tua stagione in libri; il backup.
-2. **Forma:** un giro da sfogliare col dito, come «La tua stagione in libri», con «Salta» sempre visibile. Alla prima apertura dopo l'installazione; si riapre dal menu («Come si usa»). Chi aggiorna non la vede da sola: per lui c'è «Cosa c'è di nuovo».
-3. **Tenerla aggiornata:** modulo a parte (`guida.js`/`guida.css`, solo `window.NL`); **un test** che per ogni schermata controlla che esista la parte di app di cui parla; **regola di Piero (18/11/2026):** a ogni pubblicazione nella **vera** la guida si aggiorna con le funzioni nuove; nella prova non serve.
-4. **Ordine di lavoro:** prima i testi scritti in chat per Piero, poi la guida nella prova, poi nella vera.
 
 ### 16. Guida per il worker SBN e la chiave di Google Libri (chiesto il 16/11/2026)
 
@@ -327,16 +259,6 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 - **Dominio proprio** (`nextlibris.it` o simile, 10–15 € l'anno): servirebbe solo per la verifica del marchio di Google (nome e logo nella finestra di accesso) e per le email. Piero deve controllare se è libero. Cambiando dominio servirebbe di nuovo il trasloco dei dati.
 - **Email di accesso con Brevo:** ferma (accesso solo con Google, `CFG.email = false`). Con un dominio: `accesso@nextlibris.it`, modelli con il codice di 6 cifre (testo pronto in `claude/guida-accesso-google-brevo.md` del progetto claude.ai).
 
-### 22. Chiave e worker prestati davvero nascosti (chiesto il 16/11/2026)
-
-**Richiesta di Piero:** chi riceve chiave API e worker da un amico non deve poterli vedere né passare ad altri.
-
-**Già fatto (nella vera dalla 102):** nascosti nell'app (niente campo in Impostazioni › Ricerca, niente salvati, backup o link). Restano però sul telefono di chi li usa: una persona esperta li legge con gli strumenti del browser.
-
-**Da fare quando lo chiede («davvero nascosti»):** le ricerche di chi usa la chiave di un amico passano da un servizio sul server (Edge Function di Supabase) che tiene chiave e worker e fa la richiesta al posto suo; il telefono riceve solo i risultati. Costi: ricerche un po' più lente, funzioni del piano gratuito (500.000 al mese, ~2-3 per libro), da contare con la simulazione degli utenti; serve anche per i suggerimenti e le novità degli autori. Si lega al contatore condiviso (012) e alla voce 18.
-
-**FATTO per la chiave Google nel giro 8 (18/11/2026, nella prova; nella vera con «porta nella vera»):** la chiave prestata non arriva più al telefono dell'amico (segno «prestata:<id>», funzione Supabase `libri`, 300 ricerche al giorno per amico, stop immediato; migrazione 020). **Resta in sospeso solo il worker prestato**, il cui indirizzo arriva ancora al telefono dell'amico (vedi 40, R5).
-
 ### 40. Worker e link della chiave (dal giro 7-8, 18/11/2026)
 - **R5 · limite di richieste per il worker** (**worker prestato: FATTO**, 026 + giro 11A del 18/11/2026: passa dal server, 3.000 ricerche al giorno per amico, nella prova con 027; resta solo il worker usato da un programma con l'indirizzo): oggi chiunque conosca l'indirizzo lo può usare da un programma; il piano gratuito si ferma a 100.000 al giorno senza costi, ma SBN potrebbe bloccare il worker. Possibile: un limite per indirizzo IP o un piccolo segreto.
 - **R2 · link con la chiave (`#k=`): TOLTO nel giro 8** (Piero, 18/11/2026: «si condivide solo dentro l'app»). Un vecchio link aperto oggi dà solo un avviso.
@@ -355,16 +277,18 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 **Richiesta di Piero:** tenerla in sospeso. Dal 17/11/2026 la copertina grande di Google si prende dallo stesso indirizzo della miniatura con **zoom=3** («medium»); **zoom=0 è stato tolto** perché spesso dà la prima pagina del libro e non la copertina («Latinoamericana»). Per la **massima qualità** senza quel rischio: chiedere a Google la **scheda del volume** (`/volumes/<id>`), che ha i link ufficiali **large** ed **extraLarge** quando esistono. Costa **una ricerca Google in più per libro** (era stata tolta il 16/11 per il limite di 1.000 al giorno). Idea: farlo **solo quando si apre la copertina ingrandita**, e solo se la zoom=3 non c'è o è piccola. **Prima di costruire, chiedere:** solo all'ingrandimento o sempre; se conta nel contatore condiviso; se salvarla nell'archivio comune (così la scheda si chiede una volta sola per ISBN).
 
-### 35. Google per ultimo nella ricerca dei libri (chiesto il 17/11/2026)
-
-**Richiesta di Piero:** valutare di **invertire l'ordine delle ricerche**, perché Google Libri è la fonte più limitata (1.000 ricerche al giorno per chiave; vedi la simulazione degli utenti). **Oggi** (lib.js `lookupIsbn`): Google, Open Library e SBN partono **insieme**; Crossref solo se manca qualcosa; prima di tutto l'archivio comune. **Idea:** archivio → Open Library e SBN → **Google solo se manca ancora qualcosa** (titolo, autore, editore, anno, copertina, descrizione). **Da valutare prima:** quanto spesso Open Library e SBN bastano per i libri italiani (copertina e descrizione arrivano quasi sempre solo da Google, quindi il risparmio potrebbe essere piccolo se servono sempre); tempi più lunghi (Google aspetta le altre); cosa vale come «manca qualcosa» (per esempio la descrizione si potrebbe cercare solo all'apertura del libro, come la proposta 2 della simulazione). Si può misurare con le ricerche vere della prova prima di decidere. **Prima di costruire, chiedere.**
-
-### 36. Dividere app.js in moduli (dalla verifica del 17/11/2026)
-
-**Proposta della verifica, lasciata da parte da Piero:** `app.js` è troppo grande (~470 KB). Spostare in moduli propri, un pezzo alla volta e con le prove: fotocamera e scansione, editor delle foto, suggerimenti, statistiche. Rapporto in `claude/verifica-17-11-2026.md` del progetto claude.ai.
-
 ## Fatti (tolti dall'elenco)
 
+- **6.** Film tratti dai libri: scheda e «Dai tuoi libri al cinema» (giro 2, vera 105).
+- **12.** Nazionalità degli autori con bandiere (giri 2 e 5, vera 105).
+- **25.** Chat a due e gruppi (giro 9, vera 105).
+- **28.** Foto del profilo (vera 105).
+- **31.** Pagina del profilo (giri 3, 6, 11C).
+- **33.** Avviso sui desideri di un amico (giro 6, vera 105).
+- **13.** Guida di primo avvio (giri 4-10, vera 105).
+- **22.** Chiave e worker prestati restano sul server (giro 8, 026, giro 11A).
+- **35.** Google per ultimo e descrizione a richiesta (giro 11B, prova 107.6).
+- **36.** app.js diviso in 12 file (17/11/2026).
 - **1. Fotocamera e luce:** fotocamera del telefono (v90), controllo dell'obiettivo (v91), «Prova la luce» (v92). Restano solo le verifiche nella parte B.
 - **2. Il tuo anno in libri:** fatto come «Il tuo trimestre in libri» (95) e «La tua stagione in libri» (96), modulo `wrap.js`.
 - **4. Da verificare sul telefono:** spostato nella parte B.
