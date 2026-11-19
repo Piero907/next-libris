@@ -52,12 +52,13 @@ const books = [
     await wait(1300);
     const st = await page.evaluate(() => { const b = document.querySelector('#profBody .pf-board'); return { bg: b.style.getPropertyValue('--pf-bg'), big: document.querySelector('.pf-big .pf-cnt').textContent, txt: b.innerText.replace(/\s+/g, ' '), font: getComputedStyle(document.querySelector('.pf-big')).fontFamily, tiles: b.querySelectorAll('.pf-t').length }; });
     console.log('[3 profilo]', mid, '→', st.big, st.bg, st.tiles, 'tessere ·', st.txt.slice(0, 260));
-    assert.strictEqual(st.bg, '#2A1A12'); assert.strictEqual(st.big, '5'); assert(/Bricolage/.test(st.font));
-    assert(/Nel 2026 hai letto 5 libri/.test(st.txt) && /Pagine dell'anno 1\.360/.test(st.txt) && /Il tuo autore dell'anno Andrea Camilleri 2 libri/.test(st.txt) && /Da sempre 6 libri in libreria/.test(st.txt), st.txt);
+    assert.strictEqual(st.bg, ''); assert.strictEqual(st.big, '5'); assert(/Bricolage/.test(st.font));
+    assert(/Nel 2026 hai letto 5 libri/.test(st.txt) && /Pagine dell'anno 1\.360/.test(st.txt) && /Il tuo autore dell'anno Andrea Camilleri 2 libri/.test(st.txt) && /Da sempre Libri in libreria 6/.test(st.txt), st.txt);
     // le copertine disegnate: il titolo lungo entra tutto (si rimpicciolisce, non si taglia)
     const fit = await page.$$eval('#profBody .pf-bk.noimg .pf-cvt', l => l.map(e => [e.textContent.slice(0, 20), e.scrollHeight <= e.clientHeight + 1, e.style.fontSize]));
     console.log('  copertine:', JSON.stringify(fit)); assert(fit.length && fit.every(x => x[1]), 'titoli interi');
     await page.screenshot({ path: path.join(CFG.OUT, 'e2e134-profilo.png') });
+    { const el = await page.$('#profBody .pf-num'); if (el) await el.screenshot({ path: path.join(CFG.OUT, 'e2e134-numeri.png') }); }   // i numeri (layout del 19/11/2026)
 
     // 4) Condividi i tuoi numeri: storia e quadrata; il link è nel testo
     await page.evaluate(() => { navigator.canShare = () => true; navigator.share = async d => { const f = d.files[0], bm = await createImageBitmap(f); window.__sh = (window.__sh || []).concat([{ n: f.name, w: bm.width, h: bm.height, text: d.text, title: d.title }]); }; });
