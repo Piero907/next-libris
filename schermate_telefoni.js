@@ -127,7 +127,7 @@ const base = "http://localhost:" + CFG.port(8340);
   const wait = H.wait;   // attesa «finché» (_harness.js)
   async function phone(name, uid, w, hh) {
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
-    await page.setViewport({ width: w || 412, height: hh || 915, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await page.setViewport({ width: w || 412, height: hh || 915, deviceScaleFactor: (w || 412) > 1100 ? 1 : 2, isMobile: (w || 412) < 1100, hasTouch: (w || 412) < 1100 });
     page.on('pageerror', e => errors.push(name + ': ' + e.message));
     await page.evaluateOnNewDocument((u, id) => {
       window.NL_SOCIAL = { url: u, key: 'chiave-finta', gClient: 'client-finto' };
@@ -171,7 +171,8 @@ const base = "http://localhost:" + CFG.port(8340);
   const y = new Date().getFullYear(), today = new Date().toISOString().slice(0, 10);
 
   const OUT = SHOTS || path.join(CFG.OUT, 'telefoni'); fs.mkdirSync(OUT, { recursive: true });
-  const PH = [['360-galaxy-a', 360, 800], ['375-iphone-se', 375, 667], ['390-iphone', 390, 844], ['393-pixel', 393, 873], ['412-galaxy-s', 412, 915], ['430-iphone-max', 430, 932], ['320-scritta-grande', 320, 700]];
+  const BIG = [['768-tablet', 768, 1024], ['1024-tablet-orizz', 1024, 768], ['1366-pc', 1366, 768], ['1920-pc', 1920, 1080]];   // giro 11D (19/11/2026): GRANDI=1
+  const PH = process.env.GRANDI ? BIG : [['360-galaxy-a', 360, 800], ['375-iphone-se', 375, 667], ['390-iphone', 390, 844], ['393-pixel', 393, 873], ['412-galaxy-s', 412, 915], ['430-iphone-max', 430, 932], ['320-scritta-grande', 320, 700]];
   const only = process.env.TELEFONI ? process.env.TELEFONI.split(',') : null;
   const side = [];
   const closeAll = (pg) => pg.evaluate(() => { document.querySelectorAll('.sheet:not([hidden])').forEach(x => { x.hidden = true; }); document.documentElement.classList.remove('drawer-open'); window.scrollTo(0, 0); });
