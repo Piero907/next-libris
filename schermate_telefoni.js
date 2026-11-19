@@ -145,7 +145,7 @@ const base = "http://localhost:" + CFG.port(8340);
     await page.goto(base + '/next-libris-prova/', { waitUntil: 'load' }); await wait(2200);
     await page.evaluate(() => {                     // film finti (formato di app-wiki.js), poi si riapre
       const L = window.Lib, F = (t, y, d, s, book) => ({ q: 'x' + L.norm(t + y).replace(/[^a-z0-9]+/g, ''), t, y, d, s: s ? 1 : 0, u: 'https://it.wikipedia.org/wiki/X', k: [L.titleKey(book), L.norm(book).replace(/[^a-z0-9]+/g, ' ').trim()] });
-      const m = { '~v': 1 }, now = Date.now(), A = (n, f) => { m[L.norm(n)] = { q: 'q' + n.length, c: 'IT', t: now, f }; };
+      const m = { '~v': window.WD_V }, now = Date.now(), A = (n, f) => { m[L.norm(n)] = { q: 'q' + n.length, c: 'IT', t: now, f }; };
       A('Giuseppe Tomasi di Lampedusa', [F('Il Gattopardo', 1963, 'Luchino Visconti', 0, 'Il Gattopardo'), F('Il Gattopardo', 2025, 'Tom Shankland', 1, 'Il Gattopardo')]);
       A('Fëdor Dostoevskij', [F('Delitto e castigo', 1935, 'Josef von Sternberg', 0, 'Delitto e castigo'), F('Delitto e castigo', 1956, 'Georges Lampin', 0, 'Delitto e castigo'), F('Delitto e castigo', 1970, 'Lev Kulidžanov', 0, 'Delitto e castigo'), F('Delitto e castigo, una storia di amore e di morte nella San Pietroburgo dell\'Ottocento', 2002, 'Menahem Golan', 1, 'Delitto e castigo')]);
       A('Gabriel García Márquez', [F('Cent\'anni di solitudine', 2024, 'Laura Mora, Alex García López', 1, 'Cent\'anni di solitudine')]);

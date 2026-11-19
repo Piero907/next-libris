@@ -8,6 +8,8 @@ const H = require('./_harness');
 // 13) film E serie TV tratti dai libri: riga nella scheda («Al cinema:» / «Serie TV:») e «Dai tuoi libri al cinema» in «Per te»;
 // 8) opere di un autore: «Le sue opere ›» in Info Autore (interruttore «In Libreria | Nei Desideri» che parte da Desideri, segnate quelle
 //    che hai già; un tocco apre la solita ricerca delle edizioni) e «Per autore» nel +.
+// 19/11/2026: film OMONIMI senza «tratto da» su Wikidata (Io speriamo che me la cavo): valgono solo se la loro voce di it.wikipedia
+//    ha un collegamento alla voce dell'autore; si legge anche «opera derivata» (P4969) del libro.
 // Wikipedia e Wikidata sono simulate. Con SCHERMATE=cartella fa le foto.
 const puppeteer = require('puppeteer-core');
 const fs = require('fs'), path = require('path');
@@ -58,7 +60,7 @@ const WORKS = {
 };
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
-  const errors = [], asked = { info: 0, works: 0, types: [] };
+  const errors = [], asked = { info: 0, works: 0, types: [], same: 0, links: [] };
   const wait = H.wait;
   const p = await (await browser.createBrowserContext()).newPage();
   await p.setViewport({ width: 412, height: 915, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
@@ -80,6 +82,19 @@ const WORKS = {
       const t = decodeURIComponent(m[1]), w = WIKI[t];
       if (!w) return json(r, {}, 404);
       return json(r, { type: 'standard', title: t.replace(/_/g, ' '), description: w[1], extract: t.replace(/_/g, ' ') + ' è stato uno scrittore.', wikibase_item: w[0], thumbnail: { source: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/' + t + '.jpg/330px-' + t + '.jpg' } });
+    }
+    if (u.startsWith('https://it.wikipedia.org/w/api.php') && u.indexOf('prop=links') > 0) {   // conferma dei film omonimi
+      const qs = new URL(u).searchParams, ts = qs.get('titles').split('|');
+      asked.links.push(qs.get('pltitles') + ':' + ts.join(','));
+      return json(r, { query: { pages: ts.map(t => t === "L'isola del giorno prima (film)" ? { title: t, links: [{ ns: 0, title: qs.get('pltitles') }] } : { title: t }) } });
+    }
+    if (u.startsWith('https://query.wikidata.org/sparql') && decodeURIComponent(u).indexOf('wikibase:sitelinks') > 0) {   // film omonimi
+      const q = decodeURIComponent(u.split('query=')[1] || ''), id = (/wd:(Q\d+)/.exec(q) || [])[1];
+      asked.same++;
+      return json(r, { results: { bindings: id !== 'Q12807' ? [] : [
+        v({ f: E + 'Q9', fLabel: "L'isola del giorno prima", d: '2005-05-01T00:00:00Z', dirLabel: 'Mario Rossi', t: E + 'Q11424', w: E + 'Q501', wl: "L'isola del giorno prima", art: "https://it.wikipedia.org/wiki/L'isola_del_giorno_prima_(film)" }),
+        v({ f: E + 'Q7', fLabel: 'Baudolino', d: '2004-01-01T00:00:00Z', t: E + 'Q11424', w: E + 'Q510', wl: 'Baudolino', art: 'https://it.wikipedia.org/wiki/Baudolino_(film)' }),   // non confermato: Baudolino resta senza film
+        v({ f: E + 'Q8', fLabel: 'Il pendolo di Foucault', d: '1990-01-01T00:00:00Z', t: E + 'Q11424', w: E + 'Q500', wl: 'Il pendolo di Foucault', art: 'https://it.wikipedia.org/wiki/Il_pendolo_di_Foucault_(film)' })] } });
     }
     if (u.startsWith('https://query.wikidata.org/sparql')) {
       const q = decodeURIComponent(u.split('query=')[1] || ''), id = (/wd:(Q\d+)/.exec(q) || [])[1], works = q.indexOf('FILTER(?t IN') > 0;
@@ -111,7 +126,10 @@ const WORKS = {
   assert.strictEqual(saved['vladimir nabokov'].c, 'US'); assert.strictEqual(saved['vladimir nabokov'].b, 'RU');
   assert.strictEqual(saved['albert camus'].c, 'FR', 'tra più paesi vince quello ancora valido'); assert.strictEqual(saved['albert camus'].b, 'DZ');
   assert(saved['tizio sconosciuto'] && !saved['tizio sconosciuto'].q, 'autore senza voce: segnato come non trovato');
-  assert.deepStrictEqual(saved['umberto eco'].f.map(f => f.q + (f.s ? 's' : 'f')), ['Q1f', 'Q5f', 'Q2s'], 'film e serie: via quello senza titolo e il videogioco, in ordine di anno');
+  assert.deepStrictEqual(saved['umberto eco'].f.map(f => f.q + (f.s ? 's' : 'f')), ['Q1f', 'Q5f', 'Q9f', 'Q2s'], 'film e serie: via quello senza titolo e il videogioco, in ordine di anno; il film omonimo confermato sì, quello non confermato no');
+  assert.deepStrictEqual(saved['umberto eco'].f.find(f => f.q === 'Q9').k, ['l isola del giorno prima'], 'il film omonimo si lega al libro con lo stesso titolo');
+  assert.strictEqual(asked.same, 5, 'una domanda per i film omonimi per autore trovato');
+  assert.deepStrictEqual(asked.links, ["Umberto Eco:L'isola del giorno prima (film),Baudolino (film),Il pendolo di Foucault (film)"], 'una sola conferma a Wikipedia, con la voce dell\'autore');
   assert.deepStrictEqual(asked.types, ['Q7889,Q777'], 'una sola domanda per i tipi nuovi (film e miniserie sono già noti)');
   assert.deepStrictEqual(saved['~ty'], { Q7889: '', Q777: 'f' }, 'i tipi chiesti restano salvati');
   assert.strictEqual(asked.info, 5, 'una sola domanda a Wikidata per autore');
