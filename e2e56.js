@@ -22,7 +22,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   // 1) dalla linguetta: il menu, non i filtri; largo due terzi
   await page.evaluate(() => document.querySelector('#edgeTab').click()); await wait(400);
   let s = await st(); console.log('[1 linguetta]', JSON.stringify(s));
-  assert(s.open && s.home && !s.flt && s.h === 'Menu' && Math.abs(s.w - Math.round(412 * 0.67)) <= 3);
+  assert(s.open && s.home && !s.flt && s.h === 'Menu' && s.w >= 411);   // restyle pezzo 3: il Menu è una pagina intera
   const items = await page.$$eval('#drawerOpts .dopt b', e => e.map(x => x.textContent)); console.log('  voci:', items.join(' | '));
   const iDon = items.indexOf('Sostieni Next Libris'), set = items.slice(3);
   assert(iDon > items.indexOf('Statistiche') && iDon < items.indexOf("Sistema l'elenco") && iDon < items.indexOf('Impostazioni'), 'Sostieni dopo Statistiche, prima di Amici e «La tua libreria» (17/11/2026 pomeriggio)');

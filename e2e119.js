@@ -113,6 +113,7 @@ const hits = { pi: 0, wd: 0, big: 0 };
   // 4) «N in prestito»: prestati da te e ricevuti; gruppi per persona
   const sum = await p.$eval('#summary [data-sum="loan"]', x => x.textContent);
   assert.strictEqual(sum, '5 in prestito');
+  await p.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
   await p.click('#summary [data-sum="loan"]'); await wait(300);
   const grp = await p.evaluate(() => [...document.querySelectorAll('#list .loan-groups > .shelf')].map(s => s.querySelector('.shelf-h .sh-t').textContent + ' ' + s.querySelector('.shelf-h .sh-n').textContent + ': ' +
     [...s.querySelectorAll('.grp-sub')].map(x => x.querySelector('.sh-t').textContent + ' ' + [...x.querySelectorAll('.row')].map(r => r.dataset.id).join(',')).join(' | ')));

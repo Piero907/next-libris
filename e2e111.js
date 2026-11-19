@@ -131,8 +131,7 @@ const base = 'http://localhost:' + CFG.port(8311);
   const vis = (s) => A.evaluate((s) => { const e = document.querySelector(s); return !!e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0; }, s);
   assert(await vis(sel + ' .acts-main .g-wish'), 'icona «Desideri» in alto');
   assert(!(await vis(sel + ' .acts-main [data-act="del"]')) && !(await vis(sel + ' .acts-main [data-act="tolib"]')), 'le altre azioni restano nascoste');
-  const topY = await A.$eval(sel + ' .g-wish', x => x.getBoundingClientRect().top), chevY = await A.$eval(sel + ' .chev-btn', x => x.getBoundingClientRect().top);
-  assert(Math.abs(topY - chevY) < 40, 'sulla riga della freccetta (' + topY + ' / ' + chevY + ')');
+  assert(await A.$eval(sel + ' .g-wish', x => !!x.closest('.cv-page > .acts-main')), 'tra i tasti tondi sotto il titolo');   // restyle pezzo 2: pagina intera
   if (SHOTS) await A.screenshot({ path: SHOTS + '/regali-scheda-412.png' });
   // tocco: nei miei desideri; icona accesa; tocco di nuovo: tolto (con «Annulla»)
   await A.click(sel + ' .g-wish'); await wait(500);

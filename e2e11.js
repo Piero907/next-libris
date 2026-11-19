@@ -45,7 +45,7 @@ T.forEach((x, k) => books.push(B({ id: 'b' + k, t: x[0], a: x[1], sh: x[2], gen:
   await page.touchscreen.touchEnd(); await wait(400);
   assert(await isOpen(), 'si apre col gesto');
   const box = await page.$eval('#drawer', e => { const r = e.getBoundingClientRect(); return [r.left, r.width]; });
-  console.log('[2 posizione]', box); assert(box[0] === 0 && box[1] < 390 * 0.7);   // v84: due terzi dello schermo
+  console.log('[2 posizione]', box); assert(box[0] === 0 && box[1] >= 390 - 1);   // restyle pezzo 3 (Piero, 19/11/2026): il Menu è una pagina intera
   const set = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
   assert.strictEqual(set.swiped, true); assert(await page.$eval('#drawerHint', e => e.hidden));
   await page.screenshot({ path: CFG.OUT + '/s_drawer.png' });
@@ -75,7 +75,7 @@ T.forEach((x, k) => books.push(B({ id: 'b' + k, t: x[0], a: x[1], sh: x[2], gen:
   await click('#btnFilters'); await wait(350); assert(await isOpen());
   await page.goBack(); await wait(400); assert(!(await isOpen()), 'Indietro chiude'); assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8141) + '/?vista=elenco');
   await click('#btnFilters'); await wait(350); await page.keyboard.press('Escape'); await wait(350); assert(!(await isOpen()), 'Esc');
-  await click('#btnFilters'); await wait(350); await page.mouse.click(370, 400); await wait(350); assert(!(await isOpen()), 'tocco fuori');
+  await click('#btnFilters'); await wait(350); await click('#drawerX'); await wait(350); assert(!(await isOpen()), '‹ chiude');   // restyle pezzo 3: pagina intera, niente «fuori» da toccare
   // 5b) la linguetta sul bordo sinistro apre il pannello; e' colorata quando ci sono filtri attivi
   assert(await page.$eval('#edgeTab', e => e.classList.contains('on')));
   const tabBox = await page.$eval('#edgeTab', e => { const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.top + r.height / 2)]; });

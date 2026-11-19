@@ -204,6 +204,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   assert(!(await A.$('#recvSheet:not([hidden])')), 'l\'etichetta è solo da leggere');
 
   // ---- 15 e 16) profilo di Bruno dal nome in testata ----
+  await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
   await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(700);
   t = await txt(A, '#profBody');
   assert(/Bruno Su Next Libris da marzo 2026/.test(t) && /Stai seguendo i suoi Desideri ✓/.test(t) && /Bruno non lo sa\./.test(t), 'profilo di Bruno: ' + t);

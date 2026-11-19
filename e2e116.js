@@ -131,6 +131,7 @@ let wiki = 0;
   assert(rd.g1.t.startsWith('Anna lo sta leggendo') && rd.g2.t === 'Anna l\'ha letto · il 2 marzo 2025 · «Capolavoro»' && rd.g3.t === '', 'frasi della lettura');
   assert(rd.g1.btn + rd.g2.btn + rd.g3.btn === 0, 'niente tasti di lettura');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-letto-412.png') });
+  await p.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
   await p.click('#guestBar [data-t="wish"]'); await wait(400);
   let st = await p.evaluate(() => [NL.guest(), NL.tab(), document.querySelectorAll('#list .row').length]);
   assert.deepStrictEqual(st, ['Anna', 'wish', 1], 'Desideri dell\'amico dal tasto in cima');
