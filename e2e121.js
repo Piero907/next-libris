@@ -208,7 +208,7 @@ const WORKS = {
   const fb = await p.$eval('#list .filmbox[data-film="r1"]', e => ({ hidden: e.hidden, txt: e.textContent.replace(/\s+/g, ' ').trim(), a: [...e.querySelectorAll('a')].map(x => x.getAttribute('href')), vis: e.getBoundingClientRect().height > 0 }));
   console.log('[film]', fb.txt);
   assert.strictEqual(fb.hidden, false); assert(fb.vis, 'la riga dei film si vede nella scheda');
-  assert.strictEqual(fb.txt, 'Dal libro🎬Il nome della rosa — film, 1986 · regia di J.-J. Annaud›🎬Il nome della rosa a cartoni — film, 1999📺Il nome della rosa — serie TV, 2019 · regia di G. Battiato');   // sezione «Dal libro» (giro 5)
+  assert.strictEqual(fb.txt, 'Dal libro📺Il nome della rosa — serie TV, 2019 · regia di G. Battiato🎬Il nome della rosa a cartoni — film, 1999🎬Il nome della rosa — film, 1986 · regia di J.-J. Annaud›');   // sezione «Dal libro» (giro 5)
   assert.deepStrictEqual(fb.a, ['https://it.wikipedia.org/wiki/Il_nome_della_rosa_(film)'], 'link solo alla voce italiana');
   await noOverflow('#list', 'scheda con i film');
   if (SHOTS) { await p.$eval('#list .filmbox[data-film="r1"]', e => e.scrollIntoView({ block: 'center' })); await wait(200); await p.screenshot({ path: path.join(SHOTS, 'film-scheda-412.png') }); }

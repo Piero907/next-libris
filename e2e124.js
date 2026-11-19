@@ -94,9 +94,9 @@ const KEY = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQr7Gt';
   await p.evaluate(() => { showBook('g1'); }); await wait(700);
   const fb = await p.$eval('#list .filmbox[data-film="g1"]', e => ({ txt: e.textContent.replace(/\s+/g, ' ').trim(), rows: [...e.querySelectorAll('.fl-row')].map(r => r.tagName + ':' + (r.getAttribute('href') || '') + ':' + Math.round(r.getBoundingClientRect().height)) }));
   console.log('[film]', fb.txt, JSON.stringify(fb.rows));
-  assert.strictEqual(fb.txt, 'Dal libro🎬Il Gattopardo — film, 1963 · regia di L. Visconti›📺Il Gattopardo — serie TV, 2025');
-  assert(/^A:https:\/\/it\.wikipedia\.org\/wiki\/Il_Gattopardo_\(film\):(\d+)$/.test(fb.rows[0]) && +fb.rows[0].split(':').pop() >= 44, 'riga del film: link a Wikipedia, alta almeno 44 px');
-  assert(/^DIV::/.test(fb.rows[1]), 'serie senza voce italiana: niente link');
+  assert.strictEqual(fb.txt, 'Dal libro📺Il Gattopardo — serie TV, 2025🎬Il Gattopardo — film, 1963 · regia di L. Visconti›');
+  assert(/^A:https:\/\/it\.wikipedia\.org\/wiki\/Il_Gattopardo_\(film\):(\d+)$/.test(fb.rows[1]) && +fb.rows[1].split(':').pop() >= 44, 'riga del film: link a Wikipedia, alta almeno 44 px');
+  assert(/^DIV::/.test(fb.rows[0]), 'serie senza voce italiana: niente link');
   assert(await side() <= 0, 'scheda con i film senza scorrimento di lato');
   if (SHOTS) { await p.$eval('#list .filmbox[data-film="g1"]', e => e.scrollIntoView({ block: 'center' })); await wait(200); await p.screenshot({ path: path.join(SHOTS, 'film-dal-libro-360.png') }); }
   await p.evaluate(() => { Object.keys(openState).forEach(k => { openState[k] = false; }); renderList(); }); await wait(300);
