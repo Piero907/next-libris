@@ -3,7 +3,7 @@ const HN = require('./_harness');
 // moduli: social, notifiche, ricerche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // modulo «Ricerche condivise» (ricerche.js) con un Supabase finto, 16/11/2026:
 // archivio comune (libro già cercato: niente Google; libro nuovo: una sola ricerca Google, poi nell'archivio solo i dati pubblici);
-// copertina grande dallo stesso indirizzo di Google (zoom=3; zoom=0 tolto il 17/11/2026), senza la richiesta /volumes/; descrizione assente = «non disponibile», nessuna altra richiesta;
+// copertina grande dallo stesso indirizzo di Google (zoom=3; zoom=0 tolto il 17/11/2026), senza la richiesta /volumes/; descrizione assente = nessuna altra richiesta finche' non si apre il riquadro (giro 11B);
 // contatore condiviso della chiave prestata da Bruno (sha256, mai la chiave) e del worker; a 950 notifica «limite» nella campanella,
 // Google si ferma (dati da Open Library); la notifica apre la guida «Crea la tua chiave Google Libri: è gratis» (360, 412 scuro, 1280).
 const puppeteer = require('puppeteer-core');
@@ -102,14 +102,14 @@ let gHits = [], sbnHits = 0, coverHits = [];
   await A.addWait('9788806219352');
   let b = await A.byIsbn('9788806219352'); console.log('[1 archivio]', b.t, b.a, b.e, b.y, b.pg, '| Google', gHits.length, '| SBN', sbnHits);
   assert(b.t === 'La storia' && b.a === 'Elsa Morante' && b.e === 'Einaudi' && b.pg === '720' && b.ds.startsWith('Roma') && gHits.length === 0 && sbnHits === 0, 'dall\'archivio, senza Google');
-  // 2) libro nuovo: una sola ricerca Google, copertina grande dallo stesso indirizzo, niente descrizione = non disponibile; poi nell'archivio
+  // 2) libro nuovo: una sola ricerca Google, copertina grande dallo stesso indirizzo, niente descrizione (si cerca a richiesta, giro 11B); poi nell'archivio
   gHits = []; coverHits = [];
   await A.addWait('9788845292613', 4000);
   b = await A.byIsbn('9788845292613'); console.log('[2 nuovo]', b.t, '| Google', gHits, '| imgL', b.imgL, '| dsn', b.dsn);
   assert.strictEqual(gHits.length, 1, 'una sola ricerca Google');
   assert(!gHits.some(x => x.includes('/volumes/')), 'nessuna richiesta /volumes/');
   assert(/zoom=3/.test(b.imgL) && !/edge=curl/.test(b.imgL) && !coverHits.some(x => /zoom=0/.test(x)), 'copertina grande dallo stesso indirizzo, solo zoom=3 (17/11/2026: zoom=0 dà spesso la prima pagina)');
-  assert(!b.ds && b.dsn > 0, 'descrizione non disponibile');
+  assert(!b.ds && !b.dsn, 'senza descrizione, da cercare a richiesta');
   const put = DB.puts.find(x => x.isbn === '9788845292613'); console.log('[2 archiviato]', JSON.stringify(put && put.dati));
   assert(put && put.dati.t === 'Il nome della rosa' && put.dati.e === 'Bompiani' && !('c' in put.dati) && !('n' in put.dati) && !('id' in put.dati), 'nell\'archivio solo i dati pubblici');
   // 3) contatore condiviso: per sha256 della chiave e del worker, con il nome di chi la presta; mai la chiave

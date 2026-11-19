@@ -89,7 +89,7 @@ assert.deepStrictEqual([o[0].t, o[0].a, o[0].e, o[0].y, o[0].img], ['Foo', 'A B'
   const dg = d.find(x => x.name === 'Google Libri'), dop = d.find(x => x.name === 'Open Library');
   assert.strictEqual(dg.ok, false); assert(dg.msg.includes('429')); assert.strictEqual(dop.ok, true); assert.strictEqual(d.length, 3); assert(!d.some(x => /sbn/i.test(x.name)));
 
-  // 16) Google e Open Library partono INSIEME e i dati si sommano: Google ha la precedenza, l'editore mancante arriva da Open Library
+  // 16) giro 11B: prima Open Library; senza copertina si chiede a Google. I dati si sommano: Google ha la precedenza, l'editore mancante arriva da Open Library
   const gNoPub = { items: [{ id: 'g1', volumeInfo: { title: 'Titolo Google', authors: ['Aut G'], publishedDate: '2021', industryIdentifiers: [{ type: 'ISBN_13', identifier: '9780306406157' }] } }] };
   const olPub = { 'ISBN:9780306406157': { title: 'Titolo OL', authors: [{ name: 'Aut OL' }], publishers: [{ name: 'TEA' }], publish_date: '2020' } };
   const order16 = [];
@@ -98,7 +98,15 @@ assert.deepStrictEqual([o[0].t, o[0].a, o[0].e, o[0].y, o[0].img], ['Foo', 'A B'
     if (url.includes('openlibrary.org/api/books')) { order16.push('o'); return { ok: true, status: 200, json: async () => olPub }; }
     throw new Error('no route ' + url); } });
   assert.deepStrictEqual([r.t, r.a, r.e, r.y, r.src], ['Titolo Google', 'Aut G', 'TEA', '2021', 'Google Libri + Open Library']);
-  assert.deepStrictEqual(order16, ['g', 'o']);                 // Google per primo
+  assert.deepStrictEqual(order16, ['o', 'g']);                 // Open Library per prima, Google dopo (manca la copertina)
+  // 16a) giro 11B: Open Library ha il libro E la copertina: Google non viene chiamato
+  const order16a = [];
+  r = await L.lookupIsbn('9780306406157', { waits: [0, 0], fetch: async (url) => {
+    if (url.includes('googleapis')) { order16a.push('g'); return { ok: true, status: 200, json: async () => gNoPub }; }
+    if (url.includes('openlibrary.org/api/books')) { order16a.push('o'); return { ok: true, status: 200, json: async () => ({ 'ISBN:9780306406157': Object.assign({ cover: { medium: 'https://covers.openlibrary.org/b/id/1-M.jpg' } }, olPub['ISBN:9780306406157']) }) }; }
+    return { ok: true, status: 200, json: async () => ({}) }; } });
+  assert.deepStrictEqual(order16a, ['o']);
+  assert.deepStrictEqual([r.t, r.e, r.src, !!r.img, r.ds], ['Titolo OL', 'TEA', 'Open Library', true, undefined]);
   // 16b) Google non risponde (429) ma Open Library si': si usa Open Library, senza errore
   r = await L.lookupIsbn('9780306406157', { waits: [0, 0], fetch: async (url) => {
     if (url.includes('googleapis')) return { ok: false, status: 429, json: async () => ({}) };

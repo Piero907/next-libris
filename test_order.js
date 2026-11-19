@@ -6,11 +6,11 @@ const ok = o => ({ ok: true, status: 200, json: async () => o });
 const gFull = isbn => ({ items: [{ id: 'g', volumeInfo: { title: 'Titolo G', authors: ['Autore G'], publisher: 'Editore G', publishedDate: '2019', pageCount: 100, industryIdentifiers: [{ type: 'ISBN_13', identifier: isbn }] } }] });
 const sbnRec = { briefRecords: [{ titolo: 'Titolo SBN / Autore', autorePrincipale: 'Rossi, Mario', pubblicazione: 'Milano : Editore SBN, 2001' }], full: { descrizioneFisica: '250 p. ; 21 cm' } };
 (async () => {
-  // 1) libro straniero, Google completo, Open Library lentissima: non la aspetto oltre ~1,5 s
+  // 1) libro straniero, Google completo, Open Library lentissima: giro 11B, Google parte dopo 2,5 s e poi non aspetto oltre ~1,5 s
   let t0 = Date.now();
   let r = await L.lookupIsbn('9780306406157', { fetch: async (u) => { if (u.includes('googleapis')) return ok(gFull('9780306406157')); await sleep(6000); return ok({}); } });
   let ms = Date.now() - t0; console.log('[1] OL lenta:', ms, 'ms', r.src);
-  assert(ms < 2500 && r.src === 'Google Libri');
+  assert(ms >= 2400 && ms < 4500 && r.src === 'Google Libri');
   // 2) libro italiano con SBN: SBN vince su editore, anno e pagine; titolo e autore restano di Google
   r = await L.lookupIsbn('9788806219352', { sbnUrl: 'https://sbn.test.dev', fetch: async (u) => { if (u.includes('googleapis')) return ok(gFull('9788806219352')); if (u.includes('sbn.test')) { await sleep(300); return ok(sbnRec); } return ok({}); } });
   console.log('[2]', r.t, '|', r.a, '|', r.e, r.y, r.pg, '|', r.src);

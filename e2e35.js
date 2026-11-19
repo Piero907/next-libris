@@ -34,12 +34,13 @@ let hits = [];
     if (/googleapis|openlibrary/.test(u)) hits.push(u.replace(/^https:\/\/[^/]+/, '').slice(0, 90));
     if (u.includes('googleapis.com/books/v1/volumes?')) {
       if (u.includes('orderBy=newest')) {
-        if (u.includes('inauthor:"Umberto Eco"')) return r.respond(json({ items: [
+        const it = [];   // giro 11B: gli autori arrivano a gruppi (inauthor:"A" OR inauthor:"B"): rispondo per ognuno
+        if (u.includes('inauthor:"Umberto Eco"')) it.push(
           { id: 'n1', volumeInfo: { title: 'Lezioni inedite', subtitle: 'Scritti ritrovati', authors: ['Umberto Eco'], publisher: 'La nave di Teseo', publishedDate: Y + '-03-01', language: 'it', industryIdentifiers: [{ type: 'ISBN_13', identifier: '9788834600016' }] } },
           { id: 'n2', volumeInfo: { title: 'Il nome della rosa', authors: ['Umberto Eco'], publishedDate: String(Y), language: 'it' } },
-          { id: 'n3', volumeInfo: { title: 'Vecchia raccolta', authors: ['Umberto Eco'], publishedDate: '2011', language: 'it' } }] }));
-        if (u.includes('Rowling')) return r.respond(json({ items: [{ id: 'n4', volumeInfo: { title: 'Un racconto nuovo', authors: ['J. K. Rowling'], publisher: 'Salani', publishedDate: String(Y - 1), language: 'it' } }] }));
-        return r.respond(json({ totalItems: 0 }));
+          { id: 'n3', volumeInfo: { title: 'Vecchia raccolta', authors: ['Umberto Eco'], publishedDate: '2011', language: 'it' } });
+        if (u.includes('Rowling')) it.push({ id: 'n4', volumeInfo: { title: 'Un racconto nuovo', authors: ['J. K. Rowling'], publisher: 'Salani', publishedDate: String(Y - 1), language: 'it' } });
+        return r.respond(json(it.length ? { items: it } : { totalItems: 0 }));
       }
       if (u.includes('isbn:9788845292620')) return r.respond(json({ items: [{ volumeInfo: { title: 'Il pendolo di Foucault', language: 'it', description: 'Tre redattori di una casa editrice milanese inventano per gioco un Piano che è la storia segreta del mondo.' } }] }));
       return r.respond(json({ totalItems: 0 }));
@@ -93,7 +94,7 @@ let hits = [];
   await click('#btnNews');
   await page.waitForFunction(() => document.querySelectorAll('#newsList li').length > 0, { timeout: 15000 });
   const nl = await page.$$eval('#newsList li', e => e.map(li => li.querySelector('b').textContent)); console.log('[E novità]', nl.join(' | '), '|', hits.length, 'richieste', '|', await page.$eval('#newsMsg', e => e.textContent));
-  assert.deepStrictEqual(nl.sort(), ['Lezioni inedite: Scritti ritrovati', 'Un racconto nuovo']); assert.strictEqual(hits.length, 2);
+  assert.deepStrictEqual(nl.sort(), ['Lezioni inedite: Scritti ritrovati', 'Un racconto nuovo']); assert.strictEqual(hits.length, 1, 'giro 11B: i due autori in una sola ricerca');
   await page.screenshot({ path: CFG.OUT + '/v56_news.png' });
   await page.evaluate(() => [...document.querySelectorAll('#newsList li')].find(li => li.textContent.includes('Lezioni')).querySelector('[data-act="newswish"]').click()); await wait(200);
   const nw = (await all()).find(b => b.t.startsWith('Lezioni inedite')); assert(nw && nw.w && nw.i === '9788834600016' && nw.e === 'La nave di Teseo');

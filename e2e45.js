@@ -1,7 +1,7 @@
 const CFG = require("./_config");
 const H = require('./_harness');
-// descrizione (scelta di Piero, 16/11/2026): solo dalla prima ricerca per ISBN; se manca «Descrizione non disponibile» e nessun'altra richiesta;
-// le descrizioni rimaste «in sospeso» dalle versioni vecchie diventano «non disponibile» senza cercarle
+// descrizione: arriva con la ricerca del libro se Google viene chiamato; altrimenti (giro 11B, Piero 19/11/2026) nessuna richiesta
+// finche' non si apre il riquadro, poi una sola. Le descrizioni rimaste «in sospeso» dalle versioni vecchie diventano «non disponibile» senza cercarle
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -44,12 +44,12 @@ let descNet = 'ok', descHits = 0, lookHits = 0;
   await page.waitForFunction(() => { const b = window.__app.state.books.find(x => x.i === '9788804668015'); return b && b.t; }, { timeout: 15000 }); await wait(2500);
   let b0 = await byIsbn('9788804668015'); console.log('[0 stessa richiesta]', b0.ds, '| richieste descrizione:', descHits, '| dsq', b0.dsq);
   assert(b0.ds.startsWith('Marco Polo racconta') && !b0.ds.includes('<p>') && b0.dsf === 'g' && b0.dsl === 'it' && !b0.dsq); assert.strictEqual(descHits, 0, 'nessuna richiesta in piu\'');
-  // 1) la prima ricerca non porta la descrizione: «non disponibile», nessuna altra richiesta
+  // 1) la prima ricerca non porta la descrizione: nessuna altra richiesta finche' non la chiedi
   descHits = 0;
   await page.evaluate(() => window.__app.addIsbn('9788845292613'));
   await page.waitForFunction(() => { const b = window.__app.state.books.find(x => x.i === '9788845292613'); return b && b.t; }, { timeout: 15000 }); await wait(3000);
   let b = await byIsbn('9788845292613'); console.log('[1 senza descrizione]', b.t, '| ds', JSON.stringify(b.ds), '| dsn', b.dsn, '| richieste', descHits);
-  assert(!b.ds && b.dsn > 0 && !b.dsq && descHits === 0, 'non disponibile, nessuna richiesta');
+  assert(!b.ds && !b.dsn && !b.dsq && descHits === 0, 'senza descrizione, nessuna richiesta');
   // 2) libro «in sospeso» da una versione vecchia: dopo il riavvio diventa «non disponibile», senza cercarla
   await page.evaluate(() => { const b = window.__app.state.books.find(x => x.i === '9788845292613'); b.dsn = 0; b.dsq = 1; window.NL.save(); });
   await wait(800); await page.reload({ waitUntil: 'load' }); await wait(7000);
@@ -60,6 +60,16 @@ let descNet = 'ok', descHits = 0, lookHits = 0;
   await page.evaluate(i => document.querySelector('.row[data-id="' + i + '"] [data-act="toggle"]').click(), id); await wait(250);
   await page.evaluate(i => document.querySelector('details.desc:not(.quotes)[data-id="' + i + '"] > summary').click(), id); await wait(600);
   assert.strictEqual(await page.$eval('details.desc:not(.quotes)[data-id="' + id + '"] .desc-b', e => e.textContent.trim()), 'Descrizione non disponibile.'); assert.strictEqual(descHits, 0);
+  // 4) giro 11B: libro nuovo senza descrizione, apro il riquadro: una ricerca, la descrizione arriva e resta nel libro
+  descHits = 0;
+  await page.evaluate(() => window.__app.addIsbn('9788806219352'));
+  await page.waitForFunction(() => { const b = window.__app.state.books.find(x => x.i === '9788806219352'); return b && b.t; }, { timeout: 15000 }); await wait(2500);
+  const id4 = (await byIsbn('9788806219352')).id; assert.strictEqual(descHits, 0);
+  await page.evaluate(i => { const r = document.querySelector('.row[data-id="' + i + '"]'); if (!r.classList.contains('open')) r.querySelector('[data-act="toggle"]').click(); }, id4); await wait(250);
+  await page.evaluate(i => document.querySelector('details.desc:not(.quotes)[data-id="' + i + '"] > summary').click(), id4);
+  await page.waitForFunction(i => { const b = window.__app.state.books.find(x => x.id === i); return b && b.ds; }, { timeout: 15000 }, id4);
+  const b4 = await byIsbn('9788806219352'); console.log('[4 a richiesta]', b4.ds.slice(0, 30), '| richieste', descHits);
+  assert(b4.ds.startsWith('Roma, durante la guerra') && b4.dsf === 'g' && descHits === 1);
   assert.deepStrictEqual(errors, []);
   console.log('e2e45 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

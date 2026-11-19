@@ -1,7 +1,8 @@
 const CFG = require("./_config");
 const H = require('./_harness');
-// «Descrizione» nella scheda aperta (dal 16/11/2026, scelta di Piero): arriva solo con la prima ricerca del libro; se manca
-// «Descrizione non disponibile» e nessun'altra richiesta. Fonti, lingua, «Leggi tutto», toglila, salvata nel libro.
+// «Descrizione» nella scheda aperta. Giro 11B (Piero, 19/11/2026): se non e' arrivata con la ricerca del libro, si cerca a richiesta
+// aprendo il riquadro (una ricerca Google per ISBN, o per titolo e autore); se non c'e', «Descrizione non disponibile».
+// Fonti, lingua, «Leggi tutto», toglila, salvata nel libro.
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -75,14 +76,15 @@ let net = 'ok', hits = [];
   assert(await page.$('details.desc:not(.quotes)[data-id="long"] .desc-t.clip'));
   await page.evaluate(() => document.querySelector('details.desc:not(.quotes)[data-id="long"] [data-act="descmore"]').click()); await wait(100);
   assert(!(await page.$('details.desc:not(.quotes)[data-id="long"] .desc-t.clip')) && !(await page.$('details.desc:not(.quotes)[data-id="long"] [data-act="descmore"]'))); console.log('[4 leggi tutto] ok');
-  // 5) senza ISBN: non disponibile, nessuna ricerca per titolo
+  // 5) senza ISBN: una ricerca per titolo e autore; vince l'edizione con lo stesso titolo (quella italiana)
   await open('tit'); await sumTap('tit'); await doneD('tit');
-  assert.strictEqual(await body('tit'), 'Descrizione non disponibile.'); console.log('[5 titolo] non disponibile');
+  const t5 = await body('tit'); console.log('[5 titolo]', t5.slice(0, 40)); assert(t5.startsWith('Lisbona, 1938')); assert.strictEqual((await book('tit')).dsl, 'it');
   // 6) «Non è questo libro: toglila»
   await open('long'); await page.evaluate(() => document.querySelector('details.desc:not(.quotes)[data-id="long"] [data-act="descdel"]').click()); await wait(150);
   const b6 = await book('long'); assert(!b6.ds && b6.dsn > 0); assert.strictEqual(await body('long'), 'Descrizione non disponibile.'); console.log('[6 tolta] ok');
   await wait(2500);
-  assert.strictEqual(hits.length, 0, 'nessuna richiesta per le descrizioni: ' + hits.join(' | '));
+  assert.strictEqual(hits.length, 2, 'una richiesta per «none» e una per «tit»: ' + hits.join(' | '));
+  assert(hits.every(h => h.includes('description')));
   // 9) backup: la descrizione c'e'
   const bk = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-v2')).books.find(b => b.id === 'eng'));
   assert(bk.ds && bk.dsl === 'en');
