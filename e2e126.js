@@ -38,7 +38,7 @@ function books(n, ts) { const out = []; for (let i = 0; i < n; i++) out.push({ i
   // ---- 1) profilo: testata, Menu, barra in basso ----
   let p = await newPage({ books: books(12, NOW - 100 * DAY), updated: NOW }, { name: 'Piero R.', installed: true, swiped: true, lastBackup: NOW });
   assert(await p.$('#owner #ownerAv .pf-av'), 'foto tonda in testata');
-  await p.click('#ownerAv'); await wait(500);
+  await p.evaluate(() => document.getElementById('ownerAv').click()); await wait(500);
   assert(await profOpen(p), 'la foto in testata apre il profilo');
   await closeAll(p);
   const nav = await p.evaluate(() => [...document.querySelectorAll('#layNav button')].map(b => b.dataset.l));

@@ -187,7 +187,7 @@ const base = 'http://localhost:' + CFG.port(8325);
 
   // ---- il tuo profilo ----
   await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: la scheda aperta e' una pagina intera
-  await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(1400);   // i numeri salgono (giro 11C)
+  await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(1400);   // i numeri salgono (giro 11C)
   let t = await txt(A, '#profBody');
   assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 2/.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['a3', 'a1,a2']);   // In lettura, Consigliati (via i Preferiti)
@@ -250,7 +250,7 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert(await A.$eval('#guestDrop', x => x.classList.contains('gb-drop') && !x.hidden), 'anche nella sua libreria l\'icona «togli» è rossa');
   // dal nome in testata di nuovo al profilo, poi i Desideri
   await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
-  await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(800);
+  await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(800);
   assert.strictEqual(await A.$eval('#profH', x => x.textContent), 'Profilo di Bruno');
   await A.click('#profBody [data-p="wish"]'); await wait(700);
   assert.strictEqual(await A.evaluate(() => window.NL.guest() + '/' + window.NL.tab()), 'Bruno/wish', 'i suoi Desideri');

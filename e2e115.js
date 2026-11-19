@@ -83,7 +83,7 @@ const books = [
   const beer = await p.evaluate(() => { const b = document.getElementById('btnBeer'), r = b.getBoundingClientRect(), h = document.querySelector('.top h1').getBoundingClientRect();
     const m = document.querySelector('.top .top-meta').getBoundingClientRect(), o = document.getElementById('owner').getBoundingClientRect();
     return { vis: r.width > 0, word: /Sostieni/.test(b.textContent), below: r.top >= h.bottom - 4, gap: Math.round(r.left - o.right), right: Math.round(innerWidth - r.right) }; });
-  console.log('[2 pillola Sostieni]', JSON.stringify(beer)); assert(beer.vis && beer.word && beer.below && beer.gap >= 0, 'pillola «Sostieni» sulla riga del nome, senza toccarlo (18/11/2026)');
+  console.log('[2 pillola Sostieni]', JSON.stringify(beer)); assert(beer.vis && beer.word && !beer.below && beer.right > 0, 'boccale tondo accanto alle icone in alto (testata sobria, 19/11/2026)');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 140 } });
   await p.click('#btnBeer'); await wait(400);
   assert(await p.evaluate(() => !document.getElementById('donSheet').hidden), 'Sostieni aperto dal boccale');

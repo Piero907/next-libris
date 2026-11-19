@@ -68,8 +68,10 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   console.log('[1 testata]', JSON.stringify(hd));
   assert.strictEqual(hd.owner, 'Libreria di Piero R.');   // «Libreria di» (17/11/2026)
   assert(/^Libreria di Piero R\. · 12 libri · \d+ in prestito/.test(hd.meta), hd.meta);
-  assert(hd.ownH < 30 && hd.sumH < 45 && hd.metaH > 30 && hd.metaH < 70, '«Libreria di …» sopra, i numeri sotto (17/11/2026; giro 7: con la foto tonda a sinistra i numeri possono andare su due righe)');
-  assert(Math.abs(hd.h1c - hd.gearC) <= 4, 'icone centrate sul titolo');
+  // testata sobria (Piero, 19/11/2026): titolo grande «Libreria», sotto solo i numeri; nome e foto nel Profilo
+  assert(hd.ownH === 0 && hd.sumH < 45 && hd.metaH < 45, 'sotto il titolo solo i numeri: ' + JSON.stringify(hd));
+  assert(/^Libreria/.test(await p.$eval('header.top h1', x => x.textContent.trim())), 'titolo «Libreria»');
+  assert(Math.abs(hd.h1c - hd.gearC) <= 8, 'icone allineate al titolo');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 170 } });
 
   // 2) menu (NLAmici.load() senza account mette «Amici e privacy», come dopo l'accesso)
@@ -190,14 +192,12 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
       if (!b) { b = document.createElement('button'); b.className = 'ico nt-top'; b.id = 'btnBell'; b.textContent = '•'; document.querySelector('header.top').appendChild(b); }
       b.hidden = false;
       const h = document.querySelector('h1'), t = h.querySelector('.prova-tag'), r = (t || h).getBoundingClientRect().right;
-      const ic = [...document.querySelectorAll('.top .nt-top, .top .fri-top, .top .gear')].map(x => x.getBoundingClientRect());   // 18/11/2026: Sostieni e' una pillola sulla riga del nome
-      const bl = b.getBoundingClientRect(), left = bl.left + (bl.width - 24) / 2;   // la campanella e' l'icona piu' a sinistra
-      const bb = document.getElementById('btnBeer').getBoundingClientRect(), own = document.getElementById('owner').getBoundingClientRect();
-      if (bb.top < h.getBoundingClientRect().bottom - 4 || bb.left < own.right) return { gap: -1, c: 0, beer: 'pillola fuori posto' };
-      return { gap: left - r, c: Math.max(...ic.map(x => Math.abs((x.top + x.height / 2) - (h.getBoundingClientRect().top + h.getBoundingClientRect().height / 2)))) };
+            const bb = document.getElementById('btnBeer').getBoundingClientRect();   // testata sobria (19/11/2026): il boccale tondo è il primo tasto a sinistra
+      const ic = [...document.querySelectorAll('.top .nt-top, .top .gear, #btnBeer')].map(x => x.getBoundingClientRect()).filter(x => x.width);
+      return { gap: bb.left - Math.min(r, h.getBoundingClientRect().right), c: Math.max(...ic.map(x => Math.abs(x.top - ic[0].top))) };
     });
     console.log('[' + w + ' con la campanella]', JSON.stringify(ov));
-    assert(ov.gap >= 4 && ov.c <= 4, w + ': titolo e campanella');
+    assert(ov.gap >= 0 && ov.c <= 4, w + ': titolo e tasti tondi in fila senza toccarsi');
     if (SHOTS) await q.screenshot({ path: path.join(SHOTS, 'testata-campanella-' + w + '.png'), clip: { x: 0, y: 0, width: w, height: 170 } });
     await openMenu(q);
     const bad = await q.evaluate(() => [...document.querySelectorAll('#drawerOpts .dopt small')].filter(s => s.offsetParent && s.getBoundingClientRect().height > 20).map(s => s.textContent));

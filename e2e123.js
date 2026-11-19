@@ -39,7 +39,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await open(p), 'la guida si apre da sola alla prima apertura');
   const scr = await p.evaluate(() => window.NLGuida.screens());
   console.log('[schermate]', scr.map(s => s.h + (s.go ? ' (' + s.go + ')' : '')).join(' · '));
-  assert.strictEqual(scr.length, 11, 'undici schermate (giro 12: ordine nuovo e «Chiavi in prestito»; «Installala» solo nel browser)');
+  assert.strictEqual(scr.length, 8, 'otto schermate (guida asciutta, 19/11/2026; «Installala» solo nel browser)');
   for (const s of scr) {
     if (s.sel) assert(await p.evaluate((q) => q.split(',').some(x => document.querySelector(x.trim())), s.sel), 'la parte di app di «' + s.h + '» esiste: ' + s.sel);
     if (s.mod) assert(await p.evaluate((m) => !!window[m], s.mod), 'modulo ' + s.mod);
@@ -47,7 +47,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await p.evaluate(() => !!(window.NLRicerche && window.NLRicerche.guide) && !!(window.NLAmici && window.NLAmici.open) && !!document.getElementById('sortBar')), 'guida della chiave, amici, Ordina · Raggruppa');
   // sfoglia: tasti e dito
   let seen = [];
-  for (let i = 0; i < 11; i++) {
+  for (let i = 0; i < 8; i++) {
     const s = await slide(p); seen.push(s.h + ':' + s.tries.join('+'));
     const w = await p.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     assert(w <= 0, 'niente scorrimento di lato: ' + s.h);
@@ -57,17 +57,18 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
     await wait(200);
   }
   console.log('[sfogliate]', seen.join(' | '));
-  assert.strictEqual(seen[1], 'Installala sul telefono:inst', 'schermata 2: installazione (giro 12)');
-  assert.strictEqual(seen[2], 'Accedi e scegli il nome:friends'); assert.strictEqual(seen[4], 'Chiavi in prestito:keys'); assert.strictEqual(seen[5], 'Aggiungi i libri:add', 'il + dopo le chiavi');
-  assert.strictEqual(seen[3], 'Trova più libri (facoltativo):key', 'schermata 4: chiave');
+  assert.strictEqual(seen[1], 'Installala:inst', 'schermata 2: installazione (giro 12)');
+  assert.strictEqual(seen[2], 'Accedi:friends'); assert.strictEqual(seen[4], 'Il prestito della chiave:keys'); assert.strictEqual(seen[5], 'Aggiungi i libri:add', 'il + dopo le chiavi');
+  assert.strictEqual(seen[3], 'La chiave Google:key', 'schermata 4: chiave');
+  assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(4); return document.querySelectorAll('#gdStage .gd-steps li').length + '/' + document.querySelectorAll('#gdStage .gd-note').length; }), '4/1', 'il prestito della chiave a quattro passi, con la nota');
   assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(3); return document.querySelector('#gdStage .gd-try').textContent; }), 'Crea la chiave');
   await p.evaluate(() => window.NLGuida.close()); await wait(200);
   // tocco a sinistra = indietro
   await p.evaluate(() => window.NLGuida.open(4)); await wait(100);
   await p.evaluate(() => { const g = document.querySelector('#gdStage .gd-slide'), ev = (t, x) => g.dispatchEvent(new PointerEvent(t, { clientX: x, clientY: 300, pointerType: 'touch', bubbles: true })); ev('pointerdown', 15); ev('pointerup', 15); }); await wait(100);
-  assert.strictEqual(await p.evaluate(() => document.getElementById('gdN').textContent), '4 di 11', 'tocco a sinistra = indietro');
+  assert.strictEqual(await p.evaluate(() => document.getElementById('gdN').textContent), '4 di 8', 'tocco a sinistra = indietro');
   await p.evaluate(() => window.NLGuida.close()); await wait(200);
-  assert(/^La pagina del libro:book/.test(seen[6]) && /^Trova e ordina:sort/.test(seen[7]) && /^Prestiti:loan/.test(seen[8]) && /^Desideri:wish/.test(seen[9]) && /^Per te:don/.test(seen[10]), 'Prova adesso al posto giusto');
+  assert(/^Il libro:book/.test(seen[6]) && /^Gli amici:friends/.test(seen[7]), 'Prova adesso al posto giusto');
   assert(!(await open(p)), '«Inizia» chiude la guida');
   await p.reload({ waitUntil: 'load' }); await wait(1800);
   assert(!(await open(p)), 'vista una volta, non si riapre da sola');
@@ -86,34 +87,29 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert(await p.evaluate(() => !document.getElementById('layAdd').hidden), 'si apre il +');
   // giro 7: pillola «‹ Torna alla guida · 2/10»; Indietro del telefono chiude il + e riapre la guida dalla stessa schermata
   const pl = await p.evaluate(() => { const e = document.getElementById('gdPill'); return e && !e.hidden ? e.textContent : ''; });
-  assert(/Torna alla guida/.test(pl) && /6\/11/.test(pl), 'pillola: ' + pl);
+  assert(/Torna alla guida/.test(pl) && /6\/8/.test(pl), 'pillola: ' + pl);
   const box = await p.evaluate(() => { const r = document.getElementById('gdPill').getBoundingClientRect(); return { r: r.right, b: r.bottom, w: innerWidth, h: innerHeight }; });
   assert(box.r <= box.w && box.b <= box.h, 'pillola dentro lo schermo');
   await p.goBack().catch(() => {}); await wait(600);
   let g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, add: !document.getElementById('layAdd').hidden, pill: !document.getElementById('gdPill').hidden }));
-  assert(g.open && g.n === '6 di 11' && !g.add && !g.pill, 'Indietro torna alla guida: ' + JSON.stringify(g));
+  assert(g.open && g.n === '6 di 8' && !g.add && !g.pill, 'Indietro torna alla guida: ' + JSON.stringify(g));
   // di nuovo «Prova adesso», poi il tocco sulla pillola
   await p.click('#gdStage .gd-try'); await wait(600);
   await p.click('#gdPill .gd-pill-go'); await wait(600);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, add: !document.getElementById('layAdd').hidden }));
-  assert(g.open && g.n === '6 di 11' && !g.add, 'la pillola torna alla guida: ' + JSON.stringify(g));
+  assert(g.open && g.n === '6 di 8' && !g.add, 'la pillola torna alla guida: ' + JSON.stringify(g));
   // la ✕ della pillola: resta dove sei
   await p.click('#gdStage .gd-try'); await wait(600);
   await p.click('#gdPill .gd-pill-x'); await wait(500);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, pill: !document.getElementById('gdPill').hidden }));
   assert(!g.open && !g.pill, '✕: la pillola sparisce e la guida resta chiusa');
-  // schermata Prestiti: l'esempio apre Pinocchio prestato a Marta
-  await p.evaluate(() => window.NLGuida.open(8)); await wait(200);
-  await p.click('#gdStage .gd-try'); await wait(1200);
-  assert.strictEqual(await p.evaluate(() => (document.querySelector('#list .row.open') || {}).dataset ? document.querySelector('#list .row.open').dataset.id : ''), 'ex4', 'Prestiti: Pinocchio aperto');
-  await p.evaluate(() => document.querySelector('#exBar [data-ex="out"]').click()); await wait(300);
   await p.close();
 
   // 2) chi usa già l'app (libri sul telefono, guida vecchia vista): la vede una volta dopo l'aggiornamento (giro 5); voci nel Menu
   p = await newPage(MIEI);
   assert(await open(p), 'chi usa già l\'app vede la guida nuova una volta');
   await p.click('.gd-skip'); await wait(300);
-  assert.strictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-guida')).v), 4, 'segnata la versione 4 (giro 12: la rivedono tutti)');
+  assert.strictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-guida')).v), 5, 'segnata la versione 5 (guida asciutta: la rivedono tutti)');
   await wait(1200); assert(await p.evaluate(() => !window.NLGuida.path() && !document.getElementById('percorso')), 'chi usa già l\'app: solo la guida, niente percorso');
   await p.reload({ waitUntil: 'load' }); await wait(1800);
   assert(!(await open(p)), 'non torna da sola');
@@ -189,25 +185,26 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
 
   // 18/11/2026 sera (Piero): «Prova adesso» sulla chiave = dietro la libreria di esempio; «Più tardi» riporta da solo alla guida
   await p.evaluate(() => window.NLGuida.open(3)); await wait(300);
-  assert.strictEqual((await slide(p)).h, 'Trova più libri (facoltativo)');
+  assert.strictEqual((await slide(p)).h, 'La chiave Google');
   await p.click('#gdStage .gd-try'); await wait(900);
   g = await p.evaluate(() => ({ kg: !document.getElementById('kgSheet').hidden, ex: window.NL.esempio(), open: !document.getElementById('guida').hidden }));
   assert(g.kg && g.ex && !g.open, 'guida della chiave sopra la libreria di esempio: ' + JSON.stringify(g));
   await p.click('#kgClose'); await wait(1400);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio(), kg: !document.getElementById('kgSheet').hidden }));
-  assert(g.open && g.n === '4 di 11' && !g.ex && !g.kg, '«Più tardi» torna da solo alla guida: ' + JSON.stringify(g));
-  // nell'esempio (Trova e ordina) Indietro del telefono riporta alla guida
-  await p.evaluate(() => window.NLGuida.open(7)); await wait(300);
+  assert(g.open && g.n === '4 di 8' && !g.ex && !g.kg, '«Più tardi» torna da solo alla guida: ' + JSON.stringify(g));
+  // nell'esempio (Il libro) Indietro del telefono riporta alla guida
+  await p.evaluate(() => window.NLGuida.open(6)); await wait(300);
   await p.click('#gdStage .gd-try'); await wait(1000);
   assert(await p.evaluate(() => window.NL.esempio() && document.getElementById('guida').hidden), 'nell\'esempio');
-  await p.goBack().catch(() => {}); await wait(900);
+  await p.goBack().catch(() => {}); await wait(700);   // il primo Indietro chiude la pagina del libro (pagina intera, restyle)
+  if (await p.evaluate(() => document.getElementById('guida').hidden)) { await p.goBack().catch(() => {}); } await wait(900);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio() }));
-  assert(g.open && g.n === '8 di 11' && !g.ex, 'Indietro dall\'esempio torna alla guida: ' + JSON.stringify(g));
+  assert(g.open && g.n === '7 di 8' && !g.ex, 'Indietro dall\'esempio torna alla guida: ' + JSON.stringify(g));
   // «‹ Guida» nella striscia fa lo stesso
   await p.click('#gdStage .gd-try'); await wait(1000);
   await p.evaluate(() => document.querySelector('#exBar [data-ex="guide"]').click()); await wait(900);
   g = await p.evaluate(() => ({ open: !document.getElementById('guida').hidden, n: document.getElementById('gdN').textContent, ex: window.NL.esempio() }));
-  assert(g.open && g.n === '8 di 11' && !g.ex, '«‹ Guida»: ' + JSON.stringify(g));
+  assert(g.open && g.n === '7 di 8' && !g.ex, '«‹ Guida»: ' + JSON.stringify(g));
   await p.click('.gd-skip'); await wait(300);
 
   assert.deepStrictEqual(errors, []);

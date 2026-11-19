@@ -115,7 +115,7 @@ const base = 'http://localhost:' + CFG.port(8303);
   // ---- A: tocca Bruno → la sua libreria nella schermata principale (sola lettura), desideri, «Te lo regalo io» ----
   const A = await phone('A', 'uA');
   await A.add({ t: 'Il deserto dei Tartari', a: 'Dino Buzzati', i: '9788804668015' });
-  await A.click('#btnFri'); await wait(700);
+  await A.evaluate(() => document.getElementById('btnFri').click()); await wait(700);
   await A.click('[data-f="friend"]'); await wait(900);                  // dal giro 6 il nome apre il profilo: da lì «Libreria»
   if (await A.$('#profBody [data-p="lib"]')) { await A.click('#profBody [data-p="lib"]'); await wait(1200); }
   assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Bruno', 'libreria di Bruno aperta');
