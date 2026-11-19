@@ -56,7 +56,7 @@ const books = [
   assert(/hai letto 3 libri/.test(slideTxt[0]) && /1\.?150 pagine, circa 13 al giorno/.test(slideTxt[0]) && /agosto, con 2 libri/.test(slideTxt[0]) && /2 in più/.test(slideTxt[0]) && /4 su 20/.test(slideTxt[0]));
   assert(/Gialli 67%/.test(slideTxt[1]) && /Storia 33%/.test(slideTxt[1]) && /Andrea Camilleri 2 libri letti/.test(slideTxt[1]));
   assert(/Il più lungo «Il nome della rosa».*650 pagine/.test(slideTxt[2]) && /piaciuto di più «Il nome della rosa»/.test(slideTxt[2]));
-  assert(/^In libreria 4 libri nuovi, 50,00 €/.test(slideTxt[3]) && /1 nei Desideri/.test(slideTxt[3]) && /1 libro prestato/.test(slideTxt[3]) && /Stat rosa pristina/.test(slideTxt[3]));
+  assert(/^In libreria 4 libri nuovi 1 nei/.test(slideTxt[3]) && !/€/.test(slideTxt[3]) && /1 nei Desideri/.test(slideTxt[3]) && /1 libro prestato/.test(slideTxt[3]) && /Stat rosa pristina/.test(slideTxt[3]));
   assert(/letti 3 pagine 1\.?150 nuovi 4 citazioni 1/.test(slideTxt[4]));
   assert.strictEqual(await page.$$eval('#wProg span.done', e => e.length), 5);
   // indietro col tocco a sinistra; ultima: niente oltre
