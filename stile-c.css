@@ -406,7 +406,8 @@ html[data-look="nuovo"] .drawer-head h2{order:2;flex:1;margin:0;font:700 21px/1.
 html[data-look="nuovo"] .drawer-head .ico{order:1;width:38px;height:38px;min-width:38px;min-height:38px;padding:0;display:grid;place-items:center;border:0;border-radius:50%;background:var(--surface);color:var(--ink);font-size:24px;box-shadow:var(--c-sh)}
 html[data-look="nuovo"] .drawer-head #drawerX{font-size:0}
 html[data-look="nuovo"] .drawer-head #drawerX::before{content:"‹";font-size:28px;line-height:1;margin-top:-3px}
-html[data-look="nuovo"] .drawer-head:has(#drawerBack:not([hidden])) #drawerX{display:none}
+html[data-look="nuovo"] .drawer-head:has(#drawerBack:not([hidden])) #drawerX{order:3;font-size:24px}
+html[data-look="nuovo"] .drawer-head:has(#drawerBack:not([hidden])) #drawerX::before{content:none}
 html[data-look="nuovo"] .drawer-body{width:100%;max-width:624px;margin:0 auto;padding:0 12px calc(110px + env(safe-area-inset-bottom))}
 html[data-look="nuovo"] .drawer-foot{width:100%;max-width:624px;margin:0 auto;padding:10px 12px calc(96px + env(safe-area-inset-bottom));border-top:0}
 html[data-look="nuovo"] .drawer h3{margin:20px 12px 8px;font:700 12px/1 var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -530,3 +531,4 @@ html[data-look="nuovo"] .guida :focus-visible{outline:2px solid var(--accent)}
 html[data-look="nuovo"][data-theme="dark"] .guida{background:var(--bg)}
 html[data-look="nuovo"][data-theme="dark"] .guida .gd-try{color:var(--accent)}
 @media (prefers-color-scheme:dark){html[data-look="nuovo"]:not([data-theme="light"]) .guida{background:var(--bg)}html[data-look="nuovo"]:not([data-theme="light"]) .guida .gd-try{color:var(--accent)}}
+html[data-look="nuovo"] .sheet #donOpt{background:var(--warn-bg);color:var(--warn)}

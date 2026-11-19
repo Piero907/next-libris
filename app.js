@@ -484,7 +484,9 @@ function showBook(id) {
   if (b.w !== (tab === 'wish')) setTab(b.w ? 'wish' : 'lib');
   if (!visible().some(function (x) { return x.id === id; })) clearFilters();
   if (settings.view === 'grid') { openFromGrid(id); return true; }
+  if (!settings.openAll) state.books.forEach(function (x) { if (x.id !== id) openState[x.id] = false; });   // una scheda alla volta: dal restyle e' una pagina intera (19/11/2026)
   openState[id] = true; renderList();
+  if (!settings.openAll) { try { if (cardPushed) history.replaceState({ card: id }, ''); else history.pushState({ card: id }, ''); cardPushed = id; } catch (e) { nlErr(e); } }   // Indietro la chiude
   var el = rowEl(id); if (el) el.scrollIntoView({ block: 'start' });
   return true;
 }
