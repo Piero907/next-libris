@@ -29,6 +29,7 @@ function fake(req, res, body, url) {
     return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id, email: em, user_metadata: {} } });
   }
   const me = uidOf(req); if (!me) return send(401, { message: 'JWT' });
+  if (p === '/auth/v1/user') { const em = Object.keys(DB.users).find(k => DB.users[k] === me) || ''; const n = em.split('@')[0]; return send(200, { id: me, email: em, user_metadata: { full_name: n.charAt(0).toUpperCase() + n.slice(1) + ' Bianchi' } }); }   // nome da Google (19/11/2026)
   if (p === '/rest/v1/libri') return send(req.method === 'GET' ? 200 : 201, req.method === 'GET' ? [] : undefined);
   if (p === '/rest/v1/profili' && req.method === 'GET') { const pr = DB.prof[me]; return send(200, pr ? [{ utente: pr.utente, nome: pr.nome }] : []); }
   if (p === '/rest/v1/profili' && req.method === 'POST') {
@@ -106,11 +107,15 @@ const base = 'http://localhost:' + CFG.port(8302);
   assert.strictEqual(menu.acc, 'setList', 'Account e sincronizzazione sotto Impostazioni');
   assert(/Scegli il tuo nome/.test(menu.fri), 'senza nome il Menu lo chiede');
   await A.evaluate(() => window.__app.closeDrawer()); await wait(300);
+  // nome utente obbligatorio (19/11/2026): finestra sopra tutto, senza «Più tardi», con «Nome I.» da Google
+  assert(await A.$('.nm-ask #nmAskU'), 'senza nome utente si apre la finestra obbligatoria');
+  assert.strictEqual(await A.$eval('#nmAskU', x => x.value), 'Anna B.', 'proposta: nome e iniziale del cognome da Google');
+  assert(!(await A.evaluate(() => /Più tardi|Annulla/.test(document.querySelector('.nm-ask').textContent))), 'niente modo di saltarla');
+  await A.$eval('#nmAskU', x => { x.value = 'bruno'; }); await A.click('#nmAskB'); await wait(500);
+  let t = await A.$eval('#nmAskE', x => x.textContent); console.log('[nome preso]', t); assert(/già usato da un altro/.test(t) && await A.$('.nm-ask'), 'preso, anche con le maiuscole diverse: la finestra resta');
+  await A.$eval('#nmAskU', x => { x.value = '  Anna  R. '; }); await A.click('#nmAskB'); await wait(700);
+  assert(!(await A.$('.nm-ask')), 'salvato: la finestra si chiude');
   await A.click('#btnFri'); await wait(700);
-  assert.strictEqual(await A.$eval('#friU', x => x.value), 'Anna', 'il nome proposto è quello dell\'app');
-  await A.$eval('#friU', x => { x.value = 'bruno'; }); await A.click('#friSaveU'); await wait(500);
-  let t = await A.body(); console.log('[nome preso]', t.slice(0, 160)); assert(/già usato da un altro/.test(t), 'preso, anche con le maiuscole diverse');
-  await A.$eval('#friU', x => { x.value = '  Anna  R. '; }); await A.click('#friSaveU'); await wait(700);
   assert.strictEqual(DB.prof.uA.utente, 'Anna R.', 'nome salvato com\'è scritto (spazi in più tolti)');
   assert.strictEqual(await A.evaluate(() => window.NL.name()), 'Anna R.', 'è anche il nome dell\'app');
   t = await A.body(); assert(/Ancora nessuno/.test(t), 'nessun amico');
@@ -164,8 +169,8 @@ const base = 'http://localhost:' + CFG.port(8302);
   await C.click('[data-f="login"]'); await wait(900);
   await C.click('#gisFinto'); await wait(1500);
   assert(await C.$eval('#friSheet', x => !x.hidden), 'dopo l\'accesso torna la finestra Amici');
-  t = await C.body(); assert(/Ti ha invitato Anna Rossi/.test(t) && /Il tuo nome/.test(t), 'prima il nome');
-  await C.$eval('#friU', x => { x.value = 'Carla'; }); await C.click('#friSaveU'); await wait(900);
+  assert.strictEqual(await C.$eval('#nmAskU', x => x.value), 'Carla B.', 'subito dopo l\'accesso con Google la finestra del nome');
+  await C.$eval('#nmAskU', x => { x.value = 'Carla'; }); await C.click('#nmAskB'); await wait(900);
   t = await C.body(); console.log('[invito]', t.slice(0, 200)); assert(/Ti ha invitato Anna Rossi Chiedi l.amicizia/.test(t), 'scheda di chi ha invitato');
   await C.click('.fr-inv [data-f="ask"]'); await wait(700);
   const uC = DB.users['carla@esempio.it'];

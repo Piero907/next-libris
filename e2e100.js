@@ -42,7 +42,7 @@ function fake(req, res, body, url) {
   if (p === '/auth/v1/logout') return send(204);
   const uid = uidOf(req); if (!uid) return send(401, { message: 'JWT' });
   if (p === '/auth/v1/user') return send(200, { id: uid, email: Object.keys(DB.users).find(e => DB.users[e] === uid), user_metadata: uid === DB.gUser ? { full_name: 'Anna Rossi' } : {} });
-  if (p === '/rest/v1/profili' && req.method === 'GET') return send(200, [{ utente: null, nome: (DB.prof || {})[uid] || '' }]);   // letto da amici.js
+  if (p === '/rest/v1/profili' && req.method === 'GET') return send(200, [{ utente: (DB.prof || {})[uid] || 'Lettore', nome: (DB.prof || {})[uid] || '' }]);   // con il nome: la finestra obbligatoria del nome (19/11/2026) sta in e2e102   // letto da amici.js
   if (p === '/rest/v1/profili') { DB.prof = DB.prof || {}; DB.prof[uid] = body.nome; return send(201); }
   if (p.startsWith('/rest/v1/rpc/')) return send(200, []);
   if (p === '/rest/v1/rpc/elimina_account') { Object.keys(DB.rows).filter(k => k.startsWith(uid + '|')).forEach(k => delete DB.rows[k]); return send(204); }
