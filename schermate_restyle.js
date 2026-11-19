@@ -189,6 +189,20 @@ const base = "http://localhost:" + CFG.port(8340);
     };
     await pg.evaluate(() => { const x = document.getElementById('instCard'); if (x) x.hidden = true; });
     await closeAll(pg); await wait(400);
+    if (process.env.MENU) {                         // restyle pezzo 3: Menu, Impostazioni, finestre dal basso (MENU=1)
+      const ds = async (n, sel) => { for (const [k, y] of [['a', 0], ['b', 640], ['c', 1280]]) { const h = await pg.evaluate((sel, y) => { const e = document.querySelector(sel); if (!e) return -1; e.scrollTop = y; return e.scrollHeight - e.clientHeight; }, sel, y); if (h < 0) break; await wait(250); await sh(n + '-' + k); if (h <= y + 640) break; } };
+      await pg.evaluate(() => window.__app.openDrawer('opt')); await wait(700); await ds('m1-menu', '#drawerBody');
+      await pg.evaluate(() => { const b = document.getElementById('goSettings'); if (b) b.click(); const c = document.getElementById('goInfo'); if (c) c.click(); }); await wait(400); await ds('m2-menu-aperto', '#drawerBody');
+      await pg.evaluate(() => window.__app.closeDrawer()); await wait(500);
+      await pg.evaluate(() => document.querySelector('.lay-plus').click()); await wait(700); await sh('m3-piu');
+      await closeAll(pg); await wait(300);
+      for (const [sec, n] of [['search', 'm4-ricerca'], ['look', 'm5-aspetto'], ['cards', 'm6-aggiunta'], ['export', 'm7-backup']]) {
+        await pg.evaluate((sec) => window.__app.openOptions(sec), sec); await wait(700); await ds(n, '#optSheet .sheet-in'); await pg.evaluate(() => window.__app.closeOptions()); await wait(400);
+      }
+      await pg.evaluate(() => window.__app.openLoan && window.__app.openLoan('k5')); await wait(600); await sh('m8-prestito'); await closeAll(pg); await wait(300);
+      await pg.evaluate(() => { const b = document.querySelector('#layNav [data-l="you"]'); if (b) b.click(); }); await wait(600); await sh('m9-perte'); await closeAll(pg); await wait(300);
+      await pg.close(); continue;
+    }
     if (process.env.SCHEDA) {                       // restyle pezzo 2: solo la scheda del libro (SCHEDA=1)
       await pg.evaluate(() => { const b = window.NL.books().find(x => x.id === 'k15'); b.ds = 'Una saga familiare lunga cento anni nel villaggio di Macondo, tra miracoli, guerre civili e solitudini che si ripetono di generazione in generazione. Il romanzo che ha reso celebre il realismo magico.'; b.lc = true; b.rt = 5; b.qs = [{ x: 'Il segreto di una buona vecchiaia non è altro che un patto onesto con la solitudine.', pg: '211', d: 5 }]; b.sh = 'Salotto'; b.n = 'Regalo di Marta'; window.NL.save(); window.NL.refresh(); });
       await wait(400);

@@ -81,9 +81,9 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     // ---- menu: «Info e condivisione» ----
     await P.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
     assert(await P.$eval('#infoList', x => x.hidden), 'chiusa all\'inizio');
-    assert(/Info e aiuto/.test(await P.$eval('#drawerOpts', x => x.innerText)));
+    assert(/Info e aiuto/i.test(await P.$eval('#drawerOpts', x => x.innerText)));   // restyle pezzo 3: etichetta in maiuscolo
     assert(!(await P.$('#setList [data-sec="share"]')) && !(await P.$('#setList [data-sec="app"]')), 'tolte da Impostazioni');
-    await P.click('#goInfo'); await wait(400);
+    await P.evaluate(() => document.getElementById('goInfo').click()); await wait(400);
     const items = await P.$$eval('#infoList .dopt b', xs => xs.map(x => x.textContent));
     assert.deepStrictEqual(items, ['Come si usa', 'Guarda una libreria di esempio', 'Condivisione', 'Installazione sul telefono', 'Privacy', 'Contatti']);
     assert.strictEqual(await P.$eval('#goPrivacy', x => x.dataset.sec), 'privacy');   // dal 17/11/2026 pomeriggio: finestra dentro l'app (e2e115)

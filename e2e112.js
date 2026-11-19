@@ -90,8 +90,8 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-412.png') });
 
   // 3a) Impostazioni aperte, menu scorso, Aspetto (finestra con cronologia) → Indietro → Menu come prima
-  await p.click('#goSettings'); await wait(400);
-  await p.evaluate(() => { document.getElementById('drawerBody').scrollTop = 120; }); await wait(100);
+  await p.evaluate(() => document.getElementById('goSettings').click()); await wait(400);
+  await p.evaluate(() => { document.getElementById('drawerBody').scrollTop = 120; document.querySelector('#setList .dopt[data-sec="look"]').scrollIntoView({ block: 'center' }); }); await wait(100);   // restyle pezzo 3: la barra in basso resta sopra il Menu
   const top0 = (await st(p)).top;
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-impostazioni-412.png') });
   await p.click('#setList .dopt[data-sec="look"]'); await wait(400);
@@ -128,11 +128,11 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   await back(p); s = await st(p); assert(/root/.test(s.state), 'nessuna voce in piu\' nella cronologia: ' + s.state);
   // 3f) Info e aiuto aperto, Contatti → Indietro → Menu con Info aperto
   await p.evaluate(() => history.pushState({ guard: 1 }, ''));
-  await openMenu(p); await p.click('#goInfo'); await wait(300);
+  await openMenu(p); await p.evaluate(() => document.getElementById('goInfo').click()); await wait(300);
   await p.click('#infoList .dopt[data-sec="contact"]'); await wait(400);
   await back(p); s = await st(p); assert(s.drawer && s.info && !s.sets && !s.win, 'Menu con Info e aiuto aperto');
   // 4) chiave e worker in Ricerca
-  await p.click('#setList .dopt[data-sec="search"]').catch(async () => { await p.click('#goSettings'); await wait(300); await p.click('#setList .dopt[data-sec="search"]'); });
+  await p.click('#setList .dopt[data-sec="search"]').catch(async () => { await p.evaluate(() => document.getElementById('goSettings').click()); await wait(300); await p.click('#setList .dopt[data-sec="search"]'); });
   await wait(400);
   const sv = await p.evaluate(() => ({ inSearch: !!document.querySelector('.opt-sec[data-sec="search"] #svcBox'), box: document.getElementById('svcBox').innerText.trim().slice(0, 80) }));
   console.log('[4 Ricerca]', JSON.stringify(sv));

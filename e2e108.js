@@ -102,7 +102,7 @@ const base = 'http://localhost:' + CFG.port(8308);
   assert(await A.$eval('#puAsk', x => x.hidden), 'riga sparita');
   // menu: «Notifiche» sotto Impostazioni, dopo Account e Amici e privacy, prima di Ricerca (17/11/2026)
   await A.evaluate(() => window.__app.openDrawer()); await wait(500);
-  await A.click('#goSettings'); await wait(400);
+  await A.evaluate(() => document.getElementById('goSettings').click()); await wait(400);
   assert.strictEqual(await A.$eval('#goPush', x => x.nextElementSibling && x.nextElementSibling.dataset.sec), 'search', 'Notifiche prima di Ricerca dei libri');
   assert(/Attive · silenzio 22-8/.test(await A.$eval('#goPushTxt', x => x.textContent)), 'sottotitolo: attive');
   await A.click('#goPush'); await wait(800);

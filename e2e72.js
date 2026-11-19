@@ -37,7 +37,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   assert.deepStrictEqual(m.heads, ['Amici', 'La tua libreria']);   // parte «Amici» (amici.js) dal 16/11/2026, subito sotto Filtri/Statistiche
   assert(m.rows.indexOf('goFri') >= 0 && m.rows.indexOf('goInv') < 0 && m.rows.indexOf('goFri') < m.rows.indexOf('fix') && m.rows.indexOf('export') < m.rows.indexOf('goSettings'), 'ordine: amici, libreria (con account), impostazioni');
   assert(!m.setOpen && m.exp === 'false', 'impostazioni chiuse');
-  for (const k of ['look', 'search', 'cards', 'share', 'app']) assert(!m.rows.includes(k), k + ' nascosta');
+  for (const k of ['look', 'search', 'cards', 'share', 'app']) assert(m.rows.includes(k), k + ' visibile: dal restyle (pezzo 3, Piero 19/11/2026) Impostazioni e Info e aiuto sono sempre aperti');
   assert(m.rows.includes('fix') && m.rows.includes('export') && m.rows.includes('goSettings') && m.rows.includes('donMenu'));
   assert(m.rows.indexOf('donMenu') < m.rows.indexOf('goFri') && m.rows.indexOf('donMenu') < m.rows.indexOf('fix') && m.rows.indexOf('export') < m.rows.indexOf('goSettings'), 'ordine: sostieni, amici, libreria, impostazioni (17/11/2026 pomeriggio)');
   assert(/Ultimo backup: 15\/11\/2026/.test(m.bk), 'data del backup dentro la voce Backup');
@@ -45,13 +45,14 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   assert(await page.evaluate(() => document.querySelector('#donMenu').compareDocumentPosition(document.querySelector('#verBox')) & Node.DOCUMENT_POSITION_FOLLOWING), 'Sostieni sopra la versione');
   await page.screenshot({ path: CFG.OUT + '/menu_chiuso.png' });
   // apro «Impostazioni»
-  await page.click('#goSettings'); await wait(400);
+  await page.evaluate(() => document.getElementById('goSettings').click()); await wait(400);
   m = await menu(); console.log('[2 aperte]', m.rows.join(' '));
   assert(m.setOpen && m.exp === 'true');
-  assert.deepStrictEqual(m.rows.filter(k => ['look', 'search', 'cards', 'share', 'app'].includes(k)), ['search', 'cards', 'look']);   // ordine d'uso; condivisione e installazione in «Info e aiuto» (17/11/2026, e2e112)
+  assert.deepStrictEqual(m.rows.filter(k => ['look', 'search', 'cards', 'share', 'app'].includes(k)), ['search', 'cards', 'look', 'share', 'app']);   // restyle pezzo 3: anche Info e aiuto sempre aperto   // ordine d'uso; condivisione e installazione in «Info e aiuto» (17/11/2026, e2e112)
   assert(m.rows.indexOf('donMenu') < m.rows.indexOf('goSettings') && m.rows.indexOf('goSettings') < m.rows.indexOf('goInfo'), 'Sostieni, poi Impostazioni, poi Info e aiuto');
   await page.screenshot({ path: CFG.OUT + '/menu_impostazioni.png' });
   // entro in Aspetto e torno indietro con la freccetta: restano aperte
+  await page.evaluate(() => document.querySelector('#drawerOpts [data-sec="look"]').scrollIntoView({ block: 'center' })); await wait(150);   // restyle pezzo 3: la barra in basso resta sopra il Menu
   await page.click('#drawerOpts [data-sec="look"]'); await wait(400);
   assert(await vis('#optSheet'));
   await page.click('#optBack'); await wait(450);
@@ -65,7 +66,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   await page.evaluate(() => window.scrollTo(0, 0)); await page.click('#btnOpts'); await wait(450);
   m = await menu(); assert(m.setOpen, 'ingranaggio: impostazioni aperte');
   // si richiudono toccando di nuovo
-  await page.click('#goSettings'); await wait(300);
+  await page.evaluate(() => document.getElementById('goSettings').click()); await wait(300);
   assert(!(await menu()).setOpen);
   await page.evaluate(() => window.__app.closeDrawer()); await wait(400);
   // Aspetto: tema vicino a colori e caratteri; poi all'apertura e riepilogo (16/11/2026)

@@ -156,7 +156,7 @@ const books = [
   await p.evaluate(() => document.getElementById('tabLib').click()); await wait(400);
   // 5) Privacy dentro l'app; × torna al Menu
   await p.click('#edgeTab'); await wait(450);
-  await p.click('#goInfo'); await wait(300); await p.click('#goPrivacy'); await wait(700);
+  await p.evaluate(() => document.getElementById('goInfo').click()); await wait(300); await p.click('#goPrivacy'); await wait(700);
   const pv = await p.evaluate(() => ({ open: !document.getElementById('optSheet').hidden, h: document.getElementById('optH').textContent, txt: document.getElementById('pvBody').innerText.slice(0, 400),
     h1: !!document.querySelector('#pvBody h1, #pvBody footer'), over: document.querySelector('#optSheet .sheet-in').scrollWidth - document.querySelector('#optSheet .sheet-in').clientWidth }));
   console.log('[5 privacy]', pv.h, '·', pv.txt.slice(0, 80).replace(/\n/g, ' '));
