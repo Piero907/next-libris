@@ -4,7 +4,7 @@ const H = require('./_harness');
 // Stile G «Pagina con l'Indice» (Piero, 20/11/2026): l'app si adatta a tutti i telefoni. Alle 5 misure più comuni (360×640, 375×667, 390×844,
 // 412×915, 430×932), al tablet (768×1024) e al PC (1280×800): niente scorrimento di lato; testatina, titolo, nastro con il numero giusto,
 // frase in prosa con la capolettera; ricerca, ordine, filtri e copertine/elenco dentro lo schermo; linguette visibili e toccabili;
-// «+ Aggiungi» dentro lo schermo; pagina del libro e profilo non finiscono sotto le linguette; Indice dalla testatina; tema scuro.
+// «+ Aggiungi» dentro lo schermo; Aspetto › «Nastro e linguette a sinistra»; pagina del libro e profilo non finiscono sotto le linguette; Indice dalla testatina; tema scuro.
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
 const path = require('path');
@@ -88,6 +88,24 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
       const dk = await p.evaluate(() => ({ rib: getComputedStyle(document.getElementById('gRib')).backgroundColor, acc: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() }));
       console.log('[scuro]', JSON.stringify(dk));
       await p.screenshot({ path: path.join(CFG.OUT, 'e2e137-390-scuro.png') });
+    }
+    // Aspetto › «Nastro e linguette a sinistra» (Piero, 20/11/2026)
+    if (w === 360 || w === 390 || w === 1280) {
+      await p.evaluate(() => document.getElementById('optGLeft').click()); await wait(300);
+      const L = await p.evaluate(() => { const bx = (s) => document.querySelector(s).getBoundingClientRect(); const t = bx('#gTabs'), q = bx('#q'), r = bx('#gRib'), h = bx('header.top h1 .g-t'), a = bx('#gAdd');
+        return { left: document.documentElement.classList.contains('g-left'), saved: !!window.NL.settings.gLeft, side: document.scrollingElement.scrollWidth - innerWidth, tl: t.left, tr: t.right, ql: q.left, qr: q.right, rr: r.right, hl: h.left, al: a.left, W: innerWidth }; });
+      console.log('[' + tag + ' sinistra]', JSON.stringify(L));
+      assert(L.left && L.saved && L.side <= 0, tag + ': linguette a sinistra salvate');
+      assert(L.ql >= L.tr - 0.5 && L.qr <= L.W + 0.5 && L.hl >= L.rr - 0.5 && L.al >= L.tr - 0.5, tag + ': a sinistra niente sotto le linguette e titolo accanto al nastro ' + JSON.stringify(L));
+      if (w < 700) assert(L.tl <= 0.5, tag + ': linguette sul bordo sinistro');
+      await p.evaluate(() => window.NL.showBook('m2')); await wait(800);
+      const bl = await p.evaluate(() => { const e = document.querySelector('.row.open.cv-full'); const t = document.getElementById('gTabs').getBoundingClientRect(); const kids = [...e.children].filter(k => k.getClientRects().length); return { l: Math.min(...kids.map(k => k.getBoundingClientRect().left)), tr: t.right, side: e.scrollWidth - e.clientWidth }; });
+      assert(bl.l >= bl.tr - 0.5 && bl.side <= 0, tag + ': pagina del libro accanto alle linguette a sinistra ' + JSON.stringify(bl));
+      if (w === 390) await p.screenshot({ path: path.join(CFG.OUT, 'e2e137-390-sinistra-libro.png') });
+      await p.evaluate(() => { const c = document.querySelector('.row.open .chev-btn'); if (c) c.click(); }); await wait(500);
+      if (w === 390) await p.screenshot({ path: path.join(CFG.OUT, 'e2e137-390-sinistra.png') });
+      await p.evaluate(() => document.getElementById('optGLeft').click()); await wait(300);
+      assert(await p.evaluate(() => !document.documentElement.classList.contains('g-left') && !window.NL.settings.gLeft), tag + ': di nuovo a destra');
     }
     await ctx.close();
   }
