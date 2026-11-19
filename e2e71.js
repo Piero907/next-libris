@@ -87,6 +87,10 @@ const books = [
   // etichette = filtri; la serie porta alla serie
   const chips = await page.$$eval(card() + ' .cv-chips .fchip', e => e.map(x => (x.dataset.f || x.dataset.act) + ':' + x.textContent.trim()));
   console.log('  etichette', chips.join(' | ')); assert(chips.some(c => /^gen:Narrativa/.test(c)) && chips.some(c => /^sh:Studio/.test(c)) && chips.some(c => /^serall:I grandi romanzi, vol\. 3/.test(c)));
+  // nazionalita' accanto all'autore (bandiera e nome del paese), 19/11/2026
+  await page.evaluate(s => { const b = window.NL.get(document.querySelector(s).dataset.id); window.NL.settings.auPa[window.wdKey(window.NL.authorsOf(b)[0])] = 'IT'; window.NL.refreshRow(b.id); }, card()); await wait(200);
+  const nat = await page.evaluate(s => { const x = document.querySelector(s + ' .cv-au .cv-nat'); return x ? { t: x.textContent, flag: !!x.querySelector('img.cv-flag') } : null; }, card());
+  console.log('  nazionalità', JSON.stringify(nat)); assert(nat && nat.t === 'Italia' && nat.flag, 'bandiera e paese accanto all\'autore');
   // l'autore apre la sua finestra
   await page.evaluate(s => document.querySelector(s + ' .cv-au [data-act="auinfo"]').click(), card()); await wait(500);
   assert(await page.evaluate(() => !document.querySelector('#auSheet').hidden), 'finestra dell\'autore');
