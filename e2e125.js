@@ -186,12 +186,12 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert(!/appunto/.test(JSON.stringify(DB.prof.uA)), 'mai gli appunti');
 
   // ---- il tuo profilo ----
-  await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(600);
+  await A.evaluate(() => window.scrollTo(0, 0)); await A.click('#ownerProf'); await wait(1400);   // i numeri salgono (giro 11C)
   let t = await txt(A, '#profBody');
   assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 2/.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['a3', 'a1,a2']);   // In lettura, Consigliati (via i Preferiti)
   assert(/Citazioni in evidenza 3 «Prima citazione» — Italo Calvino, Palomar · pagina 33 «Seconda citazione»/.test(t) && /«Stat rosa pristina nomine»/.test(t) && /Cambia/.test(t), 'citazioni in evidenza: ' + t);
-  assert(/«Palomar» ultimo libro letto · Italo Calvino/.test(t) && /«Il nome della rosa» il più lungo · 500 pagine/.test(t) && /Il tuo autore dell'anno è Italo Calvino \(1 libro\)/.test(t), 'numeri nuovi: ' + t);
+  assert(/Ultimo libro letto «Palomar» Italo Calvino/.test(t) && /Il più lungo «Il nome della rosa» 500 pagine/.test(t) && /Il tuo autore dell'anno Italo Calvino 1 libro/.test(t), 'numeri nuovi: ' + t);
   await noSide(A, '#profSheet .sheet-in', 'il tuo profilo a 360'); await shot(A, 'profilo-mio-360');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 9999)); await wait(200); await shot(A, 'profilo-mio-360-giu');
   await A.click('#profBody [data-p="pick"]'); await wait(300);
@@ -216,7 +216,7 @@ const base = 'http://localhost:' + CFG.port(8325);
   // ---- il tocco sul nome di un amico apre il suo profilo ----
   await A.evaluate(() => window.NLAmici.open()); await wait(900);
   assert(/Bruno/.test(await A.body()));
-  await A.click('#friBody [data-f="friend"]'); await wait(900);
+  await A.click('#friBody [data-f="friend"]'); await wait(1600);   // i numeri salgono (giro 11C)
   assert(await A.$eval('#profSheet', x => !x.hidden) && await A.$eval('#friSheet', x => x.hidden), 'si apre il profilo, non la libreria');
   assert.strictEqual(await A.evaluate(() => window.NL.guest()), null);
   assert.strictEqual(await A.$eval('#profH', x => x.textContent), 'Profilo di Bruno');
@@ -229,8 +229,8 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 1/.test(t), 'le sue file: ' + t);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['b1', 'b3']);
   assert(/Citazioni in evidenza «Una frase con la puntina» — Natalia Ginzburg, Lessico famigliare · pagina 12/.test(t) && !/Senza puntina/.test(t) && !/appunto segreto/.test(t), 'citazioni in evidenza di Bruno: ' + t);
-  assert(/6\.100 pagine lette · 22 libri/.test(t) && /Il suo autore dell'anno è Natalia Ginzburg \(2 libri\)/.test(t) && /«Lessico famigliare» ultimo libro letto · Natalia Ginzburg/.test(t) && /«Guerra e pace» il più lungo · 1\.400 pagine/.test(t), 'i suoi numeri (tessere): ' + t);
-  assert(/2 libri in comune con te · il 5% dei suoi/.test(t) && /3 prestiti tra voi · 2 da te, 1 a te/.test(t), 'numeri tra voi due: ' + t);
+  assert(/6\.100 pagine lette · 22 libri/.test(t) && /Il suo autore dell'anno Natalia Ginzburg 2 libri/.test(t) && /Ultimo libro letto «Lessico famigliare» Natalia Ginzburg/.test(t) && /Il più lungo «Guerra e pace» 1\.400 pagine/.test(t), 'i suoi numeri (tessere): ' + t);
+  assert(/In comune con te 2 libri · il 5% dei suoi/.test(t) && /Prestiti tra voi 3 2 da te, 1 a te/.test(t), 'numeri tra voi due: ' + t);
   await noSide(A, '#profSheet .sheet-in', 'profilo dell\'amico a 360'); await shot(A, 'profilo-amico-360');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 420)); await wait(200); await shot(A, 'profilo-amico-360-meta');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 9999)); await wait(200); await shot(A, 'profilo-amico-360-giu');

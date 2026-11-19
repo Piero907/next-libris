@@ -63,9 +63,15 @@ const books = [
   await page.mouse.click(40, 500); await wait(200); assert(/In libreria/.test(await txt('#wStage')));
   await next(); await next(); assert(/Condividi/.test(await txt('#wStage')));
   // immagine
-  const img = await page.evaluate(() => { const d = window.NLWrap.quarters()[0]; const c = window.NLWrap.image(d); return { w: c.width, h: c.height, u: c.toDataURL().length }; });
-  assert(img.w === 1080 && img.h === 1350 && img.u > 20000);
-  await page.click('[data-w="share"]'); await wait(800);
+  // immagine (giro 11C): storia 1080x1920 e quadrata 1080x1080, colori della stagione
+  const img = await page.evaluate(async () => { const W = window.NLWrap, d = W.quarters()[0], c = W.cardFromWrap(d); const a = await W.card(c, 'story'), b = await W.card(c, 'square');
+    window.__img = [a.toDataURL(), b.toDataURL()];
+    return { aw: a.width, ah: a.height, bw: b.width, bh: b.height, u: a.toDataURL().length, t: c.title, q: c.q, pal: W.palette(c.q).name, books: c.books.map(x => x.t).join('|') }; });
+  console.log('  immagine:', JSON.stringify(img));
+  if (process.env.SCHERMATE) { const u = await page.evaluate(() => window.__img); u.forEach((x, i) => require('fs').writeFileSync(require('path').join(process.env.SCHERMATE, 'stagione-' + (i ? 'quadrata' : 'storia') + '.png'), Buffer.from(x.split(',')[1], 'base64'))); }
+  assert(img.aw === 1080 && img.ah === 1920 && img.bw === 1080 && img.bh === 1080 && img.u > 20000 && /^La mia estate in libri/.test(img.t) && img.pal === 'estate');
+  assert.strictEqual(await page.$$eval('[data-w="share"]', e => e.map(x => x.dataset.f + ':' + x.textContent).join()), 'story:Storia,square:Quadrata');
+  await page.click('[data-w="share"][data-f="square"]'); await wait(1200);
   console.log('  condividi:', await txt('#toast'));
   // rivedi -> prima schermata; stagione prima
   await page.click('[data-w="again"]'); await wait(200);

@@ -121,12 +121,12 @@ const base = 'http://localhost:' + CFG.port(8322);
 
   // ---- 15) il tuo profilo: dal nome in testata ----
   assert(await A.$('#owner #ownerProf'), 'il nome in testata è il tasto del profilo');
-  await A.click('#ownerProf'); await wait(500);
+  await A.click('#ownerProf'); await wait(1400);   // i numeri salgono (giro 11C): si leggono alla fine
   assert(await A.$eval('#profSheet', x => !x.hidden), 'si apre il profilo');
   let t = await txt(A, '#profBody');
   assert(/Anna Su Next Libris da marzo 2026/.test(t), 'nome e «Su Next Libris da marzo 2026»: ' + t.slice(0, 80));
   assert(new RegExp('3 libri · 1 letto nel ' + y).test(t), 'riga dei numeri: ' + t);
-  assert(/620 pagine lette · 2 libri/.test(t) && /(Umberto Eco|Italo Calvino) autore più letto · 1 libro/.test(t) && /Romanzo genere più letto · 2 libri/.test(t) && /1 libro prestato adesso/.test(t), 'i numeri (tessere, 18/11/2026): ' + t);
+  assert(/620 pagine lette · 2 libri/.test(t) && /Autore più letto (Umberto Eco|Italo Calvino) 1 libro/.test(t) && /Genere più letto Romanzo 2 libri/.test(t) && /1 libro prestato adesso/.test(t), 'i numeri (tessere, 18/11/2026): ' + t);
   assert(new RegExp('Nel ' + y + ' hai letto 1 libro').test(t) && /Metti un obiettivo per il/.test(t), 'scheda dell\'anno: ' + t);
   assert(/Tutte le citazioni 2 citazioni/.test(t) && /Scegli le citazioni/.test(t), 'citazioni: ' + t);
   assert(/Amici e privacy Gli amici vedono la foto e nient.altro/.test(t), 'cosa vedono gli amici (scorciatoia, 18/11/2026): ' + t);
@@ -162,7 +162,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   await A.$eval('#pfGoal', e => { e.value = '4'; }); await A.click('#profBody [data-p="goalok"]'); await wait(700);
   t = await txt(A, '#profBody'); assert(/Obiettivo 4 · 25%/.test(t), 'obiettivo: ' + t.slice(0, 300));
   assert.strictEqual(DB.prof.uA.stat.ob, 4, 'l\'obiettivo arriva ai numeri online');
-  await A.evaluate(() => document.querySelector('#profBody .pf-year').scrollIntoView({ block: 'start' })); await shot(A, 'profilo-obiettivo-360');
+  await A.evaluate(() => document.querySelector('#profBody .pf-t.big').scrollIntoView({ block: 'start' })); await shot(A, 'profilo-obiettivo-360');
   await A.click('#profBody [data-p="goal"]'); await wait(200); await A.click('#profBody [data-p="goaloff"]'); await wait(700);
   assert(!/Obiettivo 4/.test(await txt(A, '#profBody')) && !DB.prof.uA.stat.ob, 'obiettivo tolto');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 9999)); await wait(200); await shot(A, 'profilo-mio-360-giu');
@@ -218,9 +218,11 @@ const base = 'http://localhost:' + CFG.port(8322);
   await A.click('#profBody [data-p="segui"]'); await wait(500); assert(DB.seg.includes('uA>uB'), 'e lo segue di nuovo');
   await A.click('#profClose'); await wait(200);
   DB.prof.uB.libreria = true; DB.prof.uB.desideri = false;
-  await A.click('#ownerProf'); await wait(700);
+  await A.click('#ownerProf'); await wait(1600);   // i numeri salgono (giro 11C): si legge alla fine
   t = await txt(A, '#profBody');
-  assert(new RegExp('40 libri · 5 letti nel ' + y + ' · 2 paesi').test(t) && new RegExp('I suoi numeri Nel ' + y + ' Bruno ha letto 5 libri').test(t) && /6\.100 pagine lette · 22 libri/.test(t) && /Italo Calvino autore più letto · 4 libri/.test(t) && /1 libro prestato adesso/.test(t), 'numeri con la libreria visibile: ' + t);
+  assert(new RegExp('40 libri · 5 letti nel ' + y + ' · 2 paesi').test(t) && new RegExp('I suoi numeri Nel ' + y + ' Bruno ha letto 5 libri').test(t) && /6\.100 pagine lette · 22 libri/.test(t) && /Autore più letto Italo Calvino 4 libri/.test(t) && /1 libro prestato adesso/.test(t), 'numeri con la libreria visibile: ' + t);
+  assert(!(await A.$('#profBody [data-p="share"]')), 'nel profilo di un amico niente «Condividi» (giro 11C)');
+  assert(await A.$('#profBody [data-p="share"]') === null && (await A.$$('#profBody .pf-board .pf-t')).length > 3, 'tessere anche nel profilo dell\'amico');
   assert(!(await A.$('#profBody [data-p="segui"]')), 'se nasconde i desideri il tasto «Segui i suoi Desideri» non c\'è (giro 6)');
   await noSide(A, '#profSheet .sheet-in', 'profilo dell\'amico a 360'); await shot(A, 'profilo-amico-360');
   await A.click('#profClose'); await wait(200);
