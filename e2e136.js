@@ -5,7 +5,7 @@ const H = require('./_harness');
 // 1) Bruno (account, niente chiave): il telefono dice al server «non ho un’API» (chiavi_dichiara); in «API Google e worker» c'è
 //    «Chiedila a un amico» con Anna (ha un’API sua) e non con Carla (non ce l'ha); «Chiedimela» → chiedi_chiavi, poi «Richiesta mandata».
 // 2) Anna (API sua): dichiara sì; nella campanella «Bruno ti chiede in prestito l’API Google Libri» con «Prestala» → «Presta a Bruno».
-// 3) Chi installa da zero: guida, poi il percorso a schermo intero (Passo 1 di 3 Accedi · 2 chiave · 3 primo libro); «Più tardi» salta;
+// 3) Chi installa da zero: schede di benvenuto, «Entra con Google» (Più tardi), poi il percorso dal passo 2 (2 chiave · 3 primo libro); «Più tardi» salta;
 //    «Crea la tua» apre la guida dell’API e, chiusa, il percorso riprende; «Aggiungi un libro» apre il + e il percorso finisce.
 // 4) Percorso con l'account: il passo 1 si salta da solo, al passo 2 c'è anche «Chiedila a un amico».
 // SCHERMATE=cartella per le fotografie (360).
@@ -146,16 +146,13 @@ const base = 'http://localhost:' + CFG.port(8336);
   const N = await phone('N', { nuovo: true }); await H.sleep(1200);
   assert(await N.evaluate(() => { const g = document.getElementById('guida'); return !!g && !g.hidden; }), 'prima la guida');
   assert.strictEqual(await N.pt(), null, 'il percorso aspetta la guida');
-  await N.click$('.gd-skip'); await H.sleep(1300);
-  let s = await N.pt(); console.log('[percorso]', JSON.stringify(s));
-  assert.deepStrictEqual(s, { n: 'Passo 1 di 3', h: 'Accedi con Google', b: ['Accedi con Google'] });
-  assert.strictEqual(await N.wide(), 0); await N.shot('136-4-passo1');
-  // «Accedi con Google» apre la finestra dell'account; chiusa senza entrare, il passo torna
-  await N.click$('#percorso [data-pt="login"]'); await wait(700);
-  assert(await N.vis('#accSheet') && (await N.pt()) === null, 'finestra dell\'account sopra, percorso nascosto');
-  await N.evaluate(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); }); await H.sleep(1500);
-  assert.strictEqual((await N.pt()).n, 'Passo 1 di 3', 'chiusa senza entrare: di nuovo il passo 1');
-  await N.click$('#percorso [data-pt="later"]'); await wait(400);
+  // schede di benvenuto (19/11/2026): «Salta» porta a «Entra con Google»; «Più tardi» chiude e il percorso parte dal passo 2
+  await N.click$('.gd-skip'); await wait(400);
+  assert.strictEqual(await N.evaluate(() => document.querySelector('#guida .wc-h').textContent), 'Entra con Google', 'dopo le schede, l’accesso');
+  assert.strictEqual(await N.pt(), null, 'il percorso aspetta');
+  await N.shot('136-4-accedi');
+  await N.click$('#gdFoot [data-gd="later"]'); await H.sleep(1300);
+  let s;
   s = await N.pt();
   assert.deepStrictEqual(s, { n: 'Passo 2 di 3', h: 'Trova più libri', b: ['Crea la tua (gratis)'] }, 'senza account niente «Chiedila a un amico»: ' + JSON.stringify(s));
   await N.click$('#percorso [data-pt="make"]'); await wait(700);

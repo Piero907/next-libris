@@ -111,6 +111,8 @@ const base = 'http://localhost:' + CFG.port(8302);
   assert(await A.$('.nm-ask #nmAskU'), 'senza nome utente si apre la finestra obbligatoria');
   assert.strictEqual(await A.$eval('#nmAskU', x => x.value), 'Anna B.', 'proposta: nome e iniziale del cognome da Google');
   assert(!(await A.evaluate(() => /Più tardi|Annulla/.test(document.querySelector('.nm-ask').textContent))), 'niente modo di saltarla');
+  assert(await A.evaluate(() => /Come ti chiami\?/.test(document.querySelector('.nm-ask').textContent) && document.getElementById('nmAskC').textContent === 'Ciao, Anna B.' && document.getElementById('nmAskI').textContent === 'A'), 'grafica delle schede di benvenuto: «Come ti chiami?», «Ciao, …»');
+  await A.screenshot({ path: CFG.OUT + '/e2e102-nome.png' });
   await A.$eval('#nmAskU', x => { x.value = 'bruno'; }); await A.click('#nmAskB'); await wait(500);
   let t = await A.$eval('#nmAskE', x => x.textContent); console.log('[nome preso]', t); assert(/già usato da un altro/.test(t) && await A.$('.nm-ask'), 'preso, anche con le maiuscole diverse: la finestra resta');
   await A.$eval('#nmAskU', x => { x.value = '  Anna  R. '; }); await A.click('#nmAskB'); await wait(700);
