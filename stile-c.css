@@ -315,3 +315,130 @@ html[data-look="nuovo"] .cv-full .cv-exr-n .cv-in{border-left:0;padding-left:0}
 html[data-look="nuovo"] .cv-full .cv-lst .ret-btn{min-height:40px;height:auto;padding:8px 14px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font:700 14px/1.2 var(--font-body);margin:0}
 html[data-look="nuovo"] .cv-full .cv-lst .tag{min-height:30px;display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;font:600 13px/1.2 var(--font-body)}
 html[data-look="nuovo"] .cv-full .cv-nat .cv-flag{width:18px!important;height:auto!important;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.08)!important}
+
+/* ---------- 11. finestre dal basso (pezzo 3, Piero 19/11/2026) ---------- */
+/* foglio attaccato in basso, fondo della pagina, raggio 28 in alto, maniglia, titolo 19/800, × in tasto tondo; su schermi larghi al centro */
+html[data-look="nuovo"] .sheet{padding:0;align-items:flex-end;background:rgba(0,0,0,.42)}
+html[data-look="nuovo"] .sheet>.sheet-in{width:min(100%,640px);max-height:92vh;border-radius:28px 28px 0 0;background:var(--bg);padding:18px 16px calc(18px + env(safe-area-inset-bottom));gap:12px;box-shadow:0 -6px 24px rgba(0,0,0,.12)}
+html[data-look="nuovo"] .sheet>.sheet-in.wide{width:min(100%,760px)}
+@media (min-width:700px){
+  html[data-look="nuovo"] .sheet{align-items:center;padding:16px}
+  html[data-look="nuovo"] .sheet>.sheet-in{border-radius:28px;padding-bottom:18px}
+}
+html[data-look="nuovo"] .sheet-in::before{top:8px;width:40px;height:5px;margin-left:-20px;border-radius:3px;background:var(--line)}
+html[data-look="nuovo"] .sheet-in>h2,html[data-look="nuovo"] .opt-head h2{margin:4px 44px 2px 2px;font:800 19px/1.2 var(--font-display);letter-spacing:-.01em}
+html[data-look="nuovo"] .sheet-in>.sh-x{width:34px;height:34px;min-width:34px;min-height:34px;margin:-4px -2px -34px 0;font-size:22px;background:var(--surface);color:var(--muted);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .opt-head{margin:0;gap:8px}
+html[data-look="nuovo"] .opt-head .ico{width:34px;height:34px;min-width:34px;min-height:34px;padding:0;border:0;border-radius:50%;background:var(--surface);color:var(--ink);font-size:22px;box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .opt-head h2{margin:0}
+html[data-look="nuovo"] .sheet h3{margin:8px 2px 0;font:700 16px/1.2 var(--font-display)}
+html[data-look="nuovo"] .sheet .hint,html[data-look="nuovo"] .sheet .msg{font-size:13.5px;line-height:1.45}
+/* pulsanti: secondario su --surface, principale pieno, pericolo rosso */
+html[data-look="nuovo"] .sheet .btn{min-height:44px;padding:8px 16px;border:0;border-radius:14px;background:var(--surface);color:var(--ink);font:600 14.5px/1.2 var(--font-body);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .sheet .btn.primary{background:var(--accent);color:var(--accent-ink);box-shadow:none}
+html[data-look="nuovo"] .sheet .btn.danger,html[data-look="nuovo"] .sheet .btn.bad{background:var(--bad-bg);color:var(--bad);box-shadow:none}
+html[data-look="nuovo"] .sheet .row-btns .btn{min-height:50px}
+/* campi: 48 alti, raggio 14, bordo sottile; attivo con l'alone */
+html[data-look="nuovo"] .sheet input:is([type="text"],[type="search"],[type="email"],[type="url"],[type="tel"],[type="number"],[type="date"],[type="password"],:not([type])),
+html[data-look="nuovo"] .sheet select,html[data-look="nuovo"] .sheet textarea{min-height:48px;padding:10px 14px;border:1.5px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);font-size:16px;box-shadow:none}
+html[data-look="nuovo"] .sheet textarea{min-height:96px}
+html[data-look="nuovo"] .sheet input:is([type="text"],[type="search"],[type="email"],[type="url"],[type="tel"],[type="number"],[type="date"],[type="password"],:not([type])):focus,
+html[data-look="nuovo"] .sheet select:focus,html[data-look="nuovo"] .sheet textarea:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+/* scelte a schede (Tema, Autori…): pillola con la scelta piena */
+html[data-look="nuovo"] .sheet .seg{display:flex;padding:3px;gap:0;border:0;border-radius:14px;background:var(--surface2);overflow:visible}
+html[data-look="nuovo"] .sheet .seg>button,html[data-look="nuovo"] .sheet .seg>label{flex:1;min-height:38px;display:flex;align-items:center;justify-content:center;border:0!important;border-radius:11px;background:none;color:var(--muted);font:700 13.5px/1.1 var(--font-body);text-align:center}
+html[data-look="nuovo"] .sheet .seg>label>span{display:flex;align-items:center;justify-content:center;width:100%;min-height:38px;padding:4px 8px;border-radius:11px}
+html[data-look="nuovo"] .sheet .seg>label input{position:absolute;opacity:0;pointer-events:none}
+html[data-look="nuovo"] .sheet .seg>label:has(input:checked)>span,html[data-look="nuovo"] .sheet .seg>button[aria-pressed="true"],html[data-look="nuovo"] .sheet .seg>button.on{background:var(--accent);color:var(--accent-ink)}
+html[data-look="nuovo"] .sheet .seg>label:has(input:focus-visible)>span{outline:2px solid var(--accent);outline-offset:1px}
+/* gruppi di scelte in riquadri */
+html[data-look="nuovo"] .sheet fieldset.choice{padding:14px;border-radius:var(--c-r);background:var(--surface);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .sheet fieldset.choice>legend{float:left;width:100%;margin:0 0 10px;padding:0;font:700 16px/1.2 var(--font-display);color:var(--ink)}
+html[data-look="nuovo"] .sheet fieldset.choice .seg{background:var(--surface2)}
+/* interruttori on/off: le caselle «check» diventano righe in un riquadro, con l'interruttore a destra */
+html[data-look="nuovo"] .sheet label.check{display:flex;align-items:center;gap:12px;margin:0;padding:12px 14px;background:var(--surface);border-radius:var(--c-r);box-shadow:var(--c-sh);font:600 15px/1.3 var(--font-body)}
+html[data-look="nuovo"] .sheet label.check>span{flex:1;min-width:0}
+html[data-look="nuovo"] .sheet label.check small{font:400 12.5px/1.35 var(--font-body)}
+html[data-look="nuovo"] .sheet label.check+label.check{margin-top:-12px;border-top-left-radius:0;border-top-right-radius:0;border-top:1px solid var(--line)}
+html[data-look="nuovo"] .sheet label.check:has(+label.check){border-bottom-left-radius:0;border-bottom-right-radius:0}
+html[data-look="nuovo"] .sheet label.check input[type="checkbox"]{order:2;-webkit-appearance:none;appearance:none;flex:none;position:relative;width:46px;height:28px;margin:0;border-radius:999px;background:var(--line);cursor:pointer;transition:background .15s}
+html[data-look="nuovo"] .sheet label.check input[type="checkbox"]::before{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .15s}
+html[data-look="nuovo"] .sheet label.check input[type="checkbox"]:checked{background:var(--accent)}
+html[data-look="nuovo"] .sheet label.check input[type="checkbox"]:checked::before{transform:translateX(18px)}
+html[data-look="nuovo"] .sheet label.check input[type="checkbox"]:focus-visible{outline:3px solid var(--accent-soft);outline-offset:2px}
+html[data-look="nuovo"] .sheet label.check input[type="checkbox"]:disabled{opacity:.5}
+/* elenchi con le righe (Per te, scelte) */
+html[data-look="nuovo"] .sheet .dlist.dmenu{gap:0;padding:2px 14px;border-radius:var(--c-r);background:var(--surface);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .sheet .dlist.dmenu>.dopt{min-height:56px;padding:10px 0;border-radius:0;background:none}
+html[data-look="nuovo"] .sheet .dlist.dmenu>.dopt+.dopt{border-top:1px solid var(--line)}
+/* Ricerca dei libri: i riquadri di Google Libri e del worker */
+html[data-look="nuovo"] .sheet .svc{border:0;border-radius:var(--c-r);background:var(--surface);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .sheet .svc-box{border:0}
+@media (prefers-reduced-motion:reduce){html[data-look="nuovo"] .sheet label.check input[type="checkbox"],html[data-look="nuovo"] .sheet label.check input[type="checkbox"]::before{transition:none}}
+
+/* ---------- 12. finestra del + (pezzo 3): tre tasti tondi, poi Per autore e Ce l'ho già? ---------- */
+html[data-look="nuovo"] #layAdd .lay-dest{display:flex;padding:3px;border:0;border-radius:14px;background:var(--surface2)}
+html[data-look="nuovo"] #layAdd .lay-dest button{flex:1;min-height:38px;border:0;border-radius:11px;background:none;color:var(--muted);font:700 13.5px/1 var(--font-body);box-shadow:none}
+html[data-look="nuovo"] #layAdd .lay-dest button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+html[data-look="nuovo"] #layAdd .lay-big3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0}
+html[data-look="nuovo"] #layAdd .lay-big3 button{display:grid;justify-items:center;gap:8px;min-height:0;padding:6px 2px;border:0;background:none;color:var(--ink);font:700 14px/1.2 var(--font-body);box-shadow:none;cursor:pointer}
+html[data-look="nuovo"] #layAdd .lay-big3 .c{width:64px;height:64px;display:grid;place-items:center;border-radius:50%;background:var(--surface);color:var(--accent);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] #layAdd .lay-big3 .c svg{width:28px;height:28px}
+html[data-look="nuovo"] #layAdd .lay-big3 .pri .c{background:var(--accent);color:var(--accent-ink)}
+html[data-look="nuovo"] #layAdd .lay-big3 button:focus-visible .c{outline:3px solid var(--accent);outline-offset:2px}
+html[data-look="nuovo"] #layAdd .row-btns{display:none}
+
+/* ---------- 13. righe con l'icona nel quadratino (Menu e finestre) ---------- */
+html[data-look="nuovo"] .dico{width:38px;height:38px;flex:none;display:grid;place-items:center;border-radius:12px;background:var(--accent-soft);color:var(--accent)}
+html[data-look="nuovo"] .dico svg{width:20px;height:20px}
+html[data-look="nuovo"] .dopt:has(>.dico){justify-content:flex-start;gap:12px}
+html[data-look="nuovo"] .dopt:has(>.dico)>span:not(.dico):not(.n):not(.dbadge){flex:1;min-width:0;text-align:left}
+html[data-look="nuovo"] .dopt .n{margin-left:auto}
+
+/* ---------- 14. Menu: una pagina intera (pezzo 3, Piero 19/11/2026) ---------- */
+html[data-look="nuovo"] .drawer{left:0;right:0;width:auto;max-width:none;z-index:20;background:var(--bg);border:0;border-radius:0;box-shadow:none;transform:translateY(12px);opacity:0;transition:transform .2s ease,opacity .2s ease}
+html[data-look="nuovo"] .drawer.open{transform:none;opacity:1}
+@media (prefers-reduced-motion:reduce){html[data-look="nuovo"] .drawer{transition:none;transform:none}}
+html[data-look="nuovo"] .drawer-scrim{display:none}
+html[data-look="nuovo"]:has(.drawer.open):not(:has(.sheet:not([hidden]))) .lay-nav{z-index:21}
+html[data-look="nuovo"] .drawer-head{width:100%;max-width:624px;margin:0 auto;justify-content:flex-start;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 12px 6px}
+html[data-look="nuovo"] .drawer-head h2{order:2;flex:1;margin:0;font:700 21px/1.1 var(--font-display)}
+html[data-look="nuovo"] .drawer-head .ico{order:1;width:38px;height:38px;min-width:38px;min-height:38px;padding:0;display:grid;place-items:center;border:0;border-radius:50%;background:var(--surface);color:var(--ink);font-size:24px;box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .drawer-head #drawerX{font-size:0}
+html[data-look="nuovo"] .drawer-head #drawerX::before{content:"‹";font-size:28px;line-height:1;margin-top:-3px}
+html[data-look="nuovo"] .drawer-head:has(#drawerBack:not([hidden])) #drawerX{display:none}
+html[data-look="nuovo"] .drawer-body{width:100%;max-width:624px;margin:0 auto;padding:0 12px calc(110px + env(safe-area-inset-bottom))}
+html[data-look="nuovo"] .drawer-foot{width:100%;max-width:624px;margin:0 auto;padding:10px 12px calc(96px + env(safe-area-inset-bottom));border-top:0}
+html[data-look="nuovo"] .drawer h3{margin:20px 12px 8px;font:700 12px/1 var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+html[data-look="nuovo"] .drawer .dlist.dmenu{margin-top:12px;gap:0;padding:2px 14px;border-radius:var(--c-r);background:var(--surface);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .drawer h3+.dlist.dmenu{margin-top:0}
+html[data-look="nuovo"] .drawer .dmenu .dopt{min-height:58px;padding:10px 0;border-radius:0;background:none}
+html[data-look="nuovo"] .drawer .dmenu .dopt+.dopt,html[data-look="nuovo"] .drawer .dmenu .dsub>.dopt+.dopt{border-top:1px solid var(--line)}
+html[data-look="nuovo"] .drawer .dmenu .dopt b{font:700 15px/1.2 var(--font-body)}
+html[data-look="nuovo"] .drawer .dmenu .dopt small{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[data-look="nuovo"] .drawer .dmenu .dopt .n{color:var(--muted);font-size:20px}
+html[data-look="nuovo"] .drawer .dmenu .dopt:hover{background:none}
+/* Impostazioni e Info e aiuto: sempre aperti, con l'etichetta del gruppo sopra (scelta di Piero) */
+html[data-look="nuovo"] .drawer .dset{margin-top:20px;padding:0;background:none;box-shadow:none;border:0}
+/* il titolo del gruppo resta (per chi usa il lettore dello schermo), ma si vede come l'etichetta maiuscola */
+html[data-look="nuovo"] .drawer .dmenu .dopt.dset-t{min-height:0;margin:0 0 8px;padding:0 12px!important;pointer-events:none;border:0!important}
+html[data-look="nuovo"] .drawer .dset-t .dset-i,html[data-look="nuovo"] .drawer .dset-t small,html[data-look="nuovo"] .drawer .dset-t .n,html[data-look="nuovo"] .drawer .dset-t .dico{display:none!important}
+html[data-look="nuovo"] .drawer .dmenu .dset-t b{font:700 12px/1 var(--font-body)!important;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+html[data-look="nuovo"] .drawer .dset>.dsub,html[data-look="nuovo"] .drawer .dset>.dsub[hidden]{display:grid!important;gap:0;margin:0;padding:2px 14px;border:0;border-radius:var(--c-r);background:var(--surface);box-shadow:var(--c-sh)}
+html[data-look="nuovo"] .drawer .dsub>.dopt{padding-left:0}
+/* Sostieni: riquadro caldo con il boccale grande */
+html[data-look="nuovo"] .drawer .dlist.ddon{padding:0;background:none;box-shadow:none}
+html[data-look="nuovo"] .drawer .don-menu{min-height:0;padding:16px!important;gap:12px;border:0;border-radius:var(--c-r)!important;background:var(--warn-bg)!important;color:var(--warn)}
+html[data-look="nuovo"] .drawer .don-menu b{color:var(--warn);font:800 16px/1.2 var(--font-display)!important}
+html[data-look="nuovo"] .drawer .don-menu small{color:var(--warn)!important;opacity:.9;white-space:normal!important}
+html[data-look="nuovo"] .drawer .don-menu .don-cup{width:46px;height:46px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--surface);color:var(--warn)}
+html[data-look="nuovo"] .drawer .don-menu .n{color:var(--warn)}
+html[data-look="nuovo"] .drawer .ver{text-align:center;color:var(--muted);font-size:12px}
+html[data-look="nuovo"] .dopt>.dico{flex:0 0 38px!important;width:38px;min-width:38px}
+html[data-look="nuovo"] .drawer .dmenu .dopt>span:not(.dico):not(.n):not(.dbadge):not(.don-cup):not(.dset-i){flex:1 1 auto;min-width:0;text-align:left}
+html[data-look="nuovo"] .drawer .dmenu .dopt{justify-content:flex-start;gap:12px}
+html[data-look="nuovo"] .drawer .dlist.dmenu.dset{margin-top:20px;padding:0;background:none;box-shadow:none;border:0}
+html[data-look="nuovo"] .drawer-head .ico:focus:not(:focus-visible){outline:0}
+html[data-look="nuovo"] .drawer-head .ico:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+html[data-look="nuovo"] #layAdd .lay-big3 button:focus{outline:0}
+html[data-look="nuovo"] .sheet .seg>label:not(:has(input:checked))>span{background:transparent;box-shadow:none;border:0}
