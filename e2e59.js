@@ -47,6 +47,11 @@ const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + 
   await page.evaluate(() => { window.__shareMode = 'ok'; }); await page.click('#bkFailRetry'); await wait(300);
   assert(!(await vis('#bkFailSheet')));
   assert(await page.evaluate(() => window.__app.settings.lastBackup > 1000), 'backup segnato come fatto');
+  // 2b) Chrome 157 dice sì anche al .json, ma poi lo rifiuta: si manda sempre il .txt (19/11/2026)
+  await page.evaluate(() => { const c = navigator.canShare; navigator.canShare = () => true; window.__c0 = c; window.__shared = []; });
+  await page.click('#btnShareBackup'); await wait(300);
+  assert(/\.txt$/.test((await page.evaluate(() => window.__shared))[0][0]), 'sempre .txt');
+  await page.evaluate(() => { navigator.canShare = window.__c0; });
   // 3) annullato: solo un messaggio
   await page.evaluate(() => { window.__shareMode = 'abort'; }); await page.click('#btnShareBackup'); await wait(300);
   assert(!(await vis('#bkFailSheet')));
