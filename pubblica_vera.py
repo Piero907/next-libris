@@ -9,7 +9,7 @@ APP = os.path.abspath(os.environ.get('APP_DIR') or os.path.join(here, '..', 'nex
 DST = os.path.abspath(os.environ.get('SITO_DIR') or os.path.join(here, '..', 'nextlibris.github.io'))
 nota = ' '.join(a.strip() for a in sys.argv[1:] if a.strip()) or 'aggiornamento'
 assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository del sito: ' + DST
-FILES = ['index.html', 'app.js', 'app-aggiungi.js', 'app-vista.js', 'app-scheda.js', 'app-per-te.js', 'app-elenco.js', 'app-finestre.js', 'app-filtri.js', 'app-strumenti.js', 'app-wiki.js', 'app-avvio.js', 'lib.js', 'style.css', 'stile-c.css', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt',
+FILES = ['index.html', 'app.js', 'app-aggiungi.js', 'app-vista.js', 'app-scheda.js', 'app-per-te.js', 'app-elenco.js', 'app-finestre.js', 'app-filtri.js', 'app-strumenti.js', 'app-wiki.js', 'app-avvio.js', 'lib.js', 'style.css', 'stile-c.css', 'stile-g.css', 'stile-g.js', 'sw.js', 'manifest.json', 'version.json', 'REGISTRO_MODIFICHE.md', 'LEGGIMI.txt',
          'cloudflare-sbn-worker.js', 'privacy.html', 'indirizzo.js', 'avvio.js', 'trasloco.html', 'trasloco.js']
 MODULES = ['wrap', 'layout', 'schede', 'social', 'profilo', 'amici', 'notifiche', 'ricerche', 'push', 'guida', 'chat', 'admin']   # .js e .css, se ci sono nell'app
 DIRS = ['icons', 'vendor']
