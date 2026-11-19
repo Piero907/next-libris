@@ -60,7 +60,7 @@ const MIEI = { books: [{ id: 'm1', t: 'Il barone rampante', a: 'Italo Calvino', 
   assert.strictEqual(seen[1], 'Installala:inst', 'schermata 2: installazione (giro 12)');
   assert.strictEqual(seen[2], 'Accedi:friends'); assert.strictEqual(seen[4], 'Il prestito dell’API:keys'); assert.strictEqual(seen[5], 'Aggiungi i libri:add', 'il + dopo le API');
   assert.strictEqual(seen[3], 'L’API Google Libri:key', 'schermata 4: chiave');
-  assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(4); return document.querySelectorAll('#gdStage .gd-steps li').length + '/' + document.querySelectorAll('#gdStage .gd-note').length; }), '4/1', 'il prestito dell’API a quattro passi, con la nota');
+  assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(4); return document.querySelectorAll('#gdStage .gd-steps .gd-r').length + '/' + document.querySelectorAll('#gdStage .gd-note').length; }), '4/1', 'il prestito dell’API a quattro passi, con la nota');
   assert.strictEqual(await p.evaluate(() => { window.NLGuida.open(3); return document.querySelector('#gdStage .gd-try').textContent; }), 'Crea la tua API'); assert(await p.evaluate(() => { document.querySelector('#gdStage [data-gd="info"]').click(); const s = document.getElementById('gdInfo'); const ok = s && !s.hidden && /È gratis/.test(s.textContent) && /aiuti Next Libris a crescere/.test(s.textContent) && !/carta di credito/.test(s.textContent); s.hidden = true; return ok; }), '«Scopri di più»: gratis, aiuta l\'app a crescere, niente carta di credito');
   await p.evaluate(() => window.NLGuida.close()); await wait(200);
   // tocco a sinistra = indietro
