@@ -357,9 +357,11 @@ function lookupOpts() { return { gbKey: settings.gbKey, sbnUrl: settings.sbnUrl 
 /* ricerca per ISBN: prima l'archivio comune (modulo ricerche.js: libri gia' cercati da altri, senza Google), poi le banche dati; il risultato va nell'archivio */
 async function findIsbn(code) {
   var A = window.NL && window.NL.archive;
-  if (A && A.get) { try { var hit = await A.get(code); if (hit) return hit; } catch (e) { nlErr(e); } }
+  var hit = null;
+  if (A && A.get) { try { hit = await A.get(code); if (hit && !hit.part) return hit; } catch (e) { nlErr(e); } }
   var res = await L.lookupIsbn(code, lookupOpts());
   if (res && A && A.put) { try { A.put(code, res); } catch (e) { nlErr(e); } }
+  if (!res && hit) { delete hit.part; return hit; }   // solo l'archivio lo conosce (es. libro scritto a mano e approvato, 029)
   return res;
 }
 function hasData(b) { return !!(b.t || b.a || b.e || b.y || b.i || b.c != null || b.n); }
