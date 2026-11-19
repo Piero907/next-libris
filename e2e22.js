@@ -125,6 +125,14 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
 
   // 6) iPhone: passi per Safari
   p = await open(IPHONE);
+  // giro 11F: su iPhone nel browser prima la schermata «Prima mettila sul tuo iPhone», con i passi; «Continua nel browser» chiede conferma
+  assert(await p.$('#iosGate'), 'manca la schermata iPhone');
+  assert(/Aggiungi alla schermata Home/.test(await txt(p, '#iosGate .ig-steps')));
+  await p.click('#iosGate [data-ig="web"]'); await wait(100);
+  assert(await p.$('#iosGate .ig-warn'), 'manca l\'avviso prima di continuare nel browser');
+  await p.click('#iosGate [data-ig="web"]'); await wait(100);
+  assert(!(await p.$('#iosGate')), 'la schermata iPhone non si chiude');
+  assert(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set') || '{}').iosWeb === true));
   await p.click('#instGo'); await wait(150);
   console.log('[6 iPhone]', await txt(p, '#instSteps'));
   assert(/Aggiungi alla schermata Home/.test(await txt(p, '#instSteps')));
