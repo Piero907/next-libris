@@ -285,7 +285,7 @@ html.g-look .drawer .dopt:not(.dset-t)>span>small:not(:empty)::after{float:none}
 html.g-look .drawer .dopt:not(.dset-t):has(>span>small:not(:empty))>.n{align-self:flex-end;padding-bottom:1px}
 html.g-look #drawerOpts>.ddon .don-menu>span>:is(b,small)::after{display:none}
 
-/* G23 · I tuoi amici (Piero, 20/11/2026: l'elenco non scorreva). L'elenco aveva max-height 264 con scorrimento interno (amici.css),
-   ma stile-c (.fri .fr-list overflow hidden) lo tagliava: si vedevano 3 amici e basta. Nella pagina intera l'elenco è tutto intero
-   e scorre la pagina (con la ricerca in cima); le altre .fr-pick-list (es. «Presta, vendi o regala») restano come sono */
-#friSheet .fr-pick-list{max-height:none!important;overflow:visible!important}
+/* G23 · I tuoi amici (Piero, 20/11/2026: l'elenco non scorreva). L'elenco ha max-height con scorrimento interno (amici.css),
+   ma stile-c (.fri .fr-list overflow hidden) lo bloccava: si vedevano 3 amici e basta. Scelta di Piero: scorre SOLO il riquadro,
+   non la pagina, così «Aggiungi un amico» resta sotto a portata. Le altre .fr-pick-list (es. «Presta, vendi o regala») restano come sono */
+#friSheet .fr-pick-list{max-height:min(330px,46vh)!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
