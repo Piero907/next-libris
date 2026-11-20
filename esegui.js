@@ -60,5 +60,7 @@ const line = r => console.log((r.skip ? 'SALTA ' : r.ok ? 'OK    ' : 'FAIL  ') +
   const secs = Math.round((Date.now() - t0) / 1000);
   console.log('\n' + (files.length - failed.length - skipped.length) + '/' + (files.length - skipped.length) + ' superate in ' + Math.floor(secs / 60) + ' min ' + (secs % 60) + ' s' +
     (skipped.length ? '. Saltate: ' + skipped.join(', ') : '') + (again.length ? '. Passate alla seconda: ' + again.join(', ') : '') + (failed.length ? '. Fallite: ' + failed.join(', ') : ''));
+  /* su GitHub Actions (CI) le ultime righe delle prove fallite, così la causa si legge nel registro del giro (21/11/2026) */
+  if (process.env.CI) for (const f of failed) { const l = (fs.readFileSync(path.join(logDir, f + '.log'), 'utf8').trim().split('\n')); console.log('\n--- ' + f + ' (ultime righe)\n' + l.slice(-30).join('\n')); }
   process.exit(failed.length ? 1 : 0);
 })();
