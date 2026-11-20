@@ -1,6 +1,6 @@
 # Next Libris — lo stile grafico dell'app (documento fisso)
 
-**Aggiornato il 20/11/2026, vera 114.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali. Indice di tutti i documenti: `claude/00-indice.md`.
+**Aggiornato il 20/11/2026, vera 115.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali. Indice di tutti i documenti: `claude/00-indice.md`.
 
 **Come si lavora sull'aspetto** (regole di Piero):
 1. Ogni modifica di aspetto si mostra **prima nella tela di design** con le schermate vere dell'app (tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu).
@@ -125,6 +125,8 @@
 - **Finestra del +**: In Libreria / Nei Desideri; tre tasti tondi (Scansiona pieno, Fotografa, Digita); Per autore; Ce l'ho già?.
 - **Segni sulle copertine**: «In lettura» con l'orecchia; «Prestato» in `--warn-bg`; stella in `--brass`; «ce l'hai anche tu» con la spunta.
 - **Guida, percorso e schede di benvenuto** (proposta «A · Fondo Bosco», 19/11/2026): a schermo intero su sfumatura verde Bosco fissa **#24563F→#173A2A** (nel tema scuro #1B4230→#0E241A), uguale con ogni tavolozza, **nessun altro colore** (niente oro, blu, caldo). Disegno grande in alto (sotto 600 px di altezza sparisce, i testi restano), titolo bianco Bricolage 31/800, sottotitolo #CFE6D8, righe con l'icona dell'app nel quadratino 38 verde trasparente, tasto pieno **#8FD1AE** con testo scuro, largo in basso; puntini e «Salta» in alto. «Come ti chiami?» con la stessa grafica. Il tasto «Accedi con Google» è quello ufficiale di Google.
+  - **Percorso dei primi passi** (20/11/2026, vera 115): stessa grafica delle schede (classe `wc`): puntini a sinistra e «PASSO N DI 3» a destra (12/700 maiuscolo spaziato #8FD1AE), disegno grande (cerchio verde trasparente con il quadratino #CFE6D8 e l'icona del passo), titolo, righe con l'icona (la riga secondaria più chiara, #CFE6D8 15/400), tasto pieno largo (il secondo trasparente bianco 12%), «Più tardi» sotto.
+  - **Schermata d'installazione dei telefoni** (20/11/2026, vera 115; `#iosGate.wc`, `style.css`): stessa sfumatura verde; al centro l'icona dell'app 76 px (raggio 20, sotto 640 px di altezza 56), titolo «Installa Next Libris» / «Mettila sul tuo iPhone» / «Fatto!», sottotitolo centrato; passi come righe con il **numero** nel quadratino (Bricolage 16/800 #8FD1AE; il primo passo fatto con la spunta); avvisi (invito, libri nel browser) come la nota delle schede; in fondo tasto pieno largo («Installa», «Fai il backup»; il secondo trasparente) e «Copia il link» come tasto leggero con l'icona del link.
 
 ### Colori delle stagioni (numeri del profilo e immagine da condividere)
 Colori «più tenui» (Piero, 19/11/2026), uno schema per stagione; nel profilo quella di oggi, nella stagione in libri quella mostrata. Testo bianco sui colori scuri, quasi nero su quelli chiari (scelto dall'app in base alla luminosità).
@@ -169,5 +171,6 @@ Le regole sui **testi** dell'app (parole, nomi, tono) stanno in `claude/regole-d
 - 20/11/2026: via il codice delle vecchie disposizioni; titolo allineato al margine; avviso «Non riesco a salvare»; via il triangolino e «Riepilogo in alto» (112.3).
 - 20/11/2026: avviso del libro nella sua pagina, con il tasto al centro; segnalibro Indice in cima e via ≡ dalla testatina (112.5); tutto nella **vera 113**.
 - 20/11/2026: pillole BETA e prova, tasti dell'amicizia pieni, «Vedi tutti i libri di» dentro la pagina; **vera 114**.
+- 20/11/2026: schermata d'installazione dei telefoni e percorso con la grafica delle schede; **vera 115**.
 
 Tele di design: stile attuale https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu · proposte A-G https://claude.ai/artifact/Tqa6XajvQCK2CVZdSSSimq · schede di benvenuto https://claude.ai/artifact/3K32364B9GUREgviZATvHJ.
