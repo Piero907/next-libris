@@ -32,7 +32,7 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 - Indice › Ricerca dei libri, riga SBN: «Catalogo delle biblioteche italiane (SBN) · ● Incluso» e sotto «Non devi fare niente. Ricerche di oggi: 12 su 500.» (senza account «su 50»).
 - Finestra del prestito: «Un'API Google Libri fa 1.000 ricerche al giorno. Con un uso normale bastano per te e per decine di amici. Il primo giorno, quando un amico carica la sua libreria, ne consuma di più: puoi aiutare fino a **6 amici nuovi al giorno** (50 libri ciascuno). Prestarla non ti costa niente e puoi smettere quando vuoi. Tocca un amico per prestargliela.»
 - La finestra «API Google e worker» si chiama ora «**API Google Libri**» (anche la voce nell'Indice › Amici e la scorciatoia nel profilo).
-- Privacy (`privacy.html`): aggiunto che le ricerche SBN passano dal server, che riceve l'ISBN e, con l'account, conta quante ne fai al giorno; il codice cercato non viene salvato.
+- Privacy (`privacy.html`): aggiunto che le ricerche SBN passano dal server, che riceve l'ISBN **o il titolo cercato** (21/11/2026, prova 115.3) e, con l'account, conta quante ne fai al giorno; il codice o il titolo cercato non viene salvato.
 
 **Perché dal server e non l'indirizzo nell'app:** è davvero privato e riusa il codice del prestito; il conto al giorno si fa sul database. **Passare al worker che controlla da solo l'accesso** (senza passare da Supabase) se si arriva verso i **5.000 utenti nuovi al mese**, senza cambiare niente per gli utenti.
 
@@ -40,7 +40,7 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 
 **Rischi:** il catalogo SBN potrebbe rallentare un worker unico con molte richieste (nessun limite pubblicato); se il worker si ferma, SBN manca a tutti ma l'app continua con le altre fonti. Il problema R5 (worker usato da un programma con l'indirizzo, IN_SOSPESO 40) si chiude il 27/11/2026, quando il worker accetta solo richieste firmate.
 
-**Ricerca per titolo (21/11/2026, prova 115.2):** la funzione `libri` accetta anche `?t=<titolo>` (2-100 caratteri), **con lo stesso conto e gli stessi limiti dell'ISBN**; la firma è sul testo «t:<titolo>.secondi»; il worker per i titoli accetta **solo richieste firmate** (anche prima del 27/11). Il worker va aggiornato da Piero (incollare il codice nuovo su Cloudflare). Funzionamento e scelte: `claude/ricerca-libri.md`.
+**Ricerca per titolo (21/11/2026, prova 115.2; worker aggiornato da Piero e provato dal vivo il 21/11):** la funzione `libri` accetta anche `?t=<titolo>` (2-100 caratteri), **con lo stesso conto e gli stessi limiti dell'ISBN**; la firma è sul testo «t:<titolo>.secondi»; il worker per i titoli accetta **solo richieste firmate** (anche prima del 27/11). Funzionamento e scelte: `claude/ricerca-libri.md`.
 
 **Dopo:** «cerca tra i tuoi amici chi può prestarti l'API» più in vista.
 
