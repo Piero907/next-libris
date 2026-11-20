@@ -302,8 +302,8 @@ function apiFetch(url, init) {
     var lm = /[?&]key=prestata(?:%3A|:)([0-9a-f-]{36})/i.exec(u);
     if (lm) return lentFetch(u, lm[1]);
   } else if (u.indexOf(SBN_CASA) === 0) {                   // catalogo SBN: passa dal server (031)
-    var cm = /[?&]isbn=([0-9Xx]+)/.exec(u);
-    return cm ? casaFetch(cm[1]) : Promise.resolve({ ok: false, status: 400, local: true, json: function () { return Promise.resolve({}); } });
+    var cm = /[?&]isbn=([0-9Xx]+)/.exec(u), tm = /[?&]t=([^&#]+)/.exec(u);   // per ISBN, o per titolo (21/11/2026)
+    return cm ? casaFetch('isbn=' + encodeURIComponent(cm[1])) : tm ? casaFetch('t=' + tm[1]) : Promise.resolve({ ok: false, status: 400, local: true, json: function () { return Promise.resolve({}); } });
   }
   return fetch(url, init);
 }
@@ -327,11 +327,11 @@ function sbnNow(tell) {                                   // l'indirizzo finto d
   if (tell && !sbnAuth() && sbnDay.stop !== 'tetto') sbnSay('qui', 'Senza account il catalogo delle biblioteche (SBN) fa 50 ricerche al giorno. Entra con Google per averne 500.', true);
   return '';
 }
-function casaFetch(isbn) {
+function casaFetch(q) {                                   // q: «isbn=…» oppure «t=…» (titolo, stesso conto)
   var S = window.NLSocial, no = { ok: false, status: 503, local: true, json: function () { return Promise.resolve({}); } };
   if (!S || !S.rawOpen || sbnOut()) return Promise.resolve(no);
   countCall('s');
-  return S.rawOpen('/functions/v1/libri?isbn=' + encodeURIComponent(isbn)).then(function (r) {
+  return S.rawOpen('/functions/v1/libri?' + q).then(function (r) {
     var stop = r.headers.get('x-nl-stop') || '', mio = Number(r.headers.get('x-nl-mio')) || 0;
     sbnRoll();
     if (mio > sbnDay.mio) sbnDay.mio = mio;
