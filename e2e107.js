@@ -2,7 +2,7 @@ const CFG = require("./_config");
 const H = require('./_harness');
 // moduli: amici   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // 16/11/2026, prova 99.5.
-// 1) Chiave e worker PRESTATI da un amico: si usano per cercare, ma non si vedono in Impostazioni › Ricerca (al posto del campo:
+// 1) API PRESTATA da un amico (il worker non si presta più: 031; quello rimasto sul telefono sparisce): si usa per cercare, ma non si vedono in Impostazioni › Ricerca (al posto del campo:
 //    «Usi l’API Google di Anna…»), non finiscono tra i «salvati», né nel backup, né nella condivisione con il link;
 //    la tua API tenuta da parte resta la tua (backup e link usano quella).
 // 2) Menu › «Info e condivisione» (chiusa all'inizio): Condivisione, Installazione, Privacy, Contatti;
@@ -53,15 +53,15 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     const shot = (n) => P.screenshot({ path: path.join(OUT, tag + '-' + n + '.png') });
     // ---- l’API di Anna si usa ma non si vede ----
     assert.strictEqual(await P.evaluate(() => window.NL.settings.gbKey), 'AIzaDiAnna0000000000', 'in uso per cercare');
-    await P.evaluate(() => { window.NL.openOptions('search'); window.NL.svcFold('key', true); window.NL.svcFold('sbn', true); }); await wait(500);   // sezioni richiudibili (giro 5)
+    await P.evaluate(() => { window.NL.openOptions('search'); window.NL.svcFold('key', true); }); await wait(500);   // sezione richiudibile (giro 5)
     const sr = await P.evaluate(() => ({
-      gb: document.getElementById('gbKey').value, sbn: document.getElementById('sbnUrl').value,
-      rowGb: document.querySelector('#svcKey .svc-row').hidden, rowSbn: document.querySelector('#svcSbn .svc-row').hidden,
+      gb: document.getElementById('gbKey').value, sbn: !!document.getElementById('sbnUrl'),
+      rowGb: document.querySelector('#svcKey .svc-row').hidden, sbnSt: document.getElementById('sbnSt').textContent,
       txt: document.querySelector('[data-sec="search"]').innerText, saved: document.getElementById('gbSaved').innerText,
       st: document.getElementById('gbSt').textContent, clear: document.getElementById('gbClear').hidden }));
-    assert.strictEqual(sr.gb, '', 'campo dell’API vuoto'); assert.strictEqual(sr.sbn, '', 'campo del worker vuoto');
-    assert(sr.rowGb && sr.rowSbn, 'campi nascosti');
-    assert(/Usi l’API Google di Anna: non si vede e non si può prestare/.test(sr.txt) && /Usi il worker SBN di Anna/.test(sr.txt), 'al posto del campo');
+    assert.strictEqual(sr.gb, '', 'campo dell’API vuoto'); assert(!sr.sbn && sr.sbnSt === 'Incluso', 'niente campo del worker: SBN incluso');
+    assert(sr.rowGb, 'campo nascosto');
+    assert(/Usi l’API Google di Anna: non si vede e non si può prestare/.test(sr.txt) && !/worker/i.test(sr.txt), 'al posto del campo');
     assert(!/AIzaDiAnna|sbn-anna/.test(sr.txt), 'nessuna traccia dell’API o del worker');
     assert(/AIzaMi/.test(sr.saved) && !/AIzaDi/.test(sr.saved), 'tra le salvate solo la mia: ' + sr.saved);
     assert.strictEqual(sr.st, 'Prestata da Anna'); assert(sr.clear, 'niente «Cancella»');
@@ -71,7 +71,7 @@ const OUT = path.join(CFG.OUT, 'e2e107'); fs.mkdirSync(OUT, { recursive: true })
     assert(!/AIzaDiAnna/.test(saved), 'tolta dai salvati');
     // backup e condivisione con il link: solo le mie
     const cfg = await P.evaluate(() => window.NL.backupCfg());
-    assert.strictEqual(cfg.gbKey, 'AIzaMiaVecchia000000', 'nel backup la mia API'); assert.strictEqual(cfg.sbnUrl, '', 'nel backup nessun worker (era di Anna)');
+    assert.strictEqual(cfg.gbKey, 'AIzaMiaVecchia000000', 'nel backup la mia API'); assert(!cfg.sbnUrl, 'nel backup nessun worker');
     assert(!JSON.stringify(cfg).includes('AIzaDiAnna') && !JSON.stringify(cfg).includes('sbn-anna'), 'nel backup niente di Anna');
     await P.evaluate(() => window.NL.openOptions('search')); await wait(400);   // chiave e worker in Ricerca dei libri (17/11/2026)
     assert((await P.$$eval('#svcBox [data-svc]', e => e.map(x => x.dataset.svc))).includes('lend'), 'la mia API si può ancora prestare');

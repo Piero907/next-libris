@@ -8,7 +8,7 @@ const H = require('./_harness');
 // «Chi ce l'ha»: nella scheda di un desiderio di A compare «Ce l'hanno i tuoi amici: Bruno · Me lo presti?».
 // Consiglio: B condivide un libro e lo consiglia ad A dalla finestra di condivisione; A lo trova in Amici e lo mette nei desideri.
 // API Google: A la presta a B dalla finestra «Presta a Bruno»; B «Usala» (la usano tutti e due); A smette → B torna alle sue impostazioni.
-// Dalla libreria di B: «Presta API Google e worker» apre la stessa finestra; A presta solo l’API, poi riapre e la scelta è ricordata.
+// Dalla libreria di B: l'icona dell'API apre la stessa finestra; A presta l’API, poi riapre e la scelta è ricordata (il worker non si presta più: 031).
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -220,7 +220,7 @@ const base = 'http://localhost:' + CFG.port(8304);
   await A.evaluate(() => window.NLAmici.open(true)); await wait(600);
   await A.click('[data-f="keyshare"][data-id="uB"]'); await wait(400);
   assert(/Presta a Bruno/.test(await A.$eval('#keySheet', x => x.innerText)), 'finestra «Presta a Bruno»');
-  assert(await A.$eval('#keyGb', x => x.checked) && await A.$eval('#keySbn', x => x.disabled), 'chiave spuntata, worker non disponibile');
+  assert(await A.$eval('#keyGb', x => x.checked) && !(await A.$('#keySbn')), 'API spuntata, niente worker (031)');
   await A.screenshot({ path: CFG.OUT + '/amici-presta-chiave.png' });
   await A.click('#keyGo'); await wait(500);
   await A.screenshot({ path: CFG.OUT + '/amici-privacy.png' });
@@ -236,11 +236,11 @@ const base = 'http://localhost:' + CFG.port(8304);
   await A.click('#keyGo'); await wait(500); assert.strictEqual(DB.keys.length, 0, 'A smette di condividerla');
   await B.evaluate(() => window.NLAmici.load(true)); await wait(600);
   assert.strictEqual(await B.evaluate(() => window.NL.settings.gbKey), '', 'B torna alle sue impostazioni');
-  // ---- dalla libreria di Bruno: chiave e worker, si sceglie cosa prestare ----
+  // ---- dalla libreria di Bruno: l'icona dell'API (un worker rimasto nelle impostazioni non conta: 031) ----
   await A.keyboard.press('Escape'); await wait(200);
   await A.evaluate(() => { window.NL.settings.sbnUrl = 'https://sbn-anna.workers.dev'; window.NL.saveSettings(); });
   await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
-  assert(await A.$eval('#guestKey', x => !x.hidden && !x.classList.contains('on') && /^Presta la tua API Google o il worker a Bruno$/.test(x.getAttribute('aria-label'))), 'icona sempre (hai chiave e worker), spenta (17/11/2026)');
+  assert(await A.$eval('#guestKey', x => !x.hidden && !x.classList.contains('on') && /^Presta la tua API Google a Bruno$/.test(x.getAttribute('aria-label'))), 'icona sempre (hai l’API), spenta (17/11/2026)');
   // icona ⇄ (17/11/2026): via «Prestiti, regali e altro», la storia tra voi in una finestra
   assert(!(await A.$('#guestBar .gb-more')), 'via «Prestiti, regali e altro»');
   assert(await A.$eval('#guestSwap', x => !x.hidden && /Prestiti e regali tra te e Bruno/.test(x.getAttribute('aria-label'))), 'icona ⇄: tra voi c\'è un prestito');
@@ -250,13 +250,14 @@ const base = 'http://localhost:' + CFG.port(8304);
   assert(/Tra te e Bruno/.test(t) && /In corso/.test(t) && /Già restituiti e regali/.test(t) && /Finzi-Contini/.test(t), 'finestra della storia');
   await A.click('#swapClose'); await wait(200);
   await A.click('#guestKey'); await wait(400);   // il tocco sull'icona apre la scelta (17/11/2026)
-  assert(await A.$eval('#keyGb', x => x.checked) && await A.$eval('#keySbn', x => x.checked), 'all\'inizio tutte e due');
-  await A.click('#keySbn'); await A.click('#keyGo'); await wait(600);
+  assert(await A.$eval('#keyGb', x => x.checked) && !(await A.$('#keySbn')), 'solo l’API da prestare');
+  assert(!/worker/i.test(await A.$eval('#keySheet', x => x.innerText)), 'la finestra non parla di worker');
+  await A.click('#keyGo'); await wait(600);
   assert.deepStrictEqual(DB.keys.map(k => [k.gb_key, k.sbn]), [['AIzaChiaveDiAnna', '']], 'solo l’API');
   assert.match(await A.$eval('#guestKey', x => x.getAttribute('aria-label') + (x.classList.contains('on') ? ' ✓' : '')), /^Prestata: API Google a .* ✓$/);
   if (process.env.SCHERMATE) await A.screenshot({ path: require('path').join(process.env.SCHERMATE, 'amico-chiave.png') });
   await A.click('#guestKey'); await wait(400);
-  assert(await A.$eval('#keyGb', x => x.checked) && !(await A.$eval('#keySbn', x => x.checked)), 'la scelta resta');
+  assert(await A.$eval('#keyGb', x => x.checked), 'la scelta resta');
   assert.strictEqual(await A.$eval('#keyGo', x => x.textContent), 'Salva');
   assert(await A.evaluate(() => [...document.querySelectorAll('.sheet:not([hidden]) .sheet-in')].every(s => s.scrollWidth - s.clientWidth <= 0)), 'niente scorrimento di lato');
   await A.keyboard.press('Escape'); await wait(200);

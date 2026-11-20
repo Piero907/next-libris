@@ -19,7 +19,7 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 - Stesso layout per il tuo profilo e per quello di un amico. **Niente foto**: il nome sta nell'ex libris (stile G); le iniziali colorate restano solo negli elenchi.
 - Parti: Libreria e Desideri (sempre), **Scrivi**, ⇄ (solo se tra voi c'è un prestito o un regalo), riquadro «Chiedimela» (vedi `claude/api-e-worker.md`), **In lettura**, **Consigliati** (stella = «Lo consiglio»; i Preferiti sono stati tolti il 18/11), **citazioni in evidenza** (al massimo 3, con la puntina; prendono il posto della citazione preferita), numeri. Il tocco su una copertina apre quel libro nella sua libreria.
 - Numeri e immagine da condividere: `claude/libreria-e-libro.md`. Nel profilo dell'amico in più «in comune con te» («12 libri · il 24% dei suoi») e «prestiti tra voi»; **niente «Condividi»**.
-- Nel tuo profilo: riquadro «Amici › I tuoi amici» e scorciatoie alle impostazioni (Account e sincronizzazione, Amici e privacy, Notifiche, API Google e worker).
+- Nel tuo profilo: riquadro «Amici › I tuoi amici» e scorciatoie alle impostazioni (Account e sincronizzazione, Amici e privacy, Notifiche, API Google Libri).
 - **Obiettivo dell'anno** facoltativo (1-365 libri), barra «Obiettivo 24 · 75%»; gli amici lo vedono con i numeri.
 
 ## Visibilità (Amici e privacy)

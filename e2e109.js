@@ -1,8 +1,8 @@
 const CFG = require("./_config");
 const H = require('./_harness');
 // moduli: social, notifiche   (senza questi file nell'app la prova si salta: vedi esegui.js)
-// Condivisione › «API Google e worker» su misura e finestra dell’API (Piero, 16/11/2026); interruttore Libreria/Desideri nel +; scheda di un libro senza titolo (17/11/2026).
-// Anna ha chiave e worker: «Presta a un amico» apre la finestra dell’API (non Amici); presta a Bruno; chiudendo si torna a Condivisione.
+// Condivisione › «API Google Libri» su misura (dal 20/11/2026 solo l'API: il worker non si presta più, 031) e finestra dell’API (Piero, 16/11/2026); interruttore Libreria/Desideri nel +; scheda di un libro senza titolo (17/11/2026).
+// Anna ha l'API (e un vecchio worker, che non conta più): «Presta a un amico» apre la finestra dell’API (non Amici); presta a Bruno; chiudendo si torna a Condivisione.
 // Bruno non ha niente: vede «Anna ti presta …» e la guida; la usa e vede «Usi … di Anna» + guida (il caso di Serena); smette dalla finestra.
 // Il +: «In Libreria | Nei Desideri», parte dalla scheda in cui sei. Un libro con solo l'ISBN si apre nella disposizione di «Modifica».
 // SCHERMATE=cartella per le fotografie (360, 412 scuro).
@@ -127,7 +127,7 @@ const base = 'http://localhost:' + CFG.port(8309);
   }
   DB.prof.uA.utente = DB.prof.uA.nome = 'Anna Maria Bellini';
   const KEY = 'AIzaANNA0123456789abcdefghijklmnopq';
-  // ---- Anna: chiave e worker suoi ----
+  // ---- Anna: l'API sua (il worker rimasto nelle impostazioni non si presta) ----
   const A = await phone('A', 'uA', 360);
   await A.evaluate((k) => { const s = window.NL.settings; s.gbKey = k; s.sbnUrl = 'https://anna.workers.dev'; s.name = 'Anna'; window.NL.saveSettings(); }, KEY);
   await A.evaluate(() => window.__app.openOptions('search')); await wait(600);   // chiave e worker in Ricerca dei libri (17/11/2026)
@@ -150,7 +150,9 @@ const base = 'http://localhost:' + CFG.port(8309);
   await A.click$('#keyGo'); await wait(800);
   assert.strictEqual(DB.keys.length, 1, 'prestata a Bruno');
   assert(await A.evaluate(() => document.getElementById('keySheet').hidden) && await A.vis('#kwSheet'));
-  assert(/Prestati: API Google e worker/.test(await A.txt('#kwBody')));
+  assert(/Prestata: API Google/.test(await A.txt('#kwBody')) && !/worker/i.test(await A.txt('#kwBody')), await A.txt('#kwBody'));
+  assert.deepStrictEqual(DB.keys.map(k => k.sbn || ''), [''], 'nessun worker prestato');
+  assert.strictEqual(await A.txt('#kwH'), 'API Google Libri');
   await A.click$('#kwClose'); await wait(300);
   assert(await A.vis('#optSheet') && !(await A.evaluate(() => { const f = document.getElementById('friSheet'); return f && !f.hidden; })), 'chiudendo si torna a Condivisione');
   assert.strictEqual(await A.wide(), 0, 'niente scorrimento di lato (Anna)');
@@ -191,7 +193,7 @@ const base = 'http://localhost:' + CFG.port(8309);
     await B.evaluate(() => { window.NL.settings.name = 'Bruno'; window.NL.saveSettings(); window.__app.openOptions('search'); }); await wait(900);
     console.log('[Bruno ' + tag + ']', await B.txt('#svcBox'));
     assert.deepStrictEqual(await B.svc(), ['offer', 'guide'], 'Bruno: offerta di Anna e guida');
-    assert(/Anna Maria Bellini ti presta API Google e worker/.test(await B.txt('#svcBox')));
+    assert(/Anna Maria Bellini ti presta l’API Google/.test(await B.txt('#svcBox')) && !/worker/i.test(await B.txt('#svcBox')));
     await B.shot('109-4-condivisione-bruno-offerta-' + tag);
     await B.click$('#svcBox [data-svc="offer"]'); await wait(700);
     await B.click$('#kwBody [data-f="keyuse"]'); await wait(700);
@@ -200,7 +202,7 @@ const base = 'http://localhost:' + CFG.port(8309);
     await B.click$('#kwClose'); await wait(400);
     console.log('[Bruno usa]', await B.txt('#svcBox'));
     assert.deepStrictEqual(await B.svc(), ['used', 'guide'], 'Bruno: «Usi … di Anna» e la guida (caso di Serena)');
-    assert(/Usi l’API Google e il worker SBN di Anna Maria Bellini/.test(await B.txt('#svcBox')));
+    assert(/Usi l’API Google di Anna Maria Bellini/.test(await B.txt('#svcBox')) && !/worker/i.test(await B.txt('#svcBox')));
     assert.strictEqual(await B.wide(), 0, 'niente scorrimento di lato (Bruno)');
     await B.shot('109-5-condivisione-bruno-usa-' + tag);
     await B.click$('#svcBox [data-svc="used"]'); await wait(600);

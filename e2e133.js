@@ -2,9 +2,11 @@ const CFG = require("./_config");
 const H = require('./_harness');
 // moduli: social, amici, notifiche, ricerche   (senza questi file nell'app la prova si salta: vedi esegui.js)
 // 026 (Piero, 18/11/2026 sera): Bruno ha sul telefono l’API e il worker di Anna come se fossero suoi (copiati prima del giro 8,
-// anche tra i «salvati»). All'apertura il server (chiavi_controlla) dice che sono di Anna: spariscono dal telefono, Bruno li usa dal server
-// («prestata:…» e worker-prestato.invalid), non può prestarli (niente elenco «Presta a un amico»; presta_chiavi = «non tua»).
-// La ricerca SBN passa dalla funzione «libri» (?da=&isbn=), l'indirizzo del worker non arriva mai al telefono.
+// anche tra i «salvati»). All'apertura il server (chiavi_controlla) dice che l'API è di Anna: sparisce dal telefono, Bruno la usa dal
+// server («prestata:…»), non può prestarla (niente elenco «Presta a un amico»; presta_chiavi = «non tua»).
+// 031 (20/11/2026): il worker non si presta più. Quello di Anna sparisce dal telefono senza avvisi (anche se un server non ancora
+// aggiornato manda ancora «worker-prestato.invalid»); il catalogo SBN è quello della casa: con l'account passa dalla funzione «libri»
+// con l'accesso (?isbn=, senza «da»), 500 ricerche al giorno, poi il testo approvato e niente più richieste fino al giorno dopo.
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -26,9 +28,10 @@ function fake(req, res, body, url) {
   if (p === '/functions/v1/libri') {
     const da = q.get('da'), u = q.get('u') || '';
     DB.libri.push({ me, da, u, isbn: q.get('isbn') });
-    if (q.has('isbn')) { const k = DB.keys.find(x => x.da === da && x.a === me && x.sbn); if (!k) return send(403, { error: 'worker non prestato' }, { 'x-nl-stop': 'no' });
-      if (DB.wmode === 'mio') return send(429, { error: 'limite del giorno per amico' }, { 'x-nl-stop': 'mio', 'x-nl-mio': '3000' });
-      return send(200, { numFound: 0 }); }
+    if (q.has('isbn')) {                                   // worker della casa (031): per chiunque abbia l'accesso, senza «da»
+      if (DB.wmode === 'mio') return send(429, { error: 'limite del giorno' }, { 'x-nl-stop': 'mio', 'x-nl-mio': '500' });
+      DB.sbnN = (DB.sbnN || 0) + 1;
+      return send(200, { numFound: 0 }, { 'x-nl-mio': String(DB.sbnN) }); }
     if (!/^\/books\/v1\/volumes\?/.test(u)) return send(400, { error: { code: 400 } });
     const k = DB.keys.find(x => x.da === da && x.a === me && x.gb_key);
     if (!k) return send(403, { error: { code: 403, message: 'chiave non prestata' } }, { 'x-nl-stop': 'no' });
@@ -97,31 +100,40 @@ const base = 'http://localhost:' + CFG.port(8333);
   await B.evaluate(() => window.NLAmici.load(true)); await wait(900);
   const st = await B.evaluate(() => ({ gb: window.NL.settings.gbKey, sbn: window.NL.settings.sbnUrl, saved: localStorage.getItem('prova:catalogo-libri-saved'), all: JSON.stringify(localStorage) }));
   console.log('[bruno]', st.gb, st.sbn, st.saved);
-  assert.strictEqual(st.gb, 'prestata:' + UA, 'chiave dal server'); assert.strictEqual(st.sbn, 'https://worker-prestato.invalid/' + UA, 'worker dal server');
-  assert(!st.all.includes(KEY) && !st.all.includes(W), 'sul telefono di Bruno non restano né l’API né il worker di Anna');
+  assert.strictEqual(st.gb, 'prestata:' + UA, 'chiave dal server'); assert.strictEqual(st.sbn, '', 'nessun worker: né suo né prestato (031)');
+  assert(!st.all.includes(KEY) && !st.all.includes(W) && !st.all.includes('worker-prestato'), 'sul telefono di Bruno non restano né l’API né il worker di Anna');
+  const tw = await B.evaluate(() => Array.from(document.querySelectorAll('.toast')).map(t => t.innerText).join(' | '));
+  assert(!/worker/i.test(tw), 'nessun avviso sul worker: ' + tw);
   assert(st.saved.includes('AIzaBRUNOsua'), 'la sua API salvata resta');
   // non può prestarli: niente «Presta a un amico» nella finestra dell’API
   await B.evaluate(() => window.NLAmici.keys()); await wait(300);
   const kw = await B.txt('#kwBody'); console.log('[finestra]', kw.slice(0, 200));
-  assert(!/Tocca un amico per scegliere/.test(kw) && /Anna condivide con te/.test(kw) && /La stai usando/.test(kw), 'niente prestito di quelle degli altri');
+  assert(!/Tocca un amico per/.test(kw) && /Anna condivide con te la sua API Google/.test(kw) && /La stai usando/.test(kw) && !/worker/i.test(kw), 'niente prestito di quelle degli altri');
   // il server rifiuta comunque
   const r = await B.evaluate(async (k, a) => { try { await window.NLAmici.rpc('presta_chiavi', { a, gb_key: k, sbn: '' }); return 'ok'; } catch (e) { return String(e.message || e); } }, KEY, UA);
   assert(/non tua/.test(r), 'presta_chiavi: ' + r);
-  // ricerca SBN dal server, senza l'indirizzo
+  // catalogo SBN della casa: dal server, con l'accesso di Bruno, senza indirizzi di worker sul telefono
+  await B.evaluate(() => { const k = document.getElementById('kwClose'); if (k) k.click(); }); await wait(200);
   const n0 = DB.libri.length;
-  await B.evaluate(async () => { await apiFetch('https://worker-prestato.invalid/00000000-0000-0000-0000-0000000000a1?isbn=9788845278655'); });
+  await B.evaluate(async (u) => { await apiFetch(lookupOpts(true).sbnUrl + '?isbn=9788845278655'); }, 0);
   const last = DB.libri[n0]; console.log('[sbn]', JSON.stringify(last));
-  assert(last && last.isbn === '9788845278655' && last.da === UA, 'il worker passa dalla funzione');
-  assert(!fuori.some(u => /sbn-anna|worker-prestato/.test(u)), 'nessuna richiesta al worker dal telefono: ' + fuori.join(' '));
-  // giro 11A: 3.000 ricerche al giorno col worker prestato, poi avviso e niente più richieste al server fino al giorno dopo
+  assert(last && last.isbn === '9788845278655' && last.me === UB && !last.da, 'SBN passa dalla funzione, con l\'accesso e senza «da»');
+  assert(!fuori.some(u => /sbn-anna|worker-prestato|sbn-casa|workers\.dev/.test(u)), 'nessuna richiesta a un worker dal telefono: ' + fuori.join(' '));
+  await B.evaluate(() => window.NL.openOptions('search')); await wait(500);
+  assert.strictEqual(await B.txt('#sbnSt'), 'Incluso');
+  assert.strictEqual(await B.txt('#sbnCount'), 'Non devi fare niente. Ricerche di oggi: 1 su 500.');   // testo approvato (20/11/2026)
+  assert.strictEqual(await B.wide(), 0, 'niente scorrimento di lato');
+  await B.shot('133-ricerca-sbn-incluso-360');
+  // 500 ricerche al giorno con l'account: poi il testo approvato, una volta, e niente più richieste al server fino al giorno dopo
   DB.wmode = 'mio';
-  await B.evaluate(async () => { await apiFetch('https://worker-prestato.invalid/00000000-0000-0000-0000-0000000000a1?isbn=9788845278655'); });
-  await B.waitForFunction(() => /finito le ricerche con il worker di Anna/.test(document.body.innerText), { polling: 100, timeout: 4000 });
+  await B.evaluate(async () => { await apiFetch(lookupOpts(true).sbnUrl + '?isbn=9788845278655'); });
+  await B.waitForFunction(() => /finito le ricerche nel catalogo/.test(document.body.innerText), { polling: 100, timeout: 4000 });
   const toastW = await B.evaluate(() => (document.body.innerText.match(/Per oggi hai finito[^\n]*/) || [''])[0]);
-  assert.strictEqual(toastW, 'Per oggi hai finito le ricerche con il worker di Anna. Fino a domattina l\'app cerca in Open Library e con Google.', toastW);
+  assert.strictEqual(toastW, 'Per oggi hai finito le ricerche nel catalogo delle biblioteche (SBN). Fino a domattina l\'app cerca in Open Library e con Google.', toastW);
+  assert.strictEqual(await B.txt('#sbnCount'), 'Non devi fare niente. Ricerche di oggi: 500 su 500.');
   const n1 = DB.libri.length;
-  const st2 = await B.evaluate(async () => { await apiFetch('https://worker-prestato.invalid/00000000-0000-0000-0000-0000000000a1?isbn=9788845278655'); return { out: lentWOut(), sbn: lookupOpts().sbnUrl }; });
-  assert(st2.out && st2.sbn === '' && DB.libri.length === n1, 'dopo il limite niente worker: ' + JSON.stringify(st2));
+  const st2 = await B.evaluate(async () => { const r = await apiFetch('https://sbn-casa.invalid/?isbn=9788845278655'); return { out: sbnOut(), sbn: lookupOpts(true).sbnUrl, local: !!r.local }; });
+  assert(st2.out && st2.sbn === '' && st2.local && DB.libri.length === n1, 'dopo il limite niente SBN: ' + JSON.stringify(st2));
   assert.deepStrictEqual(errors, []);
   console.log('OK e2e133');
   await browser.close(); server.close();

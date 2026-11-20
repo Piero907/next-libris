@@ -5,8 +5,8 @@ const H = require('./_harness');
 // 1) X nella casella di ricerca: cancella solo il testo, i filtri restano;
 // 2) bandiere come piccole immagini dell'app (vendor/flags), non emoji: si scaricano solo quelle che servono;
 // 3) film nella scheda del libro, sezione «Dal libro» (🎬/📺, anno, regia, › verso Wikipedia);
-// 4) Ricerca dei libri: Google Libri sopra il worker, sezioni richiudibili (stato, due righe, «Come si crea…»), «Prestata da …»;
-//    «Presta a un amico» con il contatore degli amici; 5) testo della finestra «API Google e worker»;
+// 4) Ricerca dei libri: Google Libri (sezione richiudibile: stato, due righe, «Come si crea…», «Prestata da …») sopra il catalogo SBN, riga fissa «Incluso» (031);
+//    «Presta a un amico» con il contatore degli amici; 5) testo della finestra «API Google Libri» (approvato il 20/11/2026);
 // 8) API Google coperta nel campo («AIza…7Gt») con «Mostra».
 // (6 e 7, guida di 8 schermate e mostrata una volta a chi usa già l'app: e2e123.)
 // Con SCHERMATE=cartella: ricerca con la X, Ricerca dei libri chiusa e aperta, scheda con i film, gruppi per paese.
@@ -101,19 +101,21 @@ const KEY = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQr7Gt';
   if (SHOTS) { await p.$eval('#list .filmbox[data-film="g1"]', e => e.scrollIntoView({ block: 'center' })); await wait(200); await p.screenshot({ path: path.join(SHOTS, 'film-dal-libro-360.png') }); }
   await p.evaluate(() => { Object.keys(openState).forEach(k => { openState[k] = false; }); renderList(); }); await wait(300);
 
-  // 4) Ricerca dei libri: Google sopra il worker, sezioni chiuse, stato e guida
+  // 4) Ricerca dei libri: Google sopra il catalogo SBN, sezione chiusa, stato e guida
   await p.evaluate(() => window.NL.openOptions('search')); await wait(500);
   const rs = await p.evaluate(() => {
     const sec = document.querySelector('[data-sec="search"]'), k = document.getElementById('svcKey'), s = document.getElementById('svcSbn');
-    return { order: !!(k.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING), kOpen: !document.getElementById('svcKeyB').hidden, sOpen: !document.getElementById('svcSbnB').hidden,
-      kSt: document.getElementById('gbSt').textContent, sSt: document.getElementById('sbnSt').textContent, kGuide: !document.getElementById('gbGuide').hidden, sGuide: !document.getElementById('sbnGuide').hidden,
+    return { order: !!(k.compareDocumentPosition(s) & Node.DOCUMENT_POSITION_FOLLOWING), kOpen: !document.getElementById('svcKeyB').hidden, sFold: !!s.querySelector('.svc-tog, .svc-b, input, button'),
+      kSt: document.getElementById('gbSt').textContent, sSt: document.getElementById('sbnSt').textContent, kGuide: !document.getElementById('gbGuide').hidden, sGuide: !!document.getElementById('sbnGuide'), sT: s.querySelector('.svc-t').textContent, sC: document.getElementById('sbnCount').textContent,
       kDesc: k.querySelector('.svc-desc').textContent, exp: k.querySelector('.svc-tog').getAttribute('aria-expanded'), txt: sec.innerText };
   });
   console.log('[ricerca]', JSON.stringify({ kSt: rs.kSt, sSt: rs.sSt, kGuide: rs.kGuide, sGuide: rs.sGuide }));
-  assert(rs.order, 'Google Libri sopra il worker');
-  assert(!rs.kOpen && !rs.sOpen && rs.exp === 'false', 'sezioni chiuse');
-  assert.strictEqual(rs.kSt, 'In uso'); assert.strictEqual(rs.sSt, 'Non impostato');
-  assert(!rs.kGuide && rs.sGuide, 'la guida solo dove manca (qui il worker)');
+  assert(rs.order, 'Google Libri sopra il catalogo SBN');
+  assert(!rs.kOpen && !rs.sFold && rs.exp === 'false', 'Google chiusa; SBN riga fissa, senza campi né tasti');
+  assert.strictEqual(rs.kSt, 'In uso'); assert.strictEqual(rs.sSt, 'Incluso');
+  assert.strictEqual(rs.sT, 'Catalogo delle biblioteche italiane (SBN)'); assert.strictEqual(rs.sC, 'Non devi fare niente. Ricerche di oggi: 0 su 50.');   // testi approvati (20/11/2026)
+  assert(!rs.kGuide && !rs.sGuide && !/worker/i.test(rs.txt), 'niente guida del worker');
+  assert(rs.txt.startsWith('L’API Google Libri è facoltativa: serve a trovare più libri e ad avere dati più precisi.'), rs.txt.slice(0, 100));
   assert.strictEqual(rs.kDesc, 'Trova titoli, copertine e descrizioni nell\'archivio di Google. Senza API l\'app usa solo Open Library e trova meno libri.');
   assert(!rs.txt.includes(KEY), 'l’API non si vede');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'ricerca-chiusa-360.png') });
@@ -133,9 +135,6 @@ const KEY = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQr7Gt';
   assert.strictEqual(await p.evaluate(() => window.NL.settings.gbKey), KEY, 'chiave intatta');
   await p.click('#svcKey .svc-tog'); await wait(150);
   assert.strictEqual(await p.$eval('#svcKeyB', e => e.hidden), true, 'si richiude');
-  // «Come si crea il worker»: apre la sezione e i passi
-  await p.click('#sbnGuide'); await wait(300);
-  assert(await p.evaluate(() => !document.getElementById('svcSbnB').hidden && document.getElementById('sbnHow').open), 'la guida del worker apre la sezione e i passi');
   // prestata da un amico
   await p.evaluate(() => {
     localStorage.setItem('catalogo-libri-amici-chiavi-mie', JSON.stringify({ gb: '', sbn: '' }));
@@ -146,10 +145,11 @@ const KEY = 'AIzaSyA1b2C3d4E5f6G7h8I9j0KlMnOpQr7Gt';
   assert.deepStrictEqual(lent, { st: 'Prestata da Serena B.', on: true, show: true, guide: true }, 'API prestata');
   await hideAll();
 
-  // 5) finestra «API Google e worker»: testo approvato e contatore
+  // 5) finestra «API Google Libri»: testo approvato (20/11/2026) e contatore
   await p.evaluate(() => window.NLAmici.keys()); await wait(400);
   const kw = await p.$eval('#kwBody', e => e.innerText.replace(/\s+/g, ' '));
-  assert(kw.startsWith('Un’API Google Libri fa 1.000 ricerche al giorno. Con un uso normale bastano per te e per decine di amici. Il primo giorno, quando un amico carica la sua libreria, ne consuma di più: puoi aiutare fino a 6 amici nuovi al giorno (50 libri ciascuno). Il worker ne regge migliaia.'), 'testo della finestra: ' + kw);
+  assert(kw.startsWith('Un’API Google Libri fa 1.000 ricerche al giorno. Con un uso normale bastano per te e per decine di amici. Il primo giorno, quando un amico carica la sua libreria, ne consuma di più: puoi aiutare fino a 6 amici nuovi al giorno (50 libri ciascuno).') && !/worker/i.test(kw), 'testo della finestra: ' + kw);
+  assert.strictEqual(await p.$eval('#kwH', e => e.textContent), 'API Google Libri');
   assert.deepStrictEqual(await p.evaluate(() => [0, 1, 2].map(n => window.NLAmici.lentText(n))), ['Non la usa ancora nessun amico', 'La usa 1 amico', 'La usano 2 amici']);
   assert.strictEqual(await p.evaluate(() => window.NLAmici.lentCount()), -1, 'senza account il contatore non si mostra');
   await hideAll();

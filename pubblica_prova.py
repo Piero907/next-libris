@@ -14,7 +14,7 @@ assert os.path.isdir(os.path.join(DST, '.git')), 'manca il repository della copi
 MODULES = ['wrap.js', 'wrap.css', 'layout.js', 'layout.css', 'schede.js', 'schede.css', 'social.js', 'social.css', 'profilo.js', 'profilo.css', 'amici.js', 'amici.css', 'notifiche.js', 'notifiche.css', 'ricerche.js', 'ricerche.css', 'push.js', 'push.css', 'guida.js', 'guida.css', 'chat.js', 'chat.css', 'admin.js', 'admin.css']        # moduli che si possono togliere (togli_modulo.py): se non ci sono piu' nell'app, spariscono anche qui
 for f in FILES + MODULES:
     if os.path.exists(os.path.join(APP, f)): shutil.copy2(os.path.join(APP, f), os.path.join(DST, f))
-    elif f in MODULES and os.path.exists(os.path.join(DST, f)): os.remove(os.path.join(DST, f))
+    elif os.path.exists(os.path.join(DST, f)): os.remove(os.path.join(DST, f))   # tolto dall'app: via anche dal sito (es. cloudflare-sbn-worker.js, 031)
 for d in DIRS:
     if os.path.isdir(os.path.join(APP, d)):
         shutil.rmtree(os.path.join(DST, d), ignore_errors=True); shutil.copytree(os.path.join(APP, d), os.path.join(DST, d))

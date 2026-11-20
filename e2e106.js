@@ -4,7 +4,7 @@ const HN = require('./_harness');
 // modulo «Ricerche condivise» (ricerche.js) con un Supabase finto, 16/11/2026:
 // archivio comune (libro già cercato: niente Google; libro nuovo: una sola ricerca Google, poi nell'archivio solo i dati pubblici);
 // copertina grande dallo stesso indirizzo di Google (zoom=3; zoom=0 tolto il 17/11/2026), senza la richiesta /volumes/; descrizione assente = nessuna altra richiesta finche' non si apre il riquadro (giro 11B);
-// contatore condiviso dell’API prestata da Bruno (sha256, mai l’API) e del worker; a 950 notifica «limite» nella campanella,
+// contatore condiviso dell’API prestata da Bruno (sha256, mai l’API); il catalogo SBN passa dal server e lo conta lui (031); a 950 notifica «limite» nella campanella,
 // Google si ferma (dati da Open Library); la notifica apre la guida «Crea la tua API Google Libri: è gratis» (360, 412 scuro, 1280).
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path'), crypto = require('crypto');
@@ -25,6 +25,7 @@ function fake(req, res, body, url) {
   if (p === '/auth/v1/settings') return send(200, { external: { google: true } });
   if (p === '/auth/v1/token') { const id = String(body.refresh_token || '').slice(3); return send(200, { access_token: 'AT-' + id, refresh_token: 'RT-' + id, expires_in: 3600, user: { id } }); }
   const me = uidOf(req); if (!me) return send(401, { message: 'JWT' });
+  if (p === '/functions/v1/libri' && url.searchParams.has('isbn')) { DB.sbn = (DB.sbn || 0) + 1; return send(404, { error: 'non trovato' }); }   // catalogo SBN dal server, con l'accesso (031)
   if (p === '/rest/v1/libri') return send(req.method === 'GET' ? 200 : 201, req.method === 'GET' ? [] : undefined);
   if (p === '/rest/v1/profili' && req.method === 'GET') return send(200, [{ utente: 'Anna', nome: 'Anna', desideri: false, libreria: false }]);
   if (p === '/rest/v1/rpc/miei_amici') return send(200, [{ id: 'uB', utente: 'Bruno', nome: 'Bruno', stato: 'amici', verso: 'inviata', creato: new Date().toISOString() }]);
@@ -97,11 +98,11 @@ let gHits = [], sbnHits = 0, coverHits = [];
     return page;
   }
   const A = await phone(360, 780);
-  // 1) libro già nell'archivio comune: nessuna richiesta a Google né al worker
-  gHits = []; sbnHits = 0;
+  // 1) libro già nell'archivio comune: nessuna richiesta a Google né al catalogo SBN
+  gHits = []; sbnHits = 0; DB.sbn = 0;
   await A.addWait('9788806219352');
-  let b = await A.byIsbn('9788806219352'); console.log('[1 archivio]', b.t, b.a, b.e, b.y, b.pg, '| Google', gHits.length, '| SBN', sbnHits);
-  assert(b.t === 'La storia' && b.a === 'Elsa Morante' && b.e === 'Einaudi' && b.pg === '720' && b.ds.startsWith('Roma') && gHits.length === 0 && sbnHits === 0, 'dall\'archivio, senza Google');
+  let b = await A.byIsbn('9788806219352'); console.log('[1 archivio]', b.t, b.a, b.e, b.y, b.pg, '| Google', gHits.length, '| SBN', DB.sbn);
+  assert(b.t === 'La storia' && b.a === 'Elsa Morante' && b.e === 'Einaudi' && b.pg === '720' && b.ds.startsWith('Roma') && gHits.length === 0 && DB.sbn === 0 && sbnHits === 0, 'dall\'archivio, senza Google');
   // 2) libro nuovo: una sola ricerca Google, copertina grande dallo stesso indirizzo, niente descrizione (si cerca a richiesta, giro 11B); poi nell'archivio
   gHits = []; coverHits = [];
   await A.addWait('9788845292613', 4000);
@@ -112,11 +113,12 @@ let gHits = [], sbnHits = 0, coverHits = [];
   assert(!b.ds && !b.dsn, 'senza descrizione, da cercare a richiesta');
   const put = DB.puts.find(x => x.isbn === '9788845292613'); console.log('[2 archiviato]', JSON.stringify(put && put.dati));
   assert(put && put.dati.t === 'Il nome della rosa' && put.dati.e === 'Bompiani' && !('c' in put.dati) && !('n' in put.dati) && !('id' in put.dati), 'nell\'archivio solo i dati pubblici');
-  // 3) contatore condiviso: per sha256 dell’API e del worker, con il nome di chi la presta; mai l’API
+  // 3) contatore condiviso: per sha256 dell’API, con il nome di chi la presta; mai l’API. SBN: dal server, nessun contatore condiviso
   await A.evaluate(() => window.NLRicerche.flush(false)); await wait(800);
-  const gk = 'g:' + H(KEY), sk = 's:' + H(SBN);
+  const gk = 'g:' + H(KEY);
   console.log('[3 contatore]', JSON.stringify(DB.counts));
-  assert(DB.counts[gk] >= 1 && DB.calls.some(c => c.chiave === gk && c.di === 'Bruno') && DB.counts[sk] >= 1, 'contato per hash');
+  assert(DB.counts[gk] >= 1 && DB.calls.some(c => c.chiave === gk && c.di === 'Bruno'), 'contato per hash');
+  assert(DB.sbn >= 1 && sbnHits === 0 && !Object.keys(DB.counts).some(k => k.startsWith('s:')), 'SBN dal server (' + DB.sbn + '), mai a un worker dal telefono');
   assert(!JSON.stringify(DB.calls).includes(KEY), 'l’API non esce dal telefono');
   // 4) gli altri che usano l’API arrivano a 949: un'altra ricerca supera 950 → notifica, e Google si ferma
   DB.counts[gk] = 949; gHits = [];

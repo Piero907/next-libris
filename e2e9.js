@@ -16,7 +16,7 @@ const books = [
   B({ id: 'w1', t: 'La storia', a: 'Elsa Morante', e: 'Einaudi', y: '2014', c: 15, i: '9788806219352', w: true }),
   B({ id: 'w2', t: 'Sostiene Pereira', a: 'Antonio Tabucchi', c: 9.5, w: true }),
 ];
-const json = o => ({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(o) });
+const json = o => ({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' }, body: JSON.stringify(o) });
 const G = { '9788807881213': ['Sostiene Pereira', 'Antonio Tabucchi'], '9788804668015': ['Le città invisibili', 'Italo Calvino'], '9788850262359': ['Giornali di bordo', 'James Cook'] };
 let net = 'ok', sbnHits = 0;
 (async () => {
@@ -27,8 +27,9 @@ let net = 'ok', sbnHits = 0;
   await page.setRequestInterception(true);
   page.on('request', r => { const u = r.url();
     if (u.startsWith('http://localhost')) return r.continue();
-    if (net === 'weak' && /googleapis|openlibrary|crossref|sbn\.test/.test(u)) return r.abort('failed');
-    if (u.includes('sbn.test.workers.dev')) { sbnHits++; const isbn = new URL(u).searchParams.get('isbn');
+    if (net === 'weak' && /googleapis|openlibrary|crossref|functions\/v1\/libri/.test(u)) return r.abort('failed');
+    if (r.method() === 'OPTIONS') return r.respond({ status: 204, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' } });
+    if (u.includes('/functions/v1/libri?isbn=')) { sbnHits++; const isbn = new URL(u).searchParams.get('isbn');   // catalogo SBN: dal server (031)
       return r.respond(json(isbn === '9788850262359' ? { briefRecords: [{ codiceIdentificativo: 'IT\\ICCU\\X\\1', titolo: 'Giornali di bordo / James Cook', autorePrincipale: 'Cook, James', pubblicazione: 'Milano : TEA, 2021' }], full: { descrizioneFisica: '412 p. ; 20 cm', classificazioneDewey: ['910.4 VIAGGI'] } } : { briefRecords: [] })); }
     if (u.includes('googleapis.com/books/v1/volumes?')) { const isbn = (decodeURIComponent(u).match(/97[89]\d{10}/) || [])[0];
       if (!G[isbn]) return r.respond(json({ totalItems: 0 }));
@@ -116,12 +117,9 @@ let net = 'ok', sbnHits = 0;
   assert((await page.$eval('#activeFlt', e => e.innerText)).includes('Autore: Eco, Umberto'));   // cognome prima nei filtri (102.3)
   await click('#activeFlt [data-clear="aut"]'); await wait(100);
 
-  // ---- 5) catalogo SBN: indirizzo nelle opzioni, editore/anno/pagine/genere da SBN
-  await page.evaluate(() => { window.__app.openOptions(); window.NL.svcFold('sbn', true); });   // sezione richiudibile (giro 5)
-  await page.type('#sbnUrl', 'http://sbagliato'); await page.evaluate(() => document.querySelector('#sbnUrl').dispatchEvent(new Event('change'))); await wait(100);
-  assert((await page.$eval('#toastTxt', e => e.textContent)).includes('https://'));
-  await page.evaluate(() => { const i = document.querySelector('#sbnUrl'); i.value = 'https://sbn.test.workers.dev/'; i.dispatchEvent(new Event('change')); }); await wait(100);
-  assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).sbnUrl), 'https://sbn.test.workers.dev');
+  // ---- 5) catalogo SBN (incluso, passa dal server: 031): editore/anno/pagine/genere da SBN
+  await page.evaluate(() => { window.__app.openOptions(); });
+  assert(await page.evaluate(() => !document.getElementById('sbnUrl')), 'niente campo del worker');
   await page.evaluate(() => window.__app.addIsbn('9788850262359'));
   await page.waitForFunction(() => { const b = window.__app.state.books.find(x => x.i === '9788850262359'); return b && b.t; }, { timeout: 8000 });
   b = await byIsbn('9788850262359'); console.log('[5 SBN]', b.t, '|', b.e, b.y, b.pg, b.gen);

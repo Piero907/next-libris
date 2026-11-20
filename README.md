@@ -83,7 +83,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 
 ## Come sono fatte le prove
 
-**Prove della libreria** (`test_*.js`, `test_worker.mjs`): Node puro con `assert`. Caricano `lib.js` dall'app (è UMD, funziona anche in Node) o il worker SBN (`cloudflare-sbn-worker.js`).
+**Prove della libreria** (`test_*.js`, `test_worker.mjs`): Node puro con `assert`. Caricano `lib.js` dall'app (è UMD, funziona anche in Node) o il worker SBN della casa (`cloudflare-sbn-worker.js`, che dal 20/11/2026 sta in questo ramo e non nell'app).
 
 **Aiutante comune** (`_harness.js`, 17/11/2026): `const H = require('./_harness')` subito dopo `_config`.
 - `H.serve(CFG.port(NNNN), ROOT)`: il server dei file dell'app (prima ~10 righe ripetute in ogni prova). Le prove con un server speciale (Supabase finto, percorsi `/next-libris-prova/`, errori voluti) tengono il loro.
@@ -110,7 +110,7 @@ Nella prima riga dei file di prova c'è `const CFG = require("./_config")`. I pe
 | test_sbn.js | – | lettura dei record del catalogo SBN |
 | test_new.js | – | funzioni aggiunte a lib.js (case editrici, unione dei doppioni…) |
 | test_order.js | – | ordinamenti dell'elenco |
-| test_worker.mjs | – | worker Cloudflare per SBN |
+| test_worker.mjs | – | worker Cloudflare per SBN: richieste firmate dal server (031) |
 | e2e.js | 8123 | aggiunta a mano, ISBN non valido o non trovato, foto del codice, foto della copertina |
 | e2e2.js | 8124 | foto della copertina: sporca, ambigua (scelta), nessun risultato, illeggibile; errori, offline, doppioni, elenco di ISBN |
 | e2e3.js | 8124 | limiti di Google (429), diagnosi del servizio, riprova |

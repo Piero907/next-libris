@@ -62,37 +62,37 @@ const W1 = 'https://sbn-libri.piero.workers.dev', W0 = 'https://vecchio.piero.wo
   assert.notStrictEqual(await p.$eval('#tipTxt', e => getComputedStyle(e).display), 'none');
   await p.evaluate(() => window.__app.setTab('lib')); await wait(100);
 
-  // 3) «Ripristinalo»: backup con libri, worker e chiave -> tornano tutti
+  // 3) «Ripristinalo»: backup (vecchio) con libri, worker e chiave -> tornano i libri e l'API; il worker si ignora (031)
   const bk = { app: 'catalogo-libri', v: 4, books: [{ id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', i: '9788845292613', ts: 1 }], cfg: { sbnUrl: W1, gbKey: K1, saved: { sbn: [W1, W0], key: [K1] } } };
   fs.writeFileSync(CFG.OUT + '/backup_cfg.json', JSON.stringify(bk));
   const [ch] = await Promise.all([p.waitForFileChooser(), p.$eval('.welcome [data-act="restore"]', b => b.click())]);
   await ch.accept([CFG.OUT + '/backup_cfg.json']); await wait(500);
   const toast = await p.$eval('#toastTxt', e => e.textContent); console.log('[3 ripristino]', toast);
-  assert.strictEqual(toast, '1 libro ripristinato. Tornano in uso anche il worker SBN e l’API Google.');
+  assert.strictEqual(toast, '1 libro ripristinato. Torna in uso anche l’API Google.');
   let st = await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
-  assert.strictEqual(st.sbnUrl, W1); assert.strictEqual(st.gbKey, K1);
-  assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-saved'))), { sbn: [W1, W0], key: [K1] });
+  assert.strictEqual(st.sbnUrl, ''); assert.strictEqual(st.gbKey, K1);
+  assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-saved'))), { sbn: [], key: [K1] });
   await p.evaluate(() => window.__app.openOptions('search')); await wait(150);
-  console.log('[3 ricerca]', await p.$eval('#sbnSt', e => e.textContent), await p.$eval('#sbnUrl', e => e.value), '|', await p.$eval('#sbnSaved', e => e.innerText.replace(/\s+/g, ' ')));
-  assert.strictEqual(await p.$eval('#sbnUrl', e => e.value), W1);
+  console.log('[3 ricerca]', await p.$eval('#sbnSt', e => e.textContent));
+  assert.strictEqual(await p.$eval('#sbnSt', e => e.textContent), 'Incluso'); assert(!(await p.$('#sbnUrl')), 'niente campo del worker');
   await p.evaluate(() => window.__app.closeOptions()); await wait(100);
 
-  // 4) il backup che fai contiene worker e chiave
+  // 4) il backup che fai contiene l'API (il worker no: 031)
   await p.evaluate(() => { window.__bk = null; navigator.canShare = () => true; navigator.share = async d => { window.__bk = await d.files[0].text(); }; });
   await p.$eval('#btnShareBackup', b => b.click()); await wait(400);
   const out = JSON.parse(await p.evaluate(() => window.__bk));
   console.log('[4 backup cfg]', JSON.stringify(out.cfg));
-  assert.strictEqual(out.cfg.sbnUrl, W1); assert.strictEqual(out.cfg.gbKey, K1); assert.deepStrictEqual(out.cfg.saved.sbn, [W1, W0]);
+  assert(!('sbnUrl' in out.cfg) && !('sbn' in out.cfg.saved), 'niente worker nel backup'); assert.strictEqual(out.cfg.gbKey, K1); assert.deepStrictEqual(out.cfg.saved.key, [K1]);
   assert.strictEqual(out.books.length, 1);
-  // ripristino su un telefono che ha già un worker diverso: non lo sostituisce, aggiunge ai salvati
+  // ripristino su un telefono che aveva un worker suo: sparisce, e quelli del backup non tornano
   assert.deepStrictEqual(p.errors, []);
   await p.browserContext().close();
   p = await open({ installed: true, instScope: '/', sbnUrl: 'https://mio.piero.workers.dev' }, false);
   await (await p.$('#fileBackup')).uploadFile(CFG.OUT + '/backup_cfg.json'); await wait(500);
   console.log('[4 già impostato]', await p.$eval('#toastTxt', e => e.textContent));
   st = await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
-  assert.strictEqual(st.sbnUrl, 'https://mio.piero.workers.dev'); assert.strictEqual(st.gbKey, K1);
-  assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-saved')).sbn), ['https://mio.piero.workers.dev', W1, W0]);
+  assert.strictEqual(st.sbnUrl, ''); assert.strictEqual(st.gbKey, K1);
+  assert.deepStrictEqual(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-saved')).sbn), []);
   // backup vecchi (senza cfg) funzionano come prima
   fs.writeFileSync(CFG.OUT + '/backup_old.json', JSON.stringify({ app: 'catalogo-libri', v: 4, books: [{ id: 'b9', t: 'Vecchio', ts: 1 }] }));
   await (await p.$('#fileBackup')).uploadFile(CFG.OUT + '/backup_old.json'); await wait(500);

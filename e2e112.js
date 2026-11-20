@@ -8,7 +8,7 @@ const H = require('./_harness');
 // 3) Indietro da una finestra aperta dal Menu (con e senza cronologia) riapre il Menu nello stesso punto e con i gruppi aperti;
 //    «Chiudi» e × fanno come Indietro (17/11/2026 pomeriggio, prima chiudevano tutto) e non lasciano voci in piu' nella cronologia.
 //    Sostieni sta prima di Amici (17/11/2026 pomeriggio).
-// 4) «Con gli amici» (chiave e worker) sta in Ricerca dei libri, non piu' in Condivisione.
+// 4) «Con gli amici» (l'API; il worker non c'è più: 031) sta in Ricerca dei libri, non piu' in Condivisione.
 // Con SCHERMATE=cartella: foto a 412, 360 scuro e 1280.
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
@@ -84,7 +84,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     return { items, bad, don: document.getElementById('donMenu').getBoundingClientRect().top / innerHeight };
   });
   console.log('[2 menu]', mn.items.join(' | '), '· Sostieni a', Math.round(mn.don * 100) + '%');
-  assert.deepStrictEqual(mn.items, ['Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', 'API Google e worker', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
+  assert.deepStrictEqual(mn.items, ['Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', 'API Google Libri', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
     'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
     'Info e aiuto', '  Come si usa', '  Guarda una libreria di esempio', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);   // voci della guida (giro 4)
   assert.deepStrictEqual(mn.bad.filter(x => !/birra/.test(x)), [], 'sottotitoli su una riga (tranne Sostieni, che si legge tutto: 18/11/2026)');
@@ -133,7 +133,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   await openMenu(p); await p.evaluate(() => document.getElementById('goInfo').click()); await wait(300);
   await p.click('#infoList .dopt[data-sec="contact"]'); await wait(400);
   await back(p); s = await st(p); assert(s.drawer && s.info && !s.sets && !s.win, 'Menu con Info e aiuto aperto');
-  // 4) chiave e worker in Ricerca
+  // 4) l'API in Ricerca
   await p.click('#setList .dopt[data-sec="search"]').catch(async () => { await p.evaluate(() => document.getElementById('goSettings').click()); await wait(300); await p.click('#setList .dopt[data-sec="search"]'); });
   await wait(400);
   const sv = await p.evaluate(() => ({ inSearch: !!document.querySelector('.opt-sec[data-sec="search"] #svcBox'), box: document.getElementById('svcBox').innerText.trim().slice(0, 80) }));
@@ -142,39 +142,30 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'ricerca-412.png'), fullPage: false });
   await p.close();
 
-  // ---------- 5) chiave e worker di un amico in uso: «Usa la tua» / «Inserisci il tuo» (Piero, 17/11/2026) ----------
+  // ---------- 5) API di un amico in uso: «Usa la tua» (Piero, 17/11/2026). Il worker di un amico non esiste più (031): sparisce da solo ----------
   {
     const q = await phone(412, 915);
     await q.evaluate(() => {
       localStorage.setItem('prova:catalogo-libri-amici-chiavi-mie', JSON.stringify({ gb: 'AIzaMiaChiave0000000', sbn: '' }));
       localStorage.setItem('prova:catalogo-libri-amici-chiave-in-uso', JSON.stringify({ da: 'uA', nome: 'Anna', gb: 'AIzaDiAnna0000000000', sbn: 'https://sbn-anna.workers.dev' }));
       window.NL.settings.gbKey = 'AIzaDiAnna0000000000'; window.NL.settings.sbnUrl = 'https://sbn-anna.workers.dev'; window.NL.saveSettings();
-      window.NL.openOptions('search'); window.NL.svcFold('key', true); window.NL.svcFold('sbn', true);   // sezioni richiudibili (giro 5)
+      window.NL.openOptions('search'); window.NL.svcFold('key', true);   // sezione richiudibile (giro 5)
     }); await wait(500);
     const lab = () => q.$$eval('.svc-own', xs => xs.filter(x => x.offsetParent).map(x => x.dataset.own + ':' + x.textContent));
-    let l = await lab(); console.log('[5 prestate]', l.join(' | '));
-    assert.deepStrictEqual(l, ['gb:Usa la tua API (AIzaMi…0000)', 'sbn:Inserisci il tuo worker']);   // Google sopra il worker (giro 5)
+    let l = await lab(); console.log('[5 prestata]', l.join(' | '));
+    assert.deepStrictEqual(l, ['gb:Usa la tua API (AIzaMi…0000)']);
+    const sec = await q.$eval('.opt-sec[data-sec="search"]', x => x.innerText);
+    assert(/Catalogo delle biblioteche italiane \(SBN\)/.test(sec) && /Incluso/.test(sec) && !/worker/i.test(sec), 'SBN incluso, niente worker: ' + sec.slice(0, 200));
     if (SHOTS) await q.screenshot({ path: path.join(SHOTS, 'ricerca-prestate-412.png') });
     await q.click('.svc-own[data-own="gb"]'); await wait(400);
     let v = await q.evaluate(() => ({ gb: window.NL.settings.gbKey, sbn: window.NL.settings.sbnUrl, field: document.getElementById('gbKey').value, row: document.querySelector('#svcKey .svc-row').hidden, uso: localStorage.getItem('prova:catalogo-libri-amici-chiave-in-uso') }));
     console.log('[5 la mia API]', JSON.stringify(v));
-    assert(v.gb === 'AIzaMiaChiave0000000' && v.field === 'AIza…000' && !v.row && v.sbn === 'https://sbn-anna.workers.dev' && /"nogb":true/.test(v.uso), 'API mia, worker ancora di Anna');
-    l = await lab(); assert.deepStrictEqual(l, ['sbn:Inserisci il tuo worker']);
-    await q.click('.svc-own[data-own="sbn"]'); await wait(400);
-    v = await q.evaluate(() => ({ gb: window.NL.settings.gbKey, sbn: window.NL.settings.sbnUrl, focus: document.activeElement && document.activeElement.id, row: document.querySelector('#svcSbn .svc-row').hidden, uso: localStorage.getItem('prova:catalogo-libri-amici-chiave-in-uso') }));
-    console.log('[5 il mio worker]', JSON.stringify(v));
-    assert(v.gb === 'AIzaMiaChiave0000000' && v.sbn === '' && v.focus === 'sbnUrl' && !v.row && !v.uso, 'campo del worker vuoto e pronto, niente più di Anna');
+    assert(v.gb === 'AIzaMiaChiave0000000' && v.field === 'AIza…000' && !v.row && v.sbn === '' && (!v.uso || v.uso === 'null'), 'API mia, niente più di Anna (nemmeno il worker)');
+    l = await lab(); assert.deepStrictEqual(l, []);
     if (SHOTS) await q.screenshot({ path: path.join(SHOTS, 'ricerca-mie-412.png') });
-    // guida del worker nell'app, con «Copia il codice del worker» (non piu' il LEGGIMI)
-    const cp = await q.evaluate(async () => {
-      let got = ''; Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: t => { got = t; return Promise.resolve(); } } });
-      document.getElementById('sbnHow').open = true; document.getElementById('sbnHow').scrollIntoView({ block: 'center' });
-      document.getElementById('sbnCopy').click(); await new Promise(r => setTimeout(r, 600));
-      return { toast: (document.querySelector('.toast') || {}).textContent, got: got, leggimi: /LEGGIMI/.test(document.querySelector('#svcSbn').innerText), steps: document.querySelectorAll('#sbnHow li').length };
-    });
-    console.log('[5 guida worker]', cp.toast, cp.steps, 'passi, codice copiato:', /export default/.test(cp.got));
-    assert(/ORIGINI_AMMESSE/.test(cp.got) && !cp.leggimi && cp.steps === 5, 'guida del worker');
-    if (SHOTS) await q.screenshot({ path: path.join(SHOTS, 'ricerca-guida-worker-412.png') });
+    // la guida del worker e il suo codice non stanno più nell'app
+    const gone = await q.evaluate(async () => ({ how: !!document.getElementById('sbnHow'), copy: !!document.getElementById('sbnCopy'), file: (await fetch('cloudflare-sbn-worker.js')).status }));
+    assert(!gone.how && !gone.copy && gone.file === 404, 'niente guida né codice del worker nell\'app: ' + JSON.stringify(gone));
     await q.close();
   }
 

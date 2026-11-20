@@ -20,8 +20,8 @@ Next Libris è il social dei libri: metti in ordine i tuoi libri, guardi quelli 
 7. **Chat**: anche con chi non è tra gli amici (con richiesta), gruppi fino a 30, libri mandati in chat, avvisi sul telefono.
 8. **Profilo**: numeri delle tue letture a tessere nei colori delle stagioni, immagine da condividere.
 9. **Per te**: la scheda della stagione e i suggerimenti.
-10. **API Google Libri**: con l'API l'app trova molti più libri, con copertine e descrizioni. È **gratis**: crearla non costa nulla e la crei da solo, in pochi passi. Si **presta**: un amico te la presta con un tocco (fino a 300 ricerche al giorno; col suo worker 3.000), l'API resta sul server e non la vedi; chi non ce l'ha la chiede con «Chiedimela»; chi ce l'ha la presta e aiuta l'app a crescere.
-11. **Fonti libere**: Open Library, SBN, Wikipedia, Wikidata e Commons; Google Libri solo quando manca il libro o la copertina.
+10. **API Google Libri**: con l'API l'app trova molti più libri, con copertine e descrizioni. È **gratis**: crearla non costa nulla e la crei da solo, in pochi passi. Si **presta**: un amico te la presta con un tocco (fino a 300 ricerche al giorno), l'API resta sul server e non la vedi; chi non ce l'ha la chiede con «Chiedimela»; chi ce l'ha la presta e aiuta l'app a crescere.
+11. **Fonti libere**: Open Library, SBN (il catalogo delle biblioteche italiane, incluso per tutti dal 20/11/2026), Wikipedia, Wikidata e Commons; Google Libri solo quando manca il libro o la copertina.
 12. **Ovunque**: prima il telefono, poi tablet e PC; si installa come un'app; libri salvati sul telefono e, con l'account, anche online; copia in .txt.
 
 ## Le 4 schede di benvenuto

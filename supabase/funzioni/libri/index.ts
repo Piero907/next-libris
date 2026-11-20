@@ -3,8 +3,11 @@
 // la chiave a chiave_prestata() (solo service_role: controlla prestito e amicizia, conta, 300 al giorno per amico, 950 in tutto),
 // fa la richiesta a Google Libri e rimanda la risposta così com'è. Togliendo il prestito si ferma subito.
 //   GET /functions/v1/libri?da=<id di chi presta>&u=<percorso e domanda di Google, senza chiave>
-//   GET /functions/v1/libri?da=<id di chi presta>&isbn=<ISBN>   (026, 18/11/2026: il worker SBN prestato, il cui indirizzo resta qui)
-//   Versione 3 (027, giro 11A): worker prestato con 3.000 ricerche al giorno per amico (worker_conta, x-nl-stop: mio).
+//   GET /functions/v1/libri?isbn=<ISBN>   (031, 20/11/2026: il worker SBN «della casa», uno per tutti; versione 4)
+//     L'indirizzo del worker e la chiave di firma stanno nel Vault e non arrivano mai al telefono: li dà sbn_conta() (solo
+//     service_role), che conta anche la ricerca: 500 al giorno per utente con l'account (x-nl-stop: mio), 3.000 al giorno in tutto
+//     per chi non ha l'account (x-nl-stop: tetto). La richiesta al worker è firmata (ECDSA P-256, «isbn.secondi»): il worker
+//     risponde solo alle richieste firmate da qui. Il vecchio «da=» (worker prestato da un amico, 026-027) non si usa più.
 //   Intestazioni di risposta: x-nl-tot (ricerche di oggi con quella chiave), x-nl-mio (le tue), x-nl-stop (no | mio | pieno).
 // verify_jwt spento: l'accesso si controlla qui chiedendo l'utente a /auth/v1/user (vale con ogni tipo di chiave del progetto).
 const URL_DB = Deno.env.get("SUPABASE_URL")!;
@@ -56,15 +59,26 @@ async function chiave(uid: string, da: string) {
   return await r.json() as { k?: string; e?: string; tot?: number; mio?: number };
 }
 
-async function worker(uid: string, da: string): Promise<{ w?: string; e?: string; mio?: number }> {
-  const r = await fetch(URL_DB + "/rest/v1/rpc/worker_conta", {
+async function sbnConta(uid: string): Promise<{ w?: string; f?: string; e?: string; mio?: number }> {
+  const r = await fetch(URL_DB + "/rest/v1/rpc/sbn_conta", {
     method: "POST",
     headers: SR.startsWith("sb_secret_") ? { apikey: SR, "Content-Type": "application/json" }
       : { apikey: SR, Authorization: "Bearer " + SR, "Content-Type": "application/json" },
-    body: JSON.stringify({ utente: uid, da }),
+    body: JSON.stringify({ utente: uid || null }),
   });
-  if (!r.ok) throw new Error("worker_conta " + r.status);
+  if (!r.ok) throw new Error("sbn_conta " + r.status);
   return await r.json();
+}
+// firma della richiesta al worker: la chiave privata (PKCS8 in base64, dal Vault) si importa una volta sola
+let FIRMA: { testo: string; chiave: CryptoKey } | null = null;
+const b64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function firma(privata: string, isbn: string): Promise<string> {
+  if (!FIRMA || FIRMA.testo !== privata) {
+    FIRMA = { testo: privata, chiave: await crypto.subtle.importKey("pkcs8", b64(privata), { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]) };
+  }
+  const ts = Math.floor(Date.now() / 1000);
+  const f = new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, FIRMA.chiave, new TextEncoder().encode(isbn + "." + ts)));
+  return ts + "." + btoa(String.fromCharCode(...f)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 Deno.serve(async (req) => {
@@ -75,23 +89,28 @@ Deno.serve(async (req) => {
   const q = new URL(req.url).searchParams;
   const da = q.get("da") || "", u = q.get("u") || "";
   const isbn = (q.get("isbn") || "").replace(/[^0-9Xx]/g, "").toUpperCase();
-  if (q.has("isbn")) {                                   // worker SBN prestato: l'indirizzo non arriva mai al telefono dell'amico
-    if (!UUID.test(da) || !/^(97[89]\d{10}|\d{9}[\dX])$/.test(isbn)) return risposta(400, { error: "richiesta non valida" }, h);
+  if (q.has("isbn")) {                                   // worker SBN della casa: l'indirizzo non arriva mai al telefono
+    if (!/^(97[89]\d{10}|\d{9}[\dX])$/.test(isbn)) return risposta(400, { error: "richiesta non valida" }, h);
     let uidW = "";
-    try { uidW = await utente(req); } catch { return risposta(503, { error: "accesso non controllabile" }, h); }
-    if (!uidW) return risposta(401, { error: "accesso scaduto" }, h);
+    if (req.headers.get("authorization")) {              // con l'account: 500 al giorno a testa
+      try { uidW = await utente(req); } catch { return risposta(503, { error: "accesso non controllabile" }, h); }
+      if (!uidW) return risposta(401, { error: "accesso scaduto" }, h);
+    } else if (!origine || !(ORIGINI.includes(origine) || /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origine))) {
+      return risposta(403, { error: "origine non ammessa" }, h);   // senza account: solo dall'app (e comunque col tetto di tutti)
+    }
     let c;
-    try { c = await worker(uidW, da); } catch (e) { console.log(String(e)); return risposta(503, { error: "servizio non disponibile" }, h); }
-    const cw = { "x-nl-mio": String(c.mio ?? "") };
-    if (c.e === "mio") return risposta(429, { error: "limite del giorno per amico" }, h, { ...cw, "x-nl-stop": "mio" });
+    try { c = await sbnConta(uidW); } catch (e) { console.log(String(e)); return risposta(503, { error: "servizio non disponibile" }, h); }
+    const cw: Record<string, string> = uidW ? { "x-nl-mio": String(c.mio ?? "") } : {};
+    if (c.e === "mio" || c.e === "tetto") return risposta(429, { error: c.e === "mio" ? "limite del giorno" : "limite del giorno senza account" }, h, { ...cw, "x-nl-stop": c.e });
     const w = c.w || "";
-    if (!w || !/^https:\/\//.test(w)) return risposta(403, { error: "worker non prestato" }, h, { "x-nl-stop": "no" });
+    if (!w || !c.f || !/^https:\/\//.test(w)) return risposta(503, { error: "catalogo non disponibile" }, h);
     try {
       const wu = new URL(w); wu.searchParams.set("isbn", isbn);
-      const r = await fetch(wu.toString(), { headers: { Accept: "application/json" } });
-      return risposta(r.status, (await r.text()).split(wu.origin).join("…"), h, cw);   // l'indirizzo del worker non torna indietro
-    } catch {
-      return risposta(502, { error: "il worker non risponde" }, h);
+      const r = await fetch(wu.toString(), { headers: { Accept: "application/json", "x-nl-firma": await firma(c.f, isbn) } });
+      return risposta(r.status, (await r.text()).split(wu.origin).join("…").split(wu.host).join("…"), h, cw);   // l'indirizzo del worker non torna indietro
+    } catch (e) {
+      console.log("worker: " + (e instanceof Error ? e.name : "errore"));
+      return risposta(502, { error: "il catalogo non risponde" }, h);
     }
   }
   // solo la ricerca dei volumi di Google Libri, niente altro
