@@ -271,11 +271,21 @@ html.g-look:has(#wrap:not([hidden])) .g-tabs{z-index:61}
 html.g-look #sortBar{margin-bottom:14px!important}
 html.g-look #stick > .chips:not([hidden]){margin-bottom:14px!important;margin-top:0!important}
 
-/* G22 · Indice: puntini come nell'indice di un libro (Piero, 20/11/2026): partono subito dopo il titolo della voce e arrivano alla ›,
-   sulla riga del titolo; il sottotitolo va sotto, senza spostare i puntini. Puntini in b::before (b::after è il pallino di Account) */
+/* G22 · Indice: puntini come nell'indice di un libro (Piero, 20/11/2026): sulla riga sotto, subito dopo il sottotitolo (sull'ultima riga
+   se va a capo) e fino alla ›, che sta su quella riga; senza sottotitolo, sulla riga del titolo. Puntini «di guida» classici: un segmento
+   inline largo 100% con margine -100%, tagliato da overflow hidden. ::after (il pallino di Account ha il sottotitolo, quindi b::after resta suo) */
 html.g-look .drawer .dopt::after{display:none!important}
 html.g-look .drawer .dopt>span:has(>b){flex:1 1 auto!important;min-width:0;max-width:none!important}
-html.g-look .drawer .dopt:not(.dset-t)>span:has(>b)>b{display:flex!important;align-items:baseline;gap:8px}
-html.g-look .drawer .dopt:not(.dset-t)>span:has(>b)>b::before{content:"";order:2;flex:1;min-width:16px;border-bottom:1.5px dotted color-mix(in srgb,var(--muted) 55%,transparent);transform:translateY(-4px)}
-html.g-look .drawer .dopt>.n{align-self:flex-start;padding-top:0;line-height:1.3;font-size:15.5px}
-html.g-look #drawerOpts>.ddon .don-menu>span:has(>b)>b::before{display:none}
+html.g-look .drawer .dopt:not(.dset-t)>span>small:not(:empty),
+html.g-look .drawer .dopt:not(.dset-t)>span:not(:has(>small:not(:empty)))>b{display:block!important;overflow:hidden;white-space:normal!important;text-overflow:clip!important}
+html.g-look .drawer .dopt:not(.dset-t)>span>small:not(:empty)::after,
+html.g-look .drawer .dopt:not(.dset-t)>span:not(:has(>small:not(:empty)))>b::after{content:"";display:inline-block;width:100%;margin:0 -100% 0 8px;
+  border-bottom:1.5px dotted color-mix(in srgb,var(--muted) 55%,transparent);vertical-align:.3em;order:0}
+html.g-look .drawer .dopt:not(.dset-t)>span>small:not(:empty)::after{float:none}
+html.g-look .drawer .dopt:not(.dset-t):has(>span>small:not(:empty))>.n{align-self:flex-end;padding-bottom:1px}
+html.g-look #drawerOpts>.ddon .don-menu>span>:is(b,small)::after{display:none}
+
+/* G23 · I tuoi amici (Piero, 20/11/2026: l'elenco non scorreva). L'elenco aveva max-height 264 con scorrimento interno (amici.css),
+   ma stile-c (.fri .fr-list overflow hidden) lo tagliava: si vedevano 3 amici e basta. Nella pagina intera l'elenco è tutto intero
+   e scorre la pagina (con la ricerca in cima); le altre .fr-pick-list (es. «Presta, vendi o regala») restano come sono */
+#friSheet .fr-pick-list{max-height:none!important;overflow:visible!important}
