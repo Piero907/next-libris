@@ -1,6 +1,6 @@
 # Next Libris — mappa dell'app (elemento → codice, aspetto, prove)
 
-**Aggiornata il 21/11/2026 sulla prova 115.3** (ramo `prova`, commit f09aeab). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
+**Aggiornata il 21/11/2026 sul ramo `prova` dopo la 115.3** (commit 82de146: errori dei telefoni, GitHub Actions). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
 
 **A cosa serve:** prima di una modifica, dice **dove mettere le mani** (file, funzione, id, regola CSS) e **quali prove rifare**. Non sostituisce la lettura del codice: prima di modificare si controlla sempre il codice vero (`grep -n "nome" *.js`).
 
@@ -31,6 +31,7 @@
 | `stile-g.js` | segnalibri `#gTabs` (`TABS`, `tabs()`, `closeAll()`, `current()`, `paintTabs()`), «+ Aggiungi» `#gAdd`, testatina/nastro/frase (`paintHead`), titolo «Indice», «Nastro e linguette a sinistra» (`side`), colore della barra di stato |
 | Moduli (`NOME.js` + `NOME.css`, agganciati a `window.NL`) | `layout` (+, Per te, icone dell'Indice, avvisi in cima) · `schede` (pagina del libro) · `social` (account) · `profilo` · `amici` · `notifiche` (campanella) · `chat` · `ricerche` (archivio comune, guida dell'API) · `push` · `guida` (schede di benvenuto, percorso, libreria di esempio) · `wrap` (stagione in libri) · `admin` (solo per gli amministratori, caricato da `chat.js`) |
 | CSS | `style.css` (base) → CSS dei moduli → `stile-c.css` (pezzi di base) → `stile-g.css` (G1-G27, vince su tutto) |
+| Automazioni | `.github/workflows/prove.yml` (giro completo delle prove a ogni push di `prova` e `prove`; uguale nei due rami), `.github/workflows/tieni-attivo.yml` (`tieni_attivo()` nei due database ogni 2 giorni; parte solo da `main`) |
 | Altri | `sw.js` (copia offline, `SHELL`), `manifest.json`, `version.json`, `privacy.html`, `REGISTRO_MODIFICHE.md` (mostrato in «Novità delle versioni»), `LEGGIMI.txt`, `indirizzo.js` + `trasloco.html/js` (vecchio indirizzo: «Ci siamo spostati»), `vendor/` (ZXing, Tesseract, font, bandiere), `icons/` |
 
 **Aggiungere un modulo:** `NOME.js`/`.css`, una riga in `index.html` e una in `SHELL` di `sw.js` con `// modulo:`, il nome in `MODULES` di `pubblica_prova.py`. Si toglie con `python3 togli_modulo.py NOME`.
@@ -270,6 +271,8 @@
 | Condividi un libro o una lista, link ricevuto | `#shareSheet`, `#importSheet`; `openShare()`, `sendShare()`, `checkIncoming()`, `doImport()` (app-strumenti) | 28, 130 |
 | Sostieni (PayPal 2, 3, 5 €, Altro) | `#donSheet`, `openDon()`, `donGo()`, `donBack()` (app-scheda) | 52, 115 |
 | Novità delle versioni | `#logSheet`, `openLog()`, `logHTML()` (app-scheda) | 51 |
+| Registro degli errori (ultimi 20, in fondo alla mail di Contatti) | `nlErr()`, `ERRS`, `errText()` (app.js) | 114 |
+| **Errori dei telefoni veri** (anonimi, al server) | `social.js` `errSend()`, `errTel()`, `errClean()`, `errVer()`, `errNew()`; chiave `catalogo-libri-errori-inviati`; server `errori_manda`; testo in `privacy.html` | **144** |
 
 ## 18. Amministrazione (solo «Piero R.» e «Next Libris»)
 
@@ -291,15 +294,18 @@ SQL in `supabase/` del ramo `prove` (migrazioni 001-031). Ogni funzione è `secu
 | Ricerche e archivio comune | `ricerche`, `ricerche_utenti`, `archivio`, `archivio_proposte` | `conta_ricerche`, `archivia`, `da_archivio`, `proponi_archivio`, `sbn_conta` | 012, 029, 031 |
 | Chat | `chat`, `chat_membri`, `messaggi`, `blocchi`, `segnalazioni`, `sospesi` | `chat_*`, `gruppo_*`, `blocca`, `segnala`, `consiglia`, `chat_avvisa` | 023, 024, 028 |
 | Amministrazione | `amministratori` | `admin_*`, `e_admin` | 023, 025, 029 |
+| Errori dei telefoni e database attivo | `errori` (30 giorni), `battito` | `errori_manda` (anon), `tieni_attivo` (anon), `errori_pulizia` (cron errori-pulizia) | 032 (per ora solo nella prova) |
 
 - **Funzioni Edge:** `libri` (v4 vera, **v5 prova**: API prestata e catalogo SBN, `supabase/funzioni/libri/index.ts`) e `push` (`supabase/funzioni/push`).
 - **Vault:** `sbn_worker`, `sbn_firma`, `push_url`, `push_segreto`, `push_vapid_*`.
-- **Cron:** push-attese, desideri-riassunto (17 UTC), chat-pulizia (notte).
+- **Cron:** push-attese, desideri-riassunto (17 UTC), chat-pulizia (notte), errori-pulizia (notte, 032).
+- **Leggere gli errori:** `select giorno, versione, dove, messaggio, telefono, app, volte from public.errori order by ultima desc limit 50;` (solo dal database, con il connettore Supabase).
 - **Prove SQL:** `supabase/prova_*.sql` (sicurezza, tetti, amici, notifiche, ricerche, SBN…).
 - **Worker SBN:** `cloudflare-sbn-worker.js` (ramo `prove`), prova `test_worker.mjs`.
 
 ## 20. Prove e strumenti (ramo `prove`)
 
+- **GitHub Actions:** il giro completo gira da solo a ogni push (`prove.yml`); risultato con `gh api repos/Piero907/next-libris/actions/runs?per_page=3` e file «esito-prove». Prima di rifare prove qui, guardare l'esito di Actions.
 - **Descrizione di ogni prova:** tabella in `README.md` (porta e cosa controlla). Comandi: `node esegui.js eNN …`; `--veloce` (libreria + gruppo FUMO: e2e, 5, 6, 7, 10, 15, 56, 62); prove sensibili ai tempi in `DA_SOLE`.
 - **Aiutanti:** `_harness.js` (`H.serve`, `H.wait`, `H.fai(p, 'menu'|'add'|'lib'|…)`, `H.aggiungi`, `H.matita`, `H.prestiti`), `_config.js` (porte).
 - **Controlli grafici:** `ispeziona.js` con `PASSI=./passi_finestre.js` (tutte le finestre a 1280, 768, 390), `schermate_restyle.js`, `schermate_telefoni.js`, `schermate_amici*.js`; e2e137 (misure dei telefoni).
@@ -324,5 +330,6 @@ SQL in `supabase/` del ramo `prove` (migrazioni 001-031). Ogni funzione è `secu
 | Indice e Opzioni | 15, 72, 107, 112, 139 |
 | Backup ed esportazione | 6, 8, 9, 24, 57, 59 |
 | Account | 100, 132 |
+| Errori dei telefoni | 144 |
 | Amministrazione | 131, 135 |
 | Copia di prova, aggiornamenti, offline | 19, 32, 33, 51, 62, 70, 73 |
