@@ -97,7 +97,7 @@ if (CB && CB._createPageInContext) {
     const p = await orig.apply(this, arguments);
     try { await p.evaluateOnNewDocument(tracker); created.add(p); } catch (e) {}
     // stile G (20/11/2026): le prove di prima controllano le funzioni con i tasti di sempre; lo stile G lo accendono e2e137 e le schermate (window.NL_NO_G = false)
-    try { await p.evaluateOnNewDocument(() => { window.NL_NO_G = true; }); } catch (e) {}
+    try { if (!process.env.STILE_G) await p.evaluateOnNewDocument(() => { window.NL_NO_G = true; }); } catch (e) {}
     // guida di primo avvio (giro 4): nelle prove non si apre da sola, tranne con ?guida=1 nell'indirizzo (e2e123)
     try { await p.evaluateOnNewDocument(() => { try { if (!/[?&]guida=1/.test(location.search)) (() => { const m = location.pathname.match(/\/next-libris-([a-z]+)(\/|$)/); return [(m ? m[1] + ':' : '') + 'catalogo-libri-guida']; })().forEach(k => { if (!localStorage.getItem(k)) localStorage.setItem(k, '{"seen":1,"v":99}'); }); } catch (e) {} }); } catch (e) {}
     p.on('console', m => { const t = m.text(); if (/Content Security Policy/i.test(t)) csp.push(t.slice(0, 300)); });
