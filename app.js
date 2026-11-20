@@ -432,7 +432,7 @@ function persist() {
   var ok = ls.set(LS_KEY, JSON.stringify({ books: storable(), updated: guest ? guest.upd : state.updated }));
   /* salvataggio non riuscito: avviso in cima alla libreria, solo quando serve (Piero, 20/11/2026; prima c'era la riga «Salvato su questo
      telefono» della vecchia testata, che nello stile G non si vedeva più, e con lei spariva anche l'errore) */
-  if (!ok) notice('Non riesco a salvare le ultime modifiche su questo telefono: lo spazio dell\'app è pieno. Fai subito il backup per non perderle.', 'Fai il backup', function () { backupTap(); }, null, 'save');
+  if (!ok) notice('Non riesco a salvare le ultime modifiche: lo spazio dell\'app su questo telefono è pieno. Fai subito il backup per non perderle.', 'Fai il backup', function () { backupTap(); }, null, 'save');
   else if (noticeKind === 'save') { $('#notice').hidden = true; noticeKind = ''; }
   checkBackupNag();
   if (ok) emit('saved');                                // i moduli (es. la sincronizzazione dell'account) sanno che i libri sono cambiati
@@ -615,6 +615,7 @@ function notice(msg, label, fn, onClose, kind) {
   b.onclick = function () { $('#notice').hidden = true; noticeKind = ''; if (fn) fn(); };
   $('#noticeX').onclick = function () { $('#notice').hidden = true; noticeKind = ''; if (onClose) onClose(); updateSummary(); };
   noticeKind = kind || '';
+  $('#notice').classList.toggle('nt-save', kind === 'save');   // l'errore di salvataggio si legge tutto (gli altri avvisi stanno su due righe)
   $('#notice').hidden = false;
 }
 function beep(ok) {

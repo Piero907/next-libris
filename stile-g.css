@@ -289,3 +289,8 @@ html.g-look #drawerOpts>.ddon .don-menu>span>:is(b,small)::after{display:none}
    ma stile-c (.fri .fr-list overflow hidden) lo bloccava: si vedevano 3 amici e basta. Scelta di Piero: scorre SOLO il riquadro,
    non la pagina, così «Aggiungi un amico» resta sotto a portata. Le altre .fr-pick-list (es. «Presta, vendi o regala») restano come sono */
 #friSheet .fr-pick-list{max-height:min(330px,46vh)!important;overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+
+/* ---------- G24. avviso «Non riesco a salvare» (20/11/2026): il testo si legge tutto, su una riga sua; sotto «Fai il backup», i pallini e la × ---------- */
+html.g-look #notice.nt-save{flex-wrap:wrap;padding:12px 8px 6px 14px}
+html.g-look #notice.nt-save #noticeTxt{flex:1 0 100%;display:block;overflow:visible;-webkit-line-clamp:unset;line-clamp:unset;padding-right:6px}
+html.g-look #notice.nt-save #noticeBtn{margin-right:auto;padding-left:0}
