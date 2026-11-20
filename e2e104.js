@@ -239,36 +239,36 @@ const base = 'http://localhost:' + CFG.port(8304);
   // ---- dalla libreria di Bruno: l'icona dell'API (un worker rimasto nelle impostazioni non conta: 031) ----
   await A.keyboard.press('Escape'); await wait(200);
   await A.evaluate(() => { window.NL.settings.sbnUrl = 'https://sbn-anna.workers.dev'; window.NL.saveSettings(); });
-  await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
-  assert(await A.$eval('#guestKey', x => !x.hidden && !x.classList.contains('on') && /^Presta la tua API Google a Bruno$/.test(x.getAttribute('aria-label'))), 'icona sempre (hai l’API), spenta (17/11/2026)');
+  // stile G: le icone ⇄ e della chiave stanno nel profilo di Bruno (nella sua libreria non ci sono più)
+  await A.evaluate(() => window.NLProfilo.open('uB')); await wait(900);
+  assert(await A.$eval('#profBody [data-p="key"]', x => !x.hidden && !x.classList.contains('on') && /^Presta la tua API Google a Bruno$/.test(x.getAttribute('aria-label'))), 'icona sempre (hai l’API), spenta (17/11/2026)');
   // icona ⇄ (17/11/2026): via «Prestiti, regali e altro», la storia tra voi in una finestra
-  assert(!(await A.$('#guestBar .gb-more')), 'via «Prestiti, regali e altro»');
-  assert(await A.$eval('#guestSwap', x => !x.hidden && /Prestiti e regali tra te e Bruno/.test(x.getAttribute('aria-label'))), 'icona ⇄: tra voi c\'è un prestito');
-  await A.click('#guestSwap'); await wait(300);
+  assert(await A.$eval('#profBody [data-p="swap"]', x => !x.hidden && /Prestiti e regali tra te e Bruno/.test(x.getAttribute('aria-label'))), 'icona ⇄: tra voi c\'è un prestito');
+  await A.click('#profBody [data-p="swap"]'); await wait(300);
   t = await A.$eval('#swapSheet', x => x.innerText.replace(/\s+/g, ' '));
   console.log('[storia]', t);
-  assert(/Tra te e Bruno/.test(t) && /In corso/.test(t) && /Già restituiti e regali/.test(t) && /Finzi-Contini/.test(t), 'finestra della storia');
+  assert(/Tra te e Bruno/.test(t) && /In corso/i.test(t) && /Già restituiti e regali/i.test(t) && /Finzi-Contini/.test(t), 'finestra della storia');
   await A.click('#swapClose'); await wait(200);
-  await A.click('#guestKey'); await wait(400);   // il tocco sull'icona apre la scelta (17/11/2026)
+  await A.click('#profBody [data-p="key"]'); await wait(400);   // il tocco sull'icona apre la scelta (17/11/2026)
   assert(await A.$eval('#keyGb', x => x.checked) && !(await A.$('#keySbn')), 'solo l’API da prestare');
   assert(!/worker/i.test(await A.$eval('#keySheet', x => x.innerText)), 'la finestra non parla di worker');
   await A.click('#keyGo'); await wait(600);
   assert.deepStrictEqual(DB.keys.map(k => [k.gb_key, k.sbn]), [['AIzaChiaveDiAnna', '']], 'solo l’API');
-  assert.match(await A.$eval('#guestKey', x => x.getAttribute('aria-label') + (x.classList.contains('on') ? ' ✓' : '')), /^Prestata: API Google a .* ✓$/);
+  assert.match(await A.$eval('#profBody [data-p="key"]', x => x.getAttribute('aria-label') + (x.classList.contains('on') ? ' ✓' : '')), /^Prestata: API Google a .* ✓$/);
   if (process.env.SCHERMATE) await A.screenshot({ path: require('path').join(process.env.SCHERMATE, 'amico-chiave.png') });
-  await A.click('#guestKey'); await wait(400);
+  await A.click('#profBody [data-p="key"]'); await wait(400);
   assert(await A.$eval('#keyGb', x => x.checked), 'la scelta resta');
   assert.strictEqual(await A.$eval('#keyGo', x => x.textContent), 'Salva');
   assert(await A.evaluate(() => [...document.querySelectorAll('.sheet:not([hidden]) .sheet-in')].every(s => s.scrollWidth - s.clientWidth <= 0)), 'niente scorrimento di lato');
   await A.keyboard.press('Escape'); await wait(200);
-  // togli dagli amici: icona nella sua libreria, poi la conferma (17/11/2026)
-  const icos = await A.$$eval('#guestIcos > button:not([hidden])', x => x.map(b => b.id));
-  assert.deepStrictEqual(icos, ['guestSwap', 'guestKey', 'guestDrop'], 'tre icone, in ordine');
-  assert(await A.evaluate(() => { const m = document.querySelector('header.top .top-meta'), r = document.createRange(); r.selectNodeContents(m.firstChild); const t = r.getBoundingClientRect(), b = document.getElementById('guestIcos').getBoundingClientRect(); return t.right <= b.left; }), 'il nome non va sotto le icone');
-  await A.click('#guestDrop'); await wait(300);
+  // togli dagli amici: icona rossa nel suo profilo (stile G), poi la conferma (17/11/2026)
+  if (await A.$eval('#profSheet', x => x.hidden)) { await A.evaluate(() => window.NLProfilo.open('uB')); await wait(900); }
+  const icos = await A.$$eval('#profBody [data-p="swap"], #profBody [data-p="key"], #profBody [data-p="drop"]', x => x.filter(b => b.getClientRects().length).map(b => b.dataset.p));
+  assert.deepStrictEqual(icos, ['swap', 'key', 'drop'], 'tre icone nel profilo, in ordine');
+  await A.click('#profBody [data-p="drop"]'); await wait(300);
   assert.strictEqual(await A.$eval('#dropH', x => x.textContent), 'Togli Bruno dagli amici?');
   await A.click('#dropNo'); await wait(200); assert(await A.$eval('#dropSheet', x => x.hidden) && DB.am.length === 1, 'Annulla: resta amico');
-  await A.click('#guestDrop'); await wait(300); await A.click('#dropGo'); await wait(900);
+  await A.click('#profBody [data-p="drop"]'); await wait(300); await A.click('#dropGo'); await wait(900);
   assert(DB.am.length === 0 && await A.evaluate(() => !window.NL.guest()), 'tolto, e si torna alla propria libreria');
   assert.deepStrictEqual(errors, []);
   console.log('e2e104 OK'); await browser.close(); server.close();

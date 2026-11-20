@@ -113,7 +113,7 @@ const BOOKS = [
   await tap(p, '#btnShareList2'); await wait(150); await tap(p, '#shareSend'); await wait(500);
   sh = (await p.evaluate(() => window.__shared)).pop();
   console.log('[4 lista lunga] file:', sh.file, '|', sh.text.split('\n')[0]);
-  assert.strictEqual(sh.file, 'next-libris-lista-piero.json'); assert(sh.text.includes('Ripristina da backup o apri una lista ricevuta'));
+  assert.strictEqual(sh.file, 'next-libris-lista-piero.txt');   // solo .txt (Chrome su Android, 19/11/2026) assert(sh.text.includes('Ripristina da backup o apri una lista ricevuta'));
   fs.writeFileSync(CFG.OUT + '/lista_piero.json', sh.fileText);
   assert.deepStrictEqual(p.errors, []);
   await p.browserContext().close();
@@ -154,7 +154,7 @@ const BOOKS = [
   assert.deepStrictEqual([nb.w, nb.fr, nb.fl, nb.rs], [false, 'Piero', 'Gialli', 'da']);
   await p.evaluate(() => window.__app.openDrawer('flt')); await wait(350);
   console.log('[7 menu]', await txt(p, '#drawerFlt'));
-  assert((await txt(p, '#drawerFlt')).includes('Ricevuti da Piero1'.replace('Piero1', 'Piero 1')) || (await txt(p, '#drawerFlt')).includes('Ricevuti da'));
+  assert(/Ricevuti da/i.test(await txt(p, '#drawerFlt')));   // stile G: titoli in maiuscolo
   await p.evaluate(() => window.__app.closeDrawer()); await wait(350);
   // scheda aperta: etichetta con il nome e la lista
   await tap(p, '#list .row[data-id="' + nb.id + '"] .sum'); await wait(150);

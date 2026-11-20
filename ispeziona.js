@@ -138,7 +138,6 @@ const base = "http://localhost:" + CFG.port(8340);
     const ctx = await browser.createBrowserContext(); const page = await ctx.newPage();
     await page.setViewport({ width: w || 412, height: hh || 915, deviceScaleFactor: (w || 412) > 1100 ? 1 : 2, isMobile: (w || 412) < 1100, hasTouch: (w || 412) < 1100 });
     page.on('pageerror', e => errors.push(name + ': ' + e.message));
-    await page.evaluateOnNewDocument((g) => { window.NL_NO_G = g; }, !!process.env.NO_G);
     await page.evaluateOnNewDocument((u, id) => {
       window.NL_SOCIAL = { url: u, key: 'chiave-finta', gClient: 'client-finto' };
       if (!localStorage.getItem('prova:catalogo-libri-social-auth')) localStorage.setItem('prova:catalogo-libri-social-auth', JSON.stringify({ at: 'AT-' + id, rt: 'RT-' + id, exp: Date.now() + 3e6, uid: id, email: id + '@esempio.it' }));

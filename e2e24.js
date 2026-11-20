@@ -20,7 +20,7 @@ const W1 = 'https://sbn-libri.piero.workers.dev', W0 = 'https://vecchio.piero.wo
     return p;
   }
   const look = p => p.evaluate(() => [document.documentElement.getAttribute('data-theme'), getComputedStyle(document.body).backgroundColor, JSON.parse(localStorage.getItem('catalogo-libri-set')).theme]);
-  const LIGHT = 'rgb(238, 241, 238)', DARK = 'rgb(15, 21, 19)';
+  const LIGHT = 'rgb(252, 249, 242)', DARK = 'rgb(22, 30, 27)';
 
   // 1) tema: chiaro di default anche con il telefono in modalità scura
   let p = await open(null, true);

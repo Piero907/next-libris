@@ -27,7 +27,7 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
     p.on('pageerror', e => errors.push(w + ': ' + e.message));
     await p.setRequestInterception(true);
     p.on('request', r => { const u = r.url(); if (u.startsWith('http://localhost') || u.startsWith('data:')) return r.continue(); r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }); });
-    await p.evaluateOnNewDocument((s) => { window.NL_NO_G = false; if (!localStorage.getItem('catalogo-libri-v2')) { localStorage.setItem('catalogo-libri-v2', s); localStorage.setItem('catalogo-libri-card', JSON.stringify({ v: 'd' })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ look: 'nuovo', welcomed: 1, donSeen: 1, viewDef: 'grid', wn2: 1 })); } }, JSON.stringify(MIEI));
+    await p.evaluateOnNewDocument((s) => { if (!localStorage.getItem('catalogo-libri-v2')) { localStorage.setItem('catalogo-libri-v2', s); localStorage.setItem('catalogo-libri-card', JSON.stringify({ v: 'd' })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ look: 'nuovo', welcomed: 1, donSeen: 1, viewDef: 'grid', wn2: 1 })); } }, JSON.stringify(MIEI));
     await p.goto(APP + '/', { waitUntil: 'load' }); await wait(1400);
     await p.evaluate(() => window.NLLayout && window.NLLayout.set('a')); await wait(300);   // fuori dalle prove la disposizione è sempre la A
     await wait(100); await p.evaluate(() => { document.querySelectorAll('.pu-ask, #instCard, .don-ask, #notice').forEach(x => { x.hidden = true; x.style.display = 'none'; }); document.querySelectorAll('.sheet:not([hidden])').forEach(x => { x.hidden = true; }); });

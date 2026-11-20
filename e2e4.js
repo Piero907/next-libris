@@ -77,11 +77,14 @@ const gv = (isbn, o) => ({ items: [{ id: isbn, volumeInfo: Object.assign({ indus
   await page.evaluate(() => { const a = [...document.querySelectorAll('.toast button, #toast button')].find(x => /Annulla/.test(x.textContent)); if (a) a.click(); }); await wait(400);
   assert.strictEqual((await books()).filter(b => b.g.length).length, before);
 
-  // la rete: prima Google, SBN/proxy mai interrogati
+  // la rete: prima il catalogo della casa (funzione libri), Google per ultimo; proxy e SBN diretto mai
   console.log('[reti]', [...new Set(hits)].join(' | '));
   assert(!hits.some(h => /allorigins|codetabs|corsproxy|opac\.sbn/.test(h)));
   const firstExt = hits.find(h => /googleapis|openlibrary|crossref/.test(h));
-  assert(/googleapis/.test(firstExt), 'Google è la prima banca dati interrogata');
+  assert(!/googleapis/.test(firstExt), 'Google non è la prima banca dati interrogata');
+  const ext = hits.filter(h => /supabase\.co\/functions\/v1\/libri|googleapis|openlibrary|crossref/.test(h));
+  const iCasa = ext.findIndex(h => /functions\/v1\/libri/.test(h)), iG = ext.findIndex(h => /googleapis/.test(h));
+  assert(iCasa >= 0 && (iG < 0 || iG > iCasa), 'il catalogo della casa prima di Google: ' + ext.join(' | '));   // l'ordine tra SBN e Open Library può variare (richieste insieme)
   await page.screenshot({ path: CFG.OUT + '/s_pub.png', fullPage: true });
   console.log('ERRORI:', errors.length ? errors : 'nessuno');
   assert(!errors.length);

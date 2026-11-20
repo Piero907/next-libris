@@ -111,20 +111,20 @@ const hits = { pi: 0, wd: 0, big: 0 };
   await p.evaluate(() => NL.refresh());
 
   // 4) «N in prestito»: prestati da te e ricevuti; gruppi per persona
-  const sum = await p.$eval('#summary [data-sum="loan"]', x => x.textContent);
-  assert.strictEqual(sum, '5 in prestito');
+  const sum = await p.$eval('#gProse', x => x.innerText);   // stile G: la frase in prosa al posto del riepilogo
+  assert(/5 sono in prestito/.test(sum), sum);
   await p.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
-  await p.click('#summary [data-sum="loan"]'); await wait(300);
+  await p.click('#gProse [data-gl="loan"]'); await wait(300);
   const grp = await p.evaluate(() => [...document.querySelectorAll('#list .loan-groups > .shelf')].map(s => s.querySelector('.shelf-h .sh-t').textContent + ' ' + s.querySelector('.shelf-h .sh-n').textContent + ': ' +
     [...s.querySelectorAll('.grp-sub')].map(x => x.querySelector('.sh-t').textContent + ' ' + [...x.querySelectorAll('.row')].map(r => r.dataset.id).join(',')).join(' | ')));
   console.log('[prestiti]', JSON.stringify(grp));
   assert.deepStrictEqual(grp, ['Prestati a 3: Anna b4 | Marco b3,b2', 'Prestati da 2: Anna b6 | Bruno b5']);
   await p.click('#list .shelf-lo-a-marco .shelf-h'); await wait(150);
   assert(await p.evaluate(() => document.getElementById('shelf-lo-a-marco').hidden), 'il gruppo di Marco si chiude');
-  await p.click('#summary [data-sum="loan"]'); await wait(300);
+  await p.click('#gProse [data-gl="loan"]'); await wait(300);
   assert(!(await p.$('#list .loan-groups')), 'di nuovo: tutti i libri');
   await p.evaluate(() => { NL.settings.view = 'grid'; NL.saveSettings(); });
-  await p.click('#summary [data-sum="loan"]'); await wait(300);
+  await p.click('#gProse [data-gl="loan"]'); await wait(300);
   assert.strictEqual(await p.$$eval('#list .loan-groups .cover', x => x.length), 5, 'anche a copertine');
 
   // 5) copertine: la «grande» zoom=0 salvata sparisce, si prova solo zoom=3; dai risultati per titolo resta la copertina toccata
@@ -143,10 +143,10 @@ const hits = { pi: 0, wd: 0, big: 0 };
   assert(/id=AAA/.test(nb), 'resta la copertina toccata (AAA), non quella della ricerca per ISBN (BBB)');
 
   // 6) testata
-  const hd = await p.evaluate(() => ({ o: document.getElementById('owner').innerText, d: getComputedStyle(document.getElementById('owner')).display }));
-  assert.deepStrictEqual(hd, { o: 'Libreria di Piero R.', d: 'block' });
+  // stile G: titolo «Libreria» / «Desideri» nella testata (il nome resta nel profilo)
+  assert.strictEqual(await p.$eval('header.top h1 .g-t', x => x.textContent), 'Libreria');
   await p.evaluate(() => document.getElementById('tabWish').click()); await wait(300);
-  assert.strictEqual(await p.$eval('#owner', x => x.innerText), 'Desideri di Piero R.');
+  assert.strictEqual(await p.$eval('header.top h1 .g-t', x => x.textContent), 'Desideri');
 
   assert.deepStrictEqual(errors, [], 'errori JavaScript: ' + errors.join(' | '));
   console.log('OK e2e119');
