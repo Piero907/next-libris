@@ -37,16 +37,13 @@ function books(n, ts) { const out = []; for (let i = 0; i < n; i++) out.push({ i
 
   // ---- 1) profilo: testata, Menu, barra in basso ----
   let p = await newPage({ books: books(12, NOW - 100 * DAY), updated: NOW }, { name: 'Piero R.', installed: true, swiped: true, lastBackup: NOW });
-  assert(await p.$('#owner #ownerAv .pf-av'), 'foto tonda in testata');
-  await p.evaluate(() => document.getElementById('ownerAv').click()); await wait(500);
-  assert(await profOpen(p), 'la foto in testata apre il profilo');
-  await closeAll(p);
-  const nav = await p.evaluate(() => [...document.querySelectorAll('#layNav button')].map(b => b.dataset.l));
-  assert.deepStrictEqual(nav, ['lib', 'wish', 'add', 'you', 'prof'], 'barra a 5 tasti, via Menu (18/11/2026): ' + nav);
-  const fit = await p.evaluate(() => [...document.querySelectorAll('#layNav button span')].every(s => s.scrollWidth <= s.parentNode.clientWidth + 1));
-  assert(fit, 'le scritte della barra stanno nei tasti a 360');
-  await p.click('#layNav [data-l="prof"]'); await wait(500);
-  assert(await profOpen(p), '«Profilo» nella barra apre il profilo');
+  // stile G (20/11/2026): niente foto in testata; sei segnalibri, le scritte ci stanno a 360
+  const nav = await p.evaluate(() => [...document.querySelectorAll('#gTabs [data-g]')].map(b => b.dataset.g));
+  assert.deepStrictEqual(nav, ['lib', 'wish', 'you', 'fri', 'chat', 'prof'], 'sei segnalibri: ' + nav);
+  const fit = await p.evaluate(() => [...document.querySelectorAll('#gTabs [data-g] span')].every(s => s.scrollHeight <= s.parentNode.clientHeight + 1));
+  assert(fit, 'le scritte dei segnalibri ci stanno a 360');
+  await p.click('#gTabs [data-g="prof"]'); await wait(500);
+  assert(await profOpen(p), 'il segnalibro «Tu» apre il profilo');
   await closeAll(p);
   await p.evaluate(() => window.NL.openMenu()); await wait(400);
   const mp = await p.evaluate(() => { const b = document.querySelector('#drawerOpts .dmain > button'); return b ? b.id + ':' + b.innerText.replace(/\s+/g, ' ') : ''; });

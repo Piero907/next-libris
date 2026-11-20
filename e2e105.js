@@ -81,11 +81,10 @@ const base = 'http://localhost:' + CFG.port(8305);
     return page;
   }
   const side = (P) => P.evaluate(() => { const si = document.querySelector('#ntSheet .sheet-in'); return Math.max(si.scrollWidth - si.clientWidth, document.documentElement.scrollWidth - document.documentElement.clientWidth); });
-  const headOk = (P) => P.evaluate(() => {          // titolo e stato non finiscono sotto le icone
-    // dalla 99.10 a 360 px le icone sono più strette e le zone da toccare si sovrappongono un poco: si guardano i disegni (svg)
+  const headOk = (P) => P.evaluate(() => {          // stile G: testatina «NEXT LIBRIS», poi campanella e ≡ Indice in fila, dentro lo schermo
     const box = (id) => { const b = document.getElementById(id), g = b.querySelector('svg'); return (g || b).getBoundingClientRect(); };
-    const bell = box('btnBell'), h = document.querySelector('header.top h1').getBoundingClientRect(), fri = box('btnFri'), gear = box('btnOpts');   // Amici di nuovo in testata (19/11/2026)
-    return h.right <= bell.left + 1 && bell.right <= fri.left + 8 && fri.right <= gear.left + 8 && Math.abs(bell.top - gear.top) < 2;
+    const bell = box('btnBell'), run = document.getElementById('gRun').getBoundingClientRect(), menu = box('gMenu');
+    return run.right <= bell.left + 1 && bell.right <= menu.left + 1 && Math.abs(bell.top - menu.top) < 3 && menu.right <= innerWidth;
   });
 
   // ---- senza account: niente campanella ----
@@ -95,7 +94,7 @@ const base = 'http://localhost:' + CFG.port(8305);
   // ---- A: 13 notifiche, 4 nuove ----
   const A = await phone('A', 'uA', 360, 780);
   await A.evaluate(() => { const b = window.NL.clean({ t: 'La coscienza di Zeno', a: 'Italo Svevo', sx: '5a000000-0000-0000-0000-00000000005a', sk: 'p', sda: 'Bruno', rs: 'da' }); window.NL.books().unshift(b); window.NL.save(); window.NL.refresh(); });
-  assert(await A.$('header.top #btnBell + #btnFri') || await A.$('header.top #btnBell + #btnChat + #btnFri'), 'campanella prima dell\'icona Amici (dal giro 9b con il fumetto della chat in mezzo)');
+  assert(await A.$('#gIcs #btnBell + #gMenu'), 'stile G: nella testatina solo campanella e ≡ Indice');
   assert.strictEqual(await A.$eval('#btnBellN', x => x.hidden ? '' : x.textContent), '4', '4 nuove sul numero');
   assert(!(await A.$('#btnFriN')), 'icona Amici senza numero');
   assert(!(await A.$('#friNote')), 'niente riquadro della richiesta in cima');

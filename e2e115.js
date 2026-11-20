@@ -79,15 +79,14 @@ const books = [
   // 1) «In prestito» sulla copertina del libro ricevuto
   const bd = await p.evaluate(() => { const c = document.querySelector('#list .cover[data-id="b7"] .badge'); return c && c.textContent; });
   console.log('[1 copertina ricevuta]', bd); assert.strictEqual(bd, 'In prestito');
-  // 2) boccale nella testata → Sostieni
-  const beer = await p.evaluate(() => { const b = document.getElementById('btnBeer'), r = b.getBoundingClientRect(), h = document.querySelector('.top h1').getBoundingClientRect();
-    const m = document.querySelector('.top .top-meta').getBoundingClientRect(), o = document.getElementById('owner').getBoundingClientRect();
-    return { vis: r.width > 0, word: /Sostieni/.test(b.textContent), below: r.top >= h.bottom - 4, gap: Math.round(r.left - o.right), right: Math.round(innerWidth - r.right) }; });
-  console.log('[2 pillola Sostieni]', JSON.stringify(beer)); assert(beer.vis && beer.word && !beer.below && beer.right > 0, 'boccale tondo accanto alle icone in alto (testata sobria, 19/11/2026)');
-  if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 140 } });
-  await p.click('#btnBeer'); await wait(400);
-  assert(await p.evaluate(() => !document.getElementById('donSheet').hidden), 'Sostieni aperto dal boccale');
-  await p.click('#donClose'); await wait(400);
+  // 2) stile G: Sostieni sta nell'Indice (fascia dorata in fondo, posizione da rivedere: IN_SOSPESO 41); il boccale in testata non c'è più
+  assert(await p.evaluate(() => { const b = document.getElementById('btnBeer'); return !b || !b.getClientRects().length; }), 'niente boccale in testata');
+  await p.click('#gMenu'); await wait(400);
+  await p.evaluate(() => document.getElementById('donMenu').scrollIntoView({ block: 'center' })); await wait(150);
+  await p.click('#donMenu'); await wait(400);
+  assert(await p.evaluate(() => !document.getElementById('donSheet').hidden), 'Sostieni aperto dall\'Indice');
+  await p.click('#donClose'); await wait(500);
+  if (await p.evaluate(() => document.body.classList.contains('drawer-open'))) { await p.click('#drawerX'); await wait(400); }   // «Chiudi» torna all'Indice: si chiude anche quello
   // 3) Raggruppa per autore (17/11/2026 sera): «In lettura» a parte; gli altri come copertine dei gruppi, chiuse; un tocco apre i libri sotto
   await pick(p, 'aut');
   const now = await p.evaluate(() => [...document.querySelectorAll('#list .shelf-now .cover')].map(c => c.dataset.id));
@@ -136,8 +135,8 @@ const books = [
   g = await groups(p); console.log('[3 lettura]', JSON.stringify(g.map(x => x.t + ' ' + x.n)));
   assert.deepStrictEqual(g.map(x => x.t), ['Da leggere', 'Letti']);
   assert.deepStrictEqual(g.map(x => x.n), [4, 2]);
-  await p.click('#edgeTab'); await wait(450);
-  const sub = await p.evaluate(() => document.getElementById('grpPick').textContent); assert.strictEqual(sub, 'Raggruppa: Lettura', 'riga sotto la ricerca');   // dal 17/11/2026 notte non più nel riassunto del Menu
+  await p.click('#gMenu'); await wait(450);
+  const sub = await p.evaluate(() => document.getElementById('grpPick').textContent); assert.strictEqual(sub, 'Lettura', 'riga sotto la ricerca (stile G: testo breve)');   // dal 17/11/2026 notte non più nel riassunto del Menu
   await p.evaluate(() => history.back()); await wait(500);
   await p.evaluate(() => document.getElementById('tabWish').click()); await wait(400);
   g = await groups(p); assert.strictEqual(g.length, 0, 'nei Desideri niente gruppi per lettura');
@@ -155,7 +154,7 @@ const books = [
   assert(await p.evaluate(() => document.body.classList.contains('gridview')), 'dopo lo spostamento si torna alle copertine');
   await p.evaluate(() => document.getElementById('tabLib').click()); await wait(400);
   // 5) Privacy dentro l'app; × torna al Menu
-  await p.click('#edgeTab'); await wait(450);
+  await p.click('#gMenu'); await wait(450);
   await p.evaluate(() => document.getElementById('goInfo').click()); await wait(300); await p.click('#goPrivacy'); await wait(700);
   const pv = await p.evaluate(() => ({ open: !document.getElementById('optSheet').hidden, h: document.getElementById('optH').textContent, txt: document.getElementById('pvBody').innerText.slice(0, 400),
     h1: !!document.querySelector('#pvBody h1, #pvBody footer'), over: document.querySelector('#optSheet .sheet-in').scrollWidth - document.querySelector('#optSheet .sheet-in').clientWidth }));
@@ -166,11 +165,10 @@ const books = [
   assert(await p.evaluate(() => document.getElementById('drawer').classList.contains('open') && document.getElementById('optSheet').hidden), '× della privacy torna al Menu');
   await p.close();
 
-  // ---------- 360 scuro: testata con il boccale e gruppi ----------
+  // ---------- 360 scuro: gruppi ----------
   p = await phone(360, 780, true, { seenV: V, wn2: 1, grp: 'aut', grpOpen: { 'aut:lib/italo calvino': 1 } });
-  const t3 = await p.evaluate(() => { const h = document.querySelector('.top h1').getBoundingClientRect(), b = document.getElementById('btnBeer').getBoundingClientRect(), o = document.getElementById('btnOpts').getBoundingClientRect();
-    return { gap: b.top >= h.bottom ? 99 : Math.round(b.left - h.right), right: Math.round(o.right), over: document.documentElement.scrollWidth - document.documentElement.clientWidth }; });
-  console.log('[360 testata]', JSON.stringify(t3)); assert(t3.gap >= 0 && t3.over <= 0, 'a 360 il titolo non tocca il boccale');
+  const t3 = await p.evaluate(() => ({ over: document.documentElement.scrollWidth - document.documentElement.clientWidth }));
+  console.log('[360]', JSON.stringify(t3)); assert(t3.over <= 0, 'a 360 niente scorrimento di lato');
   c = await cards(p); assert(c.length === 4 && c[0].open, 'gruppo aperto ricordato: ' + JSON.stringify(c));
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'gruppi-autore-360-scuro.png') });
   await p.close();

@@ -72,7 +72,7 @@ let wiki = 0;
   await p.evaluate(() => { document.querySelectorAll('.sheet:not([hidden])').forEach(x => { x.hidden = true; }); });
 
   // 1) birra
-  await p.click('#btnBeer'); await wait(300);
+  await p.click('#gMenu'); await wait(400); await p.evaluate(() => document.getElementById('donMenu').scrollIntoView({ block: 'center' })); await wait(150); await p.click('#donMenu'); await wait(300);   // stile G: Sostieni dall'Indice
   const don = await p.evaluate(() => ({ msg: document.querySelector('#donSheet .msg').textContent, amt: [...document.querySelectorAll('.don-amt')].map(x => x.textContent), go: document.getElementById('donGo').textContent, x: !!document.querySelector('#donSheet .sh-x') }));
   console.log('[1 birra]', JSON.stringify(don));
   assert(/offrimi una birra/.test(don.msg) && !/telefono/.test(don.msg) && don.go === 'Offri una media con PayPal' && don.x, 'testi della birra');
@@ -86,7 +86,7 @@ let wiki = 0;
   console.log('[3 ×]', JSON.stringify(xs));
   ['statsSheet', 'logSheet', 'allqSheet', 'exportSheet', 'suggSheet', 'layYou', 'instSheet'].forEach(k => assert.strictEqual(xs[k], '1/1', k));
   assert.strictEqual(xs.confirmSheet, '0/0', 'le richieste con Annulla restano senza ×'); assert.strictEqual(xs.optSheet, '0/1', 'Opzioni aveva già la sua ×');
-  await p.click('#edgeTab'); await wait(450); await p.click('#goStats'); await wait(500);
+  await p.click('#gMenu'); await wait(450); await p.click('#goStats'); await wait(500);
   const sx = await p.evaluate(() => { const x = document.querySelector('#statsSheet .sh-x').getBoundingClientRect(), s = document.querySelector('#statsSheet .sheet-in').getBoundingClientRect(); return { right: Math.round(s.right - x.right), top: Math.round(x.top - s.top) }; });
   console.log('[3 × statistiche]', JSON.stringify(sx)); assert(sx.right < 30 && sx.top < 30, '× in alto a destra');
   await p.click('#statsSheet .sh-x'); await wait(600);
@@ -95,14 +95,14 @@ let wiki = 0;
   // 2) finestrella al posto della tendina (dal 17/11/2026 notte nella riga sotto la ricerca, non più nei filtri)
   await p.evaluate(() => window.__app.closeDrawer()); await wait(400);
   const pk = await p.evaluate(() => ({ sel: [...document.querySelectorAll('select.dsel')].map(s => s.offsetParent === null), btn: [...document.querySelectorAll('.dpick .dp-t')].map(b => b.textContent) }));
-  console.log('[2 tasti]', JSON.stringify(pk)); assert(pk.sel.every(Boolean) && pk.btn[0] === 'Più recenti' && pk.btn[1] === 'Raggruppa: Autore', 'tendine nascoste, tasti con la scelta');
+  console.log('[2 tasti]', JSON.stringify(pk)); assert(pk.sel.every(Boolean) && pk.btn[0] === 'Più recenti' && pk.btn[1] === 'Autore', 'tendine nascoste, tasti con la scelta');
   await p.evaluate(() => document.querySelectorAll('.dpick')[1].click()); await wait(200);
   const pop = await p.evaluate(() => ({ o: [...document.querySelectorAll('#pickPop .pk-o')].map(x => x.textContent + (x.getAttribute('aria-selected') === 'true' ? '*' : '')), focus: document.activeElement.textContent }));
   console.log('[2 finestrella]', JSON.stringify(pop)); assert.deepStrictEqual(pop.o, ['Nessun gruppo', 'Autore*', 'Genere', 'Genere, poi autore', 'Paese dell\'autore', 'Lettura']);   // «Paese dell'autore» dal giro 2
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'finestrella-412.png') });
   await p.evaluate(() => [...document.querySelectorAll('#pickPop .pk-o')][2].click()); await wait(300);
   const af = await p.evaluate(() => ({ v: document.getElementById('grp').value, g: JSON.parse(localStorage.getItem('prova:catalogo-libri-set')).grp, t: document.querySelectorAll('.dpick .dp-t')[1].textContent, hid: document.getElementById('pickPop').hidden }));
-  assert(af.v === 'gen' && af.g === 'gen' && af.t === 'Raggruppa: Genere' && af.hid, 'scelta fatta: ' + JSON.stringify(af));
+  assert(af.v === 'gen' && af.g === 'gen' && af.t === 'Genere' && af.hid, 'scelta fatta: ' + JSON.stringify(af));
   await p.evaluate(() => document.querySelectorAll('.dpick')[0].click()); await wait(200);
   await p.keyboard.press('Escape'); await wait(200);
   assert(await p.evaluate(() => document.getElementById('pickPop').hidden), 'Esc chiude la finestrella');
@@ -135,13 +135,13 @@ let wiki = 0;
   await p.click('#guestBar [data-t="wish"]'); await wait(400);
   let st = await p.evaluate(() => [NL.guest(), NL.tab(), document.querySelectorAll('#list .row').length]);
   assert.deepStrictEqual(st, ['Anna', 'wish', 1], 'Desideri dell\'amico dal tasto in cima');
-  await p.click('#layNav [data-l="lib"]'); await wait(400);
+  await p.click('#gTabs [data-g="lib"]'); await wait(400);
   st = await p.evaluate(() => [NL.guest(), NL.tab(), document.querySelectorAll('#list .row, #list .cover').length]);
   assert.deepStrictEqual(st, [null, 'lib', 3], 'Libreria in basso: la tua');
   assert(await p.evaluate(() => { const k = document.getElementById('guestKey'); return !k || k.hidden; }), 'icona dell’API via fuori dalla libreria dell\'amico');
   // «Per te» dalla libreria di un amico: le tue statistiche
   await p.evaluate(() => NL.guestEnter('Anna', [{ id: 'g1', t: 'Uno', a: 'X', ts: 1 }], { id: 'x' })); await wait(400);
-  await p.click('#layNav [data-l="you"]'); await wait(300); await p.click('#layYou [data-l="stats"]'); await wait(500);
+  await p.click('#gTabs [data-g="you"]'); await wait(300); await p.click('#layYou [data-l="stats"]'); await wait(500);
   st = await p.evaluate(() => [NL.guest(), document.querySelector('#statsSheet .stat b, #statsSheet b').textContent]);
   console.log('[4 per te]', JSON.stringify(st)); assert(st[0] === null && st[1] === '3', 'Per te parla della tua libreria');
 

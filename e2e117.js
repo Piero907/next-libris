@@ -56,7 +56,7 @@ const books = [
   const sb = await p.evaluate(() => ({ t: [...document.querySelectorAll('#sortBar .dpick .dp-t')].map(b => b.textContent), vis: !!document.getElementById('sortBar').offsetParent,
     drawer: !!document.querySelector('#drawer #sort, #drawer #grp'), menu: document.querySelector('#goFilters b').textContent }));
   console.log('[1 riga]', JSON.stringify(sb));
-  assert(sb.vis && !sb.drawer && sb.t[0] === 'Più recenti' && sb.t[1] === 'Raggruppa: Autore' && sb.menu === 'Filtri', 'riga sotto la ricerca, niente nei filtri');
+  assert(sb.vis && !sb.drawer && sb.t[0] === 'Più recenti' && sb.t[1] === 'Autore' && sb.menu === 'Filtri', 'riga sotto la ricerca, niente nei filtri');
   await p.click('#grpPick'); await wait(200);
   assert(await p.evaluate(() => document.getElementById('pickPop').parentNode.id === 'sortBar' && !document.getElementById('pickPop').hidden), 'finestrella sotto la riga');
   await p.keyboard.press('Escape'); await wait(200);
@@ -106,7 +106,7 @@ const books = [
   assert(!gb.back && !gb.key && gb.sort, 'via «La tua libreria», niente chiave, riga Ordina · Raggruppa');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-412.png') });
   await p.click('#guestBar [data-t="wish"]'); await wait(400);
-  assert(await p.evaluate(() => !document.getElementById('btnNews').offsetParent && !/da comprare/.test(document.querySelector('header.top .top-meta').innerText)), 'Desideri dell\'amico: niente Novità né «da comprare»');
+  assert(await p.evaluate(() => !document.getElementById('btnNews').offsetParent && !/da comprare/.test(document.body.innerText)), 'Desideri dell\'amico: niente Novità né «da comprare»');   // stile G: si guarda il testo visibile
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-desideri-412.png') });
   await p.evaluate(() => NL.guestExit()); await wait(400);
   assert.match(await p.$eval('header.top .top-meta', x => x.innerText), /5 libri/); assert.strictEqual(await p.$eval('header.top h1', x => x.firstChild.nodeValue.trim()), 'Libreria');   // testata sobria: si torna alla propria Libreria

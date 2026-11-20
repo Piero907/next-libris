@@ -56,7 +56,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   const st = (p) => p.evaluate(() => ({ drawer: document.getElementById('drawer').classList.contains('open'), win: !!document.querySelector('.sheet:not([hidden]), #wrap:not([hidden])'),
     state: JSON.stringify(history.state), top: document.getElementById('drawerBody').scrollTop, sets: !document.getElementById('setList').hidden, info: !document.getElementById('infoList').hidden }));
   const back = async (p) => { await p.evaluate(() => history.back()); await wait(500); };
-  const openMenu = async (p) => { await p.click('#edgeTab'); await wait(450); };
+  const openMenu = async (p) => { await p.click('#gMenu'); await wait(450); };   // stile G: ≡ Indice
 
   // ---------- 412x915 (il telefono di Piero) ----------
   const p = await phone(412, 915);
@@ -71,7 +71,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   // testata sobria (Piero, 19/11/2026): titolo grande «Libreria», sotto solo i numeri; nome e foto nel Profilo
   assert(hd.ownH === 0 && hd.sumH < 45 && hd.metaH < 45, 'sotto il titolo solo i numeri: ' + JSON.stringify(hd));
   assert(/^Libreria/.test(await p.$eval('header.top h1', x => x.textContent.trim())), 'titolo «Libreria»');
-  assert(Math.abs(hd.h1c - hd.gearC) <= 8, 'icone allineate al titolo');
+  assert(await p.evaluate(() => { const b = document.getElementById('gMenu').getBoundingClientRect(), r = document.getElementById('gRun').getBoundingClientRect(); return Math.abs((b.top + b.bottom) / 2 - (r.top + r.bottom) / 2) <= 8; }), 'stile G: ≡ Indice sulla riga della testatina');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 170 } });
 
   // 2) menu (NLAmici.load() senza account mette «Amici e privacy», come dopo l'accesso)
@@ -84,15 +84,15 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     return { items, bad, don: document.getElementById('donMenu').getBoundingClientRect().top / innerHeight };
   });
   console.log('[2 menu]', mn.items.join(' | '), '· Sostieni a', Math.round(mn.don * 100) + '%');
-  assert.deepStrictEqual(mn.items, ['Il mio profilo', 'Filtri', 'Suggerimenti', 'Statistiche', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', 'API Google Libri', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
+  assert.deepStrictEqual(mn.items, ['Il mio profilo', 'Filtri', 'Suggerimenti', 'Tutte le citazioni', 'Statistiche', 'La tua stagione in libri', 'Sostieni Next Libris', '## Amici', 'I tuoi amici', 'API Google Libri', '## La tua libreria', "Sistema l'elenco", 'Backup ed esportazione',
     'Impostazioni', '  Account e sincronizzazione', '  Amici e privacy', '  Notifiche', '  Ricerca dei libri', '  Aggiunta dei libri', '  Aspetto',
     'Info e aiuto', '  Come si usa', '  Guarda una libreria di esempio', '  Condivisione', '  Installazione sul telefono', '  Privacy', '  Contatti']);   // voci della guida (giro 4)
   assert.deepStrictEqual(mn.bad.filter(x => !/birra/.test(x)), [], 'sottotitoli su una riga (tranne Sostieni, che si legge tutto: 18/11/2026)');
-  assert(mn.don > 0.3 && mn.don < 0.7, 'Sostieni al centro del Menu, sopra Amici (18/11/2026 sera)');
+  assert(mn.don > 0.6, 'stile G: Sostieni come fascia dorata in fondo all\'Indice (posizione da rivedere con Piero, IN_SOSPESO 41)');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-412.png') });
 
   // 3a) Impostazioni aperte, menu scorso, Aspetto (finestra con cronologia) → Indietro → Menu come prima
-  await p.evaluate(() => document.getElementById('goSettings').click()); await wait(400);
+  await p.evaluate(() => { if (document.getElementById('setList').hidden) document.getElementById('goSettings').click(); }); await wait(400);   // Impostazioni aperte (se lo erano già, restano)
   await p.evaluate(() => { document.getElementById('drawerBody').scrollTop = 120; document.querySelector('#setList .dopt[data-sec="look"]').scrollIntoView({ block: 'center' }); }); await wait(100);   // restyle pezzo 3: la barra in basso resta sopra il Menu
   const top0 = (await st(p)).top;
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'menu-impostazioni-412.png') });
@@ -132,7 +132,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   await p.evaluate(() => history.pushState({ guard: 1 }, ''));
   await openMenu(p); await p.evaluate(() => document.getElementById('goInfo').click()); await wait(300);
   await p.click('#infoList .dopt[data-sec="contact"]'); await wait(400);
-  await back(p); s = await st(p); assert(s.drawer && s.info && !s.sets && !s.win, 'Menu con Info e aiuto aperto');
+  await back(p); s = await st(p); assert(s.drawer && s.info && !s.win, 'Menu con Info e aiuto aperto');
   // 4) l'API in Ricerca
   await p.click('#setList .dopt[data-sec="search"]').catch(async () => { await p.evaluate(() => document.getElementById('goSettings').click()); await wait(300); await p.click('#setList .dopt[data-sec="search"]'); });
   await wait(400);
@@ -175,20 +175,18 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     if (SHOTS) await q.screenshot({ path: path.join(SHOTS, 'testata-' + w + '.png'), clip: { x: 0, y: 0, width: w, height: 170 } });
     const sw = await q.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     assert(sw <= 0, w + ': scorrimento di lato');
-    const c = await q.evaluate(() => { const r = e => e.getBoundingClientRect(), a = r(document.querySelector('h1')), g = r(document.getElementById('btnOpts')); return Math.abs((a.top + a.height / 2) - (g.top + g.height / 2)); });
-    assert(c <= 4, w + ': icone centrate sul titolo (' + c + ')');
-    const ov = await q.evaluate(() => {          // con la campanella (dopo l'accesso): titolo e PROVA non la toccano
-      document.documentElement.classList.add('has-bell', 'has-fri');
+    // stile G: testatina «NEXT LIBRIS» con campanella e ≡ Indice sulla stessa riga, senza toccarsi; il nastro non copre l'Indice
+    const ov = await q.evaluate(() => {
+      document.documentElement.classList.add('has-bell');
       let b = document.getElementById('btnBell');
-      if (!b) { b = document.createElement('button'); b.className = 'ico nt-top'; b.id = 'btnBell'; b.textContent = '•'; document.querySelector('header.top').appendChild(b); }
+      if (!b) { b = document.createElement('button'); b.className = 'ico nt-top'; b.id = 'btnBell'; b.textContent = '•'; document.getElementById('gIcs').insertBefore(b, document.getElementById('gMenu')); }
       b.hidden = false;
-      const h = document.querySelector('h1'), t = h.querySelector('.prova-tag'), r = (t || h).getBoundingClientRect().right;
-            const bb = document.getElementById('btnBeer').getBoundingClientRect();   // testata sobria (19/11/2026): il boccale tondo è il primo tasto a sinistra
-      const ic = [...document.querySelectorAll('.top .nt-top, .top .gear, #btnBeer')].map(x => x.getBoundingClientRect()).filter(x => x.width);
-      return { gap: bb.left - Math.min(r, h.getBoundingClientRect().right), c: Math.max(...ic.map(x => Math.abs(x.top - ic[0].top))) };
+      const r = e => e.getBoundingClientRect(), run = r(document.getElementById('gRun')), bell = r(b), m = r(document.getElementById('gMenu')), rib = r(document.getElementById('gRib'));
+      const mid = x => (x.top + x.bottom) / 2;
+      return { c: Math.max(Math.abs(mid(bell) - mid(run)), Math.abs(mid(m) - mid(run))), gap1: bell.left - run.right, gap2: m.left - bell.right, rib: rib.width ? (rib.left >= m.right - 0.5 || rib.top >= m.bottom - 0.5 || rib.right <= m.left + 0.5) : true };
     });
-    console.log('[' + w + ' con la campanella]', JSON.stringify(ov));
-    assert(ov.gap >= 0 && ov.c <= 4, w + ': titolo e tasti tondi in fila senza toccarsi');
+    console.log('[' + w + ' testatina]', JSON.stringify(ov));
+    assert(ov.c <= 6 && ov.gap1 >= 0 && ov.gap2 >= 0 && ov.rib, w + ': testatina in fila, senza toccarsi');
     if (SHOTS) await q.screenshot({ path: path.join(SHOTS, 'testata-campanella-' + w + '.png'), clip: { x: 0, y: 0, width: w, height: 170 } });
     await openMenu(q);
     const bad = await q.evaluate(() => [...document.querySelectorAll('#drawerOpts .dopt small')].filter(s => s.offsetParent && s.getBoundingClientRect().height > 20).map(s => s.textContent));

@@ -141,7 +141,7 @@ const WORKS = {
   console.log('[gruppi]', g.join(' · '));
   assert.deepStrictEqual(g, ['Francia|1|fr.webp', 'Italia|3|it.webp', 'Russia|1|ru.webp', 'Stati Uniti|1|us.webp', 'Paese non trovato|1|?']);   // bandiere come immagini dell'app (giro 5)
   assert(await p.evaluate(() => [...document.querySelectorAll('#list .gc-flag img.flag')].every(i => i.complete && i.naturalWidth > 0)), 'le bandiere si caricano');
-  assert.strictEqual(await p.$eval('#sortBar', e => /Raggruppa: Paese/.test(e.textContent)), true, 'la riga dice «Raggruppa: Paese»');
+  assert.strictEqual(await p.$eval('#sortBar', e => /Paese/.test(e.textContent)), true, 'la riga dice «Paese» (stile G: testo breve)');
   await noOverflow('#list', 'gruppi per paese');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'paesi-gruppi-412.png') });
   await p.click('#btnView'); await wait(400);
@@ -217,7 +217,7 @@ const WORKS = {
   await p.evaluate(() => { Object.keys(openState).forEach(k => { openState[k] = false; }); if (gridRet) backToGrid(); else renderList(); }); await wait(400);
 
   // «Dai tuoi libri al cinema» in «Per te»
-  await p.click('#layNav [data-l="you"]'); await wait(400);
+  await p.click('#gTabs [data-g="you"]'); await wait(400);
   const you = await p.$$eval('#layYouList [data-l]', a => a.map(x => x.dataset.l + ':' + x.querySelector('small').textContent));
   assert(you.some(x => x === 'films:3 film e serie tratti dai tuoi libri'), 'voce «Dai tuoi libri al cinema» in Per te: ' + you.join(' | '));
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'film-per-te-412.png') });
@@ -260,7 +260,7 @@ const WORKS = {
   await hideAll();
 
   // «Per autore» nel +
-  await p.click('#layNav [data-l="add"]'); await wait(400);
+  await p.click('#gAdd'); await wait(400);
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'piu-per-autore-412.png') });
   await noOverflow('#layAdd .sheet-in', 'finestra del +');
   await p.click('#layAdd [data-l="author"]'); await wait(400);

@@ -141,22 +141,22 @@ const base = 'http://localhost:' + CFG.port(8310);
     // ---- nella libreria di Bruno: l'icona Amici c'è ----
     await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
     assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Bruno');
-    assert(await A.shown('#btnFri'), 'icona Amici anche nella libreria di un amico (tornata in testata il 19/11/2026)');
+    assert(await A.shown('#gTabs [data-g="fri"]') && await A.shown('#gBack'), 'stile G: segnalibro Amici e ‹ per tornare anche nella libreria di un amico');
     await A.shot('110-1-libreria-bruno-' + tag);
     // ---- «amici in comune» apre gli amici di Bruno ----
     await A.click$('#guestBar [data-g="ff"]'); await wait(700);
     assert(await A.shown('#friSheet'));
     assert.strictEqual(await A.txt('#friH'), 'Amici di Bruno');
     let t = await A.txt('#friBody'); console.log('[amici di Bruno ' + tag + ']', t);
-    assert(/In comune 1 Carla Maria Benedetti/.test(t), 'Carla in comune, in cima');
-    assert(/Altri amici di Bruno 1 Dario Chiedi l.amicizia/.test(t), 'Dario con «Chiedi l\'amicizia»');
-    assert(!/Anna/.test(t), 'non me stessa');
-    assert(/^1 amico in comune/.test(await A.txt('#guestBar .gb-num')), 'stesso numero nella striscia: ' + await A.txt('#guestBar .gb-num'));
+    assert(/In comune 1 Carla Maria Benedetti/i.test(t), 'Carla in comune, in cima');
+    assert(/Altri amici di Bruno 1 Dario Chiedi l.amicizia/i.test(t), 'Dario con «Chiedi l\'amicizia»');
+    assert(!/Anna/i.test(t), 'non me stessa');
+    assert(/^1 amico in comune/i.test(await A.txt('#guestBar .gb-num')), 'stesso numero nella striscia: ' + await A.txt('#guestBar .gb-num'));
     assert.strictEqual(await A.wide(), 0, 'niente scorrimento di lato');
     await A.shot('110-2-amici-di-bruno-' + tag);
     await A.click$('#friBody [data-f="ask"][data-u="Dario"]'); await wait(700);
     assert(DB.am.some(x => x.da === 'uA' && x.a === 'uD' && x.stato === 'attesa'), 'richiesta a Dario');
-    assert(/Dario Richiesta inviata/.test(await A.txt('#friBody')), 'Dario: richiesta inviata');
+    assert(/Dario Richiesta inviata/i.test(await A.txt('#friBody')), 'Dario: richiesta inviata');
     // ---- toccando Carla si apre il suo profilo (giro 6) e da lì la sua libreria ----
     await A.click$('#friBody [data-f="friend"][data-id="uC"]'); await wait(900);
     assert.strictEqual(await A.evaluate(() => document.getElementById('profH').textContent), 'Profilo di Carla Maria Benedetti');
@@ -165,7 +165,7 @@ const base = 'http://localhost:' + CFG.port(8310);
     assert(await A.evaluate(() => document.getElementById('friSheet').hidden));
     // ---- l'icona apre i tuoi Amici ----
     await A.click$('#btnFri'); await wait(700);
-    assert(/I tuoi amici/.test(await A.txt('#friBody')) && await A.txt('#friH') === 'Amici', 'i tuoi Amici');
+    assert(/I tuoi amici/i.test(await A.txt('#friBody')) && await A.txt('#friH') === 'Amici', 'i tuoi Amici');
     await A.click$('#friClose'); await wait(200);
     assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Carla Maria Benedetti', 'resti nella libreria di Carla');
     // ---- Bruno spegne «amici»: solo quelli in comune ----
@@ -173,7 +173,7 @@ const base = 'http://localhost:' + CFG.port(8310);
     await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
     await A.click$('#guestBar [data-g="ff"]'); await wait(700);
     t = await A.txt('#friBody'); console.log('[spento]', t);
-    assert(/Carla/.test(t) && !/Dario/.test(t) && /Bruno mostra solo gli amici che avete in comune/.test(t));
+    assert(/Carla/i.test(t) && !/Dario/i.test(t) && /Bruno mostra solo gli amici che avete in comune/i.test(t));
     await A.shot('110-3-amici-di-bruno-spento-' + tag);
     await A.click$('#friClose'); await wait(200);
     // ---- la mia scelta in Amici e privacy, accesa di partenza ----
