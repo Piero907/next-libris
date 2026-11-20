@@ -218,7 +218,7 @@ const base = "http://localhost:" + CFG.port(8340);
     }
     if (process.env.MENU) {                         // restyle pezzo 3: Menu, Impostazioni, finestre dal basso (MENU=1)
       const ds = async (n, sel) => { for (const [k, y] of [['a', 0], ['b', 640], ['c', 1280]]) { const h = await pg.evaluate((sel, y) => { const e = document.querySelector(sel); if (!e) return -1; e.scrollTop = y; return e.scrollHeight - e.clientHeight; }, sel, y); if (h < 0) break; await wait(250); await sh(n + '-' + k); if (h <= y + 640) break; } };
-      await pg.evaluate(() => window.__app.openDrawer('opt')); await wait(700); await ds('m1-menu', '#drawerBody');
+      await pg.evaluate(() => window.__app.openDrawer('opt')); await wait(700); await pg.evaluate(() => { const w = document.getElementById('goWrapTxt'); if (w && !w.textContent) w.textContent = 'Riepilogo · settembre – novembre 2026 (fino a oggi)'; }); await ds('m1-menu', '#drawerBody');
       await pg.evaluate(() => { const b = document.getElementById('goSettings'); if (b) b.click(); const c = document.getElementById('goInfo'); if (c) c.click(); }); await wait(400); await ds('m2-menu-aperto', '#drawerBody');
       await pg.evaluate(() => window.__app.closeDrawer()); await wait(500);
       await pg.evaluate(() => document.querySelector('.lay-plus').click()); await wait(700); await sh('m3-piu');
