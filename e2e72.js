@@ -63,7 +63,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   assert(!(await menu()).setOpen, 'riaprendo il Menu sono chiuse');
   await page.evaluate(() => window.__app.closeDrawer()); await wait(400);
   // l'ingranaggio in alto: dritto alle impostazioni
-  await page.evaluate(() => window.scrollTo(0, 0)); await page.click('#gMenu'); await wait(450);
+  await page.evaluate(() => window.scrollTo(0, 0)); await page.click('#gTabs [data-g="idx"]'); await wait(450);
   m = await menu(); assert(m.setOpen, 'ingranaggio: impostazioni aperte');
   // si richiudono toccando di nuovo
   await page.evaluate(() => document.getElementById('goSettings').click()); await wait(300);

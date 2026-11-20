@@ -38,7 +38,7 @@ function books(n, ts) { const out = []; for (let i = 0; i < n; i++) out.push({ i
   let p = await newPage({ books: books(12, NOW - 100 * DAY), updated: NOW }, { name: 'Piero R.', installed: true, swiped: true, lastBackup: NOW });
   // stile G (20/11/2026): niente foto in testata; sei segnalibri, le scritte ci stanno a 360
   const nav = await p.evaluate(() => [...document.querySelectorAll('#gTabs [data-g]')].map(b => b.dataset.g));
-  assert.deepStrictEqual(nav, ['lib', 'wish', 'you', 'fri', 'chat', 'prof'], 'sei segnalibri: ' + nav);
+  assert.deepStrictEqual(nav, ['idx', 'lib', 'wish', 'you', 'fri', 'chat', 'prof'], 'sette segnalibri, Indice in cima: ' + nav);
   const fit = await p.evaluate(() => [...document.querySelectorAll('#gTabs [data-g] span')].every(s => s.scrollHeight <= s.parentNode.clientHeight + 1));
   assert(fit, 'le scritte dei segnalibri ci stanno a 360');
   await p.click('#gTabs [data-g="prof"]'); await wait(500);

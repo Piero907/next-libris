@@ -42,13 +42,13 @@ const books = [{ id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompia
     assert(ed.stacked && ed.out === 0 && ed.done && ed.titleW > 150, name + ': modifica nella pagina');
     check(m); await ctx.close();
   };
-  const g6 = (name) => m => { assert(!m.twoCols && m.tabs === 6, name + ': sei segnalibri'); };   // stile G: la barra in basso non c'è più
+  const g6 = (name) => m => { assert(!m.twoCols && m.tabs === 7, name + ': sette segnalibri'); };   // stile G: la barra in basso non c'è più
   await at(360, 740, 'tel_piccolo', g6('tel_piccolo'));
   await at(412, 915, 'telefono', g6('telefono'));
-  await at(780, 360, 'tel_sdraiato', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 6); });
-  await at(768, 1024, 'tablet', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 6 && m.tabsIn); });
-  await at(1366, 768, 'pc', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 6 && m.tabsIn, 'una colonna e segnalibri'); });
-  await at(1920, 1080, 'pc_grande', m => { assert(!m.twoCols && m.tabs === 6 && m.tabsIn); });
+  await at(780, 360, 'tel_sdraiato', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 7); });
+  await at(768, 1024, 'tablet', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 7 && m.tabsIn); });
+  await at(1366, 768, 'pc', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 7 && m.tabsIn, 'una colonna e segnalibri'); });
+  await at(1920, 1080, 'pc_grande', m => { assert(!m.twoCols && m.tabs === 7 && m.tabsIn); });
   assert.deepStrictEqual(errors, []);
   console.log('e2e74 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

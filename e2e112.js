@@ -56,7 +56,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   const st = (p) => p.evaluate(() => ({ drawer: document.getElementById('drawer').classList.contains('open'), win: !!document.querySelector('.sheet:not([hidden]), #wrap:not([hidden])'),
     state: JSON.stringify(history.state), top: document.getElementById('drawerBody').scrollTop, sets: !document.getElementById('setList').hidden, info: !document.getElementById('infoList').hidden }));
   const back = async (p) => { await p.evaluate(() => history.back()); await wait(500); };
-  const openMenu = async (p) => { await p.click('#gMenu'); await wait(450); };   // stile G: ≡ Indice
+  const openMenu = async (p) => { await p.click('#gTabs [data-g="idx"]'); await wait(450); };   // stile G: ≡ Indice
 
   // ---------- 412x915 (il telefono di Piero) ----------
   const p = await phone(412, 915);
@@ -66,7 +66,7 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   console.log('[1 testata]', JSON.stringify(hd));
   assert(hd.title === 'Libreria' && /^12/.test(hd.rib) && /in prestito/.test(hd.prose) && !hd.old, 'stile G: titolo, nastro con il numero dei libri, frase con i prestiti; niente pezzi della vecchia testata');
   assert(/^Libreria/.test(await p.$eval('header.top h1', x => x.textContent.trim())), 'titolo «Libreria»');
-  assert(await p.evaluate(() => { const b = document.getElementById('gMenu').getBoundingClientRect(), r = document.getElementById('gRun').getBoundingClientRect(); return Math.abs((b.top + b.bottom) / 2 - (r.top + r.bottom) / 2) <= 8; }), 'stile G: ≡ Indice sulla riga della testatina');
+  assert(await p.evaluate(() => !document.getElementById('gMenu') && document.querySelector('#gTabs [data-g]').dataset.g === 'idx'), 'stile G: l\'Indice è il primo segnalibro a lato, non più in testatina');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 170 } });
 
   // 2) menu (NLAmici.load() senza account mette «Amici e privacy», come dopo l'accesso)
@@ -173,11 +173,11 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     // stile G: testatina «NEXT LIBRIS» con campanella e ≡ Indice sulla stessa riga, senza toccarsi; il nastro non copre l'Indice
     const ov = await q.evaluate(() => {
       let b = document.getElementById('btnBell');
-      if (!b) { b = document.createElement('button'); b.className = 'ico nt-top'; b.id = 'btnBell'; b.textContent = '•'; document.getElementById('gIcs').insertBefore(b, document.getElementById('gMenu')); }
+      if (!b) { b = document.createElement('button'); b.className = 'ico nt-top'; b.id = 'btnBell'; b.textContent = '•'; document.getElementById('gIcs').appendChild(b); }
       b.hidden = false;
-      const r = e => e.getBoundingClientRect(), run = r(document.getElementById('gRun')), bell = r(b), m = r(document.getElementById('gMenu')), rib = r(document.getElementById('gRib'));
+      const r = e => e.getBoundingClientRect(), run = r(document.getElementById('gRun')), bell = r(b), m = bell, rib = r(document.getElementById('gRib'));
       const mid = x => (x.top + x.bottom) / 2;
-      return { c: Math.max(Math.abs(mid(bell) - mid(run)), Math.abs(mid(m) - mid(run))), gap1: bell.left - run.right, gap2: m.left - bell.right, rib: rib.width ? (rib.left >= m.right - 0.5 || rib.top >= m.bottom - 0.5 || rib.right <= m.left + 0.5) : true };
+      return { c: Math.abs(mid(bell) - mid(run)), gap1: bell.left - run.right, gap2: 0, rib: rib.width ? (rib.left >= m.right - 0.5 || rib.top >= m.bottom - 0.5 || rib.right <= m.left + 0.5) : true };
     });
     console.log('[' + w + ' testatina]', JSON.stringify(ov));
     assert(ov.c <= 6 && ov.gap1 >= 0 && ov.gap2 >= 0 && ov.rib, w + ': testatina in fila, senza toccarsi');

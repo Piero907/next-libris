@@ -1,6 +1,6 @@
 # Next Libris — libreria, pagina del libro, Desideri, numeri e backup
 
-**Aggiornato il 20/11/2026, vera 111.** Funzionamento e scelte; l'aspetto sta in `claude/stile-base.md` (`STILE.md`), la ricerca dei dati dei libri in `claude/ricerca-libri.md` (`RICERCA.md`). Copia uguale: progetto Claude `claude/libreria-e-libro.md`, ramo `prove` `LIBRERIA_LIBRO.md`.
+**Aggiornato il 20/11/2026, vera 113.** Funzionamento e scelte; l'aspetto sta in `claude/stile-base.md` (`STILE.md`), la ricerca dei dati dei libri in `claude/ricerca-libri.md` (`RICERCA.md`). Copia uguale: progetto Claude `claude/libreria-e-libro.md`, ramo `prove` `LIBRERIA_LIBRO.md`.
 
 Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 
@@ -31,6 +31,7 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 - **Descrizione a richiesta**: si cerca aprendo il riquadro (una sola ricerca Google); se c'è resta nel libro e va nell'archivio comune; altrimenti «Descrizione non disponibile» o «Riprova».
 - **Dal libro**: film e serie tratti dal libro (🎬 film, anno, regia; 📺 serie), il tocco apre Wikipedia, niente locandine. **Film omonimi**: se Wikidata non ha il legame («tratto da»), l'app arriva da sola ai film con lo stesso titolo, confermati con la voce dell'autore su it.wikipedia; mai correzioni a mano degli utenti; nessuna rilettura periodica dei dati degli autori.
 - **Citazioni**: la prima in vista, «Tutte ›» e «+ Aggiungi»; la puntina mette in evidenza nel profilo (al massimo 3).
+- **Avvisi del libro** (20/11/2026): se il libro non si trova, manca la rete o la ricerca è in corso, l'avviso si legge anche nella pagina del libro (prima solo nella riga della libreria); aspetto in `claude/stile-base.md`.
 - Una pagina alla volta; Indietro la chiude.
 
 ## Prestiti

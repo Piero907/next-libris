@@ -72,7 +72,7 @@ let wiki = 0;
   await p.evaluate(() => { document.querySelectorAll('.sheet:not([hidden])').forEach(x => { x.hidden = true; }); });
 
   // 1) birra
-  await p.click('#gMenu'); await wait(400); await p.evaluate(() => document.getElementById('donMenu').scrollIntoView({ block: 'center' })); await wait(150); await p.click('#donMenu'); await wait(300);   // stile G: Sostieni dall'Indice
+  await p.click('#gTabs [data-g="idx"]'); await wait(400); await p.evaluate(() => document.getElementById('donMenu').scrollIntoView({ block: 'center' })); await wait(150); await p.click('#donMenu'); await wait(300);   // stile G: Sostieni dall'Indice
   const don = await p.evaluate(() => ({ msg: document.querySelector('#donSheet .msg').textContent, amt: [...document.querySelectorAll('.don-amt')].map(x => x.textContent), go: document.getElementById('donGo').textContent, x: !!document.querySelector('#donSheet .sh-x') }));
   console.log('[1 birra]', JSON.stringify(don));
   assert(/offrimi una birra/.test(don.msg) && !/telefono/.test(don.msg) && don.go === 'Offri una media con PayPal' && don.x, 'testi della birra');
@@ -86,10 +86,10 @@ let wiki = 0;
   console.log('[3 ×]', JSON.stringify(xs));
   ['statsSheet', 'logSheet', 'allqSheet', 'exportSheet', 'suggSheet', 'layYou', 'instSheet'].forEach(k => assert.strictEqual(xs[k], '1/1', k));
   assert.strictEqual(xs.confirmSheet, '0/0', 'le richieste con Annulla restano senza ×'); assert.strictEqual(xs.optSheet, '0/1', 'Opzioni aveva già la sua ×');
-  await p.click('#gMenu'); await wait(450); await p.click('#goStats'); await wait(500);
+  if (!(await p.evaluate(() => document.getElementById('drawer').classList.contains('open')))) { await H.fai(p, 'menu'); await wait(450); } await p.click('#goStats');   // Indice aperto (se lo è già, resta aperto: il segnalibro lo richiuderebbe) await wait(500);
   const sx = await p.evaluate(() => { const x = document.querySelector('#statsSheet .sh-x').getBoundingClientRect(), s = document.querySelector('#statsSheet .sheet-in').getBoundingClientRect(); return { right: Math.round(s.right - x.right), top: Math.round(x.top - s.top) }; });
   console.log('[3 × statistiche]', JSON.stringify(sx)); assert(sx.right < 30 && sx.top < 30, '× in alto a destra');
-  await p.click('#statsSheet .sh-x'); await wait(600);
+  await p.click('#statsSheet .sh-x'); await wait(1100);   // il ritorno all'Indice arriva dopo 0,4-0,7 s
   assert(await p.evaluate(() => document.getElementById('statsSheet').hidden && document.getElementById('drawer').classList.contains('open')), '× delle statistiche torna al Menu');
 
   // 2) finestrella al posto della tendina (dal 17/11/2026 notte nella riga sotto la ricerca, non più nei filtri)

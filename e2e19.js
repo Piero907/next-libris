@@ -19,14 +19,14 @@ const server = http.createServer((q, s) => { let p = path.join(ROOT, decodeURICo
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());
   await wait(3200);
   assert(await page.$eval('#notice', e => e.hidden || !e.textContent.includes('versione')), 'nessun avviso: e\' gia\' l\'ultima');
-  await page.click('#gMenu'); await wait(800);
+  await page.click('#gTabs [data-g="idx"]'); await wait(800);
   const v = await txt('#verBox'); console.log('[1 menu]', v);
   const local = JSON.parse(fs.readFileSync(ROOT + '/version.json', 'utf8'));
   assert(v.includes('Versione ' + local.v) && v.includes("È l'ultima versione")); assert(await page.$eval('#verUpdate', e => e.hidden));
   await page.screenshot({ path: CFG.OUT + '/s_version.png' });
   // sul sito c'e' una versione piu' nuova
   fakeVer = { v: local.v + 1, date: '2026-11-20', note: 'prova' };
-  await page.click('#drawerX'); await wait(300); await page.click('#gMenu'); await wait(800);
+  await page.click('#drawerX'); await wait(300); await page.click('#gTabs [data-g="idx"]'); await wait(800);
   const v2 = await txt('#verBox'); console.log('[2 piu nuova]', v2);
   assert(v2.includes('È disponibile la versione ' + (local.v + 1))); assert(!(await page.$eval('#verUpdate', e => e.hidden)));
   await page.click('#drawerX'); await wait(300);

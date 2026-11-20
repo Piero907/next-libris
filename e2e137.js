@@ -38,7 +38,7 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
       return { g: document.documentElement.classList.contains('g-look'), side: document.scrollingElement.scrollWidth - innerWidth, W: innerWidth, H: innerHeight,
         rib: (document.querySelector('#gRib b') || {}).textContent, title: (document.querySelector('header.top h1 .g-t') || {}).textContent, prose: (document.getElementById('gProse') || {}).textContent || '',
         dc: !!document.querySelector('#gProse .g-dc'), run: (document.getElementById('gRun') || {}).textContent, tabs, tabsBox: box('#gTabs'),
-        q: box('#q'), sort: box('#sortBar'), view: box('#btnView'), filt: box('#btnFilters'), add: box('#gAdd'), menu: box('#gMenu'), nav: !!document.querySelector('#layNav, .dock, #btnOpts') };
+        q: box('#q'), sort: box('#sortBar'), view: box('#btnView'), filt: box('#btnFilters'), add: box('#gAdd'), menu: !!document.getElementById('gMenu'), nav: !!document.querySelector('#layNav, .dock, #btnOpts') };
     });
     console.log('[' + tag + ']', JSON.stringify({ rib: r.rib, title: r.title, prose: r.prose, view: r.view && Math.round(r.view.r), tabsL: r.tabsBox && Math.round(r.tabsBox.l), add: r.add && Math.round(r.add.b) }));
     assert(r.g, tag + ': stile G acceso');
@@ -48,11 +48,11 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
     assert(/Stai leggendo Il fu Mattia Pascal/.test(r.prose) && !r.dc, tag + ': frase in prosa senza capolettera');
     assert.strictEqual(r.run, 'Next Libris', tag + ': testatina');
     assert(!r.nav, tag + ': niente barra in basso né tasti di prima');
-    assert.strictEqual(r.tabs.length, 6, tag + ': sei linguette (con la Chat dal 20/11/2026)');
+    assert.strictEqual(r.tabs.length, 7, tag + ': sette linguette (Indice in cima dal 20/11/2026)'); assert(r.tabs[0].g === 'idx' && !r.menu, tag + ': Indice primo segnalibro, niente ≡ in testatina');
     assert(r.tabs.every(t => t.r <= r.W + 0.5 && t.b <= r.H + 0.5), tag + ': linguette dentro lo schermo ' + JSON.stringify(r.tabs));
     assert(r.tabs.find(t => t.g === 'lib').on, tag + ': linguetta Libri accesa');
     const lim = r.tabsBox.l + 0.5;   // tutto quello della pagina sta a sinistra delle linguette
-    for (const k of ['q', 'sort', 'view', 'filt', 'menu']) assert(r[k] && r[k].vis && r[k].r <= lim && r[k].l >= -0.5, tag + ': ' + k + ' dentro lo schermo e prima delle linguette ' + JSON.stringify(r[k]));
+    for (const k of ['q', 'sort', 'view', 'filt']) assert(r[k] && r[k].vis && r[k].r <= lim && r[k].l >= -0.5, tag + ': ' + k + ' dentro lo schermo e prima delle linguette ' + JSON.stringify(r[k]));
     assert(r.add.vis && r.add.b <= r.H + 0.5 && r.add.r <= lim, tag + ': «+ Aggiungi» dentro lo schermo');
     if (w === 390 || w === 360) await p.screenshot({ path: path.join(CFG.OUT, 'e2e137-' + w + '.png') });
     // Desideri dalla linguetta
@@ -74,7 +74,7 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
     await p.evaluate(() => document.querySelector('#gTabs [data-g="lib"]').click()); await wait(600);
     assert(await p.evaluate(() => document.getElementById('profSheet').hidden), tag + ': Libri chiude il profilo');
     // Indice dalla testatina
-    await p.evaluate(() => document.getElementById('gMenu').click()); await wait(700);
+    await p.evaluate(() => document.querySelector('#gTabs [data-g="idx"]').click()); await wait(700);
     const ix = await p.evaluate(() => ({ h: document.getElementById('drawerH').textContent, open: !document.getElementById('drawer').hidden, cap: [...document.querySelectorAll('#drawerOpts>h3, #drawerOpts .dset-t')].map(e => getComputedStyle(e, '::before').content) }));
     assert(ix.h === 'Indice' && ix.open && ix.cap.length >= 3 && ix.cap.every(c => /counter|"\d"/.test(c) || c !== 'none'), tag + ': Indice ' + JSON.stringify(ix));
     await p.evaluate(() => window.__app.closeDrawer()); await wait(400);

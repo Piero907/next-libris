@@ -26,7 +26,7 @@ const assert = require('assert');
   assert.strictEqual(await page.$('details.opts'), null);
   await page.screenshot({ path: CFG.OUT + '/s_main_gear.png' });
   // 1) ingranaggio -> menu sulla scheda Opzioni
-  await page.click('#gMenu'); await wait(350);
+  await page.click('#gTabs [data-g="idx"]'); await wait(350);
   assert(await drawerOpen()); assert(await vis('#drawerOpts')); assert(!(await vis('#drawerFilters'))); assert(!(await vis('#drawerFoot')));
   console.log('[1 voci]', await page.$$eval('#drawerOpts .dopt b', e => e.map(x => x.textContent).join(' | ')));
   await page.screenshot({ path: CFG.OUT + '/s_menu_opts.png' });
@@ -45,7 +45,7 @@ const assert = require('assert');
   await page.goBack(); await wait(400);
   assert(!(await vis('#optSheet'))); assert(!(await drawerOpen())); assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8143) + '/?vista=elenco');
   // le impostazioni funzionano ancora
-  await page.click('#gMenu'); await wait(300); await page.click('#drawerOpts [data-sec="cards"]'); await wait(300);
+  await page.click('#gTabs [data-g="idx"]'); await wait(300); await page.click('#drawerOpts [data-sec="cards"]'); await wait(300);
   const pr0 = await page.evaluate(() => window.__app.settings.price);
   await page.click('#optPrice'); await wait(100);
   assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).price), !pr0);
@@ -54,11 +54,11 @@ const assert = require('assert');
   assert(await drawerOpen(), '× torna al Menu (17/11/2026 pomeriggio)'); await page.click('#drawerX'); await wait(400);
   assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8143) + '/?vista=elenco');
   // 3) Backup ed esportazione
-  await page.click('#gMenu'); await wait(300); await page.click('#drawerOpts [data-sec="export"]'); await wait(300);
+  await page.click('#gTabs [data-g="idx"]'); await wait(300); await page.click('#drawerOpts [data-sec="export"]'); await wait(300);
   assert(await vis('#exportSheet')); assert(!(await drawerOpen())); await page.click('#exportClose'); await wait(500);
   assert(await drawerOpen(), 'Chiudi torna al Menu'); await page.click('#drawerX'); await wait(400);
   // 4) Filtri e linguetta aprono la scheda Filtri
-  await page.click('#gMenu'); await wait(300); await page.click('#drawerX'); await wait(300);
+  await page.click('#gTabs [data-g="idx"]'); await wait(300); await page.click('#drawerX'); await wait(300);
   await page.click('#btnFilters'); await wait(300); assert(await vis('#drawerFilters')); assert(await vis('#drawerFoot'));
   await page.click('#drawerBack'); await wait(250); assert(await vis('#drawerOpts')); await page.click('#goFilters'); await wait(150); assert(await vis('#drawerFilters'));   // v84: pagine al posto delle schede
   await page.keyboard.press('Escape'); await wait(300);

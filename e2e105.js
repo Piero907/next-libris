@@ -83,8 +83,8 @@ const base = 'http://localhost:' + CFG.port(8305);
   const side = (P) => P.evaluate(() => { const si = document.querySelector('#ntSheet .sheet-in'); return Math.max(si.scrollWidth - si.clientWidth, document.documentElement.scrollWidth - document.documentElement.clientWidth); });
   const headOk = (P) => P.evaluate(() => {          // stile G: testatina «NEXT LIBRIS», poi campanella e ≡ Indice in fila, dentro lo schermo
     const box = (id) => { const b = document.getElementById(id), g = b.querySelector('svg'); return (g || b).getBoundingClientRect(); };
-    const bell = box('btnBell'), run = document.getElementById('gRun').getBoundingClientRect(), menu = box('gMenu');
-    return run.right <= bell.left + 1 && bell.right <= menu.left + 1 && Math.abs(bell.top - menu.top) < 3 && menu.right <= innerWidth;
+    const bell = box('btnBell'), run = document.getElementById('gRun').getBoundingClientRect(), rib = document.getElementById('gRib').getBoundingClientRect();
+    return run.right <= bell.left + 1 && bell.right <= rib.left + 1 && bell.right <= innerWidth;   // l'Indice è il primo segnalibro a lato (20/11/2026)
   });
 
   // ---- senza account: niente campanella ----
@@ -94,7 +94,7 @@ const base = 'http://localhost:' + CFG.port(8305);
   // ---- A: 13 notifiche, 4 nuove ----
   const A = await phone('A', 'uA', 360, 780);
   await A.evaluate(() => { const b = window.NL.clean({ t: 'La coscienza di Zeno', a: 'Italo Svevo', sx: '5a000000-0000-0000-0000-00000000005a', sk: 'p', sda: 'Bruno', rs: 'da' }); window.NL.books().unshift(b); window.NL.save(); window.NL.refresh(); });
-  assert(await A.$('#gIcs #btnBell + #gMenu'), 'stile G: nella testatina solo campanella e ≡ Indice');
+  assert(await A.evaluate(() => [...document.querySelectorAll('#gIcs > *')].filter(e => e.getClientRects().length).map(e => e.id).join() === 'btnBell' && !document.getElementById('gMenu') && document.querySelector('#gTabs [data-g]').dataset.g === 'idx'), 'stile G: nella testatina solo la campanella; l\'Indice è il primo segnalibro');
   assert.strictEqual(await A.$eval('#btnBellN', x => x.hidden ? '' : x.textContent), '4', '4 nuove sul numero');
   assert(!(await A.$('#btnFriN')), 'icona Amici senza numero');
   assert(!(await A.$('#friNote')), 'niente riquadro della richiesta in cima');

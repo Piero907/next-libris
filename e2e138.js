@@ -27,9 +27,9 @@ const books = Array.from({ length: 6 }, (_, i) => ({ id: 'k' + i, t: 'Libro nume
 
   // 1) i pezzi vecchi non esistono; quelli dello stile G sono nella pagina
   const dom = await p.evaluate(() => ({
-    old: ['#owner', '#summary', '.top-meta', '#sync', '#btnBeer', '#btnOpts', '#btnFri', '.tabbar', '#tabLib', '#tabWish', '#fltLoan', '.dock', '#btnScan', '#btnPhoto', '#btnType', '#btnCheck', '#btnStats', '#btnExport', '#layNav', '#edgeTab', '.sum-alert', '#guestIcos'].filter(s => document.querySelector(s)),
+    old: ['#gMenu', '#owner', '#summary', '.top-meta', '#sync', '#btnBeer', '#btnOpts', '#btnFri', '.tabbar', '#tabLib', '#tabWish', '#fltLoan', '.dock', '#btnScan', '#btnPhoto', '#btnType', '#btnCheck', '#btnStats', '#btnExport', '#layNav', '#edgeTab', '.sum-alert', '#guestIcos'].filter(s => document.querySelector(s)),
     cls: document.documentElement.className, lay: document.documentElement.dataset.layout,
-    head: ['#gHead', '#gRun', '#gIcs', '#gMenu', '#gRib', '#gProse', '#gTabs', '#gAdd'].filter(s => !document.querySelector(s)),
+    head: ['#gHead', '#gRun', '#gIcs', '#gRib', '#gProse', '#gTabs', '#gAdd'].filter(s => !document.querySelector(s)),
     bar: [...document.getElementById('sortBar').children].filter(e => e.id === 'btnFilters' || e.id === 'btnView').map(e => e.id),
     title: document.querySelector('header.top h1 .g-t').textContent, h1: document.querySelector('header.top h1').innerText.trim(),
     rib: document.querySelector('#gRib b').textContent, prose: document.getElementById('gProse').textContent,
@@ -44,7 +44,7 @@ const books = Array.from({ length: 6 }, (_, i) => ({ id: 'k' + i, t: 'Libro nume
   assert.deepStrictEqual(dom.api, [], 'niente più scelta della disposizione'); assert(dom.side <= 0, 'niente scorrimento di lato');
 
   // 2) ≡ Indice: si apre con le Impostazioni aperte (come faceva l'ingranaggio)
-  await p.click('#gMenu'); await wait(500);
+  await p.click('#gTabs [data-g="idx"]'); await wait(500);
   const idx = await p.evaluate(() => ({ open: document.body.classList.contains('drawer-open') || document.documentElement.classList.contains('drawer-open'), h: document.getElementById('drawerH').textContent,
     look: (() => { const b = document.querySelector('#drawerOpts [data-sec="look"]'); return !!(b && b.getClientRects().length); })() }));
   console.log('[2 indice]', JSON.stringify(idx)); assert(idx.open && idx.h === 'Indice' && idx.look, 'Indice con «Aspetto» in vista');

@@ -1,6 +1,6 @@
 # Next Libris — lo stile grafico dell'app (documento fisso)
 
-**Aggiornato il 20/11/2026, vera 111, prova 111.2.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali. Indice di tutti i documenti: `claude/00-indice.md`.
+**Aggiornato il 20/11/2026, vera 113.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali. Indice di tutti i documenti: `claude/00-indice.md`.
 
 **Come si lavora sull'aspetto** (regole di Piero):
 1. Ogni modifica di aspetto si mostra **prima nella tela di design** con le schermate vere dell'app (tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu).
@@ -20,14 +20,14 @@
 - **Riquadri, tasti tondi e campi**: ombra leggerissima **più un filo sottile** `--line` (variabile `--c-sh`), così si vedono anche in scuro.
 
 ### Testata e titolo
-- **Testatina** in alto: «NEXT LIBRIS» in maiuscoletto spaziato (nella libreria di un amico: ‹ e il suo nome). A destra **solo campanella e ≡ Indice**: la chat non sta più in alto, ha il suo segnalibro. Sotto c'è una linea.
+- **Testatina** in alto: «NEXT LIBRIS» in maiuscoletto spaziato (nella libreria di un amico: ‹ e il suo nome). A destra **solo la campanella** (dal 20/11/2026 il tasto ≡ Indice non c'è più: l'Indice è il primo segnalibro a lato; la chat ha il suo segnalibro). Sotto c'è una linea.
 - **Titolo** Bricolage **40/800** («Libreria», «Desideri», «Libreria di Anna»).
 - **Nastro segnalibro** che pende dall'alto, colore `--accent`, con il numero dei libri e «LIBRI» (nei Desideri il cuore).
 - **Titolo, testatina e frase partono dallo stesso margine** (dal 20/11/2026: prima il titolo era rientrato di 6 px per un resto della vecchia testata). Nella libreria di un amico «Libreria di Anna» sta su una riga se ci entra.
 - **Frase in prosa senza capolettera** (tolta il 20/11/2026), con dati veri: «Stai leggendo *X*; 5 sono in prestito.» La parte «5 sono in prestito» è un link ai prestiti. Mai numeri inventati.
 
 ### Segnalibri laterali (navigazione)
-- Sono **sei**, in quest'ordine: **Libri · Desideri · Per te · Amici · Chat · Tu** (Chat aggiunta dopo Amici il 20/11/2026). Ognuno ha l'icona e la scritta verticale e sta su una fascia con il taglio delle pagine.
+- Sono **sette**, in quest'ordine: **Indice · Libri · Desideri · Per te · Amici · Chat · Tu** (Chat aggiunta dopo Amici il 20/11/2026; **Indice in cima**, con l'icona delle tre righe, scelta di Piero del 20/11/2026). Il segnalibro Indice apre l'Indice con le Impostazioni aperte e resta acceso lui (anche con una finestra aperta dall'Indice); un altro tocco lo richiude. «Tu» si accende solo per il profilo. Ognuno ha l'icona e la scritta verticale e sta su una fascia con il taglio delle pagine.
 - **Forma da segnalibro**: **lato dritto contro la pagina, parte tonda verso il bordo dello schermo** (raggio 12 solo su quel lato). Quello attivo è pieno `--accent` e più lungo, gli altri sono `--accent-soft` e più corti (`stile-g.css` G15).
 - Sul segnalibro **Chat** c'è il numero dei messaggi da leggere, in un pallino rosso `--bad` (`.g-tn`, G18).
 - **Sempre visibili, in ogni schermata** (Piero, 20/11/2026): Libreria, Desideri, Per te, Amici, Chat e **conversazione aperta**, profili, pagina del libro, Indice, la **«stagione in libri»** e tutte le **finestre dal basso** (Statistiche, Suggerimenti, Dai tuoi libri al cinema, Aspetto, «+», Titolo o ISBN…). Le finestre e le pagine si aprono **accanto** ai segnalibri, mai sopra (`stile-g.css` G16 e G19).
@@ -64,6 +64,9 @@
 - **«Non riesco a salvare»** (20/11/2026, `#notice.nt-save`, G24): è l'unico avviso con il **testo intero**, su una riga sua; sotto, «Fai il backup ›» a sinistra, pallini e × a destra. Compare solo se il salvataggio sul telefono non riesce e sparisce da solo quando riesce.
 - In **Indice › Aspetto** non c'è più «Riepilogo in alto» (libri in prestito, non più in libreria, conferma del salvataggio); «Riepilogo di ogni stagione» sta in fondo.
 
+### Avviso del libro nella pagina del libro (Piero, 20/11/2026)
+- Un libro con un avviso («Senza connessione: lo cerco da solo appena torna la rete» con «Riprova ora», «Non ho trovato questo libro online» con «Scrivi titolo e autore», «Cerco nelle banche dati…») lo mostra **anche nella sua pagina**: riquadro `--info-bg` con testo `--info` 14/600 (errori: `--bad` su `--bad-bg`), raggio 14, **sotto i tasti tondi e prima di Lettura**; testo intero a sinistra, **tasto al centro** sotto il testo, a pillola alto 36 (pieno `--accent` solo «Scrivi titolo e autore»). `stile-g.css` G25, `schede.js` (`.status.cv-status`).
+
 ### Finestre dal basso
 - Foglio del colore della pagina (`--surface`), maniglia, titolo 19/800 con × tonda, riquadri col filo sottile, tasto largo in fondo. Sempre accanto ai segnalibri.
 
@@ -82,10 +85,10 @@
 ### Misure (tutti i telefoni)
 - Telefoni **da 380 px in su**: segnalibri 46 px, margini 20 px, titolo 40 px.
 - **Sotto 380 px** (360, 375): segnalibri 36 px (scritta 10,5), margini 14 px, titolo 32 px, nastro 36 px, frase 14 px.
-- **Schermi bassi** (sotto 620 px di altezza): segnalibri più corti. I sei segnalibri entrano anche a 360×640.
+- **Schermi bassi**: sotto 760 px di altezza i segnalibri sono alti 72 px, sotto 620 px 64 px. I sette segnalibri entrano anche a 360×640 e a 1280×720 (mai sotto i 44 px da toccare).
 - **Tablet e PC (da 700 px)**: colonna di 640 px al centro, segnalibri sul suo bordo. **Anche le pagine intere** (libro, profili, Amici, Chat, Per te, Indice, stagione in libri) stanno nella colonna, accanto ai segnalibri, e **le finestre dal basso sono al centro della colonna** con il fondo scurito su tutto lo schermo; i segnalibri restano sopra il fondo scurito (`stile-g.css` G20). Le posizioni si calcolano in `%` e non in `vw`, così restano giuste anche con la barra di scorrimento del PC. La **pagina del libro** è larga quanto la colonna, con i margini normali (`--g-pad`): mai margini calcolati sulla larghezza dello schermo, altrimenti su PC il testo si schiaccia.
 - **Giro di schermate** su telefono, tablet e PC: `TELEFONI=412` (poi `768`, `1280`) `node schermate_restyle.js`, anche con `MENU=1`, `SCHEDA=1`, `ALTRO=1`.
-- **Controllo automatico e2e137** a 360×640, 375×667, 390×844, 412×915, 430×932, 768×1024, 1280×800: niente scorrimento di lato, tutto dentro lo schermo e fuori dai segnalibri, sei segnalibri.
+- **Controllo automatico e2e137** a 360×640, 375×667, 390×844, 412×915, 430×932, 768×1024, 1280×800: niente scorrimento di lato, tutto dentro lo schermo e fuori dai segnalibri, sette segnalibri (anche e2e139).
 
 ---
 
@@ -159,5 +162,6 @@ Le regole sui **testi** dell'app (parole, nomi, tono) stanno in `claude/regole-d
 - 20/11/2026: tutto nella **vera 111**.
 - 20/11/2026: puntini dell'Indice sulla riga sotto, elenco degli amici che scorre nel riquadro (111.2).
 - 20/11/2026: via il codice delle vecchie disposizioni; titolo allineato al margine; avviso «Non riesco a salvare»; via il triangolino e «Riepilogo in alto» (112.3).
+- 20/11/2026: avviso del libro nella sua pagina, con il tasto al centro; segnalibro Indice in cima e via ≡ dalla testatina (112.5); tutto nella **vera 113**.
 
 Tele di design: stile attuale https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu · proposte A-G https://claude.ai/artifact/Tqa6XajvQCK2CVZdSSSimq · schede di benvenuto https://claude.ai/artifact/3K32364B9GUREgviZATvHJ.

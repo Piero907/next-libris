@@ -81,7 +81,7 @@ const books = [
   console.log('[1 copertina ricevuta]', bd); assert.strictEqual(bd, 'In prestito');
   // 2) stile G: Sostieni sta nell'Indice (fascia dorata in fondo, posizione da rivedere: IN_SOSPESO 41); il boccale in testata non c'è più
   assert(await p.evaluate(() => { const b = document.getElementById('btnBeer'); return !b || !b.getClientRects().length; }), 'niente boccale in testata');
-  await p.click('#gMenu'); await wait(400);
+  await p.click('#gTabs [data-g="idx"]'); await wait(400);
   await p.evaluate(() => document.getElementById('donMenu').scrollIntoView({ block: 'center' })); await wait(150);
   await p.click('#donMenu'); await wait(400);
   assert(await p.evaluate(() => !document.getElementById('donSheet').hidden), 'Sostieni aperto dall\'Indice');
@@ -135,7 +135,7 @@ const books = [
   g = await groups(p); console.log('[3 lettura]', JSON.stringify(g.map(x => x.t + ' ' + x.n)));
   assert.deepStrictEqual(g.map(x => x.t), ['Da leggere', 'Letti']);
   assert.deepStrictEqual(g.map(x => x.n), [4, 2]);
-  await p.click('#gMenu'); await wait(450);
+  await p.click('#gTabs [data-g="idx"]'); await wait(450);
   const sub = await p.evaluate(() => document.getElementById('grpPick').textContent); assert.strictEqual(sub, 'Lettura', 'riga sotto la ricerca (stile G: testo breve)');   // dal 17/11/2026 notte non più nel riassunto del Menu
   await p.evaluate(() => history.back()); await wait(500);
   await H.fai(p, 'wish'); await wait(400);
@@ -154,7 +154,7 @@ const books = [
   assert(await p.evaluate(() => document.body.classList.contains('gridview')), 'dopo lo spostamento si torna alle copertine');
   await H.fai(p, 'lib'); await wait(400);
   // 5) Privacy dentro l'app; × torna al Menu
-  await p.click('#gMenu'); await wait(450);
+  await p.click('#gTabs [data-g="idx"]'); await wait(450);
   await p.evaluate(() => document.getElementById('goInfo').click()); await wait(300); await p.click('#goPrivacy'); await wait(700);
   const pv = await p.evaluate(() => ({ open: !document.getElementById('optSheet').hidden, h: document.getElementById('optH').textContent, txt: document.getElementById('pvBody').innerText.slice(0, 400),
     h1: !!document.querySelector('#pvBody h1, #pvBody footer'), over: document.querySelector('#optSheet .sheet-in').scrollWidth - document.querySelector('#optSheet .sheet-in').clientWidth }));

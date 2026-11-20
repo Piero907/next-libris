@@ -210,7 +210,7 @@ const base = "http://localhost:" + CFG.port(8340);
     await closeAll(pg);
     await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="lib"], #gTabs [data-g="libreria"]'); if (b) b.click(); }); await wait(500);
     // menu
-    await pg.evaluate(() => { const b = document.querySelector('#gMenu'); if (b) b.click(); }); await wait(500); await sh('12-menu'); await closeAll(pg);
+    await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="idx"]'); if (b) b.click(); }); await wait(500); await sh('12-menu'); await closeAll(pg);
     // scheda di un libro
     await pg.evaluate(() => { const c = document.querySelector('#list .cover:not(.gcard)') || document.querySelector('#list .gcard'); if (c) c.click(); }); await wait(500);
     await pg.evaluate(() => { const c = document.querySelector('#list .gpanel:not([hidden]) .cover'); if (c) c.click(); }); await wait(700); await sh('13-scheda');
