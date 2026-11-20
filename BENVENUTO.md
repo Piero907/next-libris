@@ -40,6 +40,15 @@ Next Libris è il social dei libri: metti in ordine i tuoi libri, guardi quelli 
 - **Accedi**: Entra con Google. Con l'account i tuoi libri si salvano anche online e trovi gli amici. [Accedi con Google] (il tasto ufficiale di Google) · Più tardi.
 - **Nome**: Come ti chiami? È il nome con cui gli amici ti troveranno. [campo] [Continua] (obbligatorio, vedi `claude/amici-chat-avvisi.md`).
 
+## Prima installa, poi il benvenuto (scelte di Piero del 20/11/2026, proposta in tela)
+**Stato:** codice nel ramo `tela-benvenuto` (da `prova`, non pubblicato); tavola «Prima installa, poi il benvenuto» in fondo alla tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu. Aspetta la scelta di Piero, poi «pubblica nella prova» (da aggiornare e2e123: 3 schede).
+- **Installazione obbligatoria solo sui telefoni** (Android e iPhone, non tablet né PC): nel browser c'è solo la schermata «Installa Next Libris» / «Mettila sul tuo iPhone», con la grafica verde delle schede; **niente «Continua nel browser»**. Su Android il tasto «Installa» (o i passi del menu), poi «Fatto! Aprila dall'icona».
+- Le **schede di benvenuto, l'accesso, il nome e il percorso** arrivano nell'app installata. La scheda 4 «Installa l'app» non c'è più: **3 schede**.
+- **Scheda 3** (nessun amico da chiamare in causa): «Crearla non costa nulla: la fai in autonomia, in 5 minuti.» · «Quando avrai degli amici su Next Libris, potrete prestarvela.» Con il link d'invito la seconda riga diventa «**Anna R.** è su Next Libris: se ha un'API, può prestartela.» Pillole proposte: Gratis · Tua · Si presta.
+- **Passo 2 del percorso:** «Chiedila a un amico» solo se un amico ha un'API sua; altrimenti «La crei in 5 minuti, con la guida.»
+- **Invito su iPhone:** l'app installata non riceve il link (dati separati da Safari), quindi la schermata dice «Ti ha invitato Anna R. Nell'app installata cerca «Anna R.» in Amici». Su Android l'invito passa da solo.
+- **Chi ha già libri nel browser su iPhone:** la schermata lo dice e offre «Fai il backup» (con l'account tornano da soli).
+
 ## Sequenza del primo avvio
 1. **iPhone nel browser**: prima la schermata **«Prima mettila sul tuo iPhone»** (passi per Safari iOS 26 «··· › Condividi › Aggiungi alla schermata Home, Apri come app web»; passi a parte per Chrome/Firefox/Edge per iPhone e per i link aperti dentro altre app; «Continua nel browser» con avviso e conferma). Le schede aspettano. Nessuno usa l'app in Safari: niente trasloco da Safari.
 2. **Le 4 schede** (la 4 solo nel browser). «Salta» porta alla scheda «Entra con Google» (se non sei dentro).
