@@ -12,6 +12,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
 (async () => {
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const wait = H.wait;   // attesa «finché» (_harness.js)
+  const o_vp = (o) => o.phone ? { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true } : { width: 800, height: 1100, deviceScaleFactor: 1, isMobile: true, hasTouch: true };
   async function open(ua, opts = {}) {
     const ctx = await browser.createBrowserContext();
     const page = await ctx.newPage();
@@ -24,7 +25,7 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
       Object.defineProperty(navigator, 'share', { configurable: true, value: o.noShare ? undefined : (d => { window.__shared.push(d); return Promise.resolve(); }) });
       Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: t => { window.__copied.push(t); return Promise.resolve(); } } });
     }, opts);
-    await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await page.setViewport(o_vp(opts));   // tablet di partenza: sui telefoni nel browser c'è solo la schermata d'installazione (20/11/2026, e2e142)
     page.errors = []; page.on('pageerror', e => page.errors.push(e.message));
     await page.setRequestInterception(true);
     page.on('request', req => req.url().startsWith('http://localhost:' + CFG.port(8130) + '') ? req.continue() : req.abort());
@@ -125,14 +126,12 @@ const INAPP = 'Mozilla/5.0 (Linux; Android 14; Pixel 7; wv) AppleWebKit/537.36 (
 
   // 6) iPhone: passi per Safari
   p = await open(IPHONE);
-  // giro 11F: su iPhone nel browser prima la schermata «Prima mettila sul tuo iPhone», con i passi; «Continua nel browser» chiede conferma
-  assert(await p.$('#iosGate'), 'manca la schermata iPhone');
-  assert(/Aggiungi alla schermata Home/.test(await txt(p, '#iosGate .ig-steps')));
-  await p.click('#iosGate [data-ig="web"]'); await wait(100);
-  assert(await p.$('#iosGate .ig-warn'), 'manca l\'avviso prima di continuare nel browser');
-  await p.click('#iosGate [data-ig="web"]'); await wait(100);
-  assert(!(await p.$('#iosGate')), 'la schermata iPhone non si chiude');
-  assert(await p.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set') || '{}').iosWeb === true));
+  // 20/11/2026: su un iPhone (telefono) c'è solo la schermata d'installazione, senza «Continua nel browser» (dettagli in e2e142); su iPad no
+  { const q = await open(IPHONE, { phone: true });
+    assert(await q.$('#iosGate') && !(await q.$('#iosGate [data-ig="web"]')), 'iPhone: schermata d\'installazione obbligatoria');
+    assert(/Aggiungi alla schermata Home/.test(await txt(q, '#iosGate')));
+    await q.browserContext().close(); }
+  assert(!(await p.$('#iosGate')), 'su iPad niente schermata');
   await p.click('#instGo'); await wait(150);
   console.log('[6 iPhone]', await txt(p, '#instSteps'));
   assert(/Aggiungi alla schermata Home/.test(await txt(p, '#instSteps')));
