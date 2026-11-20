@@ -1,6 +1,6 @@
-# Next Libris — lo stile dell'app (documento fisso)
+# Next Libris — lo stile grafico dell'app (documento fisso)
 
-**Aggiornato il 20/11/2026, prova 110.28.** Questo è il riferimento unico per l'aspetto dell'app. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
+**Aggiornato il 20/11/2026, prova 110.28.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
 
 **Come si lavora sull'aspetto** (regole di Piero):
 1. Ogni modifica di aspetto si mostra **prima nella tela di design** con le schermate vere dell'app (tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu).
@@ -63,12 +63,12 @@
 - **Libro dentro un mio messaggio**: fondo trasparente sul verde, testo chiaro `--accent-ink`, altrimenti non si legge. Il libro in un messaggio altrui è un riquadro carta con testo `--ink` (G17).
 - In basso 📚 tondo, campo a pillola, invio in cerchio `--accent`. I segnalibri restano visibili anche qui.
 
-### Ricerca per titolo (finestra «Titolo o ISBN»)
-- Prima si cerca su Google Libri. Se Google non risponde o non trova niente, si cerca in **Open Library**, prima le edizioni italiane.
-- **Ordine dei risultati**: prima i titoli più vicini a quello scritto; poi quelli che corrispondono all'**editore o all'anno scritti accanto** («l'isola del tesoro bur», «l'isola del tesoro 1996»); poi le edizioni italiane, quelle con ISBN e copertina, e infine dalla più recente.
-- Sopra i risultati c'è il **motivo vero**: «Senza un'API Google Libri cerco in Open Library», «L'API che ti avevano prestato non è più disponibile», «Google Libri non ha risposto» oppure «Google Libri non ha trovato niente». «Google Libri è al limite di richieste» compare solo a chi ha un'API valida e ha finito le ricerche del giorno.
-- Senza API compare il tasto «Come avere l'API, gratis ›», che apre la guida.
-- **Ricerca per ISBN** (scansione): se nessuna fonte libera conosce il libro e manca l'API (o quella prestata è stata tolta), il messaggio lo dice così e indica Indice › Ricerca dei libri; mai «Google al limite» a chi non ha un'API.
+### Finestra «Titolo o ISBN» (risultati di una ricerca)
+- Finestra dal basso normale: titolo 19/800, frase di spiegazione 13,5 `--muted`, campo di testo grande (raggio 14, bordo `--line`).
+- Sopra i risultati, **una riga di messaggio** 13,5 `--muted` (mai rossa, mai in un riquadro colorato).
+- **Risultati come righe-scheda**: copertina piccola a sinistra (riquadro vuoto `--surface` se manca), titolo 15/700, autore e «editore, anno» sotto in `--muted`; fondo `--surface2`, raggio 14, 8 px tra una riga e l'altra; l'elenco scorre dentro la finestra.
+- Sotto i risultati, tasti **larghi secondari** uno sotto l'altro (per esempio «Come avere l'API, gratis ›», «Aggiungi solo «…», senza cercare»), poi in fondo la riga «Annulla» (secondario) e «Cerca» (pieno).
+- Gli **avvisi nella riga di un libro** (libro non trovato, nuovo tentativo) stanno in un riquadro `--info-bg` sotto la riga, testo `--info`, con un tasto secondario piccolo («Riprova ora»).
 
 ### Misure (tutti i telefoni)
 - Telefoni **da 380 px in su**: segnalibri 46 px, margini 20 px, titolo 40 px.
@@ -109,14 +109,14 @@
 - **Segni sulle copertine**: «In lettura» con l'orecchia; «Prestato» in `--warn-bg`; stella in `--brass`; «ce l'hai anche tu» con la spunta.
 - **Guida, percorso e schede di benvenuto**: a schermo intero su sfumatura verde Bosco fissa (#24563F→#173A2A), uguale con ogni tavolozza.
 
-## 4. Regole che restano sempre
-- Testi senza maschile per le persone.
-- Numeri coerenti tra le finestre.
-- Niente testo che tocca i bordi.
-- Si prova alle misure dei telefoni e in scuro.
+## 4. Regole grafiche che restano sempre
+- Niente testo che tocca i bordi dei riquadri: sempre il margine interno.
+- Titoli e etichette lunghi vanno a capo bene (meglio titolo + sottotitolo + › che una riga lunghissima); niente segnaposto tagliati a 360 px.
+- Peso visivo leggero: niente riquadri o pulsanti pieni dove basta poco (bordi sottili, `--muted`, pulsanti piccoli).
+- Si prova alle misure dei telefoni, del tablet e del PC, in chiaro e in scuro; niente scorrimento di lato.
 - Si rispetta «riduci movimento».
-- Niente «di nascosto» nei testi.
-- L'API Google Libri si chiama sempre «API Google Libri».
+
+Le regole sui **testi** dell'app (parole, nomi, tono) stanno in `claude/regole-di-lavoro.md`; il **funzionamento della ricerca** dei libri sta in `claude/ricerca-libri.md`. Qui c'è solo l'aspetto.
 
 ## 5. Storia delle scelte di aspetto
 - 19/11/2026: restyle «C · Schede».
@@ -127,8 +127,7 @@
 - 20/11/2026: segnalibri visibili sotto le finestre (110.20).
 - 20/11/2026: correzioni del libro in chat e della barra dei filtri (110.21).
 - 20/11/2026: segnalibro Chat (110.22).
-- 20/11/2026: ricerca per titolo con Open Library (110.23 e 110.24).
-- 20/11/2026: ordine dei risultati; segnalibri nella conversazione e nella stagione in libri (110.25).
+- 20/11/2026: segnalibri nella conversazione e nella stagione in libri (110.25).
 - 20/11/2026: tablet e PC con pagine nella colonna, finestre al centro e segnalibri sempre visibili (110.26).
 - 20/11/2026: tutte le finestre controllate una per una; barra di scorrimento del PC; segnalibri sopra ogni finestra (110.27).
-- 20/11/2026: pagina del libro su PC, spazi sotto ordine/gruppi e pillole, messaggio ISBN senza API (110.28).
+- 20/11/2026: pagina del libro su PC, spazi sotto ordine/gruppi e pillole (110.28).
