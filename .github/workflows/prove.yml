@@ -1,0 +1,46 @@
+# Prove automatiche di Next Libris (Piero, 21/11/2026): giro completo a ogni push dei rami «prova» (app) e «prove» (prove).
+# Lo stesso file sta in tutti e due i rami. Il repository è pubblico: i minuti di GitHub Actions sono gratis.
+# Il risultato si legge in Actions (o con gh api) e nel file «esito-prove» allegato al giro.
+name: Prove automatiche
+on:
+  push:
+    branches: [prova, prove]
+  workflow_dispatch:
+concurrency:
+  group: prove
+  cancel-in-progress: true
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: prova
+          path: next-libris
+      - uses: actions/checkout@v4
+        with:
+          ref: prove
+          path: prove
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Pacchetti delle prove
+        working-directory: prove
+        run: npm ci
+      - name: Tutte le prove
+        working-directory: prove
+        env:
+          APP_DIR: ${{ github.workspace }}/next-libris
+          CHROME: /usr/bin/google-chrome
+          PROVE_OUT: ${{ runner.temp }}/prove-out
+        run: |
+          set -o pipefail
+          node esegui.js 2>&1 | tee esito.txt
+      - name: Esito
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: esito-prove
+          path: prove/esito.txt
+          retention-days: 14

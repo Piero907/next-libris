@@ -1,0 +1,24 @@
+# Database sempre attivo (Piero, 21/11/2026): i progetti Supabase gratuiti vanno in pausa dopo 7 giorni senza attività.
+# Ogni 2 giorni si chiama tieni_attivo() (migrazione 032: aggiorna una riga della tabella «battito») nella vera e nella prova.
+# Le chiavi sono quelle pubbliche dell'app (social.js). Gli orari programmati partono solo dal ramo main (arriva con la versione vera).
+name: Database sempre attivo
+on:
+  schedule:
+    - cron: '17 5 */2 * *'
+  workflow_dispatch:
+jobs:
+  battito:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Battito ai due database
+        run: |
+          fail=0
+          for p in "vera https://fttdbqotjocjfjfcoyfv.supabase.co sb_publishable_fkmJDyZX1Lq2YzaBWnWOLQ_x0VfnSXp" \
+                   "prova https://amkrkvkylprjasccxmzo.supabase.co sb_publishable_OQFiirkpjbx5WLKNtm2u3w_0M0TX2HC"; do
+            set -- $p
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 -X POST "$2/rest/v1/rpc/tieni_attivo" \
+              -H "apikey: $3" -H "Content-Type: application/json" -d '{}')
+            echo "$1: $code"
+            case "$code" in 200|204) ;; *) fail=1 ;; esac
+          done
+          exit $fail
