@@ -182,7 +182,7 @@ const base = "http://localhost:" + CFG.port(8340);
 
   // Restyle «C · Schede» (19/11/2026): librerie e profili, chiaro e scuro. TELEFONI=390,360 SCURO=1
   const OUT = SHOTS || path.join(CFG.OUT, 'restyle'); fs.mkdirSync(OUT, { recursive: true });
-  const PH = [['390', 390, 844], ['360', 360, 800], ['412', 412, 915], ['1280', 1280, 800]];
+  const PH = [['390', 390, 844], ['360', 360, 800], ['412', 412, 915], ['768', 768, 1024], ['1280', 1280, 800]];
   const only = process.env.TELEFONI ? process.env.TELEFONI.split(',') : ['390'];
   const side = [];
   const closeAll = (pg) => pg.evaluate(() => { document.querySelectorAll('.sheet:not([hidden])').forEach(x => { x.hidden = true; }); document.documentElement.classList.remove('drawer-open'); window.scrollTo(0, 0); });

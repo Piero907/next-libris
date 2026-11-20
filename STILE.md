@@ -1,6 +1,6 @@
 # Next Libris — lo stile dell'app (documento fisso)
 
-**Aggiornato il 20/11/2026, prova 110.27.** Questo è il riferimento unico per l'aspetto dell'app. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
+**Aggiornato il 20/11/2026, prova 110.28.** Questo è il riferimento unico per l'aspetto dell'app. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
 
 **Come si lavora sull'aspetto** (regole di Piero):
 1. Ogni modifica di aspetto si mostra **prima nella tela di design** con le schermate vere dell'app (tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu).
@@ -38,6 +38,7 @@
 ### Libreria e Desideri
 - **«+ Aggiungi»** pieno `--accent` che galleggia in basso a sinistra (accanto ai segnalibri se sono a sinistra). Sparisce sulle pagine intere e sotto le finestre.
 - **Ricerca sempre visibile** (46 px, raggio 14, `--surface2` con bordo `--line`). Sotto, in una riga: **ordine** e **gruppi** («Più recenti», «Autore»), poi a destra **Filtri** e **copertine/elenco** (tasti quadrati 38).
+- **Spazi verticali uguali** (Piero, 20/11/2026): **14 px** sotto la riga di ordine e gruppi e **14 px** sotto le pillole («Novità dei tuoi autori», «Completa 1 libro con l'ISBN»…), prima della prima riga dell'elenco o delle copertine, con e senza gruppi, nella tua libreria, nei Desideri e in quella di un amico (G21).
 - Quando si scorre, la **barra di ricerca e filtri resta in alto** con **16 px di spazio sotto e una linea sottile**, così le copertine non le si attaccano (G17).
 - **Orecchia** (angolo piegato) sulle copertine dei libri in lettura.
 - Sezioni con l'**etichetta maiuscola spaziata e la linea** («IN LETTURA 1 ——», 11,5/700, `--muted`), tutte allo stesso margine.
@@ -67,12 +68,14 @@
 - **Ordine dei risultati**: prima i titoli più vicini a quello scritto; poi quelli che corrispondono all'**editore o all'anno scritti accanto** («l'isola del tesoro bur», «l'isola del tesoro 1996»); poi le edizioni italiane, quelle con ISBN e copertina, e infine dalla più recente.
 - Sopra i risultati c'è il **motivo vero**: «Senza un'API Google Libri cerco in Open Library», «L'API che ti avevano prestato non è più disponibile», «Google Libri non ha risposto» oppure «Google Libri non ha trovato niente». «Google Libri è al limite di richieste» compare solo a chi ha un'API valida e ha finito le ricerche del giorno.
 - Senza API compare il tasto «Come avere l'API, gratis ›», che apre la guida.
+- **Ricerca per ISBN** (scansione): se nessuna fonte libera conosce il libro e manca l'API (o quella prestata è stata tolta), il messaggio lo dice così e indica Indice › Ricerca dei libri; mai «Google al limite» a chi non ha un'API.
 
 ### Misure (tutti i telefoni)
 - Telefoni **da 380 px in su**: segnalibri 46 px, margini 20 px, titolo 40 px.
 - **Sotto 380 px** (360, 375): segnalibri 36 px (scritta 10,5), margini 14 px, titolo 32 px, nastro 36 px, frase 14 px.
 - **Schermi bassi** (sotto 620 px di altezza): segnalibri più corti. I sei segnalibri entrano anche a 360×640.
-- **Tablet e PC (da 700 px)**: colonna di 640 px al centro, segnalibri sul suo bordo. **Anche le pagine intere** (libro, profili, Amici, Chat, Per te, Indice, stagione in libri) stanno nella colonna, accanto ai segnalibri, e **le finestre dal basso sono al centro della colonna** con il fondo scurito su tutto lo schermo; i segnalibri restano sopra il fondo scurito (`stile-g.css` G20). Le posizioni si calcolano in `%` e non in `vw`, così restano giuste anche con la barra di scorrimento del PC.
+- **Tablet e PC (da 700 px)**: colonna di 640 px al centro, segnalibri sul suo bordo. **Anche le pagine intere** (libro, profili, Amici, Chat, Per te, Indice, stagione in libri) stanno nella colonna, accanto ai segnalibri, e **le finestre dal basso sono al centro della colonna** con il fondo scurito su tutto lo schermo; i segnalibri restano sopra il fondo scurito (`stile-g.css` G20). Le posizioni si calcolano in `%` e non in `vw`, così restano giuste anche con la barra di scorrimento del PC. La **pagina del libro** è larga quanto la colonna, con i margini normali (`--g-pad`): mai margini calcolati sulla larghezza dello schermo, altrimenti su PC il testo si schiaccia.
+- **Giro di schermate** su telefono, tablet e PC: `TELEFONI=412` (poi `768`, `1280`) `node schermate_restyle.js`, anche con `MENU=1`, `SCHEDA=1`, `ALTRO=1`.
 - **Controllo automatico e2e137** a 360×640, 375×667, 390×844, 412×915, 430×932, 768×1024, 1280×800: niente scorrimento di lato, tutto dentro lo schermo e fuori dai segnalibri, sei segnalibri.
 
 ---
@@ -128,3 +131,4 @@
 - 20/11/2026: ordine dei risultati; segnalibri nella conversazione e nella stagione in libri (110.25).
 - 20/11/2026: tablet e PC con pagine nella colonna, finestre al centro e segnalibri sempre visibili (110.26).
 - 20/11/2026: tutte le finestre controllate una per una; barra di scorrimento del PC; segnalibri sopra ogni finestra (110.27).
+- 20/11/2026: pagina del libro su PC, spazi sotto ordine/gruppi e pillole, messaggio ISBN senza API (110.28).
