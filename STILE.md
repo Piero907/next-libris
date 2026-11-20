@@ -58,6 +58,11 @@
 - Il pallino verde della sincronizzazione sta nel margine a sinistra del titolo, così il titolo non va a capo a 360 px.
 - **Sostieni** come fascia dorata (`--gilt`) in fondo. **Posizione da rivedere** (Piero, 20/11/2026: «va messo meglio in evidenza», IN_SOSPESO 41).
 
+### Pillole BETA e prova (Piero, 20/11/2026)
+- Nella **testatina**, subito dopo «NEXT LIBRIS» (o il nome dell'amico), una **pillola «BETA»**: 9,5/700 maiuscolo spaziato, `--accent` su `--accent-soft`, raggio 999. Nella **copia di prova** sotto c'è una seconda pillola **«prova»** (minuscolo, `--ink` su `--warn-bg`). Solo nella testatina, non nelle pagine intere (`stile-g.css` G26, `#gBeta` in `index.html`).
+- «Vedi tutti i libri di»: le etichette restano dentro la pagina; quelle lunghe finiscono con i puntini (G27).
+- Righe degli amici: «Accetta», «Chiedi l'amicizia» e «Presta» sono **pieni `--accent`**, «Rifiuta» e «No» secondari `--surface2`.
+
 ### Avvisi in cima alla libreria
 - Sopra la ricerca, **uno alla volta**, con i pallini; si scorrono col dito. Testo su **due righe al massimo**, a destra il tasto con › e la ×.
 - **Niente triangolino «riapri avvisi chiusi»** (tolto da Piero il 20/11/2026): un avviso chiuso torna da solo quando è di nuovo il momento.
@@ -163,5 +168,6 @@ Le regole sui **testi** dell'app (parole, nomi, tono) stanno in `claude/regole-d
 - 20/11/2026: puntini dell'Indice sulla riga sotto, elenco degli amici che scorre nel riquadro (111.2).
 - 20/11/2026: via il codice delle vecchie disposizioni; titolo allineato al margine; avviso «Non riesco a salvare»; via il triangolino e «Riepilogo in alto» (112.3).
 - 20/11/2026: avviso del libro nella sua pagina, con il tasto al centro; segnalibro Indice in cima e via ≡ dalla testatina (112.5); tutto nella **vera 113**.
+- 20/11/2026: pillole BETA e prova, tasti dell'amicizia pieni, «Vedi tutti i libri di» dentro la pagina; **vera 114**.
 
 Tele di design: stile attuale https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu · proposte A-G https://claude.ai/artifact/Tqa6XajvQCK2CVZdSSSimq · schede di benvenuto https://claude.ai/artifact/3K32364B9GUREgviZATvHJ.
