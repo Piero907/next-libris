@@ -179,7 +179,6 @@ function barColor() {
 var pend = 0;
 function soon() { if (pend) return; pend = setTimeout(function () { pend = 0; try { paintHead(); paintTabs(); shortGrp(); indice(); barColor(); } catch (e) { if (window.nlErr) nlErr(e); } }, 40); }
 function start() {
-  if (window.NL_NO_G) return;   // solo nelle prove di prima (prove/_harness.js)
   document.documentElement.classList.add('g-look');
   tabs(); head(); side(); soon();
   var mo = new MutationObserver(soon);
