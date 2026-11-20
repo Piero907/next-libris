@@ -90,7 +90,9 @@ async function searchTitle(text) {
     return '<li><button class="cand" data-i="' + i + '"><span class="cimg">' + (c.img ? '<img src="' + esc(c.img) + '" alt="" referrerpolicy="no-referrer" data-rm>' : '') + '</span><span><b>' + esc(c.t) + '</b>' +
       '<span>' + esc(c.a || 'Autore non indicato') + '</span><span>' + esc([c.e, c.y].filter(Boolean).join(', ') || 'Editore e anno non indicati') + '</span>' + badge + '</span></button></li>';
   }).join('');
-  $('#isbnResMsg').textContent = titleCands.length ? 'Tocca il libro giusto per aggiungerlo ' + whereTxt() + ':' : 'Non ho trovato libri per «' + text + '». Prova con meno parole, o aggiungi l\'autore.';
+  var viaOl = res.via === 'ol';
+  $('#isbnKey').hidden = !(viaOl && (!settings.gbKey || res.gErr === 'nokey'));
+  $('#isbnResMsg').textContent = titleCands.length ? (viaOl ? 'Google Libri non ha risposto: questi li trova Open Library. ' : '') + 'Tocca il libro giusto per aggiungerlo ' + whereTxt() + ':' : 'Non ho trovato libri per «' + text + '». Prova con meno parole, o aggiungi l\'autore.';
   asIs.hidden = false;
 }
 function addedToast(b) {
