@@ -140,7 +140,7 @@ function paintHead() {
 
 /* ---------- Indice al posto del Menu ---------- */
 function indice() {
-  var h = $('#drawerH'); if (h && h.textContent !== 'Indice') h.textContent = 'Indice';
+  var h = $('#drawerH'); if (h && h.textContent === 'Menu') h.textContent = 'Indice';   // solo il titolo del Menu: la pagina Filtri resta «Filtri» (20/11/2026)
 }
 
 /* ---------- ordine e gruppi: testi brevi («Autore» invece di «Raggruppa: Autore») ---------- */
