@@ -38,7 +38,7 @@ const wait = H.wait;   // attesa «finché» (_harness.js)
   // ---- A) ISBN stampato senza codice a barre
   let { browser, page, errors } = await open('isbn_text.mjpeg');
   const txt = sel => page.$eval(sel, e => e.innerText.replace(/\s+/g, ' ').trim());
-  await page.click('#btnScan'); await wait(800);
+  await page.click('#gAdd'); await wait(300); await page.click('#layAdd [data-l="scan"]'); await wait(800);   // stile G: «+ Aggiungi» › Scansiona
   assert.strictEqual(await page.$eval('#scanKinds [aria-checked="true"]', e => e.dataset.k), 'bar');
   console.log('[A modi]', await txt('#scanKinds'));
   await page.click('#scanKinds [data-k="text"]'); await wait(200);
@@ -55,7 +55,7 @@ const wait = H.wait;   // attesa «finché» (_harness.js)
   const b = await page.evaluate(i => window.__app.state.books.find(x => x.i === i), ISBN);
   console.log('[A libro]', b.t, '/', b.a, '/', b.rs);
   // «Ce l'ho già?» con l'ISBN stampato; la Copertina non c'è
-  await page.click('#btnCheck'); await wait(500);
+  await page.click('#gAdd'); await wait(300); await page.click('#layAdd [data-l="check"]'); await wait(500);   // stile G: «+ Aggiungi» › Ce l'ho già?
   assert(await page.$eval('#scanKinds [data-k="cover"]', e => getComputedStyle(e).display === 'none'));
   assert.strictEqual(await page.evaluate(() => window.__app.scanKind), 'text');
   await page.waitForFunction(() => !document.querySelector('#scanRes').hidden, { timeout: 30000, polling: 200 });
@@ -66,7 +66,7 @@ const wait = H.wait;   // attesa «finché» (_harness.js)
 
   // ---- B) Copertina: si scatta, il libro si riconosce mentre continui
   ({ browser, page, errors } = await open('cover_live.mjpeg'));
-  await page.click('#btnScan'); await wait(800);
+  await page.click('#gAdd'); await wait(300); await page.click('#layAdd [data-l="scan"]'); await wait(800);   // stile G: «+ Aggiungi» › Scansiona
   await page.click('#scanKinds [data-k="cover"]'); await wait(300);
   assert(!(await page.$eval('#scanShootBox', e => e.hidden)));
   await page.screenshot({ path: CFG.OUT + '/s_scan_cover.png' });

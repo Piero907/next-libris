@@ -63,7 +63,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   assert(!(await menu()).setOpen, 'riaprendo il Menu sono chiuse');
   await page.evaluate(() => window.__app.closeDrawer()); await wait(400);
   // l'ingranaggio in alto: dritto alle impostazioni
-  await page.evaluate(() => window.scrollTo(0, 0)); await page.click('#btnOpts'); await wait(450);
+  await page.evaluate(() => window.scrollTo(0, 0)); await page.click('#gMenu'); await wait(450);
   m = await menu(); assert(m.setOpen, 'ingranaggio: impostazioni aperte');
   // si richiudono toccando di nuovo
   await page.evaluate(() => document.getElementById('goSettings').click()); await wait(300);
@@ -72,7 +72,7 @@ const books = [{ id: 'm1', t: 'Il nome della rosa', a: 'Umberto Eco', ts: 2, rs:
   // Aspetto: tema vicino a colori e caratteri; poi all'apertura e riepilogo (16/11/2026)
   await page.evaluate(() => window.__app.openOptions('look')); await wait(350);
   const legs = await page.$$eval('#optSheet .opt-sec[data-sec="look"] legend', e => e.map(x => x.textContent)); console.log('[aspetto]', legs.join(' | '));
-  assert.deepStrictEqual(legs, ['Tema', 'Autori nei gruppi', 'Colori', 'Carattere dei titoli', 'Carattere del testo', 'Dimensione delle copertine', 'Riepilogo in alto']);
+  assert.deepStrictEqual(legs, ['Tema', 'Autori nei gruppi', 'Colori', 'Carattere dei titoli', 'Carattere del testo', 'Dimensione delle copertine', 'Linguette', 'Riepilogo in alto']);   // stile G: «Linguette» (nastro e segnalibri a sinistra)
   assert(await page.evaluate(() => !document.querySelector('.opt-sec[data-sec="look"] #optSound')), 'Suoni non piu\' in Aspetto');
   await page.screenshot({ path: CFG.OUT + '/opzioni_aspetto.png' });
   await page.evaluate(() => window.__app.closeOptions()); await wait(300);

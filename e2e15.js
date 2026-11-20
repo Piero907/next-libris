@@ -28,7 +28,7 @@ const assert = require('assert');
   assert.strictEqual(await page.$('details.opts'), null);
   await page.screenshot({ path: CFG.OUT + '/s_main_gear.png' });
   // 1) ingranaggio -> menu sulla scheda Opzioni
-  await page.click('#btnOpts'); await wait(350);
+  await page.click('#gMenu'); await wait(350);
   assert(await drawerOpen()); assert(await vis('#drawerOpts')); assert(!(await vis('#drawerFilters'))); assert(!(await vis('#drawerFoot')));
   console.log('[1 voci]', await page.$$eval('#drawerOpts .dopt b', e => e.map(x => x.textContent).join(' | ')));
   await page.screenshot({ path: CFG.OUT + '/s_menu_opts.png' });
@@ -47,7 +47,7 @@ const assert = require('assert');
   await page.goBack(); await wait(400);
   assert(!(await vis('#optSheet'))); assert(!(await drawerOpen())); assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8143) + '/?vista=elenco');
   // le impostazioni funzionano ancora
-  await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="cards"]'); await wait(300);
+  await page.click('#gMenu'); await wait(300); await page.click('#drawerOpts [data-sec="cards"]'); await wait(300);
   const pr0 = await page.evaluate(() => window.__app.settings.price);
   await page.click('#optPrice'); await wait(100);
   assert.strictEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).price), !pr0);
@@ -56,11 +56,11 @@ const assert = require('assert');
   assert(await drawerOpen(), '× torna al Menu (17/11/2026 pomeriggio)'); await page.click('#drawerX'); await wait(400);
   assert.strictEqual(page.url(), 'http://localhost:' + CFG.port(8143) + '/?vista=elenco');
   // 3) Backup ed esportazione
-  await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="export"]'); await wait(300);
+  await page.click('#gMenu'); await wait(300); await page.click('#drawerOpts [data-sec="export"]'); await wait(300);
   assert(await vis('#exportSheet')); assert(!(await drawerOpen())); await page.click('#exportClose'); await wait(500);
   assert(await drawerOpen(), 'Chiudi torna al Menu'); await page.click('#drawerX'); await wait(400);
   // 4) Filtri e linguetta aprono la scheda Filtri
-  await page.click('#btnOpts'); await wait(300); await page.click('#drawerX'); await wait(300);
+  await page.click('#gMenu'); await wait(300); await page.click('#drawerX'); await wait(300);
   await page.click('#btnFilters'); await wait(300); assert(await vis('#drawerFilters')); assert(await vis('#drawerFoot'));
   await page.click('#drawerBack'); await wait(250); assert(await vis('#drawerOpts')); await page.click('#goFilters'); await wait(150); assert(await vis('#drawerFilters'));   // v84: pagine al posto delle schede
   await page.keyboard.press('Escape'); await wait(300);
@@ -69,7 +69,7 @@ const assert = require('assert');
   await wait(200);
   const tops = await page.evaluate(() => { const r = document.querySelector('#list .row[data-id="b2"]'); const y = s => Math.round(r.querySelector(s).getBoundingClientRect().top - r.getBoundingClientRect().top);
     return { chev: y('.card-top .chev-btn'), del: y('.top-acts [data-act="del"]'), loan: y('.top-acts [data-act="loan"]'), on: r.querySelector('.top-acts [data-act="loan"]').classList.contains('on'), foot: r.querySelectorAll('.foot [data-act="del"]').length }; });
-  console.log('[5 in alto]', JSON.stringify(tops)); assert(tops.chev < 20 && tops.del < 110 && tops.loan < 20 && tops.on && tops.foot === 0);
+  console.log('[5 in alto]', JSON.stringify(tops)); assert(tops.chev < 20 && tops.del < 200 && tops.loan < 20 && tops.on && tops.foot === 0);   // stile G: «elimina» nella riga dei tasti tondi sotto la copertina
   await page.click('#list .row[data-id="b2"] .top-acts [data-act="loan"]'); await wait(200);
   console.log('[5 finestra]', await page.$eval('#loanH', e => e.textContent), '|', await page.$eval('#loanBack', e => e.textContent));
   assert.strictEqual(await page.$eval('#loanBack', e => e.textContent), 'Restituito');

@@ -22,24 +22,24 @@ const assert = require('assert');
   const st = () => page.evaluate(() => ({ look: document.documentElement.getAttribute('data-look'), theme: document.documentElement.getAttribute('data-theme'), meta: document.querySelector('meta[name="theme-color"]').content, bg: getComputedStyle(document.body).backgroundColor, font: getComputedStyle(document.querySelector('h1')).fontFamily.split(',')[0] }));
   await wait(400);
   let s = await st(); console.log('[1 predefinito]', s); assert.strictEqual(s.look, 'nuovo'); assert.strictEqual(s.theme, 'light'); assert(s.font.includes('Bricolage'));   // restyle «C · Schede» (19/11/2026)
-  await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
+  await page.click('#gMenu'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
   assert(await page.$eval('input[name="theme"][value="light"]', e => e.checked));
   await page.click('.seg-theme input[value="dark"] + span'); await wait(150);
-  s = await st(); console.log('[2 scuro]', s); assert.strictEqual(s.theme, 'dark'); assert.strictEqual(s.meta, '#0F1513'); assert.strictEqual(s.bg, 'rgb(15, 21, 19)');
+  s = await st(); console.log('[2 scuro]', s); assert.strictEqual(s.theme, 'dark'); assert.strictEqual(s.bg, 'rgb(22, 30, 27)'); assert.strictEqual(s.meta, '#161E1B');   // stile G: pagina --surface, barra di stato dello stesso colore
   assert.strictEqual(await page.$('input[name="look"]'), null, 'niente piu\' scelta dello stile');
   // resta dopo il riavvio, senza lampi (impostato prima del disegno)
   await page.reload({ waitUntil: 'domcontentloaded' });
   s = await page.evaluate(() => ({ look: document.documentElement.getAttribute('data-look'), theme: document.documentElement.getAttribute('data-theme') }));
   console.log('[4 dopo il riavvio]', s); assert.deepStrictEqual(s, { look: 'nuovo', theme: 'dark' });
   await wait(400);
-  await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
+  await page.click('#gMenu'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
   await page.click('.seg-theme input[value="light"] + span'); await wait(150);
-  s = await st(); console.log('[5 nuovo chiaro]', s); assert.strictEqual(s.bg, 'rgb(238, 241, 238)'); assert.strictEqual(s.meta, '#EEF1EE');
+  s = await st(); console.log('[5 nuovo chiaro]', s); assert.strictEqual(s.bg, 'rgb(252, 249, 242)'); assert.strictEqual(s.meta, '#FCF9F2');   // stile G: carta Avorio
   const set = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')));
   assert.strictEqual(set.theme, 'light');
   // palette e caratteri
   await page.keyboard.press('Escape'); await wait(300);
-  await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
+  await page.click('#gMenu'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
   assert(!(await page.$eval('#lookNew', e => e.hidden)));
   await page.click('.pal input[value="bordeaux"]').catch(() => page.evaluate(() => { const r = document.querySelector('.pal input[value="bordeaux"]'); r.click(); }));
   await page.evaluate(() => { const r = document.querySelector('input[name="ft"][value="lora"]'); r.click(); });
@@ -48,13 +48,13 @@ const assert = require('assert');
   let p = await page.evaluate(() => ({ pal: document.documentElement.getAttribute('data-pal'), ft: document.documentElement.getAttribute('data-ft'), fb: document.documentElement.getAttribute('data-fb'), meta: document.querySelector('meta[name="theme-color"]').content,
     accent: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), h1: getComputedStyle(document.querySelector('h1')).fontFamily.split(',')[0], body: getComputedStyle(document.body).fontFamily.split(',')[0] }));
   console.log('[6 bordeaux + lora + atkinson]', p);
-  assert.deepStrictEqual([p.pal, p.ft, p.fb, p.meta, p.accent], ['bordeaux', 'lora', 'atkinson', '#F2EFEE', '#85283A']);
+  assert.deepStrictEqual([p.pal, p.ft, p.fb, p.meta, p.accent], ['bordeaux', 'lora', 'atkinson', '#FCF9F2', '#85283A']);   // stile G: carta Avorio con ogni tavolozza
   assert(p.h1.includes('Lora') && p.body.includes('Atkinson'));
   await page.reload({ waitUntil: 'domcontentloaded' });
   p = await page.evaluate(() => [document.documentElement.getAttribute('data-pal'), document.documentElement.getAttribute('data-ft'), document.documentElement.getAttribute('data-fb')]);
   assert.deepStrictEqual(p, ['bordeaux', 'lora', 'atkinson']); await wait(400);
   await page.keyboard.press('Escape'); await wait(300);
-  await page.click('#btnOpts'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
+  await page.click('#gMenu'); await wait(300); await page.click('#drawerOpts [data-sec="look"]'); await wait(300);
   await page.evaluate(() => document.querySelector('#lookReset').click()); await wait(150);
   p = await page.evaluate(() => [document.documentElement.getAttribute('data-pal'), document.documentElement.getAttribute('data-ft'), document.documentElement.getAttribute('data-fb')]);
   console.log('[7 predefiniti]', p); assert.deepStrictEqual(p, ['bosco', 'bricolage', 'plex']);
