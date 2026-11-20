@@ -1,6 +1,6 @@
 # Next Libris — API Google Libri e worker SBN
 
-**Aggiornato il 20/11/2026, vera 112** (worker SBN della casa nella vera). Come si crea l'API, come si presta, «Chiedimela», il catalogo SBN, limiti e sicurezza. La ricerca dei libri sta in `claude/ricerca-libri.md` (`RICERCA.md`), l'aspetto in `claude/stile-base.md` (`STILE.md`). Copia uguale: progetto Claude `claude/api-e-worker.md`, ramo `prove` `API_WORKER.md`.
+**Aggiornato il 21/11/2026, prova 115.2** (ricerca per titolo nel catalogo SBN). Come si crea l'API, come si presta, «Chiedimela», il catalogo SBN, limiti e sicurezza. La ricerca dei libri sta in `claude/ricerca-libri.md` (`RICERCA.md`), l'aspetto in `claude/stile-base.md` (`STILE.md`). Copia uguale: progetto Claude `claude/api-e-worker.md`, ramo `prove` `API_WORKER.md`.
 
 Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 
@@ -40,7 +40,9 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 
 **Rischi:** il catalogo SBN potrebbe rallentare un worker unico con molte richieste (nessun limite pubblicato); se il worker si ferma, SBN manca a tutti ma l'app continua con le altre fonti. Il problema R5 (worker usato da un programma con l'indirizzo, IN_SOSPESO 40) si chiude il 27/11/2026, quando il worker accetta solo richieste firmate.
 
-**Dopo:** nella ricerca per titolo SBN e Open Library partiranno insieme e Google servirà solo se mancano edizioni italiane (`claude/ricerca-libri.md`); poi «cerca tra i tuoi amici chi può prestarti l'API» più in vista.
+**Ricerca per titolo (21/11/2026, prova 115.2):** la funzione `libri` accetta anche `?t=<titolo>` (2-100 caratteri), **con lo stesso conto e gli stessi limiti dell'ISBN**; la firma è sul testo «t:<titolo>.secondi»; il worker per i titoli accetta **solo richieste firmate** (anche prima del 27/11). Il worker va aggiornato da Piero (incollare il codice nuovo su Cloudflare). Funzionamento e scelte: `claude/ricerca-libri.md`.
+
+**Dopo:** «cerca tra i tuoi amici chi può prestarti l'API» più in vista.
 
 ### Chiavi di firma
 - Le chiavi private stanno **solo nel Vault** (`sbn_firma`) di ogni copia; i file usati per crearle sono stati cancellati. Chi ha ancora la 111 con un worker prestato passa comunque dal worker della casa (il vecchio `?da=&isbn=` va lì).
@@ -76,7 +78,7 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 ## Tecnica
 - **Database**: 020 (API prestata sul server, avvisi importanti), 026 (solo le proprie), 030 (`chiavi_ho`, `chiavi_richieste`, `chiavi_dichiara`, `amici_chiavi`, `chiedi_chiavi`), **031** (`supabase/031_worker_della_casa.sql`: `sbn_conta(utente)` solo per `service_role`, righe «c:» nella tabella `ricerche`; tolte `worker_conta` e `worker_prestato`; `chiavi.sbn` sempre vuoto con il vincolo `chiavi_senza_worker`; `presta_chiavi`, `chiavi_mie`, `chiavi_dichiara`, `amici_chiavi`, `chiedi_chiavi` solo per l'API). Vera e prova: 001-031. Prova dei permessi e dei limiti: `supabase/prova_sbn_casa.sql`.
 - **Vault** (per copia): `sbn_worker` (stesso worker nelle due copie), `sbn_firma` (una chiave per copia), oltre a quelli delle push.
-- **Funzione `libri`** (`supabase/funzioni/libri/index.ts`): versione 4 in tutte e due le copie. `?isbn=` → worker della casa: con l'intestazione `Authorization` controlla l'utente (500 al giorno, `x-nl-mio`), senza accetta solo le origini dell'app (tetto di 3.000); 429 con `x-nl-stop: mio` o `tetto`; firma con la chiave del Vault; l'indirizzo del worker non torna mai nella risposta. `?da=&u=` → API prestata (come prima: 429 `mio`/`pieno`, 403 `no`).
-- **Worker**: `cloudflare-sbn-worker.js` nel ramo `prove` (non più nell'app): `CHIAVI` (pubbliche, prova e vera), `TOLLERANZA` 120 secondi, `VECCHIO_FINO` 27/11/2026. Prova: `test_worker.mjs`.
+- **Funzione `libri`** (`supabase/funzioni/libri/index.ts`): **versione 5 nella prova** (21/11/2026, `?t=`), versione 4 nella vera. `?isbn=` (e `?t=`) → worker della casa: con l'intestazione `Authorization` controlla l'utente (500 al giorno, `x-nl-mio`), senza accetta solo le origini dell'app (tetto di 3.000); 429 con `x-nl-stop: mio` o `tetto`; firma con la chiave del Vault; l'indirizzo del worker non torna mai nella risposta. `?da=&u=` → API prestata (come prima: 429 `mio`/`pieno`, 403 `no`).
+- **Worker**: `cloudflare-sbn-worker.js` nel ramo `prove` (non più nell'app): `CHIAVI` (pubbliche, prova e vera), `TOLLERANZA` 120 secondi, `VECCHIO_FINO` 27/11/2026; `?t=` (21/11/2026): `search.json?any=…&rows=40`, solo «Testo a stampa» monografie, al massimo 25, campi ridotti. Prova: `test_worker.mjs`.
 - **App**: `app.js` `SBN_CASA` (indirizzo finto `https://sbn-casa.invalid/` che `apiFetch` gira a `casaFetch`), `sbnOut`, `sbnNow`, `sbnSay`, stato del giorno in `catalogo-libri-sbn-casa`, conto senza account in `quota.s`; `social.js` `rawOpen` (richiesta alla funzione anche senza account); `amici.js` (`ownKeys`, `keySheet`, `declareKeys`, `askState`, `NLAmici.ask`, `ownCheck`: solo l'API); `app.js` `apiFetch`, `lentFetch` (API prestata); `ricerche.js` (guida, contatore condiviso solo dell'API); `profilo.js` (`.pf-ask`).
 - **Prove**: e2e23 (senza account: riga «Incluso», 50 al giorno, tetto, worker di prima tolto), e2e133 (con l'account: dal server con l'accesso, 500 al giorno), e2e9, e2e24 (backup), e2e104, e2e106, e2e107, e2e109, e2e112, e2e124, e2e136.
