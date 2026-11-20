@@ -299,7 +299,7 @@ html.g-look #notice.nt-save #noticeBtn{margin-right:auto;padding-left:0}
 html.g-look .row.open.cv-full .status.cv-status{display:flex!important;flex-direction:column;align-items:flex-start;gap:10px;margin:14px 0 6px;padding:12px 14px;border:0;border-radius:14px;background:var(--info-bg);color:var(--info);font:600 14px/1.4 var(--font-body)}
 html.g-look .row.open.cv-full .status.cv-status .txt{color:inherit}
 html.g-look .row.open.cv-full .status.cv-status.err{background:var(--bad-bg);color:var(--bad)}
-html.g-look .row.open.cv-full .status.cv-status .btn{min-height:36px;padding:0 14px;border-radius:999px;font:600 13.5px/1 var(--font-body);background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+html.g-look .row.open.cv-full .status.cv-status .btn{align-self:center;min-height:36px;padding:0 14px;border-radius:999px;font:600 13.5px/1 var(--font-body);background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:none}
 html.g-look .row.open.cv-full .status.cv-status .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 html.g-look .row.open.cv-full .status.cv-status .cv-st-b{display:flex;flex-wrap:wrap;gap:8px}
 
