@@ -81,6 +81,8 @@ html.g-look .g-tabs button span{writing-mode:vertical-rl;transform:rotate(180deg
 html.g-look .g-tabs button.on{width:var(--g-tab);background:var(--accent);color:var(--accent-ink)}
 html.g-look .g-tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (max-width:379.98px){html.g-look .g-tabs{padding-top:calc(100px + env(safe-area-inset-top));gap:4px}html.g-look .g-tabs button{height:70px;gap:4px}html.g-look .g-tabs button span{font-size:10.5px}html.g-look .g-tabs button svg{width:14px;height:14px}}
+/* sette segnalibri (Indice in cima, 20/11/2026): sugli schermi sotto 760 px di altezza sono un po' più corti, così entrano tutti */
+@media (max-height:760px){html.g-look .g-tabs{padding-top:calc(96px + env(safe-area-inset-top))}html.g-look .g-tabs button{height:72px}}
 @media (max-height:620px){html.g-look .g-tabs{padding-top:72px;gap:3px}html.g-look .g-tabs button{height:64px}}
 /* conversazione aperta: niente linguette, serve il campo */
 

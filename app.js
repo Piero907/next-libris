@@ -135,7 +135,7 @@ function renderVersion() {
   } else if (latestVer) { st.textContent = '✓ È l\'ultima versione.'; st.className = 'ver-state ok'; up.hidden = true; }
   else if (navigator.onLine === false) { st.textContent = 'Senza rete: non posso controllare se ce n\'è una più nuova.'; st.className = 'ver-state'; up.hidden = true; }
   else { st.textContent = 'Controllo se ce n\'è una più nuova…'; st.className = 'ver-state'; up.hidden = true; }
-  $('#verApp').textContent = 'Versione ' + APP_VERSION.v + ' del ' + itLongDate(APP_VERSION.date) + (latestVer && latestVer.v > APP_VERSION.v ? ' (c\'è la ' + latestVer.v + ': aggiorna dal menu)' : '') + '.';
+  $('#verApp').textContent = 'Versione ' + APP_VERSION.v + ' del ' + itLongDate(APP_VERSION.date) + (latestVer && latestVer.v > APP_VERSION.v ? ' (c\'è la ' + latestVer.v + ': aggiorna dall\'Indice)' : '') + '.';
 }
 var state = { books: [], updated: 0 };
 var hooks = {};                              // moduli aggiuntivi (vedi window.NL in fondo): si agganciano dopo l'avvio
