@@ -1,6 +1,6 @@
 # Next Libris — lo stile dell'app (documento fisso)
 
-**Aggiornato il 20/11/2026, prova 110.26.** Questo è il riferimento unico per l'aspetto dell'app. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
+**Aggiornato il 20/11/2026, prova 110.27.** Questo è il riferimento unico per l'aspetto dell'app. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
 
 **Come si lavora sull'aspetto** (regole di Piero):
 1. Ogni modifica di aspetto si mostra **prima nella tela di design** con le schermate vere dell'app (tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu).
@@ -32,7 +32,8 @@
 - **Sempre visibili, in ogni schermata** (Piero, 20/11/2026): Libreria, Desideri, Per te, Amici, Chat e **conversazione aperta**, profili, pagina del libro, Indice, la **«stagione in libri»** e tutte le **finestre dal basso** (Statistiche, Suggerimenti, Dai tuoi libri al cinema, Aspetto, «+», Titolo o ISBN…). Le finestre e le pagine si aprono **accanto** ai segnalibri, mai sopra (`stile-g.css` G16 e G19).
 - Con una finestra dal basso aperta **resta acceso il segnalibro da cui si è partiti** (`lastTab`). Se si tocca un altro segnalibro, la finestra o la pagina aperta si chiude (`closeAll`, anche la stagione in libri).
 - **Lato**: a destra di partenza. In Indice › Aspetto c'è **«Nastro e linguette a sinistra»** (`settings.gLeft`, classe `html.g-left`): segnalibri sul bordo sinistro, sempre dritti verso la pagina e tondi verso il bordo; nastro a sinistra con il titolo accanto; pagine e finestre a destra dei segnalibri.
-- L'unica schermata senza segnalibri è la pagina d'immagine della stagione da condividere (anteprima a tutto schermo).
+- Restano a tutto schermo, senza segnalibri: fotocamera, ritaglio della foto e anteprima dell'immagine da condividere. Le copertine e le foto ingrandite hanno i segnalibri sopra, e toccandone uno si chiudono.
+- **Controllo di tutte le finestre** dopo ogni modifica di aspetto, a 1280, 768 e 390 px: `node ispeziona.js` con `PASSI=./passi_finestre.js` (ramo `prove`). Segnala ogni finestra fuori centro o sopra i segnalibri.
 
 ### Libreria e Desideri
 - **«+ Aggiungi»** pieno `--accent` che galleggia in basso a sinistra (accanto ai segnalibri se sono a sinistra). Sparisce sulle pagine intere e sotto le finestre.
@@ -71,7 +72,7 @@
 - Telefoni **da 380 px in su**: segnalibri 46 px, margini 20 px, titolo 40 px.
 - **Sotto 380 px** (360, 375): segnalibri 36 px (scritta 10,5), margini 14 px, titolo 32 px, nastro 36 px, frase 14 px.
 - **Schermi bassi** (sotto 620 px di altezza): segnalibri più corti. I sei segnalibri entrano anche a 360×640.
-- **Tablet e PC (da 700 px)**: colonna di 640 px al centro, segnalibri sul suo bordo. **Anche le pagine intere** (libro, profili, Amici, Chat, Per te, Indice, stagione in libri) stanno nella colonna, accanto ai segnalibri, e **le finestre dal basso sono al centro della colonna** con il fondo scurito su tutto lo schermo; i segnalibri restano sopra il fondo scurito (`stile-g.css` G20).
+- **Tablet e PC (da 700 px)**: colonna di 640 px al centro, segnalibri sul suo bordo. **Anche le pagine intere** (libro, profili, Amici, Chat, Per te, Indice, stagione in libri) stanno nella colonna, accanto ai segnalibri, e **le finestre dal basso sono al centro della colonna** con il fondo scurito su tutto lo schermo; i segnalibri restano sopra il fondo scurito (`stile-g.css` G20). Le posizioni si calcolano in `%` e non in `vw`, così restano giuste anche con la barra di scorrimento del PC.
 - **Controllo automatico e2e137** a 360×640, 375×667, 390×844, 412×915, 430×932, 768×1024, 1280×800: niente scorrimento di lato, tutto dentro lo schermo e fuori dai segnalibri, sei segnalibri.
 
 ---
@@ -126,3 +127,4 @@
 - 20/11/2026: ricerca per titolo con Open Library (110.23 e 110.24).
 - 20/11/2026: ordine dei risultati; segnalibri nella conversazione e nella stagione in libri (110.25).
 - 20/11/2026: tablet e PC con pagine nella colonna, finestre al centro e segnalibri sempre visibili (110.26).
+- 20/11/2026: tutte le finestre controllate una per una; barra di scorrimento del PC; segnalibri sopra ogni finestra (110.27).
