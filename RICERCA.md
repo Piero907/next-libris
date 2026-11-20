@@ -1,6 +1,6 @@
 # Next Libris — come funziona la ricerca dei libri
 
-**Aggiornato il 20/11/2026, prova 110.28.** Copia uguale nel progetto Claude: `claude/ricerca-libri.md`. Qui c'è il **funzionamento**; l'aspetto delle finestre sta in `STILE.md` / `claude/stile-base.md`.
+**Aggiornato il 20/11/2026, vera 111.** Copia uguale nel progetto Claude: `claude/ricerca-libri.md`. API e worker (prestito, limiti): `claude/api-e-worker.md` (`API_WORKER.md`). Qui c'è il **funzionamento**; l'aspetto delle finestre sta in `STILE.md` / `claude/stile-base.md`.
 
 ## Regola di fondo
 Poche chiamate a Google Libri. Prima si usano le fonti libere e gratuite (archivio comune, Open Library, catalogo SBN, Wikipedia/Wikidata); Google si usa solo quando serve.
@@ -32,6 +32,11 @@ Poche chiamate a Google Libri. Prima si usano le fonti libere e gratuite (archiv
   - Google risponde ma non trova niente: «Google Libri non ha trovato niente…».
 - Senza API compare il tasto «Come avere l'API, gratis ›», che apre la guida. «Aggiungi solo il titolo» c'è sempre.
 - **Scelta rimandata (Piero, 20/11/2026)**: quando ci sarà il worker SBN fisso per tutti, SBN e Open Library partiranno insieme e Google servirà solo se mancano edizioni italiane.
+
+## Altre ricerche Google (Per te)
+- **Novità dei tuoi autori**: gli autori a gruppi di 4 in una sola ricerca (`inauthor:"A" OR …`, maxResults 40): al massimo **2 ricerche invece di 8**, ogni 14 giorni. Da guardare sul telefono: se i risultati sono poveri si torna al sistema di prima senza richiedere.
+- **Da scoprire**: fino a 6 ricerche (4 autori + 2 generi) una volta a settimana.
+- Wikipedia, Wikidata e Commons (gratis) per autori, paesi, foto e film tratti dai libri.
 
 ## Codice
 - `lib.js`: `lookupIsbn` (con `nokey` per il 403), `searchText` (Google, poi `OL_SEARCH` / `parseOlSearch`, con `via: 'ol'` e `gErr`).

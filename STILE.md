@@ -1,6 +1,6 @@
 # Next Libris — lo stile grafico dell'app (documento fisso)
 
-**Aggiornato il 20/11/2026, prova 110.28.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
+**Aggiornato il 20/11/2026, vera 111, prova 111.2.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali. Indice di tutti i documenti: `claude/00-indice.md`.
 
 **Come si lavora sull'aspetto** (regole di Piero):
 1. Ogni modifica di aspetto si mostra **prima nella tela di design** con le schermate vere dell'app (tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu).
@@ -45,15 +45,17 @@
 
 ### Pagine intere
 - Libro, profilo, amici, chat, Per te, Indice: fondo carta, accanto ai segnalibri. **Titolo 26/800** e **tasto tondo 38** (‹ o ×) uguali dappertutto, tranne l'Indice.
+- **I tuoi amici**: l'elenco scorre **dentro il suo riquadro** (altezza massima `min(330px, 46vh)`), non la pagina, così «Aggiungi un amico» resta a portata (Piero, 20/11/2026; `stile-g.css` G23).
 - **Profilo**: **niente foto**. Il nome sta dentro l'**ex libris ovale** (bordo doppio `--accent`, «EX LIBRIS» sopra, «Su Next Libris da…» sotto). Le iniziali colorate restano solo negli elenchi. «I tuoi numeri» ha lo stesso margine delle altre sezioni.
 - **Pagina del libro**: copertina al centro, titolo, autore con bandiera, pillole, tasti tondi, poi Lettura, Descrizione, Dal libro, Citazioni, Prestito, Nota, Vedi tutti i libri di. **Tutti i titoletti in grassetto** 16/700, senza linea.
 
 ### Indice (il Menu)
 - Titolo «Indice» con **la sola freccia ‹, senza cerchio**.
 - **Capitoli numerati** (Amici · La tua libreria · Impostazioni · Info e aiuto) con il numero in un **nastrino tutto `--accent`** (anche il 2, prima dorato).
-- **Gruppi di voci senza cornici** (le cornici sono state provate e tolte il 20/11/2026). Le voci partono allo stesso bordo del testo dei capitoli e hanno i **puntini** fino a ›.
+- **Gruppi di voci senza cornici** (le cornici sono state provate e tolte il 20/11/2026). Le voci partono allo stesso bordo del testo dei capitoli.
+- **Puntini come nell'indice di un libro** (Piero, 20/11/2026): stanno **sulla riga sotto**, subito dopo il sottotitolo (anche sull'ultima riga se va a capo) e arrivano fino alla ›, che scende su quella riga; sono in basso sulla linea di base, leggeri (1,5 px, `--muted` al 55%). Senza sottotitolo i puntini stanno sulla riga del titolo. Capitoli e Sostieni senza puntini (`stile-g.css` G22).
 - Il pallino verde della sincronizzazione sta nel margine a sinistra del titolo, così il titolo non va a capo a 360 px.
-- **Sostieni** come fascia dorata (`--gilt`) in fondo.
+- **Sostieni** come fascia dorata (`--gilt`) in fondo. **Posizione da rivedere** (Piero, 20/11/2026: «va messo meglio in evidenza», IN_SOSPESO 41).
 
 ### Finestre dal basso
 - Foglio del colore della pagina (`--surface`), maniglia, titolo 19/800 con × tonda, riquadri col filo sottile, tasto largo in fondo. Sempre accanto ai segnalibri.
@@ -107,7 +109,23 @@
 - **Avvisi in pagina** (richieste, Segui i suoi Desideri, Chiedimela): riquadro `--accent-soft` con testo `--accent`.
 - **Finestra del +**: In Libreria / Nei Desideri; tre tasti tondi (Scansiona pieno, Fotografa, Digita); Per autore; Ce l'ho già?.
 - **Segni sulle copertine**: «In lettura» con l'orecchia; «Prestato» in `--warn-bg`; stella in `--brass`; «ce l'hai anche tu» con la spunta.
-- **Guida, percorso e schede di benvenuto**: a schermo intero su sfumatura verde Bosco fissa (#24563F→#173A2A), uguale con ogni tavolozza.
+- **Guida, percorso e schede di benvenuto** (proposta «A · Fondo Bosco», 19/11/2026): a schermo intero su sfumatura verde Bosco fissa **#24563F→#173A2A** (nel tema scuro #1B4230→#0E241A), uguale con ogni tavolozza, **nessun altro colore** (niente oro, blu, caldo). Disegno grande in alto (sotto 600 px di altezza sparisce, i testi restano), titolo bianco Bricolage 31/800, sottotitolo #CFE6D8, righe con l'icona dell'app nel quadratino 38 verde trasparente, tasto pieno **#8FD1AE** con testo scuro, largo in basso; puntini e «Salta» in alto. «Come ti chiami?» con la stessa grafica. Il tasto «Accedi con Google» è quello ufficiale di Google.
+
+### Colori delle stagioni (numeri del profilo e immagine da condividere)
+Colori «più tenui» (Piero, 19/11/2026), uno schema per stagione; nel profilo quella di oggi, nella stagione in libri quella mostrata. Testo bianco sui colori scuri, quasi nero su quelli chiari (scelto dall'app in base alla luminosità).
+```
+Autunno   #A8664A  #C99A62  #8A9160   fondo #2A1A12
+Inverno   #3A4F73  #9DBCCB  #A797BF   fondo #0E1626
+Primavera #6B9A68  #D597AA  #D9CC7A   fondo #16241A
+Estate    #3F86A3  #DDB46A  #CF7584   fondo #0F2230
+```
+- **Nel profilo** le tessere stanno **direttamente sulla pagina** (niente fondo scuro): tessera grande dell'anno con obiettivo e scaffale, poi due tessere affiancate, paesi in un riquadro con il solo bordo, «Da sempre» in elenco (nome a sinistra, valore a destra, linea sottile tra le righe). Numero grande Bricolage 34/800.
+- **Immagine da condividere** (Storia 1080×1920, Quadrata 1080×1080): tessere su **fondo scuro** della stagione, in fondo «Next Libris · nextlibris.github.io». Copertine senza immagine disegnate col titolo intero (si rimpicciolisce finché entra, mai tagliato).
+
+### Provati e non scelti (si possono riprendere)
+- Carte: **B · Crema** `--surface #F8F2E4`, `--surface2 #EFE7D5`, `--line #DCD0B6`, `--bg #ECE3CF`, `--ink #1D2420`; **C · Carta antica** `--surface #F2E8D3`, `--surface2 #E8DDC4`, `--line #D3C4A4`, `--bg #E5D9BE`, `--ink #1F2219`.
+- Tema scuro **«Notte calda»**: `--surface #1D1A15`, `--surface2 #26221B`, `--line #3A342A`, `--bg #14120E`, `--ink #ECE5D6`, `--muted #A99F8C`. Segnalibri color carta.
+- Cornici intorno ai gruppi dell'Indice; capolettera; foto nel profilo; barra in basso (stile C).
 
 ## 4. Regole grafiche che restano sempre
 - Niente testo che tocca i bordi dei riquadri: sempre il margine interno.
@@ -131,3 +149,7 @@ Le regole sui **testi** dell'app (parole, nomi, tono) stanno in `claude/regole-d
 - 20/11/2026: tablet e PC con pagine nella colonna, finestre al centro e segnalibri sempre visibili (110.26).
 - 20/11/2026: tutte le finestre controllate una per una; barra di scorrimento del PC; segnalibri sopra ogni finestra (110.27).
 - 20/11/2026: pagina del libro su PC, spazi sotto ordine/gruppi e pillole (110.28).
+- 20/11/2026: tutto nella **vera 111**.
+- 20/11/2026: puntini dell'Indice sulla riga sotto, elenco degli amici che scorre nel riquadro (111.2).
+
+Tele di design: stile attuale https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu · proposte A-G https://claude.ai/artifact/Tqa6XajvQCK2CVZdSSSimq · schede di benvenuto https://claude.ai/artifact/3K32364B9GUREgviZATvHJ.

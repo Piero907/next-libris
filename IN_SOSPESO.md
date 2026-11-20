@@ -4,13 +4,13 @@ Questo file sta nel ramo `prove`, separato dall'app. Raccoglie le idee e i probl
 
 **Regola:** nulla di questo elenco si costruisce finché Piero non lo chiede. Quando dice «riprendiamo …», si riparte dalla voce giusta: prima si rilegge, poi si fanno le domande ancora aperte, poi si costruisce. A lavoro finito la voce si toglie da qui (va in «Fatti», in fondo, con una riga) e la novità va nel registro dell'app.
 
-**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **37**.
+**Numeri:** ogni voce tiene il suo numero di sempre (le note e STORIA.md li citano), anche se l'ordine qui è per argomento. Una voce nuova prende il primo numero libero: **42**.
 
 Ultimo aggiornamento: **19/11/2026**, vera **107**, prova **107.6**. Da sistemare anche: prova e2e40 incerta.
 
 ## Indice
 
-- **A. In attesa di Piero**: niente
+- **A. In attesa di Piero**: 41 Sostieni più in evidenza
 - **B. Da verificare sul telefono**: foto di Flaiano (104)
 - **C. Uso di tutti i giorni:** 8 libri in lettura · 9 copertine esplorabili · 17 filtro ISBN non trovati · 19 foto del codice scritto · 23 collane raggruppate nelle copertine (in lavorazione) · 38 risolvere gli ISBN non trovati
 - **D. Wikipedia e Wikidata:** 10 opere dell'autore · 11 altri dati wiki
@@ -24,7 +24,8 @@ Ultimo aggiornamento: **19/11/2026**, vera **107**, prova **107.6**. Da sistemar
 
 ## A. In attesa di Piero
 
-Niente: prova e vera sono uguali (104). La prossima cosa si sceglie dalle voci qui sotto.
+### 41. Sostieni più in evidenza (20/11/2026)
+Piero: «torneremo sull'argomento dopo, va messo meglio in evidenza». Oggi nell'Indice dello stile G Sostieni è la **fascia dorata in fondo**; la scelta del 18/11 diceva «sempre al centro del Menu, sopra Amici», e il boccale stava nella testata (pillola «🍺 Sostieni»), che con lo stile G non si vede più. Quando si riprende: prima le domande (dove, quanto in evidenza, con o senza testo) e le prove nella tela di design. Testo e regole di Sostieni: `LIBRERIA_LIBRO.md`.
 
 ## B. Da verificare sul telefono
 
@@ -257,7 +258,7 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 - **Indirizzo:** fatto con nextlibris.github.io (versione 100), senza «piero» anche nell'accesso con Google.
 - **Dominio proprio** (`nextlibris.it` o simile, 10–15 € l'anno): servirebbe solo per la verifica del marchio di Google (nome e logo nella finestra di accesso) e per le email. Piero deve controllare se è libero. Cambiando dominio servirebbe di nuovo il trasloco dei dati.
-- **Email di accesso con Brevo:** ferma (accesso solo con Google, `CFG.email = false`). Con un dominio: `accesso@nextlibris.it`, modelli con il codice di 6 cifre (testo pronto in `claude/guida-accesso-google-brevo.md` del progetto claude.ai).
+- **Email di accesso con Brevo:** ferma (accesso solo con Google, `CFG.email = false`). Con un dominio: `accesso@nextlibris.it`, modelli con il codice di 6 cifre (`claude/accesso-google-e-servizi.md` del progetto claude.ai).
 
 ### 40. Worker e link della chiave (dal giro 7-8, 18/11/2026)
 - **R5 · limite di richieste per il worker** (**worker prestato: FATTO**, 026 + giro 11A del 18/11/2026: passa dal server, 3.000 ricerche al giorno per amico, nella prova con 027; resta solo il worker usato da un programma con l'indirizzo): oggi chiunque conosca l'indirizzo lo può usare da un programma; il piano gratuito si ferma a 100.000 al giorno senza costi, ma SBN potrebbe bloccare il worker. Possibile: un limite per indirizzo IP o un piccolo segreto.
@@ -267,7 +268,7 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 
 ### 30. Versioni accessibili per chi non distingue i colori (chiesto il 17/11/2026)
 
-**Verifica fatta nel giro 4 (18/11/2026), scelta di Piero: niente per ora.** Il colore è quasi sempre accompagnato da una parola o un segno; si confondono solo verde/rosso di «Ce l'hai/Non ce l'hai» (c'è ✓/✗) e oro/rosso dei cerchietti della campanella (il limite ha «!»). Punti deboli se si riprende: campi dedotti nella scheda (`.f.is-guess`, spiegazione solo nel `title`) → scritta «da verificare»; tipo di notifica nel cerchietto `.nt-ico` solo dal colore → simbolo piccolo. Rapporto completo nel documento del progetto claude.ai `claude/giro-4-guida-e-colori.md`.
+**Verifica fatta nel giro 4 (18/11/2026), scelta di Piero: niente per ora.** Il colore è quasi sempre accompagnato da una parola o un segno; si confondono solo verde/rosso di «Ce l'hai/Non ce l'hai» (c'è ✓/✗) e oro/rosso dei cerchietti della campanella (il limite ha «!»). Punti deboli se si riprende: campi dedotti nella scheda (`.f.is-guess`, spiegazione solo nel `title`) → scritta «da verificare»; tipo di notifica nel cerchietto `.nt-ico` solo dal colore → simbolo piccolo. Rapporto completo qui sopra (il documento del giro 4 è stato riassunto in `claude/storia-delle-scelte.md` il 20/11/2026).
 
 **Richiesta di Piero:** versioni dell'app adatte ai daltonici, prima **verificando se si può fare**. Nulla fatto.
 
