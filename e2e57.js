@@ -24,12 +24,12 @@ const books = Array.from({ length: 6 }, (_, i) => ({ id: 'd' + i, t: 'Libro ' + 
     await page.touchscreen.touchEnd(); await wait(400);
   }
   // 1) Statistiche: trascinata giu' dal titolo -> si chiude
-  await page.evaluate(() => document.querySelector('#btnStats').click()); await wait(400);
+  await H.fai(page, 'stats'); await wait(400);
   assert(await vis('#statsSheet'));
   await page.screenshot({ path: CFG.OUT + '/sheet_handle.png' });
   await drag('#statsSheet .sheet-in h2', 260); assert(!(await vis('#statsSheet')), 'chiusa trascinando');
   // 2) trascinamento corto e lento: resta aperta e torna al suo posto
-  await page.evaluate(() => document.querySelector('#btnStats').click()); await wait(400);
+  await H.fai(page, 'stats'); await wait(400);
   await drag('#statsSheet .sheet-in h2', 50, 10, 60);
   assert(await vis('#statsSheet'), 'corto: resta aperta');
   assert.strictEqual(await page.$eval('#statsSheet .sheet-in', e => e.style.transform), '', 'torna al suo posto');
@@ -48,7 +48,7 @@ const books = Array.from({ length: 6 }, (_, i) => ({ id: 'd' + i, t: 'Libro ' + 
   assert(await page.evaluate(() => document.body.classList.contains('drawer-open')), 'il menu sotto resta aperto');
   // 6) Esporta: i pulsanti del backup dicono cosa fanno
   await page.evaluate(() => window.__app.closeDrawer()); await wait(350);
-  await page.evaluate(() => document.querySelector('#btnExport').click()); await wait(300);
+  await H.fai(page, 'export'); await wait(300);
   assert.strictEqual(await page.$eval('#btnShareBackup', e => e.textContent), 'Fai il backup e mandalo su Drive, email…');
   assert.strictEqual(await page.$eval('#btnBackup', e => e.textContent), 'Fai il backup sul telefono (Download)');
   assert(/più sicuro/.test(await page.$eval('#exportSheet', e => e.textContent)));

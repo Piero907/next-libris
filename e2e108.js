@@ -66,7 +66,7 @@ const base = 'http://localhost:' + CFG.port(8308);
     await page.setRequestInterception(true);
     page.on('request', r => r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
     await page.goto(base + '/next-libris-prova/?vista=elenco' + (q || ''), { waitUntil: 'load' }); await wait(2800);
-    await page.evaluate((d) => { window.NLLayout && window.NLLayout.set('A'); if (d) document.documentElement.setAttribute('data-theme', 'dark');
+    await page.evaluate((d) => { if (d) document.documentElement.setAttribute('data-theme', 'dark');
       const ic = document.getElementById('instCard'); if (ic) ic.hidden = true; }, !!dark);   // come con l'app già installata: la riga è il primo avviso
     await wait(300);
     return page;

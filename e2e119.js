@@ -133,7 +133,7 @@ const hits = { pi: 0, wd: 0, big: 0 };
   assert(!/zoom=0/.test(b8.imgL || '') && !(hits.gz || []).includes('zoom=0'), 'niente zoom=0');
   assert(await p.evaluate(() => NL.L.badBigCover('https://books.google.com/books/content?id=X&printsec=frontcover&img=1&zoom=0&source=gbs_api') && !NL.L.badBigCover('https://books.google.com/books/content?id=X&img=1&zoom=3')));
   await p.evaluate(() => { NL.setFlt(''); NL.setTab('lib'); });
-  await p.evaluate(() => document.getElementById('btnType').click()); await wait(300);
+  await H.fai(p, 'type'); await wait(300);
   await p.evaluate(() => { document.querySelector('#isbnText').value = 'Il barone rampante'; }); await p.evaluate(() => document.getElementById('isbnGo').click());
   await p.waitForFunction(() => document.querySelector('#isbnRes .cand'), { polling: 100, timeout: 6000 });
   await p.evaluate(() => document.querySelector('#isbnRes .cand').click());
@@ -145,7 +145,7 @@ const hits = { pi: 0, wd: 0, big: 0 };
   // 6) testata
   // stile G: titolo «Libreria» / «Desideri» nella testata (il nome resta nel profilo)
   assert.strictEqual(await p.$eval('header.top h1 .g-t', x => x.textContent), 'Libreria');
-  await p.evaluate(() => document.getElementById('tabWish').click()); await wait(300);
+  await H.fai(p, 'wish'); await wait(300);
   assert.strictEqual(await p.$eval('header.top h1 .g-t', x => x.textContent), 'Desideri');
 
   assert.deepStrictEqual(errors, [], 'errori JavaScript: ' + errors.join(' | '));

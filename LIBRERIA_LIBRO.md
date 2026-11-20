@@ -19,6 +19,7 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 - Vista a **copertine** o a **elenco**. Copertine: **3 per riga di partenza**, da 2 a 5 con due dita (anche in Indice › Aspetto). La **scritta sotto le copertine resta sempre** (autori e libri, nome e «N libri»); la scritta *sulla* copertina disegnata si rimpicciolisce fino a entrare.
 - **Ricerca sempre visibile**; la × cancella **solo il testo**, non i filtri. Un tasto per **ordine e gruppi**, poi Filtri e copertine/elenco.
 - Raggruppa per autore, genere, **paese** (con le bandiere: piccole immagini dentro l'app, `vendor/flags`, solo quelle che servono)… Serie e copie dello stesso libro stanno insieme.
+- I libri **non più in libreria** (venduti, regalati, smarriti) si contano solo in Statistiche (dal 20/11/2026 non c'è più il riepilogo in testata).
 - «In lettura» in cima, con l'orecchia sulla copertina. Una frase sotto il titolo con i dati veri («Stai leggendo *X*; 5 sono in prestito», il link apre i prestiti).
 - **Desideri**: i libri che vorresti; gli amici possono vederli e seguirli (`claude/amici-chat-avvisi.md`).
 
@@ -47,6 +48,7 @@ Restano **solo**: il campo «Costo» nella pagina del libro, la domanda dopo ogn
 ## Backup
 - Promemoria **ogni 45 giorni o dopo 40 libri nuovi** (anche senza account); «Fai il backup» lo manda con un tocco su Drive, WhatsApp o email, foto comprese.
 - Si manda **solo come .txt** (Chrome su Android rifiuta il .json); oltre **45 MB** niente condivisione, con «Invia senza le foto».
+- **Salvataggio non riuscito** (Piero, 20/11/2026): niente più riga fissa «Salvato su questo telefono» né la sua opzione. Solo se il salvataggio sul telefono non riesce compare in cima alla libreria l'avviso (testo scritto da Claude, **da confermare con Piero**): «Non riesco a salvare le ultime modifiche: lo spazio dell'app su questo telefono è pieno. Fai subito il backup per non perderle.» con «Fai il backup». Torna a ogni salvataggio non riuscito e sparisce da solo quando il salvataggio riesce.
 - In sospeso: backup automatico su Drive, copia del database per Piero (IN_SOSPESO 7).
 
 ## Scelte vecchie da non disfare senza chiedere

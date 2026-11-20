@@ -35,14 +35,14 @@ const B = [{ id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', gen: 'Gialli',
   await openAllCards(); await tap('#activeFlt [data-clear]'); await wait(150); assert.strictEqual(await openN(), 0);
   await p.evaluate(() => document.querySelector('#drawerReset').click()); await wait(150);
   await openAllCards(); assert.strictEqual(await openN(), 1);   // una scheda alla volta (v58)
-  if (!await p.$('#list .row.open[data-id="b1"]')) { await tap('#list .row[data-id="b1"] .sum'); await wait(80); } await tap('#fltLoan'); await wait(150); assert.strictEqual(await openN(), 0); await tap('#fltLoan'); await wait(150);
+  if (!await p.$('#list .row.open[data-id="b1"]')) { await tap('#list .row[data-id="b1"] .sum'); await wait(80); } await H.fai(p, 'loan'); await wait(150); assert.strictEqual(await openN(), 0); await H.fai(p, 'loan'); await wait(150);
   await openAllCards(); await p.type('#q', 'eco'); await wait(200); console.log('[3 ricerca] righe', await p.$$eval('#list .row', a => a.length), 'aperte', await openN()); assert.strictEqual(await openN(), 0);
   // senza filtri, aprire e chiudere funziona come prima
   await p.evaluate(() => document.querySelector('#drawerReset').click()); await wait(150);
   await tap('#list .row[data-id="b2"] .sum'); await wait(100); assert.strictEqual(await openN(), 1);
 
   // 4) fotocamera: pulsante in basso
-  await tap('#btnScan'); await wait(120);
+  await H.fai(p, 'scan'); await wait(120);
   console.log('[4 inizio]', await p.$eval('#scanClose', e => e.textContent), '|', await p.$eval('#scanDone', e => e.textContent));
 
   await p.waitForFunction(() => /vedi/.test(document.querySelector('#scanDone').textContent), { timeout: 30000 });
@@ -54,7 +54,7 @@ const B = [{ id: 'b1', t: 'Il nome della rosa', a: 'Umberto Eco', gen: 'Gialli',
   await tap('#scanDone'); await wait(500);
   assert(await p.$eval('#scan', e => e.hidden)); assert.strictEqual(await p.evaluate(() => window.__app.state.books.length), 4);
   // riaprendo riparte da zero; «Ce l'ho già?» dice solo Chiudi
-  await tap('#btnScan'); await wait(120); assert.strictEqual(await p.$eval('#scanDone', e => e.textContent), 'Chiudi la fotocamera'); await wait(600); await tap('#scanClose'); await wait(400);
+  await H.fai(p, 'scan'); await wait(120); assert.strictEqual(await p.$eval('#scanDone', e => e.textContent), 'Chiudi la fotocamera'); await wait(600); await tap('#scanClose'); await wait(400);
   assert.deepStrictEqual(errors, []);
   console.log('e2e29 OK');
   await browser.close(); server.close();

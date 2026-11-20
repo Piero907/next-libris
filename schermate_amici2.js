@@ -97,7 +97,7 @@ DB.am.push({ da: 'u99', a: 'uA', stato: 'attesa', creato: now() }); DB.prof.u99 
       localStorage.setItem('prova:catalogo-libri-social-auth', JSON.stringify({ at: 'AT-' + id, rt: 'RT-' + id, exp: Date.now() + 3e6, uid: id, email: id + '@x.it' })); }, base + '/finto', uid);
     await page.setRequestInterception(true); page.on('request', r => r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', body: '{}' }));
     await page.goto(base + '/next-libris-prova/?vista=elenco', { waitUntil: 'load' }); await wait(600);
-    await page.evaluate((d) => { window.NLLayout.set('A'); window.NLCard && window.NLCard.set('d'); if (d) document.documentElement.setAttribute('data-theme', 'dark'); }, dark); await wait(1800);
+    await page.evaluate((d) => { window.NLCard && window.NLCard.set('d'); if (d) document.documentElement.setAttribute('data-theme', 'dark'); }, dark); await wait(1800);
     page.add = (o) => page.evaluate((o) => { const b = window.NL.clean(o); window.NL.books().unshift(b); window.NL.save(); window.NL.refresh(); return b.id; }, o);
     return page;
   }

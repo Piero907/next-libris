@@ -114,11 +114,11 @@ let wiki = 0;
     { id: 'g3', t: 'La coscienza di Zeno', a: 'Italo Svevo', gen: 'Romanzo', rs: 'da', ts: 3 },
     { id: 'g4', t: 'Desiderio di Anna', a: 'Elsa Morante', gen: 'Romanzo', w: true, ts: 2 }], { id: 'x', comuni: 2, libVis: true, wishVis: true })); await wait(600);
   const gb = await p.evaluate(() => ({ tabs: [...document.querySelectorAll('#guestBar .gb-tabs [role="tab"]')].map(b => b.textContent + (b.getAttribute('aria-selected') === 'true' ? '*' : '')),
-    pill: [...document.querySelectorAll('#guestBar .chip')].map(b => b.textContent), key: (() => { const k = document.getElementById('guestKey'), m = document.querySelector('header.top .top-meta'); return k && !k.hidden && m.contains(k) ? k.getAttribute('aria-label') : ''; })(),
-    nav: [...document.querySelectorAll('#layNav .on')].length }));
+    pill: [...document.querySelectorAll('#guestBar .chip')].map(b => b.textContent), key: !!document.querySelector('#guestKey, #guestSwap, #guestDrop, #guestIcos'),
+    tab: (document.querySelector('#gTabs .on') || {}).dataset.g }));
   console.log('[4 striscia]', JSON.stringify(gb));
   assert.deepStrictEqual(gb.tabs, ['Libreria 3*', 'Desideri 1']);
-  assert(!gb.pill.some(t => /Prest/.test(t)) && !/^Prestat/.test(gb.key) && gb.nav === 0, 'icona dell’API spenta se non è prestata (17/11/2026), nessun tasto in basso acceso');
+  assert(!gb.pill.some(t => /Prest/.test(t)) && !gb.key && gb.tab === 'fri', 'niente icone nella testata (20/11/2026: stanno nel profilo dell\'amico), segnalibro Amici acceso');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-412.png') });
   await p.evaluate(() => { const s = document.getElementById('grp'); s.value = ''; s.dispatchEvent(new Event('change', { bubbles: true })); }); await wait(300);
   await p.click('#btnView'); await wait(400);
@@ -138,7 +138,7 @@ let wiki = 0;
   await p.click('#gTabs [data-g="lib"]'); await wait(400);
   st = await p.evaluate(() => [NL.guest(), NL.tab(), document.querySelectorAll('#list .row, #list .cover').length]);
   assert.deepStrictEqual(st, [null, 'lib', 3], 'Libreria in basso: la tua');
-  assert(await p.evaluate(() => { const k = document.getElementById('guestKey'); return !k || k.hidden; }), 'icona dell’API via fuori dalla libreria dell\'amico');
+  assert(!(await p.$('#guestKey')), 'nessuna icona dell’API in testata');
   // «Per te» dalla libreria di un amico: le tue statistiche
   await p.evaluate(() => NL.guestEnter('Anna', [{ id: 'g1', t: 'Uno', a: 'X', ts: 1 }], { id: 'x' })); await wait(400);
   await p.click('#gTabs [data-g="you"]'); await wait(300); await p.click('#layYou [data-l="stats"]'); await wait(500);

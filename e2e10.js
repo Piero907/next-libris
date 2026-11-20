@@ -52,7 +52,7 @@ let gHits = 0;
   await click('#dupCopies'); await wait(150);
   assert((await book('r1')).cp && (await book('r2')).cp);
   sum = await txt('#list .row[data-id="r2"] .sum'); console.log('[1 copie]', sum, '|', await toastTxt()); assert(sum.includes('2 copie') && !sum.includes('Doppione'));
-  assert((await txt('#summary')).startsWith('4 libri'));
+  assert.strictEqual(await page.$eval('#gRib b', e => e.textContent), '4');   // stile G: il nastro conta i libri
   // annulla e rifai
   await click('#toastBtn'); await wait(100); assert(!(await book('r1')).cp);
   await click('#list .row[data-id="r1"] .sum .tag[data-act="dup"]'); await wait(100); await click('#dupCopies'); await wait(100);
@@ -80,7 +80,7 @@ let gHits = 0;
   await click('#toastBtn'); await wait(150); assert.strictEqual((await all()).filter(b => b.i === '9788806219000').length, 1); assert(!(await book('u1')).cp);
 
   // ---- 5) Digita un codice già presente: «Aggiungi un'altra copia» nel toast
-  await click('#btnType'); await wait(100);
+  await H.fai(page, 'type'); await wait(100);
   await page.evaluate(() => { document.querySelector('#isbnText').value = '9788806219000'; }); await click('#isbnGo'); await wait(200);
   console.log('[5 digita]', await toastTxt(), '|', await txt('#toastBtn'));
   assert.strictEqual(await txt('#toastBtn'), 'Aggiungi un\'altra copia');
@@ -131,9 +131,7 @@ let gHits = 0;
   let v = await book('v1'); assert.deepStrictEqual([v.xs, v.xd, v.xa, v.p], ['v', today, '', '']);
   const tagV = await txt('#list .row[data-id="v1"] .tag.gone'); console.log('[9 tag]', tagV, '|', await toastTxt()); assert.strictEqual(tagV, 'Venduto il ' + itToday);
   assert(await page.$eval('#list .row[data-id="v1"]', e => e.classList.contains('gone')));
-  let summ = await txt('#summary'); console.log('[9 riepilogo]', summ); assert(!summ.includes('non più in libreria'), 'spento di predefinito');
-  await page.evaluate(() => { window.__app.openOptions('look'); }); await wait(250); await click('#optSumGone'); await wait(150); await page.evaluate(() => window.__app.closeOptions()); await wait(300);
-  summ = await txt('#summary'); console.log('[9 riepilogo con l\'opzione]', summ); assert(summ.includes('1 non più in libreria'));
+  assert(!(await page.$('#optSumGone')) && !(await page.$('#optSumLoan')) && !(await page.$('#optShowSync')), 'via le opzioni «Riepilogo in alto» (20/11/2026)');
   await page.evaluate(() => window.__app.openDrawer()); await wait(300);
   await click('#drawerFlt [data-g="flt"][data-v="gone"]'); await wait(100); assert.deepStrictEqual(await rows(), ['v1']);
   await click('#drawerFlt [data-g="flt"][data-v="gone"]'); await wait(100);
@@ -150,7 +148,7 @@ let gHits = 0;
   assert(await page.$eval('#loanWhoF', e => e.hidden)); await click('#loanSave'); await wait(150);
   v = await book('v1'); assert.deepStrictEqual([v.xs, v.xa], ['s', '']);
   // statistiche, Ce l'ho già?, esportazione
-  await click('#btnStats'); await wait(150);
+  await H.fai(page, 'stats'); await wait(150);
   const stx = await txt('#statsBody'); console.log('[9 statistiche]', stx.slice(0, 160)); assert(stx.includes('non più in libreria') && stx.includes('1 smarrito')); await click('#statsClose');
   await page.evaluate(() => { window.__app.setScanMode('check'); window.__app.onScanned('9788806219352'); }); await wait(150);
   console.log('[9 ce l\'ho già]', await txt('#scanRes')); assert((await txt('#scanRes')).includes('Non ce l\'hai più'));

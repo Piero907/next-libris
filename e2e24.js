@@ -52,14 +52,12 @@ const W1 = 'https://sbn-libri.piero.workers.dev', W0 = 'https://vecchio.piero.wo
   console.log('[2 benvenuto]', w);
   assert(!/ISBN non valido|Esempio di scheda/.test(w));
   assert.deepStrictEqual(await p.$$eval('.welcome .way', a => a.map(b => b.dataset.act)), ['way-scan', 'way-photo', 'way-type']);
-  assert.strictEqual(await p.$eval('#tipTxt', e => getComputedStyle(e).display), 'none');
   await p.$eval('[data-act="way-type"]', b => b.click()); await wait(150);
   assert(!(await p.$eval('#isbnSheet', e => e.hidden)), 'Digita apre il foglio'); await p.keyboard.press('Escape'); await p.evaluate(() => { document.querySelector('#isbnSheet').hidden = true; });
   await p.$eval('[data-act="way-photo"]', b => b.click()); await wait(150);
   assert(!(await p.$eval('#photoSheet', e => e.hidden)), 'Foto apre la scelta'); await p.$eval('#photoClose', b => b.click()); await wait(100);
   // nei Desideri il suggerimento torna
   await p.evaluate(() => window.__app.setTab('wish')); await wait(100);
-  assert.notStrictEqual(await p.$eval('#tipTxt', e => getComputedStyle(e).display), 'none');
   await p.evaluate(() => window.__app.setTab('lib')); await wait(100);
 
   // 3) «Ripristinalo»: backup (vecchio) con libri, worker e chiave -> tornano i libri e l'API; il worker si ignora (031)

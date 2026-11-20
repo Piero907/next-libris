@@ -23,8 +23,6 @@ const assert = require('assert');
   const drawerOpen = () => page.evaluate(() => document.body.classList.contains('drawer-open'));
   await wait(500);
   // la linguetta sta nel margine: non copre le schede
-  const geo = await page.evaluate(() => { const t = document.querySelector('#edgeTab').getBoundingClientRect(), r = document.querySelector('#list .row').getBoundingClientRect(); return [t.right, r.left]; });
-  console.log('[0 linguetta / riga]', geo); assert(geo[0] <= geo[1]);
   assert.strictEqual(await page.$('details.opts'), null);
   await page.screenshot({ path: CFG.OUT + '/s_main_gear.png' });
   // 1) ingranaggio -> menu sulla scheda Opzioni

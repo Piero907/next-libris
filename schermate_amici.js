@@ -42,7 +42,7 @@ const R = (id, utente, stato, verso) => ({ id, utente, nome: utente, stato, vers
     }, base + '/finto', theme || '');
     await p.setRequestInterception(true); p.on('request', r => r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, body: '{}' }));
     await p.goto(base + '/next-libris-prova/?vista=elenco', { waitUntil: 'load' }); await wait(700);
-    await p.evaluate((th) => { window.NLLayout.set('A'); if (th) document.documentElement.setAttribute('data-theme', th); }, theme || ''); await wait(2200);
+    await p.evaluate((th) => { if (th) document.documentElement.setAttribute('data-theme', th); }, theme || ''); await wait(2200);
     return p;
   }
   const shot = async (p, n) => { await p.screenshot({ path: path.join(OUT, n + '.png') }); console.log(n); };
@@ -62,7 +62,7 @@ const R = (id, utente, stato, verso) => ({ id, utente, nome: utente, stato, vers
     await shot(p, tag + '-3-pagina-avviso');
     await p.evaluate(() => window.__app.openDrawer('opt')); await wait(500); await shot(p, tag + '-4-menu');
     await p.evaluate(() => window.__app.closeDrawer()); await wait(300);
-    await p.click('#btnFri'); await wait(700);
+    await p.click('#gTabs [data-g="fri"]'); await wait(700);
     await p.type('#friQ', 'fra'); await p.click('#friFormQ .btn'); await wait(500);
     await shot(p, tag + '-5-finestra');
     await p.click('[data-f="friend"][data-id="c"]'); await wait(600); await p.click('[data-f="ask-drop"]'); await wait(200);
@@ -82,7 +82,7 @@ const R = (id, utente, stato, verso) => ({ id, utente, nome: utente, stato, vers
     p = await page(w, h, th);
     await shot(p, tag + '-8-avviso-prestito');
     await p.evaluate(() => window.NLLayoutSwipe.next()); await wait(700); await shot(p, tag + '-8b-avviso-reso');
-    await p.click('#btnFri'); await wait(600); await shot(p, tag + '-9-amici-interruttore');
+    await p.click('#gTabs [data-g="fri"]'); await wait(600); await shot(p, tag + '-9-amici-interruttore');
     await p.evaluate(() => { const b = window.NL.clean({ t: 'Il barone rampante', a: 'Italo Calvino', i: '9788804668015' }); window.NL.books().push(b); });
     await p.click('[data-f="friend"][data-id="d"]'); await wait(700); await shot(p, tag + '-10-pagina-amico');
     await p.evaluate(() => { const e = document.getElementById('friLibQ'); if (e) e.scrollIntoView(); }); await wait(200); await shot(p, tag + '-10b-libreria-amico');

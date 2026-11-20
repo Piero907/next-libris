@@ -29,7 +29,7 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
     p.on('request', r => { const u = r.url(); if (u.startsWith('http://localhost') || u.startsWith('data:')) return r.continue(); r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }); });
     await p.evaluateOnNewDocument((s) => { if (!localStorage.getItem('catalogo-libri-v2')) { localStorage.setItem('catalogo-libri-v2', s); localStorage.setItem('catalogo-libri-card', JSON.stringify({ v: 'd' })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ look: 'nuovo', welcomed: 1, donSeen: 1, viewDef: 'grid', wn2: 1 })); } }, JSON.stringify(MIEI));
     await p.goto(APP + '/', { waitUntil: 'load' }); await wait(1400);
-    await p.evaluate(() => window.NLLayout && window.NLLayout.set('a')); await wait(300);   // fuori dalle prove la disposizione è sempre la A
+    
     await wait(100); await p.evaluate(() => { document.querySelectorAll('.pu-ask, #instCard, .don-ask, #notice').forEach(x => { x.hidden = true; x.style.display = 'none'; }); document.querySelectorAll('.sheet:not([hidden])').forEach(x => { x.hidden = true; }); });
     const tag = w + '×' + h;
     const r = await p.evaluate(() => {
@@ -38,7 +38,7 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
       return { g: document.documentElement.classList.contains('g-look'), side: document.scrollingElement.scrollWidth - innerWidth, W: innerWidth, H: innerHeight,
         rib: (document.querySelector('#gRib b') || {}).textContent, title: (document.querySelector('header.top h1 .g-t') || {}).textContent, prose: (document.getElementById('gProse') || {}).textContent || '',
         dc: !!document.querySelector('#gProse .g-dc'), run: (document.getElementById('gRun') || {}).textContent, tabs, tabsBox: box('#gTabs'),
-        q: box('#q'), sort: box('#sortBar'), view: box('#btnView'), filt: box('#btnFilters'), add: box('#gAdd'), menu: box('#gMenu'), nav: box('#layNav') };
+        q: box('#q'), sort: box('#sortBar'), view: box('#btnView'), filt: box('#btnFilters'), add: box('#gAdd'), menu: box('#gMenu'), nav: !!document.querySelector('#layNav, .dock, #btnOpts') };
     });
     console.log('[' + tag + ']', JSON.stringify({ rib: r.rib, title: r.title, prose: r.prose, view: r.view && Math.round(r.view.r), tabsL: r.tabsBox && Math.round(r.tabsBox.l), add: r.add && Math.round(r.add.b) }));
     assert(r.g, tag + ': stile G acceso');
@@ -47,7 +47,7 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
     assert.strictEqual(r.title, 'Libreria', tag + ': titolo');
     assert(/Stai leggendo Il fu Mattia Pascal/.test(r.prose) && !r.dc, tag + ': frase in prosa senza capolettera');
     assert.strictEqual(r.run, 'Next Libris', tag + ': testatina');
-    assert(!r.nav || !r.nav.vis, tag + ': niente barra in basso');
+    assert(!r.nav, tag + ': niente barra in basso né tasti di prima');
     assert.strictEqual(r.tabs.length, 6, tag + ': sei linguette (con la Chat dal 20/11/2026)');
     assert(r.tabs.every(t => t.r <= r.W + 0.5 && t.b <= r.H + 0.5), tag + ': linguette dentro lo schermo ' + JSON.stringify(r.tabs));
     assert(r.tabs.find(t => t.g === 'lib').on, tag + ': linguetta Libri accesa');

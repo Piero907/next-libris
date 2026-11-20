@@ -138,7 +138,7 @@ const books = [
   await p.click('#gMenu'); await wait(450);
   const sub = await p.evaluate(() => document.getElementById('grpPick').textContent); assert.strictEqual(sub, 'Lettura', 'riga sotto la ricerca (stile G: testo breve)');   // dal 17/11/2026 notte non più nel riassunto del Menu
   await p.evaluate(() => history.back()); await wait(500);
-  await p.evaluate(() => document.getElementById('tabWish').click()); await wait(400);
+  await H.fai(p, 'wish'); await wait(400);
   g = await groups(p); assert.strictEqual(g.length, 0, 'nei Desideri niente gruppi per lettura');
   // 4) Desideri a copertine: libro aperto ed eliminato → di nuovo copertine
   await pick(p, '');
@@ -152,7 +152,7 @@ const books = [
   await p.click('#list .cover[data-id="w2"]'); await wait(500);
   await p.evaluate(() => document.querySelector('#list [data-id="w2"] [data-act="tolib"]').click()); await wait(500);
   assert(await p.evaluate(() => document.body.classList.contains('gridview')), 'dopo lo spostamento si torna alle copertine');
-  await p.evaluate(() => document.getElementById('tabLib').click()); await wait(400);
+  await H.fai(p, 'lib'); await wait(400);
   // 5) Privacy dentro l'app; × torna al Menu
   await p.click('#gMenu'); await wait(450);
   await p.evaluate(() => document.getElementById('goInfo').click()); await wait(300); await p.click('#goPrivacy'); await wait(700);

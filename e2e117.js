@@ -98,10 +98,10 @@ const books = [
     { id: 'g1', t: 'Il deserto dei Tartari', a: 'Dino Buzzati', gen: 'Romanzo', rs: 'in', pg: 250, pp: 80, ts: 5 },
     { id: 'g2', t: 'Il Gattopardo', a: 'Giuseppe Tomasi di Lampedusa', gen: 'Romanzo', rs: 'ok', rt: 5, rd: '2025-03-02', ts: 4 },
     { id: 'g4', t: 'Desiderio di Anna', a: 'Elsa Morante', gen: 'Romanzo', w: true, ts: 2 }], { id: 'x', comuni: 1, libVis: true, wishVis: true })); await wait(600);
-  const gb = await p.evaluate(() => ({ meta: document.querySelector('header.top .top-meta').innerText.trim(), order: [...document.getElementById('guestBar').children].map(x => x.className.replace(/^(tabs |link )/, '').split(' ')[0]),
-    back: !!document.querySelector('#guestBar .gb-back'), key: !!(document.getElementById('guestKey') && !document.getElementById('guestKey').hidden), sort: !!document.getElementById('sortBar').offsetParent }));
+  const gb = await p.evaluate(() => ({ order: [...document.getElementById('guestBar').children].map(x => x.className.replace(/^(tabs |link )/, '').split(' ')[0]),
+    back: !!document.querySelector('#guestBar .gb-back'), key: !!document.getElementById('guestKey'), sort: !!document.getElementById('sortBar').offsetParent }));
   console.log('[4 amico]', JSON.stringify(gb));
-  assert.strictEqual(await p.$eval('header.top h1', x => x.firstChild.nodeValue.trim()), 'Anna', 'titolo: il nome dell\'amico (testata sobria, 19/11/2026)');
+  assert.strictEqual(await p.$eval('header.top h1 .g-t', x => x.textContent), 'Libreria di Anna', 'titolo: la libreria dell\'amico'); assert.strictEqual(await p.$eval('#gRun', x => x.textContent), 'Anna', 'testatina: il suo nome');
   assert.deepStrictEqual(gb.order.slice(0, 4), ['gb-num', 'gb-line', 'gb-line', 'gb-tabs']);   // via «Prestiti, regali e altro» (17/11/2026)
   assert(!gb.back && !gb.key && gb.sort, 'via «La tua libreria», niente chiave, riga Ordina · Raggruppa');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-412.png') });
@@ -109,7 +109,7 @@ const books = [
   assert(await p.evaluate(() => !document.getElementById('btnNews').offsetParent && !/da comprare/.test(document.body.innerText)), 'Desideri dell\'amico: niente Novità né «da comprare»');   // stile G: si guarda il testo visibile
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'amico-desideri-412.png') });
   await p.evaluate(() => NL.guestExit()); await wait(400);
-  assert.match(await p.$eval('header.top .top-meta', x => x.innerText), /5 libri/); assert.strictEqual(await p.$eval('header.top h1', x => x.firstChild.nodeValue.trim()), 'Libreria');   // testata sobria: si torna alla propria Libreria
+  assert.strictEqual(await p.$eval('#gRib b', x => x.textContent), '5'); assert.strictEqual(await p.$eval('header.top h1 .g-t', x => x.textContent), 'Libreria');   // testata sobria: si torna alla propria Libreria
 
   assert.deepStrictEqual(errors, [], 'errori di pagina: ' + errors.join(' | '));
   console.log('E2E117 OK');

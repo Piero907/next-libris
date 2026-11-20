@@ -19,7 +19,7 @@ const server = H.serve(CFG.port(8180), ROOT);
   const n = () => page.evaluate(() => window.__app.state.books.length);
   const vis = sel => page.$eval(sel, e => !e.hidden);
   // 1) Foto › Scatta: fotocamera dell'app, poi «Usa la fotocamera del telefono» -> la stessa foto arriva dal telefono
-  await page.evaluate(() => document.querySelector('#btnPhoto').click()); await wait(200);
+  await H.fai(page, 'photo'); await wait(200);
   await page.evaluate(() => document.querySelector('#photoCam').click());
   await page.waitForFunction(() => !document.querySelector('#snap').hidden && document.querySelector('#snapVideo').videoWidth > 0, { timeout: 10000 });
   assert(await vis('#snapNative'));
@@ -35,7 +35,7 @@ const server = H.serve(CFG.port(8180), ROOT);
   await page.click('#optCamNative'); await wait(200);
   assert.strictEqual(await page.evaluate(() => window.__app.settings.camNative), true);
   await page.evaluate(() => window.__app.closeOptions()); await wait(300);
-  await page.evaluate(() => document.querySelector('#btnPhoto').click()); await wait(200);
+  await H.fai(page, 'photo'); await wait(200);
   [ch] = await Promise.all([page.waitForFileChooser({ timeout: 5000 }), page.evaluate(() => document.querySelector('#photoCam').click())]);
   assert(!(await vis('#snap')), 'nessuna fotocamera dell\'app');
   await ch.accept([CFG.IMG + '/author_only.jpg']); await wait(800);

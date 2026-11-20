@@ -47,7 +47,7 @@ const netlog = [];
   await page.goto('http://localhost:' + CFG.port(8123) + '/?vista=elenco', { waitUntil: 'load' });
   await page.evaluate(() => { window.__app.settings.price = false; });   // la domanda sul prezzo ha il suo test (e2e5)
   await new Promise(r => setTimeout(r, 500));
-  console.log('[load] summary:', await page.$eval('#summary', e => e.textContent), '| empty state:', !!(await page.$('.empty')));
+  console.log('[load] summary:', await page.$eval('#gProse', e => e.textContent), '| empty state:', !!(await page.$('.empty')));
   console.log('[load] globals:', await page.evaluate(() => ({ Lib: !!window.Lib, ZXing: !!window.ZXing, Tesseract: !!window.Tesseract, BarcodeDetector: 'BarcodeDetector' in window })));
   await page.screenshot({ path: CFG.OUT + '/s_empty.png' });
 
@@ -107,7 +107,7 @@ const netlog = [];
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
   await page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true }); document.dispatchEvent(new Event('visibilitychange')); });
   await page.reload({ waitUntil: 'load' }); await new Promise(r => setTimeout(r, 600));
-  console.log('[F reload] summary:', await page.$eval('#summary', e => e.textContent));
+  console.log('[F reload] summary:', await page.$eval('#gProse', e => e.textContent));
   console.log('SW:', await page.evaluate(async () => { const r = await navigator.serviceWorker.getRegistration(); return r ? (r.active ? 'attivo' : 'registrato') : 'nessuno'; }));
   console.log('rete esterna chiamata:', [...new Set(netlog.map(u => u.split('?')[0]))].join(', '));
   console.log('ERRORI:', errors.length ? errors : 'nessuno');

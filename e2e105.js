@@ -77,7 +77,7 @@ const base = 'http://localhost:' + CFG.port(8305);
     await page.setRequestInterception(true);
     page.on('request', r => r.url().startsWith(base) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }));
     await page.goto(base + '/next-libris-prova/?vista=elenco', { waitUntil: 'load' }); await wait(2600);
-    await page.evaluate((d) => { window.NLLayout && window.NLLayout.set('A'); if (d) document.documentElement.setAttribute('data-theme', 'dark'); }, !!dark);
+    await page.evaluate((d) => { if (d) document.documentElement.setAttribute('data-theme', 'dark'); }, !!dark);
     return page;
   }
   const side = (P) => P.evaluate(() => { const si = document.querySelector('#ntSheet .sheet-in'); return Math.max(si.scrollWidth - si.clientWidth, document.documentElement.scrollWidth - document.documentElement.clientWidth); });

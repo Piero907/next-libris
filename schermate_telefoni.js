@@ -202,15 +202,15 @@ const base = "http://localhost:" + CFG.port(8340);
     await pg.evaluate(() => window.NLSocial.open()); await wait(600); await sh('06-account'); await closeAll(pg);
     await pg.evaluate(() => window.__app && window.__app.openOptions ? window.__app.openOptions('push') : 0); await wait(600); await sh('07-notifiche'); await closeAll(pg);
     // profilo, per te, film
-    await pg.evaluate(() => { const b = document.querySelector('#layNav [data-l="prof"]'); if (b) b.click(); }); await wait(900); await sh('08-profilo'); await closeAll(pg);
-    await pg.evaluate(() => { const b = document.querySelector('#layNav [data-l="you"]'); if (b) b.click(); }); await wait(700); await sh('09-per-te');
+    await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="prof"]'); if (b) b.click(); }); await wait(900); await sh('08-profilo'); await closeAll(pg);
+    await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="you"]'); if (b) b.click(); }); await wait(700); await sh('09-per-te');
     await closeAll(pg); await pg.evaluate(() => window.NL.openFilms()); await wait(500); await sh('10-film');
     await pg.evaluate(() => { const b = document.querySelector('#filmBody [data-fall]'); if (b) b.click(); const m = document.querySelector('#filmBody [data-fmore]'); if (m) m.click(); }); await wait(300);
     await pg.evaluate(() => { const s = document.querySelector('#filmSheet .sheet-in'); if (s) s.scrollTop = 99999; }); await wait(200); await sh('11-film-tutti');
     await closeAll(pg);
-    await pg.evaluate(() => { const b = document.querySelector('#layNav [data-l="lib"], #layNav [data-l="libreria"]'); if (b) b.click(); }); await wait(500);
+    await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="lib"], #gTabs [data-g="libreria"]'); if (b) b.click(); }); await wait(500);
     // menu
-    await pg.evaluate(() => { const b = document.querySelector('#btnOpts'); if (b) b.click(); }); await wait(500); await sh('12-menu'); await closeAll(pg);
+    await pg.evaluate(() => { const b = document.querySelector('#gMenu'); if (b) b.click(); }); await wait(500); await sh('12-menu'); await closeAll(pg);
     // scheda di un libro
     await pg.evaluate(() => { const c = document.querySelector('#list .cover:not(.gcard)') || document.querySelector('#list .gcard'); if (c) c.click(); }); await wait(500);
     await pg.evaluate(() => { const c = document.querySelector('#list .gpanel:not([hidden]) .cover'); if (c) c.click(); }); await wait(700); await sh('13-scheda');

@@ -44,7 +44,7 @@ function stub(mode) {
     return { ctx, page };
   }
   async function snapOpen(page) {
-    await page.evaluate(() => document.querySelector('#btnPhoto').click()); await wait(150);
+    await H.fai(page, 'photo'); await wait(150);
     await page.evaluate(() => document.querySelector('#photoCam').click());
     await page.waitForFunction(() => !document.querySelector('#snap').hidden && document.querySelector('#snapVideo').videoWidth > 0, { timeout: 15000 }); await wait(300);
   }

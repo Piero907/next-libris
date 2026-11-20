@@ -164,7 +164,7 @@ const base = 'http://localhost:' + CFG.port(8310);
     assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Carla Maria Benedetti');
     assert(await A.evaluate(() => document.getElementById('friSheet').hidden));
     // ---- l'icona apre i tuoi Amici ----
-    await A.click$('#btnFri'); await wait(700);
+    await H.fai(A, 'fri'); await wait(700);
     assert(/I tuoi amici/i.test(await A.txt('#friBody')) && await A.txt('#friH') === 'Amici', 'i tuoi Amici');
     await A.click$('#friClose'); await wait(200);
     assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Carla Maria Benedetti', 'resti nella libreria di Carla');

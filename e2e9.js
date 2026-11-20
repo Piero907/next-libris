@@ -57,7 +57,7 @@ let net = 'ok', sbnHits = 0;
   await click('#noticeBtn'); await wait(200);
   assert.deepStrictEqual(await rows(), ['eco2']);
   assert(await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-set')).loanSnooze > 0));
-  await click('#fltLoan'); await wait(100);
+  await H.fai(page, 'loan'); await wait(100);
 
   // ---- 3) senza rete: in attesa, poi cercato da solo quando torna
   await page.setOfflineMode(true); await wait(200);
@@ -103,7 +103,7 @@ let net = 'ok', sbnHits = 0;
   await page.select('#sort', 'voto'); await wait(150);
   assert.strictEqual((await rows())[0], 'eco1');
   await page.select('#sort', 'recent');
-  await click('#btnStats'); await wait(150);
+  await H.fai(page, 'stats'); await wait(150);
   const stx = await page.$eval('#statsBody', e => e.innerText.replace(/\s+/g, ' ')); console.log('[4 statistiche]', stx.slice(0, 200));
   assert(stx.includes('letti') && stx.includes('4,0 su 5') && stx.includes('voto medio: bellissimo') && stx.includes('1 in lettura'));
   await click('#statsClose');
@@ -139,7 +139,7 @@ let net = 'ok', sbnHits = 0;
   await page.evaluate(() => { window.__app.closeOptions(); });
 
   // ---- 6) condividi la lista dei Desideri
-  await click('#tabWish'); await wait(150);
+  await H.fai(page, 'wish'); await wait(150);
   assert(!(await page.$eval('#btnShareWish', e => e.hidden)));
   await page.evaluate(() => window.__app.openDrawer()); await wait(300);
   assert(!(await page.$$eval('#drawerFlt h3', e => e.map(x => x.textContent))).includes('Lettura'));
@@ -152,11 +152,11 @@ let net = 'ok', sbnHits = 0;
   await click('#btnShareWish'); await wait(200); await click('#shareSend'); await wait(300);
   assert((await page.evaluate(() => window.__clip)).includes('Sostiene Pereira'));
   console.log('[6 copiata]', await page.$eval('#toastTxt', e => e.textContent));
-  await click('#tabLib'); await wait(150);
+  await H.fai(page, 'lib'); await wait(150);
 
   // ---- 7d) stampa / PDF
   await page.evaluate(() => { window.__printed = 0; window.print = () => { window.__printed++; }; });
-  await click('#btnExport'); await wait(150);
+  await H.fai(page, 'export'); await wait(150);
   await click('#printCovers');
   await click('#btnPrint'); await wait(800);
   assert.strictEqual(await page.evaluate(() => window.__printed), 1);

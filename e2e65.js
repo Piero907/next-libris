@@ -19,15 +19,15 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.goto('http://localhost:' + CFG.port(8185) + '/?vista=elenco', { waitUntil: 'load' });
-  await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'Piero', selTip: 1, lastBackup: Date.now(), donOpens: 9, donUntil: 0 })); localStorage.setItem('catalogo-libri-layout', JSON.stringify({ v: 'a' })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
+  await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'Piero', selTip: 1, lastBackup: Date.now(), donOpens: 9, donUntil: 0 })); localStorage.setItem('catalogo-libri-layout', JSON.stringify({ v: 'classico' })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(900);
-  // i tasti veri vengono intercettati: basta sapere che il modulo li ha premuti
-  await page.evaluate(() => { window.addEventListener('click', e => { const b = e.target.closest && e.target.closest('#btnScan,#btnPhoto,#btnType,#btnCheck'); if (b) { window.__hit = b.id; e.stopImmediatePropagation(); } }, true); });
+    await page.evaluate(() => { window.NL.scan = function (m) { window.__hit = m === 'check' ? 'check' : 'scan'; }; });   // la fotocamera non parte: basta sapere che la finestra del + l'ha chiesta
   const vis = s => page.evaluate(s => { const e = document.querySelector(s); if (!e) return false; const r = e.getBoundingClientRect(); return !e.closest('[hidden]') && getComputedStyle(e).display !== 'none' && r.width > 0 && r.height > 0; }, s);
   const txt = s => page.$eval(s, e => e.innerText.replace(/\s+/g, ' ').trim());
   // stile G: segnalibri, niente barra in basso né tasti grandi di prima
   assert.strictEqual(await page.evaluate(() => document.documentElement.dataset.layout), 'a');
-  assert(await vis('#gTabs') && !(await vis('#layNav')) && !(await vis('.dock')) && !(await vis('#tabLib')) && !(await vis('#btnStats')) && !(await vis('#summary')), 'stile G: segnalibri al posto della barra');
+  assert(await vis('#gTabs') && await page.evaluate(() => !document.querySelector('#layNav, .dock, #tabLib, #btnStats, #summary, #btnOpts, #fltLoan, #edgeTab')), 'stile G: segnalibri; i pezzi delle vecchie disposizioni non esistono più');
+  assert.strictEqual(await page.evaluate(() => localStorage.getItem('catalogo-libri-layout')), null, 'la scelta della vecchia disposizione viene cancellata');
   // la frase in prosa dice i prestiti, e il link apre i libri prestati
   const prose = await txt('#gProse'); console.log('[frase]', prose);
   assert(/in prestito/.test(prose), 'frase con i prestiti');
@@ -61,9 +61,9 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'k' + i, t: 'Libro num
   await page.click('#gAdd'); await wait(300);
   assert(await vis('#layAdd')); await page.screenshot({ path: CFG.OUT + '/layout_g_add.png' });
   await page.click('#layAdd [data-l="scan"]'); await wait(150);
-  assert.strictEqual(await page.evaluate(() => window.__hit), 'btnScan'); assert(!(await vis('#layAdd')));
+  assert.strictEqual(await page.evaluate(() => window.__hit), 'scan'); assert(!(await vis('#layAdd')));
   await page.click('#gAdd'); await wait(300); await page.click('#layAdd [data-l="check"]'); await wait(150);
-  assert.strictEqual(await page.evaluate(() => window.__hit), 'btnCheck');
+  assert.strictEqual(await page.evaluate(() => window.__hit), 'check');
   // Per te
   await page.click('#gTabs [data-g="you"]'); await wait(300);
   const you = await txt('#layYouList'); console.log('[per te]', you);

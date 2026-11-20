@@ -32,8 +32,8 @@ const server = H.serve(CFG.port(8147), ROOT);
     vis: [...document.body.children].filter(e => e.id !== 'splash' && getComputedStyle(e).visibility === 'visible' && e.getBoundingClientRect().height > 0).map(e => e.className || e.id || e.tagName) }));
   assert(under.on, 'ancora visibile un po\' dopo l\'avvio');
   console.log('[1 visibili sotto]', JSON.stringify(under.vis)); assert.deepStrictEqual(under.vis, []);
-  console.log('[1 testata senza nome]', await p.$eval('#owner', e => e.textContent));
-  assert.strictEqual(await p.$eval('#owner', e => e.textContent), 'Scrivi il tuo nome'); assert.strictEqual(s0.bg, 'rgb(36, 86, 63)');
+  console.log('[1 titolo]', await p.$eval('header.top h1 .g-t', e => e.textContent));
+  assert.strictEqual(await p.$eval('header.top h1 .g-t', e => e.textContent), 'Libreria'); assert.strictEqual(s0.bg, 'rgb(36, 86, 63)');
   assert.strictEqual(await p.$eval('meta[name="theme-color"]', m => m.content), '#24563F', 'barra in alto verde durante l\'apertura');
   assert.strictEqual(await p.$eval('#splash b', e => getComputedStyle(e).color), 'rgb(244, 241, 232)');
   assert(!(await p.$('link[href*="fonts.googleapis.com"]')), 'caratteri dall\'app, non da Google (17/11/2026)'); assert(s0.w === 390 && s0.h === 844);
@@ -42,7 +42,7 @@ const server = H.serve(CFG.port(8147), ROOT);
   assert.strictEqual(await p.$eval('#splash', e => getComputedStyle(e).zIndex), '10000');
   await wait(1300);
   assert.strictEqual(await p.$('#splash'), null, 'poi sparisce'); assert.deepStrictEqual(p.errors, []);
-  assert.strictEqual(await p.$eval('.dock', e => getComputedStyle(e).visibility), 'visible', 'poi l\'app ricompare');
+  assert.strictEqual(await p.$eval('#gAdd', e => getComputedStyle(e).visibility), 'visible', 'poi l\'app ricompare');
   assert.strictEqual(await p.$eval('meta[name="theme-color"]', m => m.content), '#FCF9F2', 'poi la barra prende il colore della pagina (carta Avorio, stile G)');
   await p.browserContext().close();
   p = await open(true, 'dark'); await wait(150);
@@ -50,12 +50,12 @@ const server = H.serve(CFG.port(8147), ROOT);
   console.log('[2 scuro]', await p.$eval('#splash', e => getComputedStyle(e).backgroundColor + ' | ' + e.innerText.replace(/\s+/g, ' ')));
   assert.strictEqual(await p.$eval('#splash', e => getComputedStyle(e).backgroundColor), 'rgb(36, 86, 63)'); await p.screenshot({ path: CFG.OUT + '/splash_dark.png' });
   assert.strictEqual(await p.$eval('#splashWho', e => e.textContent), 'Libreria di Piero');
-  await wait(1300); console.log('[2 testata]', await p.$eval('#owner', e => e.innerText)); assert.strictEqual(await p.$eval('#owner', e => e.innerText), 'Libreria di Piero');   // testata su una riga: «Piero · N libri» (17/11/2026)
+  await wait(1300); console.log('[2 titolo]', await p.$eval('header.top h1 .g-t', e => e.textContent)); assert.strictEqual(await p.$eval('header.top h1 .g-t', e => e.textContent), 'Libreria'); assert.strictEqual(await p.evaluate(() => window.NL.name()), 'Piero');   // testata su una riga: «Piero · N libri» (17/11/2026)
   await p.screenshot({ path: CFG.OUT + '/owner.png', clip: { x: 0, y: 0, width: 390, height: 180 } });
   // cambiare nome aggiorna la testata
   await p.evaluate(() => window.__app.openOptions('share')); await wait(150);
   await p.$eval('#optName', e => { e.value = 'Anna'; e.dispatchEvent(new Event('change')); }); await wait(100);
-  assert.strictEqual(await p.$eval('#owner', e => e.innerText), 'Libreria di Anna');
+  assert.strictEqual(await p.evaluate(() => window.NL.name()), 'Anna');
   await p.browserContext().close();
   p = await open(false); await wait(50);
   const b = await p.$eval('#splash', e => getComputedStyle(e).display).catch(() => 'rimossa');

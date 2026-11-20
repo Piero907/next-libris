@@ -29,7 +29,6 @@ function books(n, ts) { const out = []; for (let i = 0; i < n; i++) out.push({ i
       localStorage.setItem('catalogo-libri-guida', JSON.stringify({ seen: 1, v: 9 }));
     }, JSON.stringify(lib), JSON.stringify(set));
     await p.goto(APP + '/', { waitUntil: 'load' }); await wait(1500);
-    await p.evaluate(() => window.NLLayout && window.NLLayout.set('a')); await wait(300);
     return p;
   }
   const profOpen = (p) => p.evaluate(() => { const s = document.getElementById('profSheet'); return !!s && !s.hidden; });
@@ -57,8 +56,8 @@ function books(n, ts) { const out = []; for (let i = 0; i < n; i++) out.push({ i
   await p.screenshot({ path: CFG.OUT + '/giro7-testata-barra-360.png' });
 
   // ---- 2) prezzi ----
-  const sum = await p.evaluate(() => document.getElementById('summary').textContent);
-  assert(!/€/.test(sum), 'riepilogo senza euro: ' + sum);
+  const sum = await p.evaluate(() => document.getElementById('gProse').textContent);
+  assert(!/€/.test(sum), 'frase senza euro: ' + sum);
   assert(!(await p.$('#optSumEur')), 'niente opzione «Valore in euro»');
   await p.evaluate(() => openStats()); await wait(400);
   const stx = await p.evaluate(() => document.getElementById('statsBody').innerText);

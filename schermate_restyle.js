@@ -199,9 +199,9 @@ const base = "http://localhost:" + CFG.port(8340);
     await pg.evaluate(() => { const x = document.getElementById('instCard'); if (x) x.hidden = true; });
     await closeAll(pg); await wait(400);
     if (process.env.ALTRO) {                        // restyle pezzo 4: amici, chat, Per te, Desideri, guida (ALTRO=1)
-      await pg.evaluate(() => document.querySelector('#layNav [data-l="wish"]').click()); await wait(700); await sh('a1-desideri');
-      await pg.evaluate(() => window.scrollTo(0, 600)); await wait(300); await sh('a1-desideri-b'); await pg.evaluate(() => { window.scrollTo(0, 0); document.querySelector('#layNav [data-l="lib"]').click(); }); await wait(500);
-      await pg.evaluate(() => document.querySelector('#layNav [data-l="you"]').click()); await wait(700); await sh('a2-perte'); await closeAll(pg); await wait(300);
+      await pg.evaluate(() => document.querySelector('#gTabs [data-g="wish"]').click()); await wait(700); await sh('a1-desideri');
+      await pg.evaluate(() => window.scrollTo(0, 600)); await wait(300); await sh('a1-desideri-b'); await pg.evaluate(() => { window.scrollTo(0, 0); document.querySelector('#gTabs [data-g="lib"]').click(); }); await wait(500);
+      await pg.evaluate(() => document.querySelector('#gTabs [data-g="you"]').click()); await wait(700); await sh('a2-perte'); await closeAll(pg); await wait(300);
       await pg.evaluate(() => window.NLAmici.open()); await wait(1400); await sh('a3-amici');
       await pg.evaluate(() => { const s = document.querySelector('#friSheet .sheet-in'); if (s) s.scrollTop = 640; }); await wait(300); await sh('a3-amici-b');
       await pg.evaluate(() => { const s = document.getElementById('friSheet'); if (s) s.hidden = true; }); await wait(300);
@@ -209,7 +209,7 @@ const base = "http://localhost:" + CFG.port(8340);
       await pg.evaluate(() => { const r = document.querySelector('#chSheet [data-c="c1"], #chSheet [data-id="c1"], #chSheet .ch-row'); if (r) r.click(); }); await wait(1400); await sh('a5-chat-aperta');
       await pg.evaluate(() => { const s = document.getElementById('chSheet'); if (s) s.hidden = true; document.documentElement.classList.remove('ch-open'); }); await wait(300);
       await pg.evaluate(() => window.NLGuida.open(3)); await wait(900); await sh('a6-guida-api');
-      await pg.evaluate(() => document.querySelector('#gdStage [data-gd="info"]').click()); await wait(500); await sh('a6-guida-info'); await pg.evaluate(() => { document.getElementById('gdInfo').hidden = true; });
+      if (await pg.evaluate(() => { const b = document.querySelector('#gdStage [data-gd="info"]'); if (b) b.click(); return !!b; })) { await wait(500); await sh('a6-guida-info'); await pg.evaluate(() => { const i = document.getElementById('gdInfo'); if (i) i.hidden = true; }); }
       await pg.evaluate(() => window.NLGuida.open(4)); await wait(900); await sh('a6-guida');
       await pg.evaluate(() => window.NLGuida.close()); await wait(400);
       await pg.evaluate(() => window.NLGuida.pathShow && window.NLGuida.pathShow(2)); await wait(900); await sh('a7-percorso');
@@ -220,13 +220,13 @@ const base = "http://localhost:" + CFG.port(8340);
       await pg.evaluate(() => window.__app.openDrawer('opt')); await wait(700); await pg.evaluate(() => { const w = document.getElementById('goWrapTxt'); if (w && !w.textContent) w.textContent = 'Riepilogo · settembre – novembre 2026 (fino a oggi)'; }); await ds('m1-menu', '#drawerBody');
       await pg.evaluate(() => { const b = document.getElementById('goSettings'); if (b) b.click(); const c = document.getElementById('goInfo'); if (c) c.click(); }); await wait(400); await ds('m2-menu-aperto', '#drawerBody');
       await pg.evaluate(() => window.__app.closeDrawer()); await wait(500);
-      await pg.evaluate(() => document.querySelector('.lay-plus').click()); await wait(700); await sh('m3-piu');
+      await pg.evaluate(() => document.getElementById('gAdd').click()); await wait(700); await sh('m3-piu');
       await closeAll(pg); await wait(300);
       for (const [sec, n] of [['search', 'm4-ricerca'], ['look', 'm5-aspetto'], ['cards', 'm6-aggiunta'], ['export', 'm7-backup']]) {
         await pg.evaluate((sec) => window.__app.openOptions(sec), sec); await wait(700); await ds(n, '#optSheet .sheet-in'); await pg.evaluate(() => window.__app.closeOptions()); await wait(400);
       }
       await pg.evaluate(() => window.__app.openLoan && window.__app.openLoan('k5')); await wait(600); await sh('m8-prestito'); await closeAll(pg); await wait(300);
-      await pg.evaluate(() => { const b = document.querySelector('#layNav [data-l="you"]'); if (b) b.click(); }); await wait(600); await sh('m9-perte'); await closeAll(pg); await wait(300);
+      await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="you"]'); if (b) b.click(); }); await wait(600); await sh('m9-perte'); await closeAll(pg); await wait(300);
       await pg.close(); continue;
     }
     if (process.env.SCHEDA) {                       // restyle pezzo 2: solo la scheda del libro (SCHEDA=1)
@@ -250,9 +250,9 @@ const base = "http://localhost:" + CFG.port(8340);
     await pg.evaluate(() => window.scrollTo(0, 0)); await wait(200); await sh('03-elenco');
     await pg.evaluate(() => window.scrollTo(0, 700)); await wait(300); await sh('04-elenco-giu');
     await pg.evaluate(() => { const b = document.getElementById('btnView'); if (b) b.click(); }); await wait(400);
-    await pg.evaluate(() => { const b = document.querySelector('#layNav [data-l="wish"]'); if (b) b.click(); }); await wait(500); await sh('05-desideri');
-    await pg.evaluate(() => { const b = document.querySelector('#layNav [data-l="lib"]'); if (b) b.click(); }); await wait(300);
-    await pg.evaluate(() => { const b = document.querySelector('#layNav [data-l="prof"]'); if (b) b.click(); }); await wait(900); await sh('06-profilo');
+    await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="wish"]'); if (b) b.click(); }); await wait(500); await sh('05-desideri');
+    await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="lib"]'); if (b) b.click(); }); await wait(300);
+    await pg.evaluate(() => { const b = document.querySelector('#gTabs [data-g="prof"]'); if (b) b.click(); }); await wait(900); await sh('06-profilo');
     await pg.evaluate(() => { const s = document.querySelector('#profSheet .sheet-in'); if (s) s.scrollTop = 700; }); await wait(300); await sh('07-profilo-giu');
     await closeAll(pg);
     await pg.evaluate(() => window.NLProfilo.open('uB')); await wait(1200); await sh('08-profilo-amico');

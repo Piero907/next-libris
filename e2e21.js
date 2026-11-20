@@ -35,7 +35,6 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
   await wait(300); console.log('[0 errori all\'avvio]', errors, await page.evaluate(() => [typeof window.__app, document.readyState, document.title, [...document.scripts].map(s => s.src).join(' ')]));
   // 1) Desideri vuoti: «Cerca per titolo»
   await page.evaluate(() => window.__app.setTab('wish')); await wait(200);
-  console.log('[1 suggerimento]', await txt('#tipTxt'));
   await page.click('#list [data-act="typeadd"]'); await wait(200);
   assert(!(await page.$eval('#isbnSheet', e => e.hidden))); assert.strictEqual(await txt('#isbnH'), 'Aggiungi ai Desideri');
   await page.type('#isbnText', 'il nome della rosa eco'); await page.keyboard.press('Enter');

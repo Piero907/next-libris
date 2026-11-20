@@ -29,7 +29,7 @@ const G = { '9788845292613': ['Il nome della rosa', 'Umberto Eco'], '97888062193
   const click = sel => page.evaluate(s => document.querySelector(s).click(), sel);
   const byIsbn = i => page.evaluate(i => JSON.parse(JSON.stringify(window.__app.state.books.find(b => b.i === i) || null)), i);
   // 1) ISBN scritto a mano: il riquadro con «Cerco…», poi titolo e autore; prezzo facoltativo con la tastiera pronta
-  await click('#btnType'); await wait(200);
+  await H.fai(page, 'type'); await wait(200);
   await page.evaluate(() => { document.querySelector('#isbnText').value = '9788845292613'; }); await click('#isbnGo'); await wait(150);
   assert(!(await page.$eval('#priceAsk', e => e.hidden)));
   console.log('[1 subito]', await page.$eval('#priceAskT', e => e.textContent));
@@ -41,23 +41,23 @@ const G = { '9788845292613': ['Il nome della rosa', 'Umberto Eco'], '97888062193
   await page.keyboard.type('14,50'); await page.keyboard.press('Enter'); await wait(200);
   assert(await page.$eval('#priceAsk', e => e.hidden)); assert.strictEqual((await byIsbn('9788845292613')).c, 14.5);
   // 2) Salta (e Salva a campo vuoto) non mette niente
-  await click('#btnType'); await wait(200);
+  await H.fai(page, 'type'); await wait(200);
   await page.evaluate(() => { document.querySelector('#isbnText').value = '9788806219352'; }); await click('#isbnGo'); await wait(150);
   await click('#priceSave'); await wait(150); assert(await page.$eval('#priceAsk', e => e.hidden)); assert.strictEqual((await byIsbn('9788806219352')).c, null);
   // prezzo sbagliato: avviso
-  await click('#btnType'); await wait(200);
+  await H.fai(page, 'type'); await wait(200);
   await page.evaluate(() => { document.querySelector('#isbnText').value = '9788804668015'; }); await click('#isbnGo'); await wait(150);
   await page.keyboard.type('abc'); await click('#priceSave'); await wait(100);
   assert(!(await page.$eval('#priceAskErr', e => e.hidden))); await click('#priceSkip'); await wait(100); assert(await page.$eval('#priceAsk', e => e.hidden));
   // «togli il libro» dal riquadro
-  await click('#btnType'); await wait(200);
+  await H.fai(page, 'type'); await wait(200);
   await page.evaluate(() => { document.querySelector('#isbnText').value = '9788804668022'; }); await click('#isbnGo'); await wait(150);
   assert(await byIsbn('9788804668022')); await click('#priceUndo'); await wait(150); assert(!(await byIsbn('9788804668022'))); assert(await page.$eval('#priceAsk', e => e.hidden));
   // nessun tasto per leggere il prezzo da foto
   assert(!(await page.$('#priceShot')) && !(await page.$('#scanPriceBtn')) && !(await page.$('[data-act="pricephoto"]')));
   // 3) nella fotocamera: riquadro con titolo e autore, campo «Prezzo (facoltativo)»
   await page.evaluate(() => { window.__app.state.books.length = 0; window.__app.state.books.push.apply(window.__app.state.books, []); });
-  await click('#btnScan'); await page.waitForFunction(() => !document.querySelector('#scan').hidden, { timeout: 8000 }); await wait(300);
+  await H.fai(page, 'scan'); await page.waitForFunction(() => !document.querySelector('#scan').hidden, { timeout: 8000 }); await wait(300);
   await page.evaluate(() => window.__app.onScanned('9788804668015')); await wait(150);
   console.log('[3 stato]', JSON.stringify(await page.evaluate(() => ({ hidden: document.querySelector('#scanPrice').hidden, msg: document.querySelector('#scanMsg') && document.querySelector('#scanMsg').textContent, n: window.__app.state.books.length, price: window.__app.settings.price, scanning: !document.querySelector('#scan').hidden }))));
   assert(!(await page.$eval('#scanPrice', e => e.hidden)));

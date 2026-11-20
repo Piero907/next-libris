@@ -147,4 +147,11 @@ async function aggiungi(p, l) {
   await p.waitForSelector('#layAdd:not([hidden]) [data-l="' + l + '"]', { visible: true, timeout: 3000 });
   await p.click('#layAdd [data-l="' + l + '"]');
 }
-module.exports = { serve, wait, sleep, MIME, CFG, csp, aggiungi };
+// stile G (20/11/2026): le azioni che prima avevano un tasto proprio (Statistiche, Esporta, Scansiona, schede Libreria/Desideri, «Prestati»…)
+// ora partono dalle funzioni dell'app. Le strade vere (segnalibri, «+ Aggiungi», «Per te», frase dei prestiti) le provano e2e65 ed e2e137.
+const AZIONI = { stats: 'NL.openStats()', export: 'NL.openExport()', scan: 'NL.scan()', check: "NL.scan('check')", photo: 'NL.photo()', type: 'NL.typeIsbn()',
+  loan: 'NL.loanFilter()', lib: "NLLayout.act('lib')", wish: "NLLayout.act('wish')", prof: "NLLayout.act('prof')", add: "NLLayout.act('add')", you: "NLLayout.act('you')",
+  fri: 'NLAmici.open()', menu: 'NL.openMenu(true)' };
+function fai(p, cosa) { if (!AZIONI[cosa]) throw new Error('azione sconosciuta: ' + cosa); return p.evaluate('void window.' + AZIONI[cosa]); }
+const prestiti = (p) => p.evaluate(() => String(window.NL.loans()));   // quanti libri in prestito (prima: il numero sul tasto «Prestati»)
+module.exports = { serve, wait, sleep, MIME, CFG, csp, aggiungi, fai, prestiti };

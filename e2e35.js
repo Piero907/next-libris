@@ -66,7 +66,7 @@ let hits = [];
   // B) «Scarica tutte le descrizioni» non c'è più (16/11/2026: la descrizione arriva solo con la prima ricerca)
   assert(!(await page.$('#btnDescAll')), 'pulsante tolto');
   // C) obiettivo di lettura
-  await click('#btnStats'); await wait(200);
+  await H.fai(page, 'stats'); await wait(200);
   let g = await page.$eval('#statsBody .goal', e => e.textContent); console.log('[C senza obiettivo]', g.slice(0, 80)); assert(g.includes('Finora ne hai letto 1'));
   await page.evaluate(() => { document.querySelector('#goalIn').value = '4'; }); await click('#goalSave'); await wait(150);
   g = await page.$eval('#statsBody .goal', e => e.textContent.replace(/\s+/g, ' ')); console.log('[C obiettivo]', g.slice(0, 140));
@@ -89,7 +89,7 @@ let hits = [];
   await click('.row[data-id="hp3"] [data-act="serall"]'); await wait(250);
   assert.deepStrictEqual((await rows()).sort(), ['hp1', 'hp2', 'hp3', 'hp4']); console.log('[D vedi la serie] ok'); await setQ('');
   // E) novità degli autori
-  await click('#tabWish'); await wait(200);
+  await H.fai(page, 'wish'); await wait(200);
   assert(!(await page.$eval('#btnNews', e => e.hidden))); hits = [];
   await click('#btnNews');
   await page.waitForFunction(() => document.querySelectorAll('#newsList li').length > 0, { timeout: 15000 });
@@ -103,7 +103,7 @@ let hits = [];
   hits = []; await click('#newsClose'); await click('#btnNews'); await wait(400); assert.strictEqual(hits.length, 0, 'riaperta: niente nuove richieste');
   await click('#newsAgain'); await wait(1200); assert.strictEqual(await page.$$eval('#newsList li', e => e.length), 0, 'nascosti e gia\' aggiunti non tornano'); await click('#newsClose');
   // F) citazioni
-  await click('#tabLib'); await wait(200); await open('rosa');
+  await H.fai(page, 'lib'); await wait(200); await open('rosa');
   await page.evaluate(() => document.querySelector('details.quotes[data-id="rosa"] > summary').click()); await wait(150);
   await click('details.quotes[data-id="rosa"] [data-act="quoteadd"]'); await wait(150);
   await page.evaluate(() => { document.querySelector('#quoteText').value = 'Stat rosa pristina nomine,\nnomina nuda tenemus.'; document.querySelector('#quotePage').value = '503'; });

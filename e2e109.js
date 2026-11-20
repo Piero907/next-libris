@@ -159,7 +159,7 @@ const base = 'http://localhost:' + CFG.port(8309);
   await A.evaluate(() => window.__app.closeOptions()); await wait(200);
 
   // ---- il +: Libreria | Desideri ----
-  await A.click$('.lay-plus'); await wait(300);
+  await H.fai(A, 'add'); await wait(300);
   let sel = await A.$$eval('#layAdd [data-dest]', e => e.map(x => x.dataset.dest + ':' + x.getAttribute('aria-selected')));
   assert.deepStrictEqual(sel, ['lib:true', 'wish:false'], 'parte da Libreria');
   await A.shot('109-3-aggiungi-360');
@@ -169,7 +169,7 @@ const base = 'http://localhost:' + CFG.port(8309);
   sel = await A.$$eval('#layAdd [data-dest]', e => e.map(x => x.getAttribute('aria-selected')));
   assert.deepStrictEqual(sel, ['false', 'true']);
   await A.click$('#layAdd [data-l="close"]'); await wait(200);
-  await A.click$('.lay-plus'); await wait(300);
+  await H.fai(A, 'add'); await wait(300);
   sel = await A.$$eval('#layAdd [data-dest]', e => e.map(x => x.getAttribute('aria-selected')));
   assert.deepStrictEqual(sel, ['false', 'true'], 'dai Desideri parte da Desideri');
   await A.click$('#layAdd [data-l="type"]'); await wait(400);

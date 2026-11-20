@@ -78,7 +78,7 @@ const B = (o) => Object.assign({ t: '', a: '', e: '', y: '', c: null, i: '', g: 
   assert(await page.evaluate(() => !!document.querySelector('.row[data-id="rosa"] img')), 'copertina salvata');
   // 5) Foto > Scatta: aggiunge un libro dalla foto
   const n0 = (await page.evaluate(() => window.__app.state.books.length));
-  await click('#btnPhoto'); await wait(150); await click('#photoCam'); await live();
+  await H.fai(page, 'photo'); await wait(150); await click('#photoCam'); await live();
   assert.strictEqual(await page.$eval('#snapH', e => e.textContent), 'Foto del libro');
   await click('#snapShoot'); await page.waitForFunction(n => window.__app.state.books.length === n + 1, { timeout: 10000 }, n0);
   console.log('[5] libro dalla foto aggiunto');

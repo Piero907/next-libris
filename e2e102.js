@@ -97,7 +97,7 @@ const base = 'http://localhost:' + CFG.port(8302);
   // ---- A: Anna, già entrata; parte «Amici» nel Menu, icona in alto ----
   const A = await phone('A', 'uA', 'anna@esempio.it');
   await A.evaluate(() => { window.__app.settings.name = 'Anna'; }); await wait(2000);
-  assert(await A.$('header.top #btnFri') && !(await A.$('#btnFriN')), 'icona Amici in testata, senza numero (il numero è sulla campanella)');
+  assert(await A.$('#gTabs [data-g="fri"]') && !(await A.$('#gTabs [data-g="fri"] .g-tn')), 'segnalibro Amici, senza numero (il numero è sulla campanella)');
   await A.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
   const menu = await A.evaluate(() => { const o = document.getElementById('drawerOpts'); return { heads: [...o.querySelectorAll('h3')].filter(h => h.getClientRects().length).map(h => h.textContent),
     m: [...document.getElementById('friMenu').children].map(x => x.id), after: document.getElementById('friMenuH').previousElementSibling.classList.contains('ddon') && document.querySelector('#drawerOpts .ddon').previousElementSibling.classList.contains('dmain'),   // 18/11/2026 sera: Sostieni sempre al centro, sopra Amici   // 18/11/2026: Sostieni in cima, Amici dopo Filtri/Statistiche   // dal 17/11 pomeriggio: Sostieni tra Statistiche e Amici
@@ -117,7 +117,7 @@ const base = 'http://localhost:' + CFG.port(8302);
   let t = await A.$eval('#nmAskE', x => x.textContent); console.log('[nome preso]', t); assert(/già usato da un altro/i.test(t) && await A.$('.nm-ask'), 'preso, anche con le maiuscole diverse: la finestra resta');
   await A.$eval('#nmAskU', x => { x.value = '  Anna  R. '; }); await A.click('#nmAskB'); await wait(700);
   assert(!(await A.$('.nm-ask')), 'salvato: la finestra si chiude');
-  await A.evaluate(() => document.getElementById('btnFri').click()); await wait(700);
+  await H.fai(A, 'fri'); await wait(700);
   assert.strictEqual(DB.prof.uA.utente, 'Anna R.', 'nome salvato com\'è scritto (spazi in più tolti)');
   assert.strictEqual(await A.evaluate(() => window.NL.name()), 'Anna R.', 'è anche il nome dell\'app');
   t = await A.body(); assert(/Ancora nessuno/i.test(t), 'nessun amico');
@@ -140,13 +140,13 @@ const base = 'http://localhost:' + CFG.port(8302);
   // ---- B: Bruno apre l'app (disposizione A, telefono stretto): avviso PRIMA di «Installa», numero sull'icona e nel Menu ----
   const B = await phone('B', 'uB', 'bruno@esempio.it');
   await B.setViewport({ width: 360, height: 780, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-  await B.evaluate(() => { window.NLLayout.set('A'); const c = document.getElementById('instCard'); if (c) c.hidden = false; }); await wait(2200);
+  await B.evaluate(() => { const c = document.getElementById('instCard'); if (c) c.hidden = false; }); await wait(2200);
   assert(!(await B.$('#friNote')), 'niente riquadro in cima: la richiesta è nella campanella (notifiche.js, e2e105)');
   await B.screenshot({ path: CFG.OUT + '/amici-avviso.png' });
   await B.evaluate(() => window.__app.openDrawer('opt')); await wait(400);
   assert(/1 richiesta per te/i.test(await B.$eval('#goFriTxt', x => x.textContent)), 'richiesta scritta nel Menu');
   await B.evaluate(() => window.__app.closeDrawer()); await wait(300);
-  await B.evaluate(() => document.getElementById('btnFri').click()); await wait(900);
+  await H.fai(B, 'fri'); await wait(900);
   t = await B.body(); assert(/Vogliono essere tuoi amici 1/i.test(t) && /Anna Rossi/i.test(t));
   const side = await B.evaluate(() => { const si = document.querySelector('#friSheet .sheet-in'); return si.scrollWidth - si.clientWidth; });
   assert(side <= 0, 'la finestra non esce di lato a 360 px (' + side + ')');

@@ -115,13 +115,13 @@ const base = 'http://localhost:' + CFG.port(8303);
   // ---- A: tocca Bruno → la sua libreria nella schermata principale (sola lettura), desideri, «Te lo regalo io» ----
   const A = await phone('A', 'uA');
   await A.add({ t: 'Il deserto dei Tartari', a: 'Dino Buzzati', i: '9788804668015' });
-  await A.evaluate(() => document.getElementById('btnFri').click()); await wait(700);
+  await H.fai(A, 'fri'); await wait(700);
   await A.click('[data-f="friend"]'); await wait(900);                  // dal giro 6 il nome apre il profilo: da lì «Libreria»
   if (await A.$('#profBody [data-p="lib"]')) { await A.click('#profBody [data-p="lib"]'); await wait(1200); }
   assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Bruno', 'libreria di Bruno aperta');
   let t = await A.$eval('#guestBar', x => x.innerText.replace(/\s+/g, ' ')); console.log('[barra di Bruno]', t);
   assert(/0 amici in comune · 1 libro in comune/.test(t) && /Letti di recente «Il deserto dei Tartari» Capolavoro/.test(t), 'barra in cima');
-  assert(/Libreria di Bruno/.test(await A.$eval('#owner', x => x.textContent)));
+  assert(/Libreria di Bruno/.test(await A.$eval('header.top h1 .g-t', x => x.textContent)));
   t = await A.$eval('#list', x => x.innerText.replace(/\s+/g, ' ')); assert(/Il deserto dei Tartari/.test(t) && !/nota segreta/.test(await A.evaluate(() => document.body.innerText)), 'la sua libreria, mai le note');
   await A.evaluate(() => window.__app.setTab('wish')); await wait(400);
   t = await A.$eval('#list', x => x.innerText.replace(/\s+/g, ' ')); assert(/Il nome della rosa/.test(t) && /Lessico famigliare/.test(t), 'i suoi desideri');

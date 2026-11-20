@@ -20,10 +20,10 @@ for (let k = 0; k < 14; k++) books.push(B({ id: 'x' + k, t: 'Libro di prova ' + 
     if (!sessionStorage.seeded) { localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: 1 })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ lastBackup: Date.now(), swiped: true, price: false })); sessionStorage.seeded = 1; } }, books);
   await page.goto('http://localhost:' + CFG.port(8149) + '/?vista=elenco', { waitUntil: 'load' });
   const wait = H.wait;   // attesa «finché» (_harness.js)
-  const st = () => page.evaluate(() => { const s = document.querySelector('#stick'); return { top: Math.round(s.getBoundingClientRect().top), pos: getComputedStyle(s).position, stuck: s.classList.contains('stuck'), tip: getComputedStyle(document.querySelector('.tip')).display, h: getComputedStyle(document.documentElement).getPropertyValue('--stick-h') }; });
+  const st = () => page.evaluate(() => { const s = document.querySelector('#stick'); return { top: Math.round(s.getBoundingClientRect().top), pos: getComputedStyle(s).position, stuck: s.classList.contains('stuck'), h: getComputedStyle(document.documentElement).getPropertyValue('--stick-h') }; });
   await wait(400);
   await page.evaluate(() => window.scrollTo(0, 900)); await wait(300);
-  let s = await st(); console.log('[1 scorrendo]', s); assert.deepStrictEqual([s.top, s.pos, s.stuck, s.tip], [0, 'sticky', true, 'none']);
+  let s = await st(); console.log('[1 scorrendo]', s); assert.deepStrictEqual([s.top, s.pos, s.stuck], [0, 'sticky', true]);
   // il tasto Copertine resta raggiungibile
   const hit = await page.evaluate(() => { const r = document.querySelector('#btnView').getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return e && (e.id || e.closest('button').id); });
   assert.strictEqual(hit, 'btnView');
@@ -39,7 +39,7 @@ for (let k = 0; k < 14; k++) books.push(B({ id: 'x' + k, t: 'Libro di prova ' + 
   console.log('[3 riga / barra]', rowTop, barBottom); assert(rowTop >= barBottom - 1, 'la riga chiusa non resta sotto la barra');
   // in cima: niente ombra, suggerimento visibile
   await page.evaluate(() => window.scrollTo(0, 0)); await wait(300);
-  s = await st(); assert.strictEqual(s.stuck, false); assert.notStrictEqual(s.tip, 'none');
+  s = await st(); assert.strictEqual(s.stuck, false);
   console.log('ERRORI:', errors.length ? errors : 'nessuno'); assert(!errors.length);
   console.log('e2e20 OK');
   await browser.close(); server.close();

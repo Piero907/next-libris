@@ -65,33 +65,33 @@ const books = [
   console.log('[2 apri/chiudi] ok');
 
   // 3) pulsante Prestati: sempre visibile, conta, filtra, prestiti più vecchi prima; di nuovo = tutti
-  assert.strictEqual(await page.$eval('#cntLoan', e => e.textContent), '2');
-  await click('#fltLoan'); await wait(150);
+  assert.strictEqual(await H.prestiti(page), '2');
+  await H.fai(page, 'loan'); await wait(150);
   r = await rows(); console.log('[3 prestati]', r.map(x => x.txt).join(' | '));
   assert.deepStrictEqual(r.map(x => x.id), ['citta', 'rosa']);
-  assert.strictEqual(await page.$eval('#fltLoan', e => e.getAttribute('aria-pressed')), 'true');
+  assert.strictEqual(await page.evaluate(() => window.NL.flt()), 'loan');
   await page.screenshot({ path: CFG.OUT + '/s_loans.png' });
   // restituito dalla lista filtrata
   await click('#list .row[data-id="rosa"] .tag.loan'); await wait(100); await click('#loanBack'); await wait(150);
   assert.deepStrictEqual((await rows()).map(x => x.id), ['citta']);
-  assert.strictEqual(await page.$eval('#cntLoan', e => e.textContent), '1');
+  assert.strictEqual(await H.prestiti(page), '1');
   console.log('[toast prima di Annulla]', await page.evaluate(() => [document.querySelector('#toastTxt').textContent, document.querySelector('#toastBtn').hidden, document.querySelector('#toastBtn').textContent, !!document.querySelector('#toastBtn').onclick]));
   await click('#toastBtn'); await wait(150);       // Annulla
-  assert.strictEqual(await page.$eval('#cntLoan', e => e.textContent), '2');
-  await click('#fltLoan'); await wait(150);
+  assert.strictEqual(await H.prestiti(page), '2');
+  await H.fai(page, 'loan'); await wait(150);
   assert.strictEqual((await rows()).length, 5);
   // dai Desideri porta alla Libreria filtrata
-  await click('#tabWish'); await wait(100); await click('#fltLoan'); await wait(150);
-  assert.strictEqual(await page.$eval('#tabLib', e => e.getAttribute('aria-selected')), 'true');
+  await H.fai(page, 'wish'); await wait(100); await H.fai(page, 'loan'); await wait(150);
+  assert.strictEqual(await page.evaluate(() => window.NL.tab()), 'lib');
   assert.strictEqual((await rows()).length, 2);
-  await click('#fltLoan');
+  await H.fai(page, 'loan');
   // nessun prestito: messaggio
   await page.evaluate(() => { window.__app.state.books.forEach(b => { b.p = ''; b.pd = ''; }); });
-  await click('#fltLoan'); await wait(150);
+  await H.fai(page, 'loan'); await wait(150);
   const none = await page.$eval('#list', e => e.innerText); console.log('[3 vuoto]', none);
   assert(none.includes('Nessun libro in prestito'));
-  assert.strictEqual(await page.$eval('#cntLoan', e => e.textContent), '0');
-  await click('#fltLoan');
+  assert.strictEqual(await H.prestiti(page), '0');
+  await H.fai(page, 'loan');
 
   // 4) l'opzione «schede sempre aperte» non c'e' piu' (16/11/2026)
   assert(await page.evaluate(() => !document.querySelector('#optOpenAll')));

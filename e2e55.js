@@ -124,7 +124,7 @@ const sleep = H.wait;   // attesa «finché» (_harness.js)
     const pg = await br.newPage(); await pg.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
     const errs = []; pg.on('pageerror', e => errs.push(e.message));
     await pg.goto('http://localhost:' + CFG.port(8175) + '/?vista=elenco', { waitUntil: 'load' }); await sleep(400);
-    await pg.evaluate(() => document.querySelector('#btnPhoto').click()); await sleep(200);
+    await H.fai(pg, 'photo'); await sleep(200);
     await pg.evaluate(() => document.querySelector('#photoCam').click());
     await pg.waitForFunction(() => { const v = document.querySelector('#snapVideo'); return !document.querySelector('#snap').hidden && v.videoWidth > 0; }, { timeout: 10000 });
     await sleep(1800);

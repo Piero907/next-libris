@@ -41,7 +41,7 @@ const books = [B({ id: 'rosa', t: 'Il nome della rosa', a: 'Umberto Eco' }), B({
   assert.deepStrictEqual(await openIds(), []);
   console.log('[1 schede] ok');
   // 2) Indietro con un foglio aperto (Statistiche) lo chiude
-  await click('#btnStats'); await wait(200); await back();
+  await H.fai(page, 'stats'); await wait(200); await back();
   assert(await page.$eval('#statsSheet', e => e.hidden), 'Indietro chiude le Statistiche'); assert.strictEqual(await toastTxt(), '');
   // il menu laterale come prima
   await click('#btnFilters'); await wait(300); await back(); assert(await page.$eval('#drawer', e => e.hidden));

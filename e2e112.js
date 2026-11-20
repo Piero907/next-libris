@@ -61,15 +61,10 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
   // ---------- 412x915 (il telefono di Piero) ----------
   const p = await phone(412, 915);
   // 1) testata
-  const hd = await p.evaluate(() => {
-    const r = e => e.getBoundingClientRect(), h1 = r(document.querySelector('h1')), gear = r(document.getElementById('btnOpts')), meta = document.querySelector('.top-meta');
-    return { owner: document.getElementById('owner').innerText, meta: document.getElementById('owner').innerText + ' · ' + document.getElementById('summary').innerText.replace(/\s+/g, ' ').trim(), metaH: r(meta).height, ownH: r(document.getElementById('owner')).height, sumH: r(document.getElementById('summary')).height, h1c: h1.top + h1.height / 2, gearC: gear.top + gear.height / 2, h1R: h1.right, gearL: gear.left };
-  });
+  const hd = await p.evaluate(() => ({ title: document.querySelector('header.top h1 .g-t').textContent, rib: document.getElementById('gRib').textContent, prose: document.getElementById('gProse').textContent,
+    old: !!document.querySelector('#owner, #summary, .top-meta, #btnOpts, #sync') }));
   console.log('[1 testata]', JSON.stringify(hd));
-  assert.strictEqual(hd.owner, 'Libreria di Piero R.');   // «Libreria di» (17/11/2026)
-  assert(/^Libreria di Piero R\. · 12 libri · \d+ in prestito/.test(hd.meta), hd.meta);
-  // testata sobria (Piero, 19/11/2026): titolo grande «Libreria», sotto solo i numeri; nome e foto nel Profilo
-  assert(hd.ownH === 0 && hd.sumH < 45 && hd.metaH < 45, 'sotto il titolo solo i numeri: ' + JSON.stringify(hd));
+  assert(hd.title === 'Libreria' && /^12/.test(hd.rib) && /in prestito/.test(hd.prose) && !hd.old, 'stile G: titolo, nastro con il numero dei libri, frase con i prestiti; niente pezzi della vecchia testata');
   assert(/^Libreria/.test(await p.$eval('header.top h1', x => x.textContent.trim())), 'titolo «Libreria»');
   assert(await p.evaluate(() => { const b = document.getElementById('gMenu').getBoundingClientRect(), r = document.getElementById('gRun').getBoundingClientRect(); return Math.abs((b.top + b.bottom) / 2 - (r.top + r.bottom) / 2) <= 8; }), 'stile G: ≡ Indice sulla riga della testatina');
   if (SHOTS) await p.screenshot({ path: path.join(SHOTS, 'testata-412.png'), clip: { x: 0, y: 0, width: 412, height: 170 } });
@@ -177,7 +172,6 @@ for (let k = 0; k < 12; k++) books.push(B({ id: 'b' + k, t: 'Libro numero ' + k,
     assert(sw <= 0, w + ': scorrimento di lato');
     // stile G: testatina «NEXT LIBRIS» con campanella e ≡ Indice sulla stessa riga, senza toccarsi; il nastro non copre l'Indice
     const ov = await q.evaluate(() => {
-      document.documentElement.classList.add('has-bell');
       let b = document.getElementById('btnBell');
       if (!b) { b = document.createElement('button'); b.className = 'ico nt-top'; b.id = 'btnBell'; b.textContent = '•'; document.getElementById('gIcs').insertBefore(b, document.getElementById('gMenu')); }
       b.hidden = false;

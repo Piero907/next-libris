@@ -33,7 +33,7 @@ const books = Array.from({ length: 3 }, (_, i) => ({ id: 'k' + i, t: 'Libro ' + 
   await page.reload({ waitUntil: 'load' }); await wait(600);
   const today = await page.evaluate(() => { const d = new Date(), p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); });
   const vis = sel => page.$eval(sel, e => !e.hidden);
-  await page.evaluate(() => document.querySelector('#btnExport').click()); await wait(300);
+  await H.fai(page, 'export'); await wait(300);
   // 1) l'invio non parte: finestra con Riprova
   await page.click('#btnShareBackup'); await wait(300);
   let sh = await page.evaluate(() => window.__shared); console.log('[1 nome]', JSON.stringify(sh));

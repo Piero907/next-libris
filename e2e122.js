@@ -120,8 +120,8 @@ const base = 'http://localhost:' + CFG.port(8322);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(900);
 
   // ---- 15) il tuo profilo: dal nome in testata ----
-  assert(await A.$('#owner #ownerProf'), 'il nome in testata è il tasto del profilo');
-  await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(1400);   // i numeri salgono (giro 11C): si leggono alla fine
+  assert(await A.$('#gTabs [data-g="prof"]'), 'il profilo si apre dal segnalibro «Tu»');
+  await H.fai(A, 'prof'); await wait(1400);   // i numeri salgono (giro 11C): si leggono alla fine
   assert(await A.$eval('#profSheet', x => !x.hidden), 'si apre il profilo');
   let t = await txt(A, '#profBody');
   assert(/Anna Su Next Libris da marzo 2026/i.test(t), 'nome e «Su Next Libris da marzo 2026»: ' + t.slice(0, 80));
@@ -199,7 +199,7 @@ const base = 'http://localhost:' + CFG.port(8322);
 
   // ---- 15 e 16) profilo di Bruno dal nome in testata ----
   await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
-  await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(700);
+  await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.querySelector('header.top h1 .g-t').click()); await wait(700);   // nella libreria di un amico il titolo apre il suo profilo
   t = await txt(A, '#profBody');
   assert(/Bruno Su Next Libris da marzo 2026/i.test(t) && /Stai seguendo i suoi Desideri ✓/i.test(t) && /Bruno non lo sa\./i.test(t), 'profilo di Bruno: ' + t);
   assert(/«La preferita di Bruno» — Italo Calvino, Il barone rampante · pagina 12/i.test(t) && /Tutte le citazioni 2 citazioni/i.test(t), 'citazioni di Bruno: ' + t);
@@ -213,7 +213,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   await A.click('#profBody [data-p="segui"]'); await wait(500); assert(DB.seg.includes('uA>uB'), 'e lo segue di nuovo');
   await A.click('#profSheet .sh-x'); await wait(200);
   DB.prof.uB.libreria = true; DB.prof.uB.desideri = false;
-  await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(1600);   // i numeri salgono (giro 11C): si legge alla fine
+  await A.evaluate(() => document.querySelector('header.top h1 .g-t').click()); await wait(1600);   // i numeri salgono (giro 11C): si legge alla fine
   t = await txt(A, '#profBody');
   assert(new RegExp('40 libri · 5 letti nel ' + y + ' · 2 paesi').test(t) && new RegExp('I suoi numeri Nel ' + y + ' Bruno ha letto 5 libri', 'i').test(t) && /Pagine lette 6\.100/i.test(t) && /Autore più letto Italo Calvino · 4/i.test(t) && /Prestati adesso 1/i.test(t), 'numeri con la libreria visibile: ' + t);
   assert(!(await A.$('#profBody [data-p="share"]')), 'nel profilo di un amico niente «Condividi» (giro 11C)');
@@ -237,7 +237,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   assert(/Consigli e desideri/i.test(fs.readFileSync(path.join(ROOT, 'push.js'), 'utf8')));
   // PC: il profilo senza scorrimento di lato
   await A.setViewport({ width: 1280, height: 900, deviceScaleFactor: 1 }); await wait(300);
-  await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(500); await noSide(A, '#profSheet .sheet-in', 'profilo a 1280'); await shot(A, 'profilo-mio-1280');
+  await H.fai(A, 'prof'); await wait(500); await noSide(A, '#profSheet .sheet-in', 'profilo a 1280'); await shot(A, 'profilo-mio-1280');
   assert.deepStrictEqual(errors, []);
   console.log('e2e122 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

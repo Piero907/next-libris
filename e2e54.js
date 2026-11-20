@@ -25,7 +25,7 @@ const server = H.serve(CFG.port(8174), ROOT);
   for (const id of ['#bkFrom', '#quotePage', '#loanWho', '#optName']) assert.strictEqual(await page.$eval(id, e => e.getAttribute('enterkeyhint')), 'done', id);
   // statistiche: «su 2 libri · senza pagine: 1»
   await page.evaluate(() => { document.activeElement && document.activeElement.blur(); history.back(); }); await wait(300);
-  await page.evaluate(() => document.querySelector('#btnStats').click()); await wait(400);
+  await H.fai(page, 'stats'); await wait(400);
   const pages = await page.$$eval('#statsBody .tile', els => els.map(e => e.textContent).find(t => /pagine/.test(t) && !/lette/.test(t)));
   console.log('[pagine]', pages); assert(/420/.test(pages) && /su 2 libri · senza pagine: 1/.test(pages));
   assert.deepStrictEqual(errors, []);

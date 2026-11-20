@@ -77,7 +77,7 @@ T.forEach((x, k) => books.push(B({ id: 'b' + k, t: x[0], a: x[1], sh: x[2], gen:
   await click('#btnFilters'); await wait(350); await page.keyboard.press('Escape'); await wait(350); assert(!(await isOpen()), 'Esc');
   await click('#btnFilters'); await wait(350); await click('#drawerX'); await wait(350); assert(!(await isOpen()), '‹ chiude');   // restyle pezzo 3: pagina intera, niente «fuori» da toccare
   // 5b) stile G: la vecchia linguetta sul bordo sinistro non c'è più (ci sono i segnalibri)
-  assert(await page.$eval('#edgeTab', e => !e.getClientRects().length || getComputedStyle(e).display === 'none' || getComputedStyle(e).visibility === 'hidden'), 'niente linguetta di prima');
+  assert(!(await page.$('#edgeTab')), 'niente linguetta di prima');
   // 6) Azzera e lista vuota
   await click('#btnFilters'); await wait(300);
   await click('#drawerFlt [data-g="flt"][data-v="loan"]'); await wait(100);
@@ -101,7 +101,7 @@ T.forEach((x, k) => books.push(B({ id: 'b' + k, t: x[0], a: x[1], sh: x[2], gen:
   assert(!(await isOpen()));
   // 8) col pannello chiuso un gesto sopra una finestra aperta non fa nulla
   await page.evaluate(() => window.__app.setTab('lib'));
-  await click('#btnStats'); await wait(200);
+  await H.fai(page, 'stats'); await wait(200);
   await drag(10, 650, 300, 650); assert(!(await isOpen()), 'non sopra le finestre'); await click('#statsClose'); await wait(100);
   console.log('ERRORI:', errors.length ? errors : 'nessuno'); assert(!errors.length);
   console.log('e2e11 OK');

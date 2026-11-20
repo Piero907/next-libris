@@ -20,7 +20,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   await page.reload({ waitUntil: 'load' }); await wait(700);
   const st = () => page.evaluate(() => ({ open: document.body.classList.contains('drawer-open'), h: document.querySelector('#drawerH').textContent, home: !document.querySelector('#drawerOpts').hidden, flt: !document.querySelector('#drawerFilters').hidden, back: !document.querySelector('#drawerBack').hidden, w: Math.round(document.querySelector('#drawer').getBoundingClientRect().width) }));
   // 1) dalla linguetta: il menu, non i filtri; largo due terzi
-  await page.evaluate(() => document.querySelector('#edgeTab').click()); await wait(400);
+  await H.fai(page, 'menu'); await wait(400);
   let s = await st(); console.log('[1 linguetta]', JSON.stringify(s));
   assert(s.open && s.home && !s.flt && s.h === 'Indice' && s.w >= 412 - 46 - 1);   // stile G: l'Indice è una pagina intera accanto ai segnalibri
   const items = await page.$$eval('#drawerOpts .dopt b', e => e.map(x => x.textContent)); console.log('  voci:', items.join(' | '));

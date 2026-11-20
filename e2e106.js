@@ -90,7 +90,7 @@ let gHits = [], sbnHits = 0, coverHits = [];
       r.respond(json({}));
     });
     await page.goto(base + '/next-libris-prova/?vista=elenco', { waitUntil: 'load' }); await wait(2600);
-    await page.evaluate((d, key, sbn) => { window.NLLayout && window.NLLayout.set('A'); if (d) document.documentElement.setAttribute('data-theme', 'dark');
+    await page.evaluate((d, key, sbn) => { if (d) document.documentElement.setAttribute('data-theme', 'dark');
       window.NL.settings.gbKey = key; window.NL.settings.sbnUrl = sbn; window.NL.saveSettings(); }, !!dark, KEY, SBN);
     page.byIsbn = i => page.evaluate(i => JSON.parse(JSON.stringify(window.NL.books().find(b => b.i === i) || null)), i);
     page.addWait = async (i, extra) => { await page.evaluate(i => window.__app.addIsbn(i), i);

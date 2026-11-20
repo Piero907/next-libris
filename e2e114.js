@@ -61,7 +61,7 @@ const APP = 'http://localhost:' + CFG.port(8314);
   const p2 = await browser.newPage();
   await p2.goto('http://localhost:' + CFG.port(8315) + '/', { waitUntil: 'load' }); await H.sleep(800);
   const fr = p2.frames().find(x => x.url().startsWith(APP));
-  const inside = await fr.evaluate(() => ({ txt: document.body ? document.body.innerText : '', link: (document.querySelector('a[target="_top"]') || {}).href || '', app: !!document.getElementById('btnScan') && !document.getElementById('btnScan').closest('[hidden]') && document.getElementById('btnScan').offsetParent !== null, nl: !!window.NL }));
+  const inside = await fr.evaluate(() => ({ txt: document.body ? document.body.innerText : '', link: (document.querySelector('a[target="_top"]') || {}).href || '', app: !!document.getElementById('gAdd') && !document.getElementById('gAdd').closest('[hidden]') && document.getElementById('gAdd').getClientRects().length > 0, nl: !!window.NL }));
   console.log('[cornice]', JSON.stringify(inside));
   assert(/apri Next Libris/.test(inside.txt) && inside.link.startsWith(APP) && !inside.app && !inside.nl, 'l\'app non parte dentro un altro sito');
   await p2.close();

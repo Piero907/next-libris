@@ -91,7 +91,7 @@ let apiCalls = [];
 
   // 7) backup con le foto (condivisione simulata) e ripristino
   await page.evaluate(() => { window.__shared = null; navigator.canShare = () => true; navigator.share = async (d) => { window.__shared = await d.files[0].text(); }; });
-  await click('#btnExport');
+  await H.fai(page, 'export');
   await page.waitForFunction(() => !document.querySelector('#btnShareBackup').disabled && /comprende 2 tue foto/.test(document.querySelector('#backupNote').textContent), { timeout: 8000 });
   console.log('[7]', await page.$eval('#backupNote', e => e.textContent));
   await click('#btnShareBackup'); await wait(400);

@@ -187,7 +187,7 @@ const base = 'http://localhost:' + CFG.port(8325);
 
   // ---- il tuo profilo ----
   await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: la scheda aperta e' una pagina intera
-  await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(1400);   // i numeri salgono (giro 11C)
+  await A.evaluate(() => window.scrollTo(0, 0)); await H.fai(A, 'prof'); await wait(1400);   // i numeri salgono (giro 11C)
   let t = await txt(A, '#profBody');
   assert(/In lettura 1/i.test(t) && !/Preferiti/i.test(t) && /Consigliati 2/i.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['a3', 'a1,a2']);   // In lettura, Consigliati (via i Preferiti)
@@ -247,10 +247,10 @@ const base = 'http://localhost:' + CFG.port(8325);
   // una copertina dei Consigliati apre quel libro nella sua libreria
   await A.evaluate(() => document.querySelector('#profBody .pf-row:last-of-type .pf-bk[data-id="b3"], #profBody .pf-bk[data-id="b3"]').click()); await wait(1400);
   assert.strictEqual(await A.evaluate(() => window.NL.guest() + '/' + window.NL.tab()), 'Bruno/lib'); assert(await isOpen('b3'), 'il libro di Bruno è aperto');
-  assert(await A.$eval('#guestDrop', x => x.classList.contains('gb-drop') && !x.hidden), 'anche nella sua libreria l\'icona «togli» è rossa');
+  assert(!(await A.$('#guestDrop')), 'nella sua libreria niente icone in testata (20/11/2026): «togli» sta nel profilo');
   // dal nome in testata di nuovo al profilo, poi i Desideri
   await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
-  await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(800);
+  await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.querySelector('header.top h1 .g-t').click()); await wait(800);   // nella libreria di un amico il titolo apre il suo profilo
   assert.strictEqual(await A.$eval('#profH', x => x.textContent), 'Profilo di Bruno');
   await A.click('#profBody [data-p="wish"]'); await wait(700);
   assert.strictEqual(await A.evaluate(() => window.NL.guest() + '/' + window.NL.tab()), 'Bruno/wish', 'i suoi Desideri');

@@ -183,9 +183,9 @@ const base = 'http://localhost:' + CFG.port(8332);
   assert.notStrictEqual(cap, 'none', 'a 5 per riga la scritta sotto resta anche sulle copertine senza foto (Piero, 19/11/2026)');
   const fit = await pg.evaluate(() => [...document.querySelectorAll('#list .gc-sur')].filter(b => b.offsetParent).every(b => b.scrollWidth <= b.parentNode.clientWidth + 1));
   assert(fit, 'i cognomi entrano nella copertina');
-  // riepilogo: il triangolino sta nell'ultimo pezzo, che non va a capo
-  const sum = await pg.evaluate(() => { const s = [...document.querySelectorAll('#summary .sum-i')]; const l = s[s.length - 1]; return { n: s.length, alert: !!(l && l.querySelector('.sum-alert')), ws: l && getComputedStyle(l).whiteSpace, txt: document.getElementById('summary').textContent }; });
-  console.log('[riepilogo]', JSON.stringify(sum)); assert(sum.alert && sum.ws === 'nowrap' && /140 libri · 5 in prestito/.test(sum.txt), 'triangolino attaccato');
+  // frase sotto il titolo; il triangolino «riapri avvisi» non c'è più (20/11/2026)
+  const sum = await pg.evaluate(() => ({ alert: !!document.querySelector('.sum-alert, [data-sum]'), rib: document.querySelector('#gRib b').textContent, txt: document.getElementById('gProse').textContent }));
+  console.log('[riepilogo]', JSON.stringify(sum)); assert(!sum.alert && sum.rib === '140' && /5 sono in prestito/.test(sum.txt), 'nastro e frase');
   // Account con l'account: la finestra non è vuota
   await pg.evaluate(() => window.NLSocial.open()); await wait(600);
   const acc = await txt(pg, '#accBody'); console.log('[account]', acc.slice(0, 80)); assert(/Sei entrato come/.test(acc) && /Sincronizza adesso/.test(acc), 'finestra Account piena');

@@ -73,30 +73,30 @@ let noExtra = new Set();
   await page.type('#loanWho', 'Marco'); await click('#loanSave'); await wait(200);
   b = (await books())[0]; assert.strictEqual(b.p, 'Marco'); assert(/^\d{4}-\d\d-\d\d$/.test(b.pd));
   assert((await text('#list .tag.loan')).includes('Prestato a Marco'));
-  assert((await text('#summary')).includes('1 in prestito'));
-  assert.strictEqual(await text('#cntLoan'), '1');
-  await click('#fltLoan'); assert.strictEqual((await page.$$('#list .row')).length, 1); await click('#fltLoan');
+  assert((await text('#gProse')).includes('1 è in prestito'));   // stile G: la frase sotto il titolo
+  assert.strictEqual(await H.prestiti(page), '1');
+  await H.fai(page, 'loan'); assert.strictEqual((await page.$$('#list .row')).length, 1); await H.fai(page, 'loan');
   await click('#list .tag.loan'); await wait(100);
   assert(!(await page.$eval('#loanBack', e => e.hidden)));
   await click('#loanBack'); await wait(150);
   assert.strictEqual((await books())[0].p, '');
   await click('#toastBtn'); await wait(150);
   assert.strictEqual((await books())[0].p, 'Marco');
-  console.log('[3 prestiti] ok:', await text('#summary'));
+  console.log('[3 prestiti] ok:', await text('#gProse'));
 
   // 4) Desideri: aggiunta nella scheda, conteggi, Comprato, spostamento automatico
-  await click('#tabWish'); await wait(150);
+  await H.fai(page, 'wish'); await wait(150);
   assert((await text('#list')).includes('Desideri è vuota'));
   await page.evaluate(c => window.__app.addIsbn(c), W1); await wait(1200);
   b = (await books()).find(x => x.i === W1); assert.strictEqual(b.w, true);
-  assert.strictEqual(await text('#cntWish'), '1'); assert.strictEqual(await text('#cntLib'), '1');
-  assert((await text('#summary')).includes('da comprare'));
+  assert.strictEqual(await text('#gRib b'), '1'); assert.strictEqual(await page.evaluate(() => window.NL.books().filter(b => !b.w).length), 1);   // nastro: i Desideri; in Libreria ne resta uno
+  assert((await text('#gProse')).includes('nei Desideri'));
   assert(await page.$('#list .row [data-act="tolib"]')); assert(await page.$('#list .row [data-act="loan"]'), 'anche nei Desideri: Presta, vendi o regala (16/11/2026)');
   await click('#list .row [data-act="tolib"]'); await wait(200);
   assert.strictEqual((await books()).find(x => x.i === W1).w, false);
   await click('#toastBtn'); await wait(150);
   assert.strictEqual((await books()).find(x => x.i === W1).w, true);
-  await click('#tabLib'); await wait(150);
+  await H.fai(page, 'lib'); await wait(150);
   assert.strictEqual((await page.$$('#list .row')).length, 1);
   const mv = await page.evaluate(c => { const r = window.__app.addIsbn(c); return !!r.moved; }, W1);
   assert(mv); assert.strictEqual((await books()).find(x => x.i === W1).w, false);
@@ -105,7 +105,7 @@ let noExtra = new Set();
 
   // 5) «Ce l'ho già?» con la fotocamera finta (codice di Il nome della rosa)
   //   a) è in libreria
-  await click('#btnCheck');
+  await H.fai(page, 'check');
   await page.waitForFunction(() => !document.querySelector('#scanRes').hidden, { timeout: 20000, polling: 200 });
   let res = await text('#scanRes'); console.log('[5a]', res);
   assert(res.includes("Ce l'hai già") && res.includes('Il nome della rosa') && res.includes('Scaffale: Soggiorno 2') && res.includes('Prestato a Marco'));
@@ -114,7 +114,7 @@ let noExtra = new Set();
   //   b) non è in elenco: nessuna aggiunta automatica, titolo trovato, aggiungo ai Desideri
   const rosaId = await page.evaluate(() => window.__app.state.books.find(b => b.i === '9788806219352').id);
   const saved = await page.evaluate(id => { const a = window.__app.state.books; const i = a.findIndex(b => b.id === id); return JSON.stringify(a.splice(i, 1)[0]); }, rosaId);
-  await click('#btnCheck');
+  await H.fai(page, 'check');
   await page.waitForFunction(() => /Non ce l'hai/.test(document.querySelector('#scanRes').textContent) && /nome della rosa/.test(document.querySelector('#scanRes').textContent), { timeout: 20000, polling: 200 });
   res = await text('#scanRes'); console.log('[5b]', res);
   assert.strictEqual((await books()).some(x => x.i === ROSA), false);
@@ -124,7 +124,7 @@ let noExtra = new Set();
   b = (await books()).find(x => x.i === ROSA); assert.strictEqual(b.w, true); assert.strictEqual(b.t, 'Il nome della rosa');
   await click('#scanClose'); await wait(300);
   //   c) è nei Desideri: «l'ho comprato»
-  await click('#btnCheck');
+  await H.fai(page, 'check');
   await page.waitForFunction(() => !document.querySelector('#scanRes').hidden && /lista dei Desideri/.test(document.querySelector('#scanRes').textContent), { timeout: 20000, polling: 200 });
   await click('#scanRes [data-act="bought"]'); await wait(200);
   assert((await text('#scanRes')).includes('Spostato in Libreria'));
@@ -150,7 +150,7 @@ let noExtra = new Set();
   assert.strictEqual(await text('#btnView'), 'Copertine');
 
   // 8) statistiche: tocca un editore e filtra
-  await click('#btnStats'); await wait(200);
+  await H.fai(page, 'stats'); await wait(200);
   const st = await text('#statsBody'); console.log('[8 statistiche]', st.slice(0, 160));
   assert(st.includes('5') && st.includes('libri') && st.includes('Narrativa') && st.includes('in prestito'));
   await page.screenshot({ path: CFG.OUT + '/s_stats.png' });
@@ -192,7 +192,7 @@ let noExtra = new Set();
   assert((await books()).every(x => x.gen === 'Narrativa' && x.pg === '321'));
 
   // 12) esporta: Excel e CSV della scheda attuale
-  await click('#btnExport'); await wait(150);
+  await H.fai(page, 'export'); await wait(150);
   console.log('[12 esporta]', await text('#exportMsg'));
   await click('#btnXlsx'); await click('#btnCsv'); await wait(1500);
   console.log('[12 file]', fs.readdirSync(DL));

@@ -8,7 +8,7 @@
 3. Una finestra nuova si costruisce **solo con i pezzi descritti qui**. Se serve un pezzo nuovo, prima si aggiunge a questo documento.
 4. A ogni scelta nuova di Piero si aggiorna questo documento, nelle due copie.
 
-**Codice:** `stile-g.css` e `stile-g.js`, caricati **dopo** `stile-c.css`. Lo stile G si appoggia ai pezzi di C (sezione 3) e cambia quello che dice la sezione 1. Dove la sezione 1 non dice niente, valgono le regole di C.
+**Codice:** `stile-g.css` e `stile-g.js`, caricati **dopo** `stile-c.css`. Lo stile G si appoggia ai pezzi di C (sezione 3) e cambia quello che dice la sezione 1. Dove la sezione 1 non dice niente, valgono le regole di C. **Dal 20/11/2026 lo stile G è l'unico aspetto dell'app**: il codice delle vecchie disposizioni (Classico, barra in basso, vecchia testata con nome e riepilogo, tasti Scansiona/Foto/Digita in basso, linguetta del menu) è stato tolto. Testatina, titolo, nastro e frase stanno in `index.html`; segnalibri e «+ Aggiungi» li disegna `stile-g.js`.
 
 ---
 
@@ -23,6 +23,7 @@
 - **Testatina** in alto: «NEXT LIBRIS» in maiuscoletto spaziato (nella libreria di un amico: ‹ e il suo nome). A destra **solo campanella e ≡ Indice**: la chat non sta più in alto, ha il suo segnalibro. Sotto c'è una linea.
 - **Titolo** Bricolage **40/800** («Libreria», «Desideri», «Libreria di Anna»).
 - **Nastro segnalibro** che pende dall'alto, colore `--accent`, con il numero dei libri e «LIBRI» (nei Desideri il cuore).
+- **Titolo, testatina e frase partono dallo stesso margine** (dal 20/11/2026: prima il titolo era rientrato di 6 px per un resto della vecchia testata). Nella libreria di un amico «Libreria di Anna» sta su una riga se ci entra.
 - **Frase in prosa senza capolettera** (tolta il 20/11/2026), con dati veri: «Stai leggendo *X*; 5 sono in prestito.» La parte «5 sono in prestito» è un link ai prestiti. Mai numeri inventati.
 
 ### Segnalibri laterali (navigazione)
@@ -56,6 +57,12 @@
 - **Puntini come nell'indice di un libro** (Piero, 20/11/2026): stanno **sulla riga sotto**, subito dopo il sottotitolo (anche sull'ultima riga se va a capo) e arrivano fino alla ›, che scende su quella riga; sono in basso sulla linea di base, leggeri (1,5 px, `--muted` al 55%). Senza sottotitolo i puntini stanno sulla riga del titolo. Capitoli e Sostieni senza puntini (`stile-g.css` G22).
 - Il pallino verde della sincronizzazione sta nel margine a sinistra del titolo, così il titolo non va a capo a 360 px.
 - **Sostieni** come fascia dorata (`--gilt`) in fondo. **Posizione da rivedere** (Piero, 20/11/2026: «va messo meglio in evidenza», IN_SOSPESO 41).
+
+### Avvisi in cima alla libreria
+- Sopra la ricerca, **uno alla volta**, con i pallini; si scorrono col dito. Testo su **due righe al massimo**, a destra il tasto con › e la ×.
+- **Niente triangolino «riapri avvisi chiusi»** (tolto da Piero il 20/11/2026): un avviso chiuso torna da solo quando è di nuovo il momento.
+- **«Non riesco a salvare»** (20/11/2026, `#notice.nt-save`, G24): è l'unico avviso con il **testo intero**, su una riga sua; sotto, «Fai il backup ›» a sinistra, pallini e × a destra. Compare solo se il salvataggio sul telefono non riesce e sparisce da solo quando riesce.
+- In **Indice › Aspetto** non c'è più «Riepilogo in alto» (libri in prestito, non più in libreria, conferma del salvataggio); «Riepilogo di ogni stagione» sta in fondo.
 
 ### Finestre dal basso
 - Foglio del colore della pagina (`--surface`), maniglia, titolo 19/800 con × tonda, riquadri col filo sottile, tasto largo in fondo. Sempre accanto ai segnalibri.
@@ -151,5 +158,6 @@ Le regole sui **testi** dell'app (parole, nomi, tono) stanno in `claude/regole-d
 - 20/11/2026: pagina del libro su PC, spazi sotto ordine/gruppi e pillole (110.28).
 - 20/11/2026: tutto nella **vera 111**.
 - 20/11/2026: puntini dell'Indice sulla riga sotto, elenco degli amici che scorre nel riquadro (111.2).
+- 20/11/2026: via il codice delle vecchie disposizioni; titolo allineato al margine; avviso «Non riesco a salvare»; via il triangolino e «Riepilogo in alto» (112.3).
 
 Tele di design: stile attuale https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu · proposte A-G https://claude.ai/artifact/Tqa6XajvQCK2CVZdSSSimq · schede di benvenuto https://claude.ai/artifact/3K32364B9GUREgviZATvHJ.
