@@ -261,7 +261,7 @@ Usa gli stessi dati del trimestre in libri (già fatto, modulo `wrap.js`).
 - **Email di accesso con Brevo:** ferma (accesso solo con Google, `CFG.email = false`). Con un dominio: `accesso@nextlibris.it`, modelli con il codice di 6 cifre (`claude/accesso-google-e-servizi.md` del progetto claude.ai).
 
 ### 40. Worker e link della chiave (dal giro 7-8, 18/11/2026)
-- **R5 · limite di richieste per il worker** (**worker prestato: FATTO**, 026 + giro 11A del 18/11/2026: passa dal server, 3.000 ricerche al giorno per amico, nella prova con 027; resta solo il worker usato da un programma con l'indirizzo): oggi chiunque conosca l'indirizzo lo può usare da un programma; il piano gratuito si ferma a 100.000 al giorno senza costi, ma SBN potrebbe bloccare il worker. Possibile: un limite per indirizzo IP o un piccolo segreto.
+- **R5 · limite di richieste per il worker** (**si chiude con il worker della casa**, scelta di Piero del 20/11/2026: indirizzo solo sul server, dietro la funzione `libri`; vedi API_WORKER.md) (**worker prestato: FATTO**, 026 + giro 11A del 18/11/2026: passa dal server, 3.000 ricerche al giorno per amico, nella prova con 027; resta solo il worker usato da un programma con l'indirizzo): oggi chiunque conosca l'indirizzo lo può usare da un programma; il piano gratuito si ferma a 100.000 al giorno senza costi, ma SBN potrebbe bloccare il worker. Possibile: un limite per indirizzo IP o un piccolo segreto.
 - **R2 · link con la chiave (`#k=`): TOLTO nel giro 8** (Piero, 18/11/2026: «si condivide solo dentro l'app»). Un vecchio link aperto oggi dà solo un avviso.
 
 ---

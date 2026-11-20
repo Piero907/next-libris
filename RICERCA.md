@@ -1,13 +1,13 @@
 # Next Libris — come funziona la ricerca dei libri
 
-**Aggiornato il 20/11/2026, vera 111.** Copia uguale nel progetto Claude: `claude/ricerca-libri.md`. API e worker (prestito, limiti): `claude/api-e-worker.md` (`API_WORKER.md`). Qui c'è il **funzionamento**; l'aspetto delle finestre sta in `STILE.md` / `claude/stile-base.md`.
+**Aggiornato il 20/11/2026, vera 111** (più la scelta del worker della casa, da costruire). Copia uguale nel progetto Claude: `claude/ricerca-libri.md`. API e worker (prestito, limiti): `claude/api-e-worker.md` (`API_WORKER.md`). Qui c'è il **funzionamento**; l'aspetto delle finestre sta in `STILE.md` / `claude/stile-base.md`.
 
 ## Regola di fondo
 Poche chiamate a Google Libri. Prima si usano le fonti libere e gratuite (archivio comune, Open Library, catalogo SBN, Wikipedia/Wikidata); Google si usa solo quando serve.
 
 ## Ricerca per ISBN (scansione del codice a barre, codici scritti)
 1. **Archivio comune** dei libri già cercati da altri (senza Google).
-2. **Open Library e catalogo SBN** insieme (SBN tramite il worker). Open Library ha 2,5 secondi.
+2. **Open Library e catalogo SBN** insieme (SBN tramite il worker). Open Library ha 2,5 secondi. **Dal worker della casa (scelta del 20/11/2026, da costruire):** SBN per tutti attraverso la funzione `libri` di Supabase; 500 ricerche al giorno con l'account, 50 per telefono senza account e 3.000 in tutto per chi non ha l'account (`claude/api-e-worker.md`). Al limite si salta SBN e si va avanti con le altre fonti.
 3. **Google Libri solo se manca il libro o la copertina** (giro 11B).
 4. Crossref se manca ancora qualcosa; ultimo tentativo con Google per codice semplice e ISBN-10.
 - La **descrizione** si cerca a richiesta, dalla pagina del libro.
@@ -31,7 +31,7 @@ Poche chiamate a Google Libri. Prima si usano le fonti libere e gratuite (archiv
   - API valida ma Google non risponde: «Google Libri non ha risposto…»;
   - Google risponde ma non trova niente: «Google Libri non ha trovato niente…».
 - Senza API compare il tasto «Come avere l'API, gratis ›», che apre la guida. «Aggiungi solo il titolo» c'è sempre.
-- **Scelta rimandata (Piero, 20/11/2026)**: quando ci sarà il worker SBN fisso per tutti, SBN e Open Library partiranno insieme e Google servirà solo se mancano edizioni italiane.
+- **Con il worker della casa (Piero, 20/11/2026)**: SBN e Open Library partiranno insieme e Google servirà solo se mancano edizioni italiane. Si fa nello stesso giro del worker della casa.
 
 ## Altre ricerche Google (Per te)
 - **Novità dei tuoi autori**: gli autori a gruppi di 4 in una sola ricerca (`inauthor:"A" OR …`, maxResults 40): al massimo **2 ricerche invece di 8**, ogni 14 giorni. Da guardare sul telefono: se i risultati sono poveri si torna al sistema di prima senza richiedere.

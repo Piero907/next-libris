@@ -11,7 +11,7 @@ Ramo `prove` di `Piero907/next-libris` (prove, strumenti, note; mai dentro l'app
 
 ## Lavoro in corso (aggiornare a ogni passo: le sessioni si chiudono spesso)
 - **Nessun lavoro a metà** (20/11/2026). Documenti riordinati per argomento (vedi «Documenti» qui sotto); i diari dei giri sono finiti in `STORIA.md`.
-- **Da fare quando lo dice Piero:** prove sul telefono della 111 (stile G, schede di benvenuto e accesso da zero, «Chiedimela» con due account; iPhone, BENVENUTO.md); **Sostieni più in evidenza** (IN_SOSPESO 41); **worker SBN fisso nell'app** (API_WORKER.md, Fable medio); e2e4 ed e2e28 da riallineare; backup del database.
+- **Da fare quando lo dice Piero:** prove sul telefono della 111 (stile G, schede di benvenuto e accesso da zero, «Chiedimela» con due account; iPhone, BENVENUTO.md); **Sostieni più in evidenza** (IN_SOSPESO 41); **worker SBN della casa** (scelte del 20/11/2026: solo worker della casa, dietro la funzione `libri`, 500 ricerche al giorno con l'account, 50 per telefono e 3.000 in tutto senza account, tra amici solo l'API; API_WORKER.md, Fable medio), poi «cerca tra i tuoi amici chi può prestarti l'API» più in vista; e2e4 ed e2e28 da riallineare; backup del database.
 
 ## Documenti (leggere quello dell'argomento prima di lavorarci)
 Ogni documento ha una **copia uguale** nel progetto claude.ai (nome tra parentesi): quando cambia una scelta si aggiornano **tutte e due**. Indice completo nel progetto: `claude/00-indice.md`.
