@@ -45,7 +45,7 @@ const SIZES = [[360, 640], [375, 667], [390, 844], [412, 915], [430, 932], [768,
     assert(r.side <= 0, tag + ': niente scorrimento di lato (' + r.side + ')');
     assert.strictEqual(r.rib, '7', tag + ': il nastro conta i libri della libreria');
     assert.strictEqual(r.title, 'Libreria', tag + ': titolo');
-    assert(/Stai leggendo Il fu Mattia Pascal/.test(r.prose) && r.dc, tag + ': frase in prosa con la capolettera');
+    assert(/Stai leggendo Il fu Mattia Pascal/.test(r.prose) && !r.dc, tag + ': frase in prosa senza capolettera');
     assert.strictEqual(r.run, 'Next Libris', tag + ': testatina');
     assert(!r.nav || !r.nav.vis, tag + ': niente barra in basso');
     assert.strictEqual(r.tabs.length, 5, tag + ': cinque linguette');
