@@ -61,4 +61,29 @@ mode = 'down'; r = await W.fetch(req('/?isbn=' + ISBN, await firmata())); assert
 const L = (await import(path.join(process.env.APP_DIR || path.join(here, '..', 'next-libris'), 'lib.js'))).default;
 const p = L.parseSbn(j, '9788806219352'); console.log(p.t, '|', p.a, '|', p.e, p.y, p.pg);
 assert.strictEqual(p.pg, '623');
+// ricerca per titolo (21/11/2026): sempre firmata («t:titolo»), solo libri a stampa, campi ridotti; il parser dell'app la legge
+mode = 'ok'; calls.length = 0;
+const T_REC = [
+  { codiceIdentificativo: 'A1', isbn: '88-04-41117-1', autorePrincipale: 'Buzzati, Dino', titolo: 'Il deserto dei tartari / Dino Buzzati', pubblicazione: 'Milano : A. Mondadori, 1995', tipo: 'Testo a stampa', livello: 'Monografia', nomi: [] },
+  { codiceIdentificativo: 'A2', autorePrincipale: 'Buzzati, Dino', titolo: 'Il deserto dei Tartari / Dino Buzzati', pubblicazione: 'Milano : Mondadori, 1972', tipo: 'Testo a stampa', livello: 'Monografia' },
+  { codiceIdentificativo: 'A3', autorePrincipale: 'Buzzati, Dino', titolo: 'Il deserto dei Tartari / letto da X', pubblicazione: 'Roma : Emons, 2019', tipo: 'Registrazione sonora non musicale', livello: 'Monografia' },
+  { codiceIdentificativo: 'A4', titolo: 'Il deserto dei Tartari', pubblicazione: 'Firenze : Stamperia braille', tipo: 'Testo a stampa', livello: 'Spoglio' }];
+globalThis.fetch = async (url) => { calls.push(url); return new Response(JSON.stringify({ numFound: 4, briefRecords: T_REC }), { headers: { 'Content-Type': 'application/json' } }); };
+const TT = 'il deserto dei tartari';
+r = await W.fetch(req('/?t=' + encodeURIComponent(TT), await firmata('t:' + TT)));
+j = await r.json();
+assert.strictEqual(r.status, 200);
+assert.deepStrictEqual(calls, ['https://opac.sbn.it/opacmobilegw/search.json?any=il%20deserto%20dei%20tartari&rows=40']);
+assert.deepStrictEqual(j.briefRecords.map((x) => x.codiceIdentificativo), ['A1', 'A2'], 'solo libri a stampa (monografie)');
+assert(!('nomi' in j.briefRecords[0]) && !('tipo' in j.briefRecords[0]), 'campi ridotti');
+r = await W.fetch(req('/?t=' + encodeURIComponent(TT))); assert.strictEqual(r.status, 403, 'senza firma no, neanche prima del 27/11');
+r = await W.fetch(req('/?t=' + encodeURIComponent(TT), await firmata('t:altro titolo'))); assert.strictEqual(r.status, 403, 'firma di un altro titolo');
+r = await W.fetch(req('/?t=x', await firmata('t:x'))); assert.strictEqual(r.status, 400);
+assert.strictEqual(calls.length, 1, 'SBN chiamato una volta sola');
+const lst = L.parseSbnList(j);
+assert.strictEqual(lst.length, 2);
+assert.strictEqual(lst[0].i, '9788804411178'); assert.strictEqual(lst[0].a, 'Dino Buzzati'); assert.strictEqual(lst[0].e, 'A. Mondadori'); assert.strictEqual(lst[0].y, '1995');
+assert(/covers\.openlibrary\.org\/b\/isbn\/9788804411178/.test(lst[0].img) && lst[0].lang === 'it');
+assert.strictEqual(lst[1].i, ''); assert.strictEqual(lst[1].y, '1972'); assert.strictEqual(lst[1].img, '');
+console.log('titolo:', lst.map((c) => c.t + ' (' + c.e + ', ' + c.y + ')').join(' · '));
 console.log('worker OK');

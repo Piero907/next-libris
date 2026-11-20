@@ -8,6 +8,8 @@
 //     service_role), che conta anche la ricerca: 500 al giorno per utente con l'account (x-nl-stop: mio), 3.000 al giorno in tutto
 //     per chi non ha l'account (x-nl-stop: tetto). La richiesta al worker è firmata (ECDSA P-256, «isbn.secondi»): il worker
 //     risponde solo alle richieste firmate da qui. Il vecchio «da=» (worker prestato da un amico, 026-027) non si usa più.
+//   GET /functions/v1/libri?t=<titolo>  (21/11/2026, versione 5: ricerca per titolo nel catalogo SBN, stesso conto e stessi limiti
+//     dell'ISBN; firma su «t:<titolo>.secondi»)
 //   Intestazioni di risposta: x-nl-tot (ricerche di oggi con quella chiave), x-nl-mio (le tue), x-nl-stop (no | mio | pieno).
 // verify_jwt spento: l'accesso si controlla qui chiedendo l'utente a /auth/v1/user (vale con ogni tipo di chiave del progetto).
 const URL_DB = Deno.env.get("SUPABASE_URL")!;
@@ -72,7 +74,7 @@ async function sbnConta(uid: string): Promise<{ w?: string; f?: string; e?: stri
 // firma della richiesta al worker: la chiave privata (PKCS8 in base64, dal Vault) si importa una volta sola
 let FIRMA: { testo: string; chiave: CryptoKey } | null = null;
 const b64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
-async function firma(privata: string, isbn: string): Promise<string> {
+async function firma(privata: string, isbn: string): Promise<string> {   // isbn: l'ISBN, oppure «t:<titolo>»
   if (!FIRMA || FIRMA.testo !== privata) {
     FIRMA = { testo: privata, chiave: await crypto.subtle.importKey("pkcs8", b64(privata), { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]) };
   }
@@ -89,8 +91,10 @@ Deno.serve(async (req) => {
   const q = new URL(req.url).searchParams;
   const da = q.get("da") || "", u = q.get("u") || "";
   const isbn = (q.get("isbn") || "").replace(/[^0-9Xx]/g, "").toUpperCase();
-  if (q.has("isbn")) {                                   // worker SBN della casa: l'indirizzo non arriva mai al telefono
-    if (!/^(97[89]\d{10}|\d{9}[\dX])$/.test(isbn)) return risposta(400, { error: "richiesta non valida" }, h);
+  const tit = (q.get("t") || "").replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim();
+  if (q.has("isbn") || q.has("t")) {                     // worker SBN della casa: l'indirizzo non arriva mai al telefono
+    if (q.has("isbn") ? !/^(97[89]\d{10}|\d{9}[\dX])$/.test(isbn) : (tit.length < 2 || tit.length > 100)) return risposta(400, { error: "richiesta non valida" }, h);
+    const chi = q.has("isbn") ? isbn : "t:" + tit;      // cosa si firma (e cosa si chiede al worker)
     let uidW = "";
     if (req.headers.get("authorization")) {              // con l'account: 500 al giorno a testa
       try { uidW = await utente(req); } catch { return risposta(503, { error: "accesso non controllabile" }, h); }
@@ -105,8 +109,8 @@ Deno.serve(async (req) => {
     const w = c.w || "";
     if (!w || !c.f || !/^https:\/\//.test(w)) return risposta(503, { error: "catalogo non disponibile" }, h);
     try {
-      const wu = new URL(w); wu.searchParams.set("isbn", isbn);
-      const r = await fetch(wu.toString(), { headers: { Accept: "application/json", "x-nl-firma": await firma(c.f, isbn) } });
+      const wu = new URL(w); if (q.has("isbn")) wu.searchParams.set("isbn", isbn); else wu.searchParams.set("t", tit);
+      const r = await fetch(wu.toString(), { headers: { Accept: "application/json", "x-nl-firma": await firma(c.f, chi) } });
       return risposta(r.status, (await r.text()).split(wu.origin).join("…").split(wu.host).join("…"), h, cw);   // l'indirizzo del worker non torna indietro
     } catch (e) {
       console.log("worker: " + (e instanceof Error ? e.name : "errore"));

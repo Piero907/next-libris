@@ -40,7 +40,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
   await page.type('#isbnText', 'il nome della rosa eco'); await page.keyboard.press('Enter');
   await page.waitForFunction(() => document.querySelectorAll('#isbnRes .cand').length > 0, { timeout: 5000 });
   const list = await page.$$eval('#isbnRes .cand b', e => e.map(x => x.textContent)); console.log('[1 risultati]', list, '|', await txt('#isbnResMsg'));
-  assert.deepStrictEqual(list, ['Il nome della rosa', 'Il nome della rosa (illustrato)', 'The Name of the Rose']);
+  assert.deepStrictEqual(list, ['Il nome della rosa', 'The Name of the Rose', 'Il nome della rosa (illustrato)'], 'le edizioni senza ISBN dopo le altre (21/11/2026)');
   assert.strictEqual(queries[0], 'il nome della rosa eco');
   await page.screenshot({ path: CFG.OUT + '/s_title.png' });
   // 2) scelta: aggiunto ai Desideri con l'ISBN, completato dalle banche dati
@@ -57,7 +57,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
   await page.click('#isbnRes .cand[data-i="0"]'); await wait(200);
   assert.strictEqual((await books()).length, 1); console.log('[3 toast]', await txt('#toastTxt'));
   // 4) senza ISBN: aggiunto con i dati trovati
-  await page.click('#isbnRes .cand[data-i="1"]'); await wait(300);
+  await page.click('#isbnRes .cand[data-i="2"]'); await wait(300);
   assert((await books()).some(x => x.t === 'Il nome della rosa (illustrato)' && x.w && !x.i));
   // 5) «Aggiungi solo il titolo»
   await H.aggiungi(page, 'type'); await wait(200);
