@@ -356,9 +356,9 @@ function pathShow() {
   var n = pathStep(); if (!n) { pathHide(); return; }
   if (!PT.el) {
     var el = document.createElement('div');
-    el.id = 'percorso'; el.className = 'guida gd-path'; el.hidden = true;
+    el.id = 'percorso'; el.className = 'wc gd-path'; el.hidden = true;   // stessa grafica delle schede di benvenuto (20/11/2026)
     el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Primi passi con Next Libris');
-    el.innerHTML = '<div class="gd-top"><div class="gd-prog" id="ptProg" aria-hidden="true"></div><span class="gd-n" id="ptN"></span></div><div class="gd-stage" id="ptStage" aria-live="polite"></div>';
+    el.innerHTML = '<div class="wc-top"><div class="wc-dots" id="ptProg" aria-hidden="true"></div><span class="gd-n wc-pn" id="ptN"></span></div><div class="wc-stage" id="ptStage" aria-live="polite"></div><div class="wc-foot" id="ptFoot"></div>';
     document.body.appendChild(el); PT.el = el;
     el.addEventListener('click', function (e) { var b = e.target.closest('[data-pt]'); if (b) pathDo(b.dataset.pt); });
   }
@@ -370,12 +370,14 @@ function pathShow() {
     3: { ico: 'scan', h: 'Aggiungi il primo libro', p: [['scan', 'Inquadra il codice a barre sul retro.'], ['cam', '~Oppure fotografa la copertina o scrivi il titolo.']],
       b: [['add', 'Aggiungi un libro']] }
   }[n];
-  $('#ptProg').innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k <= n ? 'on' : '') + (k === n ? ' cur' : '') + '"></span>'; }).join('');
+  $('#ptProg').innerHTML = [1, 2, 3].map(function (k) { return '<span class="' + (k === n ? 'cur' : '') + '"></span>'; }).join('');
   $('#ptN').textContent = 'Passo ' + n + ' di 3';
-  $('#ptStage').innerHTML = '<div class="gd-slide" data-ps="' + n + '"><span class="gd-ico" aria-hidden="true">' + gi(T.ico) + '</span><p class="gd-pn">Passo ' + n + ' di 3</p><h2 class="gd-h">' + esc(T.h) + '</h2>' +
-    lines(T.p) +
-    '<div class="gd-acts gd-pacts">' + T.b.map(function (b, k) { return '<button type="button" class="btn primary gd-try' + (k ? ' gd-try2' : '') + '" data-pt="' + b[0] + '">' + esc(b[1]) + '</button>'; }).join('') + '</div>' +
-    '<button type="button" class="gd-later" data-pt="later">Più tardi</button></div>';
+  $('#ptStage').innerHTML = '<div class="wc-slide" data-ps="' + n + '"><div class="wc-art" aria-hidden="true"><div class="wc-a" style="width:220px;height:220px">' +
+    circ('left:25px;top:25px;width:170px;height:170px;background:rgba(143,209,174,.14)', '<span class="wc-sq wc-big" style="width:104px;height:104px;border-radius:32px">' + gi(T.ico) + '</span>') + '</div></div>' +
+    '<h2 class="wc-h gd-h">' + esc(T.h) + '</h2><div class="wc-rows">' +
+    T.p.map(function (r) { var lo = r[1].charAt(0) === '~'; return '<p class="wc-r' + (lo ? ' wc-lo' : '') + '"><span class="wc-ic">' + gi(r[0]) + '</span><span>' + (lo ? r[1].slice(1) : r[1]) + '</span></p>'; }).join('') + '</div></div>';
+  $('#ptFoot').innerHTML = T.b.map(function (b, k) { return '<button type="button" class="wc-btn gd-try' + (k ? ' gd-try2 wc-btn2' : '') + '" data-pt="' + b[0] + '">' + esc(b[1]) + '</button>'; }).join('') +
+    '<button type="button" class="wc-ghost gd-later" data-pt="later">Più tardi</button>';
   PT.el.hidden = false; document.body.classList.add('guida-open');
 }
 function pathDo(a) {
