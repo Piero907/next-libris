@@ -50,7 +50,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
   let b = (await books()).find(x => x.i === '9788845292613'); console.log('[2 aggiunto]', b.t, b.a, b.e, b.w, '|', await txt('#toastTxt'));
   assert.deepStrictEqual([b.t, b.w, b.e], ['Il nome della rosa', true, 'Bompiani']);
   // 3) di nuovo: risulta «Già nei Desideri» e non si duplica
-  await page.click('#btnType'); await wait(200);
+  await H.aggiungi(page, 'type'); await wait(200);
   await page.type('#isbnText', 'nome della rosa'); await page.click('#isbnGo');
   await page.waitForFunction(() => document.querySelectorAll('#isbnRes .cand').length > 0, { timeout: 5000 });
   console.log('[3 badge]', await txt('#isbnRes .cand[data-i="0"]'));
@@ -61,7 +61,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
   await page.click('#isbnRes .cand[data-i="1"]'); await wait(300);
   assert((await books()).some(x => x.t === 'Il nome della rosa (illustrato)' && x.w && !x.i));
   // 5) «Aggiungi solo il titolo»
-  await page.click('#btnType'); await wait(200);
+  await H.aggiungi(page, 'type'); await wait(200);
   await page.type('#isbnText', 'Un libro introvabile di Pinco'); await page.keyboard.press('Enter');
   await page.waitForFunction(() => !document.querySelector('#isbnAsIs').hidden, { timeout: 5000 });
   console.log('[5 tasto]', await txt('#isbnAsIs'));
@@ -71,7 +71,7 @@ const V = (id, t, a, isbn, lang, pub) => ({ id, volumeInfo: { title: t, authors:
   assert(!(await books()).some(x => x.t === 'Un libro introvabile di Pinco'), 'Annulla');
   // 6) gli ISBN funzionano come prima, e in Libreria il titolo va in Libreria
   await page.evaluate(() => window.__app.setTab('lib')); await wait(100);
-  await page.click('#btnType'); await wait(200);
+  await H.aggiungi(page, 'type'); await wait(200);
   assert.strictEqual(await txt('#isbnH'), 'Titolo o ISBN');
   await page.type('#isbnText', '9788806219352'); await page.click('#isbnGo'); await wait(800);
   assert((await books()).some(x => x.i === '9788806219352' && !x.w));

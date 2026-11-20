@@ -29,7 +29,7 @@ const books = [B({ id: 'arau', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', e
   // il costo: tocco il campo, la tastiera rimpicciolisce lo schermo
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.focus('.row[data-id="arau"] [data-k="c"]');
-  assert(await page.evaluate(() => document.body.classList.contains('typing'))); assert.strictEqual(await page.$eval('.dock', e => getComputedStyle(e).display), 'none');
+  assert(await page.evaluate(() => document.body.classList.contains('typing'))); assert.strictEqual(await page.$eval('#gAdd', e => getComputedStyle(e).display), 'none');
   await page.setViewport({ width: 412, height: 430, deviceScaleFactor: 2, isMobile: true, hasTouch: true }); await wait(900);
   const r = await page.$eval('.row[data-id="arau"] [data-k="c"]', e => { const b = e.getBoundingClientRect(); return { top: b.top, bottom: b.bottom, vh: innerHeight }; });
   console.log('[campo]', r); assert(r.top >= 0 && r.bottom <= r.vh, 'il campo e\' visibile');
@@ -37,7 +37,7 @@ const books = [B({ id: 'arau', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', e
   await page.screenshot({ path: CFG.OUT + '/kb_field.png' });
   // fuori dal campo la barra torna
   await page.evaluate(() => document.activeElement.blur()); await wait(300);
-  assert(!(await page.evaluate(() => document.body.classList.contains('typing')))); assert.notStrictEqual(await page.$eval('.dock', e => getComputedStyle(e).display), 'none');
+  assert(!(await page.evaluate(() => document.body.classList.contains('typing')))); assert.notStrictEqual(await page.$eval('#gAdd', e => getComputedStyle(e).display), 'none');
   // da un campo all'altro non lampeggia
   await page.focus('.row[data-id="arau"] [data-k="y"]'); await page.focus('.row[data-id="arau"] [data-k="c"]'); await wait(200);
   assert(await page.evaluate(() => document.body.classList.contains('typing')));

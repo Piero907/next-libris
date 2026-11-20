@@ -43,7 +43,7 @@ const server = H.serve(CFG.port(8147), ROOT);
   await wait(1300);
   assert.strictEqual(await p.$('#splash'), null, 'poi sparisce'); assert.deepStrictEqual(p.errors, []);
   assert.strictEqual(await p.$eval('.dock', e => getComputedStyle(e).visibility), 'visible', 'poi l\'app ricompare');
-  assert.strictEqual(await p.$eval('meta[name="theme-color"]', m => m.content), '#EEF1EE', 'poi la barra prende il colore dell\'app');
+  assert.strictEqual(await p.$eval('meta[name="theme-color"]', m => m.content), '#FCF9F2', 'poi la barra prende il colore della pagina (carta Avorio, stile G)');
   await p.browserContext().close();
   p = await open(true, 'dark'); await wait(150);
   await p.waitForFunction(() => !!window.__app, { timeout: 10000 }); await wait(100);

@@ -36,7 +36,7 @@ const books = [
   // pressione lunga: entra nella selezione, la scheda non si apre
   await longPress('.row[data-id="m1"] .sum');
   assert(!(await page.$eval('#selBar', e => e.hidden))); assert.deepStrictEqual(await selected(), ['m1']); assert.deepStrictEqual(await openIds(), []);
-  assert.strictEqual(await page.$eval('.dock', e => getComputedStyle(e).display), 'none');
+  assert.strictEqual(await page.$eval('#gAdd', e => getComputedStyle(e).display), 'none');
   await tap('.row[data-id="m2"] .sum'); await tap('.row[data-id="m3"] .sum');
   assert.deepStrictEqual((await selected()).sort(), ['m1', 'm2', 'm3']); assert.strictEqual(await selN(), '3 selezionati'); assert.deepStrictEqual(await openIds(), []);
   await tap('.row[data-id="m2"] .sum'); assert.deepStrictEqual((await selected()).sort(), ['m1', 'm3']); await tap('.row[data-id="m2"] .sum');
@@ -70,7 +70,7 @@ const books = [
   await click('#bulkClose'); await wait(100);
   // Indietro esce dalla selezione
   await page.evaluate(() => history.back()); await wait(300);
-  assert(await page.$eval('#selBar', e => e.hidden)); assert.deepStrictEqual(await selected(), []); assert.notStrictEqual(await page.$eval('.dock', e => getComputedStyle(e).display), 'none');
+  assert(await page.$eval('#selBar', e => e.hidden)); assert.deepStrictEqual(await selected(), []); assert.notStrictEqual(await page.$eval('#gAdd', e => getComputedStyle(e).display), 'none');
   // elimina con conferma: Annulla nella conferma non elimina
   await longPress('.row[data-id="x1"] .sum'); await tap('.row[data-id="x2"] .sum');
   await click('#selDel'); await wait(150);

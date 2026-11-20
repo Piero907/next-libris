@@ -141,4 +141,10 @@ async function wait2(ms) {
   }
 }
 
-module.exports = { serve, wait, sleep, MIME, CFG, csp };
+// stile G (20/11/2026): «+ Aggiungi» e poi una voce della finestra (scan, photo, type, author, check), come fa chi usa l'app
+async function aggiungi(p, l) {
+  await p.click('#gAdd');
+  await p.waitForSelector('#layAdd:not([hidden]) [data-l="' + l + '"]', { visible: true, timeout: 3000 });
+  await p.click('#layAdd [data-l="' + l + '"]');
+}
+module.exports = { serve, wait, sleep, MIME, CFG, csp, aggiungi };

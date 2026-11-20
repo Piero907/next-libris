@@ -39,7 +39,7 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/profili' && req.method === 'GET') { const pr = DB.prof[me], o = { amici: true, regali: true }; COLS.forEach(k => { o[k] = pr[k]; }); return send(200, [o]); }
   if (p === '/rest/v1/profili') {
     const pr = DB.prof[me];
-    if (body.foto !== undefined) { if (body.foto && (body.foto.length > 20000 || !/^(data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+\/]+=*|https:\/\/lh[0-9]\.googleusercontent\.com\/[A-Za-z0-9_=.\/-]+)$/.test(body.foto))) return send(400, { message: 'check 23514' }); if (body.foto !== pr.foto) pr.foto_il = now(); }
+    if (body.foto !== undefined) { if (body.foto && (body.foto.length > 20000 || !/^(data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+\/]+=*|https:\/\/lh[0-9]\.googleusercontent\.com\/[A-Za-z0-9_=.\/-]+)$/i.test(body.foto))) return send(400, { message: 'check 23514' }); if (body.foto !== pr.foto) pr.foto_il = now(); }
     ['desideri', 'libreria', 'foto', 'cit', 'stat', 'p_cit', 'p_stat', 'p_cits'].forEach(k => { if (body[k] !== undefined) pr[k] = body[k]; });
     DB.posts = (DB.posts || 0) + 1; return send(201);
   }
@@ -124,14 +124,14 @@ const base = 'http://localhost:' + CFG.port(8322);
   await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(1400);   // i numeri salgono (giro 11C): si leggono alla fine
   assert(await A.$eval('#profSheet', x => !x.hidden), 'si apre il profilo');
   let t = await txt(A, '#profBody');
-  assert(/Anna Su Next Libris da marzo 2026/.test(t), 'nome e «Su Next Libris da marzo 2026»: ' + t.slice(0, 80));
+  assert(/Anna Su Next Libris da marzo 2026/i.test(t), 'nome e «Su Next Libris da marzo 2026»: ' + t.slice(0, 80));
   assert(new RegExp('3 libri · 1 letto nel ' + y).test(t), 'riga dei numeri: ' + t);
-  assert(/Pagine lette 620/.test(t) && /Autore più letto (Umberto Eco|Italo Calvino) · 1/.test(t) && /Genere più letto Romanzo · 2/.test(t) && /Prestati adesso 1/.test(t), 'i numeri (elenco «Da sempre», 19/11/2026): ' + t);
-  assert(new RegExp('Nel ' + y + ' hai letto 1 libro').test(t) && /Metti un obiettivo per il/.test(t), 'scheda dell\'anno: ' + t);
-  assert(/Tutte le citazioni 2 citazioni/.test(t) && /Scegli le citazioni/.test(t), 'citazioni: ' + t);
-  assert(/Amici e privacy Gli amici vedono la foto e nient.altro/.test(t), 'cosa vedono gli amici (scorciatoia, 18/11/2026): ' + t);
+  assert(/Pagine lette 620/i.test(t) && /Autore più letto (Umberto Eco|Italo Calvino) · 1/i.test(t) && /Genere più letto Romanzo · 2/i.test(t) && /Prestati adesso 1/i.test(t), 'i numeri (elenco «Da sempre», 19/11/2026): ' + t);
+  assert(new RegExp('Nel ' + y + ' hai letto 1 libro').test(t) && /Metti un obiettivo per il/i.test(t), 'scheda dell\'anno: ' + t);
+  assert(/Tutte le citazioni 2 citazioni/i.test(t) && /Scegli le citazioni/i.test(t), 'citazioni: ' + t);
+  assert(/Amici e privacy Gli amici vedono la foto e nient.altro/i.test(t), 'cosa vedono gli amici (scorciatoia, 18/11/2026): ' + t);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-set [data-p]', a => a.map(x => x.dataset.p)), ['acc', 'privacy', 'push', 'keys', 'menu'], 'scorciatoie del profilo');
-  assert(!/Metti una foto/.test(t) && !/Preferiti/.test(t), 'via «Metti una foto» e i Preferiti');
+  assert(!/Metti una foto/i.test(t) && !/Preferiti/i.test(t), 'via «Metti una foto» e i Preferiti');
   assert(await A.$eval('#profH', x => x.classList.contains('sr')), 'titolo «Il tuo profilo» solo per i lettori di schermo');
   await wait(600);
   assert.strictEqual(DB.prof.uA.stat && DB.prof.uA.stat.l, 2, 'i numeri arrivano al profilo online'); assert.strictEqual(DB.prof.uA.stat.n, 3);
@@ -144,27 +144,21 @@ const base = 'http://localhost:' + CFG.port(8322);
   assert.strictEqual(await A.$eval('#profBody .pf-qpick', x => x.getAttribute('aria-pressed')), 'true', 'la citazione scelta ha la puntina');
   await A.click('#profSheet .sh-x'); await wait(300);   // stile C: il profilo è una pagina, «Chiudi» è la ×   // «Chiudi» da «Scegli le citazioni» torna al profilo (18/11/2026)
   assert(await A.$eval('#profSheet', x => !x.hidden), 'il profilo resta aperto');
-  t = await txt(A, '#profBody'); assert(/Citazioni in evidenza 1 «Leggere il mondo come un libro» — Italo Calvino, Palomar · pagina 33/.test(t), 'in evidenza nel profilo: ' + t);
-  assert.strictEqual(await A.evaluate(() => window.NL.get('a1').qs[0].pin), 1, 'la puntina sta nel libro'); assert(!/appunto/.test(JSON.stringify(DB.prof.uA)), 'mai gli appunti');
-  // foto: quella di Google, poi una scelta
-  await A.click('#profBody [data-p="photo"]'); await wait(200);
-  await A.click('#profBody [data-p="google"]'); await wait(700);
-  assert(/^https:\/\/lh3\.googleusercontent\.com\//.test(DB.prof.uA.foto), 'foto di Google salvata: ' + DB.prof.uA.foto);
-  await A.click('#profBody [data-p="photo"]'); await wait(200);
-  await (await A.$('#profFile')).uploadFile(path.join(CFG.IMG, 'cov_big.png')); await wait(1200);
-  assert(/^data:image\/jpeg;base64,/.test(DB.prof.uA.foto) && DB.prof.uA.foto.length < 20000, 'foto scelta: JPEG piccolo (' + DB.prof.uA.foto.length + ')');
-  assert.deepStrictEqual(await A.$eval('#profBody .pf-av.big img', x => [x.naturalWidth, x.naturalHeight]), [128, 128], 'foto 128 × 128 nel profilo');
+  t = await txt(A, '#profBody'); assert(/Citazioni in evidenza 1 «Leggere il mondo come un libro» — Italo Calvino, Palomar · pagina 33/i.test(t), 'in evidenza nel profilo: ' + t);
+  assert.strictEqual(await A.evaluate(() => window.NL.get('a1').qs[0].pin), 1, 'la puntina sta nel libro'); assert(!/appunto/i.test(JSON.stringify(DB.prof.uA)), 'mai gli appunti');
+  // stile G (20/11/2026): niente foto nel profilo, il nome sta nell'ex libris
+  assert(await A.evaluate(() => { const b = document.querySelector('#profBody [data-p="photo"]'); return !b || !b.getClientRects().length; }), 'niente tasto della foto');
   await noSide(A, '#profSheet .sheet-in', 'il tuo profilo a 360'); await shot(A, 'profilo-mio-360');
   // obiettivo dell'anno (18/11/2026, facoltativo): si mette, si vede la barra, arriva ai numeri online, si toglie
   await A.click('#profBody [data-p="goal"]'); await wait(200);
   await A.$eval('#pfGoal', e => { e.value = '0'; }); await A.click('#profBody [data-p="goalok"]'); await wait(200);
   assert(await A.$('#pfGoal'), 'numero non valido: il campo resta');
   await A.$eval('#pfGoal', e => { e.value = '4'; }); await A.click('#profBody [data-p="goalok"]'); await wait(700);
-  t = await txt(A, '#profBody'); assert(/Obiettivo 4 · 25%/.test(t), 'obiettivo: ' + t.slice(0, 300));
+  t = await txt(A, '#profBody'); assert(/Obiettivo 4 · 25%/i.test(t), 'obiettivo: ' + t.slice(0, 300));
   assert.strictEqual(DB.prof.uA.stat.ob, 4, 'l\'obiettivo arriva ai numeri online');
   await A.evaluate(() => document.querySelector('#profBody .pf-t.big').scrollIntoView({ block: 'start' })); await shot(A, 'profilo-obiettivo-360');
   await A.click('#profBody [data-p="goal"]'); await wait(200); await A.click('#profBody [data-p="goaloff"]'); await wait(700);
-  assert(!/Obiettivo 4/.test(await txt(A, '#profBody')) && !DB.prof.uA.stat.ob, 'obiettivo tolto');
+  assert(!/Obiettivo 4/i.test(await txt(A, '#profBody')) && !DB.prof.uA.stat.ob, 'obiettivo tolto');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 9999)); await wait(200); await shot(A, 'profilo-mio-360-giu');
   // «Cosa vedono gli amici» → Amici e privacy: tre interruttori, spenti di partenza
   await A.click('#profBody [data-p="privacy"]'); await wait(700);
@@ -195,10 +189,10 @@ const base = 'http://localhost:' + CFG.port(8322);
   await A.evaluate(() => window.NLAmici.guest('uB')); await wait(900);
   assert.strictEqual(await A.evaluate(() => window.NL.guest()), 'Bruno');
   assert.deepStrictEqual(await A.evaluate(() => window.NL.books().filter(b => !b.w).map(b => b.t)), ['Palomar'], 'solo il libro prestato');
-  t = await txt(A, '#guestBar'); assert(/Bruno non mostra la sua libreria: qui vedi solo il libro che ha in prestito da te\./.test(t), 'nota in cima: ' + t);
-  assert(/Sta leggendo «Palomar» pagina 40 di 120/.test(t), 'con la sua lettura: ' + t);
+  t = await txt(A, '#guestBar'); assert(/Bruno non mostra la sua libreria: qui vedi solo il libro che ha in prestito da te\./i.test(t), 'nota in cima: ' + t);
+  assert(/Sta leggendo «Palomar» pagina 40 di 120/i.test(t), 'con la sua lettura: ' + t);
   await A.openRow('b2'); await wait(500);
-  t = await txt(A, '[data-id="b2"]'); assert(/Prestato da te/.test(t) && /Glielo hai prestato tu/.test(t) && !/Me lo presti/.test(t) && !/Ce l.hai anche tu/.test(t), 'scheda del libro prestato: ' + t.slice(0, 300));
+  t = await txt(A, '[data-id="b2"]'); assert(/Prestato da te/i.test(t) && /Glielo hai prestato tu/i.test(t) && !/Me lo presti/i.test(t) && !/Ce l.hai anche tu/i.test(t), 'scheda del libro prestato: ' + t.slice(0, 300));
   await shot(A, 'amico-libreria-nascosta-360');
   await A.evaluate(() => { const x = document.querySelector('[data-id="b2"] .tag.recv'); if (x) x.click(); }); await wait(300);
   assert(!(await A.$('#recvSheet:not([hidden])')), 'l\'etichetta è solo da leggere');
@@ -207,12 +201,12 @@ const base = 'http://localhost:' + CFG.port(8322);
   await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: prima si chiude la pagina del libro
   await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(700);
   t = await txt(A, '#profBody');
-  assert(/Bruno Su Next Libris da marzo 2026/.test(t) && /Stai seguendo i suoi Desideri ✓/.test(t) && /Bruno non lo sa\./.test(t), 'profilo di Bruno: ' + t);
-  assert(/«La preferita di Bruno» — Italo Calvino, Il barone rampante · pagina 12/.test(t) && /Tutte le citazioni 2 citazioni/.test(t), 'citazioni di Bruno: ' + t);
-  assert(!/I suoi numeri/.test(t) && !/40 libri/.test(t), 'numeri nascosti con la libreria nascosta');
+  assert(/Bruno Su Next Libris da marzo 2026/i.test(t) && /Stai seguendo i suoi Desideri ✓/i.test(t) && /Bruno non lo sa\./i.test(t), 'profilo di Bruno: ' + t);
+  assert(/«La preferita di Bruno» — Italo Calvino, Il barone rampante · pagina 12/i.test(t) && /Tutte le citazioni 2 citazioni/i.test(t), 'citazioni di Bruno: ' + t);
+  assert(!/I suoi numeri/i.test(t) && !/40 libri/i.test(t), 'numeri nascosti con la libreria nascosta');
   assert(await A.$('#profBody .pf-av.big img'), 'la sua foto');
   await A.click('#profBody [data-p="cits"]'); await wait(300);
-  t = await txt(A, '#profBody'); assert(/Un.altra di Bruno/.test(t) && !/appunto segreto/.test(t), 'tutte le citazioni, mai gli appunti');
+  t = await txt(A, '#profBody'); assert(/Un.altra di Bruno/i.test(t) && !/appunto segreto/i.test(t), 'tutte le citazioni, mai gli appunti');
   await A.click('#profBody [data-p="back"]'); await wait(200);
   await A.click('#profBody [data-p="segui"]'); await wait(500);
   assert(!DB.seg.includes('uA>uB'), 'smette di seguirlo dal profilo'); assert.strictEqual(await A.$eval('#profBody [data-p="segui"]', x => x.getAttribute('aria-pressed')), 'false');
@@ -221,7 +215,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   DB.prof.uB.libreria = true; DB.prof.uB.desideri = false;
   await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(1600);   // i numeri salgono (giro 11C): si legge alla fine
   t = await txt(A, '#profBody');
-  assert(new RegExp('40 libri · 5 letti nel ' + y + ' · 2 paesi').test(t) && new RegExp('I suoi numeri Nel ' + y + ' Bruno ha letto 5 libri').test(t) && /Pagine lette 6\.100/.test(t) && /Autore più letto Italo Calvino · 4/.test(t) && /Prestati adesso 1/.test(t), 'numeri con la libreria visibile: ' + t);
+  assert(new RegExp('40 libri · 5 letti nel ' + y + ' · 2 paesi').test(t) && new RegExp('I suoi numeri Nel ' + y + ' Bruno ha letto 5 libri', 'i').test(t) && /Pagine lette 6\.100/i.test(t) && /Autore più letto Italo Calvino · 4/i.test(t) && /Prestati adesso 1/i.test(t), 'numeri con la libreria visibile: ' + t);
   assert(!(await A.$('#profBody [data-p="share"]')), 'nel profilo di un amico niente «Condividi» (giro 11C)');
   assert(await A.$('#profBody [data-p="share"]') === null && (await A.$$('#profBody .pf-board .pf-t')).length >= 1 && (await A.$$('#profBody .pf-list .pf-r')).length > 3, 'tessere ed elenco anche nel profilo dell\'amico');
   assert(!(await A.$('#profBody [data-p="segui"]')), 'se nasconde i desideri il tasto «Segui i suoi Desideri» non c\'è (giro 6)');
@@ -234,13 +228,13 @@ const base = 'http://localhost:' + CFG.port(8322);
   DB.noti.push({ id: '00000009-0000-0000-0000-000000000000', utente: 'uA', da: 'uB', tipo: 'desideri', rif: '4', titolo: '«Lessico famigliare», «Gli indifferenti», «La noia»', creata: new Date().toISOString(), letta: false });
   await A.evaluate(() => window.NLAmici.load(true)); await wait(900);
   await A.evaluate(() => window.NLNotifiche.open()); await wait(500);
-  t = await txt(A, '#ntBody'); assert(/Bruno ha 4 nuovi desideri: «Lessico famigliare», «Gli indifferenti», «La noia» e altri/.test(t), 'notifica: ' + t);
+  t = await txt(A, '#ntBody'); assert(/Bruno ha 4 nuovi desideri: «Lessico famigliare», «Gli indifferenti», «La noia» e altri/i.test(t), 'notifica: ' + t);
   await shot(A, 'campanella-desideri-360');
   await A.click('#ntBody .nt-item'); await wait(1300);
   assert.strictEqual(await A.evaluate(() => window.NL.guest() + '/' + window.NL.tab()), 'Bruno/wish', 'si aprono i desideri di Bruno');
   await A.evaluate(() => window.NL.guestExit()); await wait(300);
   // notifiche push: la voce dei consigli comprende i desideri
-  assert(/Consigli e desideri/.test(fs.readFileSync(path.join(ROOT, 'push.js'), 'utf8')));
+  assert(/Consigli e desideri/i.test(fs.readFileSync(path.join(ROOT, 'push.js'), 'utf8')));
   // PC: il profilo senza scorrimento di lato
   await A.setViewport({ width: 1280, height: 900, deviceScaleFactor: 1 }); await wait(300);
   await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(500); await noSide(A, '#profSheet .sheet-in', 'profilo a 1280'); await shot(A, 'profilo-mio-1280');

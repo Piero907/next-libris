@@ -27,14 +27,14 @@ const server = H.serve(CFG.port(8128), ROOT);
   const wait = H.wait;   // attesa «finché» (_harness.js)
   const n = () => page.evaluate(() => window.__app.state.books.length);
   // 1) Foto -> scelta tra fotocamera e galleria
-  await page.click('#btnPhoto'); await wait(150);
+  await H.aggiungi(page, 'photo'); await wait(150);
   assert(!(await page.$eval('#photoSheet', e => e.hidden)));
   await page.screenshot({ path: CFG.OUT + '/s_photosheet.png' });
   let [ch] = await Promise.all([page.waitForFileChooser(), page.click('#photoCam')]);
   console.log('[1 fotocamera] multiple:', ch.isMultiple()); assert(!ch.isMultiple()); await ch.cancel();
   assert(await page.$eval('#photoSheet', e => e.hidden));
   // 2) galleria: piu' foto insieme
-  await page.click('#btnPhoto'); await wait(150);
+  await H.aggiungi(page, 'photo'); await wait(150);
   [ch] = await Promise.all([page.waitForFileChooser(), page.click('#photoGal')]);
   console.log('[2 galleria] multiple:', ch.isMultiple()); assert(ch.isMultiple());
   await ch.accept([IMG + '/cover.jpg', IMG + '/back.jpg', IMG + '/cover_noisy.jpg']); await wait(400);

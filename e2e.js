@@ -52,14 +52,14 @@ const netlog = [];
   await page.screenshot({ path: CFG.OUT + '/s_empty.png' });
 
   // A) ISBN a mano
-  await page.click('#btnType');
+  await H.aggiungi(page, 'type');
   await page.type('#isbnText', ISBN.slice(0, 3) + '-' + ISBN.slice(3));
   await page.click('#isbnGo');
   await page.waitForFunction(() => document.querySelector('#list .row [data-k="t"]') && document.querySelector('#list .row [data-k="t"]').value, { timeout: 8000 });
   console.log('[A manuale]', await page.evaluate(() => [...document.querySelectorAll('#list .row')].map(r => ['t', 'a', 'e', 'y', 'i'].map(k => { const el = r.querySelector('[data-k="' + k + '"]'); return el ? el.value : (k === 'a' && r.querySelector('.au-names') ? r.querySelector('.au-names').textContent : ''); }).join(' | '))));
 
   // A2) ISBN non valido e non trovato
-  await page.click('#btnType'); await page.type('#isbnText', '9788806219351'); await page.click('#isbnGo');
+  await H.aggiungi(page, 'type'); await page.type('#isbnText', '9788806219351'); await page.click('#isbnGo');
   console.log('[A2 invalido]', await page.$eval('#isbnErr', e => e.textContent));
   await page.$eval('#isbnText', e => e.value = ''); await page.type('#isbnText', '9780306406157'); await page.click('#isbnGo');
   await new Promise(r => setTimeout(r, 600));
@@ -84,7 +84,7 @@ const netlog = [];
 
   // D) scansione dal vivo (camera finta con il codice a barre)
   await page.evaluate(() => { window.__app.state.books.length = 0; });
-  await page.click('#btnScan');
+  await H.aggiungi(page, 'scan');
   await new Promise(r => setTimeout(r, 1500));
   console.log('[D scan] overlay visible:', await page.$eval('#scan', e => !e.hidden), '| msg:', await page.$eval('#scanMsg', e => e.textContent));
   try {

@@ -47,7 +47,7 @@ function fake(req, res, body, url) {
   if (p === '/rest/v1/profili' && req.method === 'GET') { const pr = DB.prof[me], o = { amici: true, regali: true }; COLS.forEach(k => { o[k] = pr[k]; }); return send(200, [o]); }
   if (p === '/rest/v1/profili') {
     const pr = DB.prof[me];
-    if (body.foto !== undefined) { if (body.foto && (body.foto.length > 20000 || !/^(data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+\/]+=*|https:\/\/lh[0-9]\.googleusercontent\.com\/[A-Za-z0-9_=.\/-]+)$/.test(body.foto))) return send(400, { message: 'check 23514' }); if (body.foto !== pr.foto) pr.foto_il = now(); }
+    if (body.foto !== undefined) { if (body.foto && (body.foto.length > 20000 || !/^(data:image\/(jpeg|webp|png);base64,[A-Za-z0-9+\/]+=*|https:\/\/lh[0-9]\.googleusercontent\.com\/[A-Za-z0-9_=.\/-]+)$/i.test(body.foto))) return send(400, { message: 'check 23514' }); if (body.foto !== pr.foto) pr.foto_il = now(); }
     ['desideri', 'libreria', 'foto', 'cit', 'stat', 'p_cit', 'p_stat', 'p_cits', 'p_let', 'p_pref', 'p_cons'].forEach(k => { if (body[k] !== undefined) pr[k] = body[k]; });
     DB.posts = (DB.posts || 0) + 1; return send(201);
   }
@@ -145,13 +145,13 @@ const base = 'http://localhost:' + CFG.port(8325);
   // ---- «Lo consiglio»: coccarda accanto alla stella, solo in Libreria ----
   await A.openRow('a1'); await wait(500);
   let acts = await A.$$eval('[data-id="a1"] .acts-main > [data-act]', x => x.map(b => b.dataset.act));
-  assert(acts.indexOf('fav') < 0 && acts.indexOf('lc') >= 0 && /^to(wish|lib)$/.test(acts[acts.indexOf('lc') + 1]), 'giro 10: solo la stella «Lo consiglio», poi desideri: ' + acts);
+  assert(acts.indexOf('fav') < 0 && acts.indexOf('lc') >= 0 && /^to(wish|lib)$/i.test(acts[acts.indexOf('lc') + 1]), 'giro 10: solo la stella «Lo consiglio», poi desideri: ' + acts);
   assert.strictEqual(await A.evaluate(() => window.NL.get('a2').lc), true, 'giro 10: il vecchio preferito è diventato consigliato');
   assert.strictEqual(await A.$eval('[data-id="a1"] [data-act="lc"]', x => x.getAttribute('aria-label')), 'Lo consiglio: gli amici lo vedono nel tuo profilo');
   await A.evaluate(() => document.querySelector('[data-id="a1"] [data-act="lc"]').click()); await wait(400);
   assert.strictEqual(await A.evaluate(() => window.NL.get('a1').lc), true, 'il libro è consigliato');
-  assert(await A.$eval('[data-id="a1"] [data-act="lc"]', x => x.classList.contains('on') && /Lo consigli: tocca per toglierlo/.test(x.title)), 'stella accesa');
-  assert(/Lo consigli: gli amici lo vedono nel tuo profilo\./.test(await toast()), 'avviso: ' + await toast());
+  assert(await A.$eval('[data-id="a1"] [data-act="lc"]', x => x.classList.contains('on') && /Lo consigli: tocca per toglierlo/i.test(x.title)), 'stella accesa');
+  assert(/Lo consigli: gli amici lo vedono nel tuo profilo\./i.test(await toast()), 'avviso: ' + await toast());
   await shot(A, 'scheda-coccarda-360');
   await A.evaluate(() => window.NL.setTab('wish')); await wait(300); await A.openRow('a4'); await wait(400);
   assert(!(await A.$('[data-id="a4"] [data-act="lc"]')), 'nei Desideri la coccarda non c\'è');
@@ -163,11 +163,11 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert.strictEqual(await A.$$eval('[data-id="a1"] .qpin', x => x.length), 3, 'una puntina per ogni citazione');
   await pin('a1', 0); await wait(200); await pin('a1', 1); await wait(200); await pin('a1', 2); await wait(300);
   assert.deepStrictEqual(await A.evaluate(() => window.NL.get('a1').qs.map(c => c.pin)), [1, 1, 1], 'tre in evidenza');
-  assert(/In evidenza nel tuo profilo \(3 di 3\)\./.test(await toast()), 'avviso: ' + await toast());
+  assert(/In evidenza nel tuo profilo \(3 di 3\)\./i.test(await toast()), 'avviso: ' + await toast());
   assert.strictEqual(await A.$$eval('[data-id="a1"] .qpin.on[aria-pressed="true"]', x => x.length), 3);
   await A.evaluate(() => { const d = document.querySelector('[data-id="a1"] details.quotes'); d.open = true; d.scrollIntoView({ block: 'center' }); }); await wait(300); await shot(A, 'scheda-puntine-360');
   await A.openRow('a2'); await wait(500); await pin('a2', 0); await wait(300);
-  assert(/In evidenza ne stanno 3: prima togli la puntina a un.altra\./.test(await toast()), 'la quarta no: ' + await toast());
+  assert(/In evidenza ne stanno 3: prima togli la puntina a un.altra\./i.test(await toast()), 'la quarta no: ' + await toast());
   assert(!(await A.evaluate(() => window.NL.get('a2').qs[0].pin)), 'la quarta non si mette');
   assert.strictEqual(await A.evaluate(() => window.NL.togglePin('a1', 2)), true); await wait(200);
   // anche in «Tutte le citazioni»
@@ -183,21 +183,21 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert.strictEqual(await A.evaluate(() => window.NL.get('a2').qs[0].pin), 1, 'la preferita di prima ha la puntina');
   assert.strictEqual(await A.evaluate(() => window.NLProfilo.state().my.cit), null); assert.strictEqual(DB.prof.uA.cit, null, 'e online non resta la vecchia');
   assert.strictEqual(DB.prof.uA.stat.ul.t, 'Palomar', 'ultimo libro letto tra i numeri'); assert.strictEqual(DB.prof.uA.stat.lu.t, 'Il nome della rosa'); assert.strictEqual(DB.prof.uA.stat.auy, 'Italo Calvino');
-  assert(!/appunto/.test(JSON.stringify(DB.prof.uA)), 'mai gli appunti');
+  assert(!/appunto/i.test(JSON.stringify(DB.prof.uA)), 'mai gli appunti');
 
   // ---- il tuo profilo ----
   await A.evaluate(() => { const b = document.querySelector('.row.cv-full .cv-back'); if (b) b.click(); }); await wait(400);   // restyle pezzo 2: la scheda aperta e' una pagina intera
   await A.evaluate(() => window.scrollTo(0, 0)); await A.evaluate(() => document.getElementById('ownerProf').click()); await wait(1400);   // i numeri salgono (giro 11C)
   let t = await txt(A, '#profBody');
-  assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 2/.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
+  assert(/In lettura 1/i.test(t) && !/Preferiti/i.test(t) && /Consigliati 2/i.test(t), 'le due file (via i Preferiti, 18/11/2026): ' + t);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['a3', 'a1,a2']);   // In lettura, Consigliati (via i Preferiti)
-  assert(/Citazioni in evidenza 3 «Prima citazione» — Italo Calvino, Palomar · pagina 33 «Seconda citazione»/.test(t) && /«Stat rosa pristina nomine»/.test(t) && /Cambia/.test(t), 'citazioni in evidenza: ' + t);
-  assert(/Ultimo letto «Palomar»/.test(t) && /Il più lungo «Il nome della rosa» · 500 pag\./.test(t) && /Il tuo autore dell'anno Italo Calvino 1 libro/.test(t), 'numeri nuovi: ' + t);
+  assert(/Citazioni in evidenza 3 «Prima citazione» — Italo Calvino, Palomar · pagina 33 «Seconda citazione»/i.test(t) && /«Stat rosa pristina nomine»/i.test(t) && /Cambia/i.test(t), 'citazioni in evidenza: ' + t);
+  assert(/Ultimo letto «Palomar»/i.test(t) && /Il più lungo «Il nome della rosa» · 500 pag\./i.test(t) && /Il tuo autore dell'anno Italo Calvino 1 libro/i.test(t), 'numeri nuovi: ' + t);
   await noSide(A, '#profSheet .sheet-in', 'il tuo profilo a 360'); await shot(A, 'profilo-mio-360');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 9999)); await wait(200); await shot(A, 'profilo-mio-360-giu');
   await A.click('#profBody [data-p="pick"]'); await wait(300);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-qpick', x => [x.length, x.filter(b => b.getAttribute('aria-pressed') === 'true').length]), [5, 3], 'scelta delle citazioni');
-  assert(/In evidenza: 3 di 3/.test(await txt(A, '#profBody')));
+  assert(/In evidenza: 3 di 3/i.test(await txt(A, '#profBody')));
   await A.click('#profBody [data-p="back"]'); await wait(200);
   await A.evaluate(() => document.querySelector('#profBody .pf-bk[data-id="a3"]').click()); await wait(600);
   assert(await A.$eval('#profSheet', x => x.hidden) && await isOpen('a3'), 'il tocco sulla copertina apre il libro');
@@ -207,7 +207,7 @@ const base = 'http://localhost:' + CFG.port(8325);
   assert.deepStrictEqual(await A.$$eval('#friPLet, #friPCons', x => x.map(i => i.checked)), [true, true], 'accesi di partenza');
   assert(!(await A.$('#friPPref')), 'niente più «preferiti» (18/11/2026)');
   assert.deepStrictEqual(await A.$$eval('#friPCit, #friPStat, #friPCits', x => x.map(i => i.checked)), [false, false, false], 'citazioni e numeri spenti di partenza');
-  t = await A.body(); assert(/Gli amici vedono cosa sto leggendo/.test(t) && /Gli amici vedono i libri che consiglio/.test(t) && /Gli amici vedono le mie citazioni in evidenza Quelle con la puntina \(fino a 3\)/.test(t), 'testi: ' + t);
+  t = await A.body(); assert(/Gli amici vedono cosa sto leggendo/i.test(t) && /Gli amici vedono i libri che consiglio/i.test(t) && /Gli amici vedono le mie citazioni in evidenza Quelle con la puntina \(fino a 3\)/i.test(t), 'testi: ' + t);
   await A.evaluate(() => document.querySelector('#friPCons').scrollIntoView({ block: 'center' })); await wait(200);
   await A.click('#friPCons'); await wait(500); assert.strictEqual(DB.prof.uA.p_cons, false, 'consigliati nascosti agli amici');
   await A.click('#friPCons'); await wait(500); assert.strictEqual(DB.prof.uA.p_cons, true);
@@ -216,29 +216,29 @@ const base = 'http://localhost:' + CFG.port(8325);
 
   // ---- il tocco sul nome di un amico apre il suo profilo ----
   await A.evaluate(() => window.NLAmici.open()); await wait(900);
-  assert(/Bruno/.test(await A.body()));
+  assert(/Bruno/i.test(await A.body()));
   await A.click('#friBody [data-f="friend"]'); await wait(1600);   // i numeri salgono (giro 11C)
   assert(await A.$eval('#profSheet', x => !x.hidden) && await A.$eval('#friSheet', x => x.hidden), 'si apre il profilo, non la libreria');
   assert.strictEqual(await A.evaluate(() => window.NL.guest()), null);
   assert.strictEqual(await A.$eval('#profH', x => x.textContent), 'Profilo di Bruno');
   t = await txt(A, '#profBody');
-  assert(/Bruno Su Next Libris da marzo 2026/.test(t) && new RegExp('40 libri · 5 letti nel ' + y + ' · 2 paesi').test(t), 'testa del profilo: ' + t.slice(0, 120));
+  assert(/Bruno Su Next Libris da marzo 2026/i.test(t) && new RegExp('40 libri · 5 letti nel ' + y + ' · 2 paesi').test(t), 'testa del profilo: ' + t.slice(0, 120));
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-go > .btn', x => x.map(b => b.textContent).filter(t => t !== 'Scrivi')), ['Libreria', 'Desideri']);   // «Scrivi» della chat: e2e128
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-icos > button', x => x.map(b => b.dataset.p + (b.classList.contains('gb-drop') ? '!' : '') + ':' + b.getAttribute('aria-label'))), ['swap:Prestiti e regali tra te e Bruno', 'drop!:Togli Bruno dagli amici'], 'icone (l’API solo se ne hai una)');
   assert.strictEqual(await A.$eval('#profBody [data-p="drop"]', x => getComputedStyle(x).color), await A.evaluate(() => { const d = document.createElement('i'); d.style.color = 'var(--bad)'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; }), '«togli dagli amici» in rosso');
-  assert(/Segui i suoi Desideri Bruno ti mostra già i suoi Desideri: seguili e scopri cosa sogna di leggere\. Magari ci trovi il regalo giusto, o il tuo prossimo libro\. Ti scriviamo al massimo una volta al giorno, solo quando c.è qualcosa di nuovo, e Bruno non lo saprà\./.test(t), 'frase scelta: ' + t);
-  assert(/In lettura 1/.test(t) && !/Preferiti/.test(t) && /Consigliati 1/.test(t), 'le sue file: ' + t);
+  assert(/Segui i suoi Desideri Bruno ti mostra già i suoi Desideri: seguili e scopri cosa sogna di leggere\. Magari ci trovi il regalo giusto, o il tuo prossimo libro\. Ti scriviamo al massimo una volta al giorno, solo quando c.è qualcosa di nuovo, e Bruno non lo saprà\./i.test(t), 'frase scelta: ' + t);
+  assert(/In lettura 1/i.test(t) && !/Preferiti/i.test(t) && /Consigliati 1/i.test(t), 'le sue file: ' + t);
   assert.deepStrictEqual(await A.$$eval('#profBody .pf-strip', x => x.map(s => [...s.querySelectorAll('.pf-bk')].map(b => b.dataset.id).join())), ['b1', 'b3']);
-  assert(/Citazioni in evidenza «Una frase con la puntina» — Natalia Ginzburg, Lessico famigliare · pagina 12/.test(t) && !/Senza puntina/.test(t) && !/appunto segreto/.test(t), 'citazioni in evidenza di Bruno: ' + t);
-  assert(/Pagine lette 6\.100/.test(t) && /Il suo autore dell'anno Natalia Ginzburg 2 libri/.test(t) && /Ultimo letto «Lessico famigliare»/.test(t) && /Il più lungo «Guerra e pace» · 1\.400 pag\./.test(t), 'i suoi numeri (tessere ed elenco): ' + t);
-  assert(/In comune con te 2 · il 5% dei suoi/.test(t) && /Prestiti tra voi 3 2 da te, 1 a te/.test(t), 'numeri tra voi due: ' + t);
+  assert(/Citazioni in evidenza «Una frase con la puntina» — Natalia Ginzburg, Lessico famigliare · pagina 12/i.test(t) && !/Senza puntina/i.test(t) && !/appunto segreto/i.test(t), 'citazioni in evidenza di Bruno: ' + t);
+  assert(/Pagine lette 6\.100/i.test(t) && /Il suo autore dell'anno Natalia Ginzburg 2 libri/i.test(t) && /Ultimo letto «Lessico famigliare»/i.test(t) && /Il più lungo «Guerra e pace» · 1\.400 pag\./i.test(t), 'i suoi numeri (tessere ed elenco): ' + t);
+  assert(/In comune con te 2 · il 5% dei suoi/i.test(t) && /Prestiti tra voi 3 2 da te, 1 a te/i.test(t), 'numeri tra voi due: ' + t);
   await noSide(A, '#profSheet .sheet-in', 'profilo dell\'amico a 360'); await shot(A, 'profilo-amico-360');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 420)); await wait(200); await shot(A, 'profilo-amico-360-meta');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 9999)); await wait(200); await shot(A, 'profilo-amico-360-giu');
   await A.evaluate(() => document.querySelector('#profSheet .sheet-in').scrollTo(0, 0));
   await A.click('#profBody [data-p="segui"]'); await wait(500);
   assert(DB.seg.includes('uA>uB'), 'Anna segue i desideri di Bruno');
-  t = await txt(A, '#profBody'); assert(/Stai seguendo i suoi Desideri ✓ Ti scriviamo al massimo una volta al giorno, solo quando c.è qualcosa di nuovo\. Bruno non lo sa\./.test(t), 'acceso: ' + t.slice(0, 400));
+  t = await txt(A, '#profBody'); assert(/Stai seguendo i suoi Desideri ✓ Ti scriviamo al massimo una volta al giorno, solo quando c.è qualcosa di nuovo\. Bruno non lo sa\./i.test(t), 'acceso: ' + t.slice(0, 400));
   // togli dagli amici: chiede conferma, sopra il profilo
   await A.click('#profBody [data-p="drop"]'); await wait(400);
   assert.strictEqual(await A.$eval('#dropSheet', x => !x.hidden && x.querySelector('h2').textContent), 'Togli Bruno dagli amici?');
@@ -261,14 +261,14 @@ const base = 'http://localhost:' + CFG.port(8325);
   await A.evaluate(() => window.NL.setTab('wish')); await wait(300);
   await A.add({ id: 'a5', t: 'Il gattopardo', a: 'Tomasi di Lampedusa, Giuseppe', w: true, ts: Date.now() }); await H.sleep(2600);
   assert.strictEqual(DB.chiHa, 1, 'una sola domanda al database');
-  assert(/Ce l.ha già Bruno\. Resta nei tuoi Desideri\./.test(await toast()), 'avviso: ' + await toast());
+  assert(/Ce l.ha già Bruno\. Resta nei tuoi Desideri\./i.test(await toast()), 'avviso: ' + await toast());
   assert.strictEqual(await A.$eval('#toastBtn', x => !x.hidden && x.textContent), 'Me lo presti?');
   assert.strictEqual(await A.evaluate(() => window.NL.get('a5').w), true, 'il libro resta nei Desideri');
   await shot(A, 'desiderio-ce-lha-gia-360');
   await A.click('#toastBtn'); await wait(700);
-  assert(DB.asks.some(q => q.da === 'uA' && q.a === 'uB' && q.libro_id === 'b4'), 'richiesta di prestito mandata'); assert(/Richiesta mandata a Bruno\./.test(await toast()));
+  assert(DB.asks.some(q => q.da === 'uA' && q.a === 'uB' && q.libro_id === 'b4'), 'richiesta di prestito mandata'); assert(/Richiesta mandata a Bruno\./i.test(await toast()));
   await A.add({ id: 'a6', t: 'Un libro che nessuno ha', a: 'Autore', w: true, ts: Date.now() }); await H.sleep(2600);
-  assert.strictEqual(DB.chiHa, 2); assert(!/Ce l.ha/.test(await toast()) || await A.$eval('#toast', x => x.hidden), 'nessun avviso se nessuno ce l\'ha');
+  assert.strictEqual(DB.chiHa, 2); assert(!/Ce l.ha/i.test(await toast()) || await A.$eval('#toast', x => x.hidden), 'nessun avviso se nessuno ce l\'ha');
   await A.evaluate(() => window.NL.setTab('lib')); await wait(300);
 
   // ---- campanella: un tuo desiderio è entrato nella libreria di un amico ----
@@ -277,8 +277,8 @@ const base = 'http://localhost:' + CFG.port(8325);
   await A.evaluate(() => window.NLAmici.load(true)); await wait(900);
   await A.evaluate(() => window.NLNotifiche.open()); await wait(600);
   t = await txt(A, '#ntBody');
-  assert(/📚 Bruno ha aggiunto «Se una notte d.inverno un viaggiatore», che è nei tuoi Desideri/.test(t), 'avviso: ' + t);
-  assert(/📚 Bruno ha aggiunto «Il barone rampante», «Lessico famigliare», «Il Gattopardo» e altri, che sono nei tuoi Desideri/.test(t), 'riassunto di più libri: ' + t);
+  assert(/📚 Bruno ha aggiunto «Se una notte d.inverno un viaggiatore», che è nei tuoi Desideri/i.test(t), 'avviso: ' + t);
+  assert(/📚 Bruno ha aggiunto «Il barone rampante», «Lessico famigliare», «Il Gattopardo» e altri, che sono nei tuoi Desideri/i.test(t), 'riassunto di più libri: ' + t);
   assert.deepStrictEqual(await A.$$eval('#ntBody .nt-lend, #ntBody .nt-asked', x => x.map(b => b.className.replace(/btn /, '') + ':' + b.textContent)), ['nt-lend:Me lo presti?', 'nt-asked:Richiesta mandata'], 'tasto solo per un libro; già chiesto = «Richiesta mandata»');
   await noSide(A, '#ntSheet .sheet-in', 'campanella a 360'); await shot(A, 'campanella-trovato-360');
   await A.click('#ntBody .nt-lend'); await wait(900);
@@ -287,7 +287,7 @@ const base = 'http://localhost:' + CFG.port(8325);
   await A.click('#ntBody .nt-item[data-n="00000001-0000-0000-0000-000000000000"]'); await wait(1500);
   assert.strictEqual(await A.evaluate(() => window.NL.guest() + '/' + window.NL.tab()), 'Bruno/lib', 'il tocco apre la sua libreria'); assert(await isOpen('b2'), 'su quel libro');
   await A.evaluate(() => window.NL.guestExit()); await wait(400);
-  assert(/trovato/.test(fs.readFileSync(path.join(__dirname, 'supabase', 'funzioni', 'push', 'index.ts'), 'utf8')), 'il testo del push c\'è');
+  assert(/trovato/i.test(fs.readFileSync(path.join(__dirname, 'supabase', 'funzioni', 'push', 'index.ts'), 'utf8')), 'il testo del push c\'è');
 
   // ---- togliere davvero un amico dal profilo: il profilo si chiude ----
   await A.evaluate(() => window.NLProfilo.open('uB')); await wait(800);

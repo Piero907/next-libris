@@ -74,7 +74,7 @@ const base = 'http://localhost:' + CFG.port(8336);
       if (!localStorage.getItem(P + 'catalogo-libri-layout')) { localStorage.setItem(P + 'catalogo-libri-layout', JSON.stringify({ v: 'a' })); localStorage.setItem(P + 'catalogo-libri-card', JSON.stringify({ v: 'd' })); }
     }, base + '/finto', o);
     await page.setRequestInterception(true);
-    page.on('request', r => { if (r.url().startsWith(base)) return r.continue(); if (/gsi\/client/.test(r.url())) return r.respond({ status: 200, contentType: 'text/javascript', body: '' });   // il pulsante di Google: script vuoto
+    page.on('request', r => { if (r.url().startsWith(base)) return r.continue(); if (/gsi\/client/i.test(r.url())) return r.respond({ status: 200, contentType: 'text/javascript', body: '' });   // il pulsante di Google: script vuoto
       r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{"totalItems":0}' }); });
     await page.goto(base + '/next-libris-prova/' + (o.nuovo ? '?guida=1' : ''), { waitUntil: 'load' });   // ?guida=1: la guida si apre da sola (vedi _harness.js) await wait(2000);
     page.click$ = sel => page.evaluate(s => { const e = document.querySelector(s); if (!e) throw new Error('manca ' + s); e.click(); }, sel);
@@ -94,23 +94,23 @@ const base = 'http://localhost:' + CFG.port(8336);
   assert.strictEqual(DB.dette.length, 1, 'il sì/no si manda una volta sola finché non cambia');
   await B.evaluate(() => window.NLAmici.keys()); await wait(500);
   let kw = await B.txt('#kwBody'); console.log('[Bruno, chiave]', kw.slice(-260));
-  assert(/Crea la tua API Google/.test(kw) && /Chiedila a un amico/.test(kw), 'crea oppure chiedi');
+  assert(/Crea la tua API Google/i.test(kw) && /Chiedila a un amico/i.test(kw), 'crea oppure chiedi');
   assert.deepStrictEqual(await B.$$eval('#kwBody .kw-ask .fr-who', a => a.map(x => x.textContent)), ['Anna'], 'solo chi ha un’API sua (non Carla)');
   assert.strictEqual(await B.txt('#kwBody [data-f="keyask"]'), 'Chiedimela');
   assert.strictEqual(await B.wide(), 0); await B.shot('136-1-chiedila');
   await B.click$('#kwBody [data-f="keyask"]'); await wait(600);
   assert.deepStrictEqual(DB.chieste.map(x => [x.da, x.a]), [[UB, UA]], 'richiesta arrivata al server');
-  assert(/Richiesta mandata a Anna/.test(await B.$eval('#toastTxt', e => e.textContent)));
-  assert(!(await B.$('#kwBody [data-f="keyask"]')) && /Richiesta mandata/.test(await B.txt('#kwBody .kw-ask')), 'al posto del tasto: «Richiesta mandata»');
+  assert(/Richiesta mandata a Anna/i.test(await B.$eval('#toastTxt', e => e.textContent)));
+  assert(!(await B.$('#kwBody [data-f="keyask"]')) && /Richiesta mandata/i.test(await B.txt('#kwBody .kw-ask')), 'al posto del tasto: «Richiesta mandata»');
   await B.shot('136-2-mandata');
   await B.reload({ waitUntil: 'load' }); await wait(1500);
   await B.evaluate(() => window.NLAmici.load(true)); await wait(600);
   await B.evaluate(() => window.NLAmici.keys()); await wait(500);
-  assert(!(await B.$('#kwBody [data-f="keyask"]')) && /Richiesta mandata/.test(await B.txt('#kwBody .kw-ask')), 'resta «Richiesta mandata» anche dopo la riapertura');
+  assert(!(await B.$('#kwBody [data-f="keyask"]')) && /Richiesta mandata/i.test(await B.txt('#kwBody .kw-ask')), 'resta «Richiesta mandata» anche dopo la riapertura');
   // «Chiedimela» anche nel profilo dell'amico (Piero, 19/11/2026): Anna sì (già chiesta), Carla no (niente chiave)
   await B.evaluate(() => { const s = document.getElementById('kwSheet'); if (s) s.hidden = true; }); await wait(200);
   await B.evaluate((id) => window.NLProfilo.open(id), UA); await wait(900);
-  assert(/Anna ha un’API Google Libri sua/.test(await B.txt('#profBody .pf-ask')) && /Richiesta mandata/.test(await B.txt('#profBody .pf-ask')) && !(await B.$('#profBody [data-p="ask"]')), 'profilo di Anna: già chiesta');
+  assert(/Anna ha un’API Google Libri sua/i.test(await B.txt('#profBody .pf-ask')) && /Richiesta mandata/i.test(await B.txt('#profBody .pf-ask')) && !(await B.$('#profBody [data-p="ask"]')), 'profilo di Anna: già chiesta');
   await B.shot('136-2b-profilo');
   await B.evaluate(() => window.NLProfilo.close()); await wait(300);
   await B.evaluate((id) => window.NLProfilo.open(id), UC); await wait(900);
@@ -125,12 +125,12 @@ const base = 'http://localhost:' + CFG.port(8336);
   assert.deepStrictEqual(DB.dette.filter(x => x.me === UA).pop(), { me: UA, gb: true, sbn: false }, 'Anna dice «sì» (mai l’API)');
   assert(!JSON.stringify(DB.dette).includes(KEY), 'l’API non viaggia');
   await A.evaluate(() => window.NLAmici.keys()); await wait(400);
-  assert(!/Chiedila a un amico/.test(await A.txt('#kwBody')), 'chi ha la sua API non vede «Chiedila a un amico»');
+  assert(!/Chiedila a un amico/i.test(await A.txt('#kwBody')), 'chi ha la sua API non vede «Chiedila a un amico»');
   await A.click$('#kwClose'); await wait(200);
   await A.evaluate(() => window.NLNotifiche.load()); await wait(600);
   await A.evaluate(() => window.NLNotifiche.open()); await wait(400);
   const nt = await A.txt('#ntBody'); console.log('[Anna, campanella]', nt);
-  assert(/Bruno ti chiede in prestito l’API Google Libri/.test(nt) && /Prestala/.test(nt));
+  assert(/Bruno ti chiede in prestito l’API Google Libri/i.test(nt) && /Prestala/i.test(nt));
   assert.strictEqual(await A.wide(), 0); await A.shot('136-3-prestala');
   await A.click$('#ntBody [data-lendkey]'); await wait(600);
   assert(await A.vis('#keySheet') && !(await A.vis('#ntSheet')), 'si apre «Presta a …»');
@@ -139,7 +139,7 @@ const base = 'http://localhost:' + CFG.port(8336);
   assert.deepStrictEqual(DB.keys.map(k => [k.da, k.a]), [[UA, UB]], 'prestata');
   await A.evaluate(() => { document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })); }); await wait(200);
   await A.evaluate(() => window.NLNotifiche.open()); await wait(400);
-  assert(/Gliela presti ✓/.test(await A.txt('#ntBody')) && !(await A.$('#ntBody [data-lendkey]')), 'dopo il prestito: «Gliela presti ✓»');
+  assert(/Gliela presti ✓/i.test(await A.txt('#ntBody')) && !(await A.$('#ntBody [data-lendkey]')), 'dopo il prestito: «Gliela presti ✓»');
   await A.browserContext().close();
 
   // ================= 3) chi installa da zero: guida, poi il percorso =================
@@ -182,13 +182,13 @@ const base = 'http://localhost:' + CFG.port(8336);
   assert.strictEqual(await C.wide(), 0); await C.shot('136-6-passo2');
   await C.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); }); await C.shot('136-7-passo2-scuro');
   await C.click$('#percorso [data-pt="askf"]'); await wait(900);
-  assert(await C.vis('#kwSheet') && /Chiedila a un amico/.test(await C.txt('#kwBody')) && (await C.pt()) === null, 'finestra dell’API con «Chiedila a un amico»');
+  assert(await C.vis('#kwSheet') && /Chiedila a un amico/i.test(await C.txt('#kwBody')) && (await C.pt()) === null, 'finestra dell’API con «Chiedila a un amico»');
   await C.click$('#kwClose'); await H.sleep(600);
   await C.evaluate((id) => window.NLProfilo.open(id), UA); await wait(900);   // «Chiedimela» dal profilo di Anna
   assert.strictEqual(await C.txt('#profBody [data-p="ask"]'), 'Chiedimela');
   await C.click$('#profBody [data-p="ask"]'); await wait(700);
   assert(DB.chieste.some(x => x.da === UC && x.a === UA), 'richiesta dal profilo arrivata al server');
-  assert(/Richiesta mandata/.test(await C.txt('#profBody .pf-ask')) && !(await C.$('#profBody [data-p="ask"]')), 'nel profilo: «Richiesta mandata»');
+  assert(/Richiesta mandata/i.test(await C.txt('#profBody .pf-ask')) && !(await C.$('#profBody [data-p="ask"]')), 'nel profilo: «Richiesta mandata»');
   await C.evaluate(() => window.NLProfilo.close()); await wait(300);
   await C.evaluate(() => window.NLAmici.keys()); await wait(500);
   await C.click$('#kwClose'); await H.sleep(1500);

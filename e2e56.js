@@ -22,7 +22,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   // 1) dalla linguetta: il menu, non i filtri; largo due terzi
   await page.evaluate(() => document.querySelector('#edgeTab').click()); await wait(400);
   let s = await st(); console.log('[1 linguetta]', JSON.stringify(s));
-  assert(s.open && s.home && !s.flt && s.h === 'Menu' && s.w >= 411);   // restyle pezzo 3: il Menu è una pagina intera
+  assert(s.open && s.home && !s.flt && s.h === 'Indice' && s.w >= 412 - 46 - 1);   // stile G: l'Indice è una pagina intera accanto ai segnalibri
   const items = await page.$$eval('#drawerOpts .dopt b', e => e.map(x => x.textContent)); console.log('  voci:', items.join(' | '));
   const iDon = items.indexOf('Sostieni Next Libris'), set = items.slice(3);
   assert(iDon > items.indexOf('Statistiche') && iDon < items.indexOf("Sistema l'elenco") && iDon < items.indexOf('Impostazioni'), 'Sostieni dopo Statistiche, prima di Amici e «La tua libreria» (17/11/2026 pomeriggio)');
@@ -44,7 +44,7 @@ const books = Array.from({ length: 14 }, (_, i) => ({ id: 'm' + i, t: 'Libro ' +
   await page.click('#drawerFlt [data-g="flt"][data-v="loan"]'); await wait(200);
   assert.strictEqual(await page.$eval('#drawerShow', e => e.textContent), 'Mostra 2 libri');
   await page.evaluate(() => history.back()); await wait(350);
-  s = await st(); console.log('[2 indietro]', JSON.stringify(s)); assert(s.open && s.home && s.h === 'Menu');
+  s = await st(); console.log('[2 indietro]', JSON.stringify(s)); assert(s.open && s.home && s.h === 'Indice');
   const sum = await page.$eval('#goFltTxt', e => e.textContent); console.log('  riassunto:', sum, await page.$eval('#goFltN', e => e.hidden ? '' : e.textContent));
   assert(/1 filtro attivo/.test(sum));
   await page.evaluate(() => history.back()); await wait(400);

@@ -3,7 +3,7 @@ const H = require('./_harness');
 // Schermi di misure diverse (16/11/2026): telefono piccolo, telefono, telefono sdraiato, tablet, PC.
 // Sopra gli 880 px la «Pagina del libro» finiva schiacciata nella prima colonna della vecchia tabella: ora e' a tutta larghezza,
 // su due colonne (copertina, dati e lettura a sinistra; descrizione a destra); la modifica (matita) resta in colonna come sul telefono;
-// la barra in basso resta raccolta al centro; sul telefono sdraiato e' piu' sottile. Niente scorrimento orizzontale a nessuna misura.
+// stile G (20/11/2026): sei segnalibri al posto della barra in basso, dentro lo schermo. Niente scorrimento orizzontale a nessuna misura.
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -25,11 +25,11 @@ const books = [{ id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompia
     await page.evaluate(() => document.querySelector('#list .row[data-id="r1"] .sum').click()); await wait(450);
     const m = await page.evaluate(() => {
       const de = document.documentElement, r = document.querySelector('#list .row[data-id="r1"]'), R = r.getBoundingClientRect(), g = s => { const e = r.querySelector(s) || document.querySelector(s); return e ? e.getBoundingClientRect() : null; };
-      const pg = g('.cv-page'), hero = g('.cv-hero'), desc = g('.cv-desc'), read = g('.cv-readbox'), nav = g('#layNav'), b = [...document.querySelectorAll('#layNav button')].map(x => x.getBoundingClientRect());
+      const pg = g('.cv-page'), hero = g('.cv-hero'), desc = g('.cv-desc'), read = g('.cv-readbox'), nav = g('#gTabs'), b = [...document.querySelectorAll('#gTabs [data-g]')].filter(x => x.getClientRects().length);   // stile G: segnalibri al posto della barra in basso
       return { hscroll: de.scrollWidth > de.clientWidth, rowW: Math.round(R.width), pageW: Math.round(pg.width), twoCols: desc.left >= hero.right - 1 && Math.abs(desc.top - hero.top) < 12, readUnderHero: read.top >= hero.bottom - 1 && Math.abs(read.left - hero.left) < 2,
         out: [...r.querySelectorAll('*')].filter(e => { const x = e.getBoundingClientRect(); return x.width > 0 && (x.right > R.right + 1 || x.left < R.left - 1); }).length,
         order: [...r.children].filter(e => e.getClientRects().length).map(e => (e.className || '').split(' ')[0]).join(' '), visOrder: [...r.children].filter(e => e.getClientRects().length).sort((a, c) => a.getBoundingClientRect().top - c.getBoundingClientRect().top).map(e => (e.className || '').split(' ')[0]).join(' '),
-        lbl: [...r.querySelectorAll('.cv-readbox>.lbl')].some(e => e.getClientRects().length), navH: Math.round(nav.height), navSpan: Math.round(b[b.length - 1].right - b[0].left), topLeft: Math.round(g('.acts-main').left - pg.left) };
+        lbl: [...r.querySelectorAll('.cv-readbox>.lbl')].some(e => e.getClientRects().length), tabs: b.length, tabsIn: b.every(x => { const q = x.getBoundingClientRect(); return q.top >= 0 && q.bottom <= innerHeight + 1; }), topLeft: Math.round(g('.acts-main').left - pg.left) };
     });
     // la matita: campi in colonna, niente tabella
     await page.evaluate(() => document.querySelector('#list .row[data-id="r1"] .cv-editb').click()); await wait(400);
@@ -42,12 +42,13 @@ const books = [{ id: 'r1', t: 'Il nome della rosa', a: 'Umberto Eco', e: 'Bompia
     assert(ed.stacked && ed.out === 0 && ed.done && ed.titleW > 150, name + ': modifica nella pagina');
     check(m); await ctx.close();
   };
-  await at(360, 740, 'tel_piccolo', m => { assert(!m.twoCols && m.navSpan > 300); });
-  await at(412, 915, 'telefono', m => { assert(!m.twoCols && m.navH >= 60); });
-  await at(780, 360, 'tel_sdraiato', m => { assert(!m.twoCols && m.readUnderHero && m.navH <= 52, 'barra sottile'); });
-  await at(768, 1024, 'tablet', m => { assert(!m.twoCols && m.readUnderHero && m.navSpan <= 700); });
-  await at(1366, 768, 'pc', m => { assert(!m.twoCols && m.readUnderHero && m.rowW > 1000 && m.navSpan <= 700, 'una colonna e barra raccolta'); });
-  await at(1920, 1080, 'pc_grande', m => { assert(!m.twoCols && m.navSpan <= 700); });
+  const g6 = (name) => m => { assert(!m.twoCols && m.tabs === 6, name + ': sei segnalibri'); };   // stile G: la barra in basso non c'è più
+  await at(360, 740, 'tel_piccolo', g6('tel_piccolo'));
+  await at(412, 915, 'telefono', g6('telefono'));
+  await at(780, 360, 'tel_sdraiato', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 6); });
+  await at(768, 1024, 'tablet', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 6 && m.tabsIn); });
+  await at(1366, 768, 'pc', m => { assert(!m.twoCols && m.readUnderHero && m.tabs === 6 && m.tabsIn, 'una colonna e segnalibri'); });
+  await at(1920, 1080, 'pc_grande', m => { assert(!m.twoCols && m.tabs === 6 && m.tabsIn); });
   assert.deepStrictEqual(errors, []);
   console.log('e2e74 OK'); await browser.close(); server.close();
 })().catch(e => { console.error('FAIL', e); process.exit(1); });

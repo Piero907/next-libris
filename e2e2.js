@@ -67,7 +67,7 @@ const sleep = H.wait;   // attesa «finché» (_harness.js)
   console.log('  finestra titolo e autore:', await page.$eval('#manT', e => e.value)); await page.click('#manCancel'); await sleep(200);
 
   // 4) banche dati in errore -> riprova
-  mode = 'fail'; await reset(); await page.click('#btnType'); await page.type('#isbnText', ISBN); await page.click('#isbnGo'); await sleep(800);
+  mode = 'fail'; await reset(); await H.aggiungi(page, 'type'); await page.type('#isbnText', ISBN); await page.click('#isbnGo'); await sleep(800);
   console.log('[4 errore server]', JSON.stringify(await first()));
   mode = 'ok';
   await page.click('#list [data-act="retry"]').catch(() => console.log('  nessun bottone riprova')); await sleep(800);
@@ -82,7 +82,7 @@ const sleep = H.wait;   // attesa «finché» (_harness.js)
   // 6) offline: ISBN salvato e completato al ritorno online
   await reset(); await page.setOfflineMode(true); await page.evaluate(() => window.dispatchEvent(new Event('offline')));
   await page.evaluate(() => Object.defineProperty(navigator, 'onLine', { value: false, configurable: true }));
-  await page.click('#btnType'); await page.type('#isbnText', ISBN); await page.click('#isbnGo'); await sleep(600);
+  await H.aggiungi(page, 'type'); await page.type('#isbnText', ISBN); await page.click('#isbnGo'); await sleep(600);
   console.log('[6 offline]', JSON.stringify(await first()), '| chip:', await page.$eval('#btnTodo', e => e.hidden ? '(nascosto)' : e.textContent));
   await page.setOfflineMode(false);
   await page.evaluate(() => { Object.defineProperty(navigator, 'onLine', { value: true, configurable: true }); window.dispatchEvent(new Event('online')); });
@@ -90,11 +90,11 @@ const sleep = H.wait;   // attesa «finché» (_harness.js)
   console.log('  online di nuovo:', JSON.stringify(await first()));
 
   // 7) doppione da scansione/digitazione
-  await page.click('#btnType'); await page.type('#isbnText', ISBN); await page.click('#isbnGo'); await sleep(400);
+  await H.aggiungi(page, 'type'); await page.type('#isbnText', ISBN); await page.click('#isbnGo'); await sleep(400);
   console.log('[7 doppione] libri:', await page.evaluate(() => window.__app.state.books.length), '| toast:', await page.$eval('#toastTxt', e => e.textContent));
 
   // 8) lista di più ISBN incollati
-  await page.click('#btnType'); await page.type('#isbnText', '9780306406157\n0306406152, 9788866321378'); await page.click('#isbnGo'); await sleep(900);
+  await H.aggiungi(page, 'type'); await page.type('#isbnText', '9780306406157\n0306406152, 9788866321378'); await page.click('#isbnGo'); await sleep(900);
   console.log('[8 elenco]', await page.evaluate(() => window.__app.state.books.map(b => b.i + ':' + (b.t || '-'))), '| toast:', await page.$eval('#toastTxt', e => e.textContent));
   console.log('ERRORI:', errors.length ? errors : 'nessuno');
   await browser.close(); server.close();
