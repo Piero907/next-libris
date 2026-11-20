@@ -1,6 +1,6 @@
 # Next Libris — lo stile dell'app (documento fisso)
 
-**Aggiornato il 20/11/2026, prova 110.25.** Questo è il riferimento unico per l'aspetto dell'app. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
+**Aggiornato il 20/11/2026, prova 110.26.** Questo è il riferimento unico per l'aspetto dell'app. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali.
 
 **Come si lavora sull'aspetto** (regole di Piero):
 1. Ogni modifica di aspetto si mostra **prima nella tela di design** con le schermate vere dell'app (tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu).
@@ -71,7 +71,7 @@
 - Telefoni **da 380 px in su**: segnalibri 46 px, margini 20 px, titolo 40 px.
 - **Sotto 380 px** (360, 375): segnalibri 36 px (scritta 10,5), margini 14 px, titolo 32 px, nastro 36 px, frase 14 px.
 - **Schermi bassi** (sotto 620 px di altezza): segnalibri più corti. I sei segnalibri entrano anche a 360×640.
-- **Tablet e PC (da 700 px)**: colonna di 640 px al centro, segnalibri sul suo bordo.
+- **Tablet e PC (da 700 px)**: colonna di 640 px al centro, segnalibri sul suo bordo. **Anche le pagine intere** (libro, profili, Amici, Chat, Per te, Indice, stagione in libri) stanno nella colonna, accanto ai segnalibri, e **le finestre dal basso sono al centro della colonna** con il fondo scurito su tutto lo schermo; i segnalibri restano sopra il fondo scurito (`stile-g.css` G20).
 - **Controllo automatico e2e137** a 360×640, 375×667, 390×844, 412×915, 430×932, 768×1024, 1280×800: niente scorrimento di lato, tutto dentro lo schermo e fuori dai segnalibri, sei segnalibri.
 
 ---
@@ -125,3 +125,4 @@
 - 20/11/2026: segnalibro Chat (110.22).
 - 20/11/2026: ricerca per titolo con Open Library (110.23 e 110.24).
 - 20/11/2026: ordine dei risultati; segnalibri nella conversazione e nella stagione in libri (110.25).
+- 20/11/2026: tablet e PC con pagine nella colonna, finestre al centro e segnalibri sempre visibili (110.26).
