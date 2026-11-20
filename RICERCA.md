@@ -1,13 +1,13 @@
 # Next Libris — come funziona la ricerca dei libri
 
-**Aggiornato il 20/11/2026: vera 111; nel ramo `prova` il catalogo SBN della casa (031).** Copia uguale nel progetto Claude: `claude/ricerca-libri.md`. API e worker (prestito, limiti): `claude/api-e-worker.md` (`API_WORKER.md`). Qui c'è il **funzionamento**; l'aspetto delle finestre sta in `STILE.md` / `claude/stile-base.md`.
+**Aggiornato il 20/11/2026, vera 112** (catalogo SBN della casa). Copia uguale nel progetto Claude: `claude/ricerca-libri.md`. API e worker (prestito, limiti): `claude/api-e-worker.md` (`API_WORKER.md`). Qui c'è il **funzionamento**; l'aspetto delle finestre sta in `STILE.md` / `claude/stile-base.md`.
 
 ## Regola di fondo
 Poche chiamate a Google Libri. Prima si usano le fonti libere e gratuite (archivio comune, Open Library, catalogo SBN, Wikipedia/Wikidata); Google si usa solo quando serve.
 
 ## Ricerca per ISBN (scansione del codice a barre, codici scritti)
 1. **Archivio comune** dei libri già cercati da altri (senza Google).
-2. **Open Library e catalogo SBN** insieme. Open Library ha 2,5 secondi. **Catalogo SBN della casa (20/11/2026, fatto nella prova):** SBN è incluso per tutti e passa dalla funzione `libri` di Supabase; 500 ricerche al giorno con l'account, 50 per telefono senza account e 3.000 in tutto per chi non ha l'account (`claude/api-e-worker.md`). Al limite si salta SBN e si va avanti con le altre fonti, con l'avviso approvato una volta al giorno.
+2. **Open Library e catalogo SBN** insieme. Open Library ha 2,5 secondi. **Catalogo SBN della casa (vera 112):** SBN è incluso per tutti e passa dalla funzione `libri` di Supabase; 500 ricerche al giorno con l'account, 50 per telefono senza account e 3.000 in tutto per chi non ha l'account (`claude/api-e-worker.md`). Al limite si salta SBN e si va avanti con le altre fonti, con l'avviso approvato una volta al giorno.
 3. **Google Libri solo se manca il libro o la copertina** (giro 11B).
 4. Crossref se manca ancora qualcosa; ultimo tentativo con Google per codice semplice e ISBN-10.
 - La **descrizione** si cerca a richiesta, dalla pagina del libro.

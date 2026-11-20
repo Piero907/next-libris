@@ -1,6 +1,6 @@
 # Next Libris — API Google Libri e worker SBN
 
-**Aggiornato il 20/11/2026: vera 111; nel ramo `prova` (non ancora pubblicato) il worker SBN della casa.** Come si crea l'API, come si presta, «Chiedimela», il catalogo SBN, limiti e sicurezza. La ricerca dei libri sta in `claude/ricerca-libri.md` (`RICERCA.md`), l'aspetto in `claude/stile-base.md` (`STILE.md`). Copia uguale: progetto Claude `claude/api-e-worker.md`, ramo `prove` `API_WORKER.md`.
+**Aggiornato il 20/11/2026, vera 112** (worker SBN della casa nella vera). Come si crea l'API, come si presta, «Chiedimela», il catalogo SBN, limiti e sicurezza. La ricerca dei libri sta in `claude/ricerca-libri.md` (`RICERCA.md`), l'aspetto in `claude/stile-base.md` (`STILE.md`). Copia uguale: progetto Claude `claude/api-e-worker.md`, ramo `prove` `API_WORKER.md`.
 
 Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 
@@ -11,7 +11,7 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 - **Scopo** (istruzioni del progetto): far capire agli utenti che possono creare l'API **da soli e con semplicità**. Agli utenti resta da creare **solo l'API**. Nella guida va messo in evidenza che l'API **è gratis**, che crearla **non costa nulla** e che **aiuta l'app a crescere**; **niente frase sulla carta di credito**.
 
 ## Worker SBN della casa (scelte di Piero del 20/11/2026)
-**Stato: fatto nella copia di prova** (database 031, funzione `libri` versione 4, app nel ramo `prova` da pubblicare quando lo dice Piero). **Nella vera: da portare** (vedi «Per portarlo nella vera»).
+**Stato: nella vera 112** (20/11/2026): database 031, funzione `libri` versione 4 e Vault in tutte e due le copie; il worker di Piero ha il codice nuovo.
 
 **Scelte:**
 1. **Solo il worker della casa.** Tra amici si presta **solo l'API**. Tolti: worker proprio, prestito del worker, limite di 3.000 ricerche, sezione e guida del worker in Indice › Ricerca dei libri, «ho un worker mio» di «Chiedimela», worker nel backup.
@@ -42,11 +42,9 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 
 **Dopo:** nella ricerca per titolo SBN e Open Library partiranno insieme e Google servirà solo se mancano edizioni italiane (`claude/ricerca-libri.md`); poi «cerca tra i tuoi amici chi può prestarti l'API» più in vista.
 
-### Per portarlo nella vera
-1. Piero incolla il codice nuovo nel suo worker (file `cloudflare-sbn-worker.js` del ramo `prove`): Cloudflare › Workers & Pages › il worker › «Edit code» › cancella tutto › incolla › «Deploy». Si può fare in qualsiasi momento: la 111 continua a funzionare fino al 27/11.
-2. Database della vera: nel Vault `sbn_worker` (l'indirizzo del worker di Piero, preso da `chiavi.sbn` **prima** della migrazione) e `sbn_firma` (la chiave privata della vera, la cui chiave pubblica è già nel worker); poi la migrazione `031_worker_della_casa`; poi la funzione `libri` versione 4. La funzione nuova serve anche chi ha ancora la 111 con un worker prestato (il vecchio `?da=&isbn=` passa dal worker della casa).
-3. App: «porta nella vera» come sempre.
-- Le chiavi private non stanno in nessun file del repository. Se quella della vera andasse persa prima del passaggio: se ne genera una nuova, si mette la sua chiave pubblica in `CHIAVI` nel worker e Piero lo incolla di nuovo.
+### Chiavi di firma
+- Le chiavi private stanno **solo nel Vault** (`sbn_firma`) di ogni copia; i file usati per crearle sono stati cancellati. Chi ha ancora la 111 con un worker prestato passa comunque dal worker della casa (il vecchio `?da=&isbn=` va lì).
+- **Per cambiarle:** generare una coppia nuova (P-256; privata in PKCS8 base64 nel Vault, pubblica in SPKI base64 in `CHIAVI` del worker) e far incollare di nuovo il worker a Piero.
 
 ## Creare l'API
 - Guida passo passo in Indice › Ricerca dei libri e nella finestra «Crea la tua API» (5 passi). Il passo 4 (R3, testo approvato): «Limita la chiave: in «Restrizioni API» scegli solo **Books API**. La fatturazione non va attivata (di partenza è già spenta, non devi fare niente): così non si paga mai niente, qualunque cosa succeda.»
@@ -76,9 +74,9 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 - **Idea per il futuro** (Piero): riconoscimenti per chi presta la sua API (il server sa già chi presta e a quanti). In sospeso: IN_SOSPESO 32.
 
 ## Tecnica
-- **Database**: 020 (API prestata sul server, avvisi importanti), 026 (solo le proprie), 030 (`chiavi_ho`, `chiavi_richieste`, `chiavi_dichiara`, `amici_chiavi`, `chiedi_chiavi`), **031** (`supabase/031_worker_della_casa.sql`: `sbn_conta(utente)` solo per `service_role`, righe «c:» nella tabella `ricerche`; tolte `worker_conta` e `worker_prestato`; `chiavi.sbn` sempre vuoto con il vincolo `chiavi_senza_worker`; `presta_chiavi`, `chiavi_mie`, `chiavi_dichiara`, `amici_chiavi`, `chiedi_chiavi` solo per l'API). Prova: 001-031; vera: 001-030. Prova dei permessi e dei limiti: `supabase/prova_sbn_casa.sql`.
-- **Vault** (per copia): `sbn_worker`, `sbn_firma` (oltre a quelli delle push). Nella prova ci sono; nella vera da mettere al passaggio.
-- **Funzione `libri`** (`supabase/funzioni/libri/index.ts`): versione 4 nella prova (3 nella vera). `?isbn=` → worker della casa: con l'intestazione `Authorization` controlla l'utente (500 al giorno, `x-nl-mio`), senza accetta solo le origini dell'app (tetto di 3.000); 429 con `x-nl-stop: mio` o `tetto`; firma con la chiave del Vault; l'indirizzo del worker non torna mai nella risposta. `?da=&u=` → API prestata (come prima: 429 `mio`/`pieno`, 403 `no`).
+- **Database**: 020 (API prestata sul server, avvisi importanti), 026 (solo le proprie), 030 (`chiavi_ho`, `chiavi_richieste`, `chiavi_dichiara`, `amici_chiavi`, `chiedi_chiavi`), **031** (`supabase/031_worker_della_casa.sql`: `sbn_conta(utente)` solo per `service_role`, righe «c:» nella tabella `ricerche`; tolte `worker_conta` e `worker_prestato`; `chiavi.sbn` sempre vuoto con il vincolo `chiavi_senza_worker`; `presta_chiavi`, `chiavi_mie`, `chiavi_dichiara`, `amici_chiavi`, `chiedi_chiavi` solo per l'API). Vera e prova: 001-031. Prova dei permessi e dei limiti: `supabase/prova_sbn_casa.sql`.
+- **Vault** (per copia): `sbn_worker` (stesso worker nelle due copie), `sbn_firma` (una chiave per copia), oltre a quelli delle push.
+- **Funzione `libri`** (`supabase/funzioni/libri/index.ts`): versione 4 in tutte e due le copie. `?isbn=` → worker della casa: con l'intestazione `Authorization` controlla l'utente (500 al giorno, `x-nl-mio`), senza accetta solo le origini dell'app (tetto di 3.000); 429 con `x-nl-stop: mio` o `tetto`; firma con la chiave del Vault; l'indirizzo del worker non torna mai nella risposta. `?da=&u=` → API prestata (come prima: 429 `mio`/`pieno`, 403 `no`).
 - **Worker**: `cloudflare-sbn-worker.js` nel ramo `prove` (non più nell'app): `CHIAVI` (pubbliche, prova e vera), `TOLLERANZA` 120 secondi, `VECCHIO_FINO` 27/11/2026. Prova: `test_worker.mjs`.
 - **App**: `app.js` `SBN_CASA` (indirizzo finto `https://sbn-casa.invalid/` che `apiFetch` gira a `casaFetch`), `sbnOut`, `sbnNow`, `sbnSay`, stato del giorno in `catalogo-libri-sbn-casa`, conto senza account in `quota.s`; `social.js` `rawOpen` (richiesta alla funzione anche senza account); `amici.js` (`ownKeys`, `keySheet`, `declareKeys`, `askState`, `NLAmici.ask`, `ownCheck`: solo l'API); `app.js` `apiFetch`, `lentFetch` (API prestata); `ricerche.js` (guida, contatore condiviso solo dell'API); `profilo.js` (`.pf-ask`).
 - **Prove**: e2e23 (senza account: riga «Incluso», 50 al giorno, tetto, worker di prima tolto), e2e133 (con l'account: dal server con l'accesso, 500 al giorno), e2e9, e2e24 (backup), e2e104, e2e106, e2e107, e2e109, e2e112, e2e124, e2e136.
