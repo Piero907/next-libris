@@ -62,13 +62,13 @@ const assert = require('assert');
   await page.click('#btnFilters'); await wait(300); assert(await vis('#drawerFilters')); assert(await vis('#drawerFoot'));
   await page.click('#drawerBack'); await wait(250); assert(await vis('#drawerOpts')); await page.click('#goFilters'); await wait(150); assert(await vis('#drawerFilters'));   // v84: pagine al posto delle schede
   await page.keyboard.press('Escape'); await wait(300);
-  // 5) scheda aperta: X e prestato/smarrito in alto, accanto alla freccetta
+  // 5) pagina del libro: ‹ per tornare, «elimina» tra i tasti tondi, il prestito nel riquadro Prestito (acceso se è prestato)
   await page.evaluate(() => { window.__app.settings.openAll = false; window.__app.openState()['b2'] = true; window.__app.setTab('lib'); });
   await wait(200);
-  const tops = await page.evaluate(() => { const r = document.querySelector('#list .row[data-id="b2"]'); const y = s => Math.round(r.querySelector(s).getBoundingClientRect().top - r.getBoundingClientRect().top);
-    return { chev: y('.card-top .chev-btn'), del: y('.top-acts [data-act="del"]'), loan: y('.top-acts [data-act="loan"]'), on: r.querySelector('.top-acts [data-act="loan"]').classList.contains('on'), foot: r.querySelectorAll('.foot [data-act="del"]').length }; });
-  console.log('[5 in alto]', JSON.stringify(tops)); assert(tops.chev < 20 && tops.del < 200 && tops.loan < 20 && tops.on && tops.foot === 0);   // stile G: «elimina» nella riga dei tasti tondi sotto la copertina
-  await page.click('#list .row[data-id="b2"] .top-acts [data-act="loan"]'); await wait(200);
+  const tops = await page.evaluate(() => { const r = document.querySelector('#list .row[data-id="b2"]'); const vis = s => { const e = r.querySelector(s); return !!(e && e.getClientRects().length); };
+    return { page: r.classList.contains('cv-full'), back: vis('.cv-back'), del: vis('.acts-main [data-act="del"]'), loan: vis('.cv-loan button[data-act="loan"]'), on: r.querySelector('.cv-loan button[data-act="loan"]').classList.contains('on'), foot: r.querySelectorAll('.foot [data-act="del"]').length }; });
+  console.log('[5 pagina]', JSON.stringify(tops)); assert(tops.page && tops.back && tops.del && tops.loan && tops.on && tops.foot === 0);
+  await page.click('#list .row[data-id="b2"] .cv-loan button[data-act="loan"]'); await wait(200);
   console.log('[5 finestra]', await page.$eval('#loanH', e => e.textContent), '|', await page.$eval('#loanBack', e => e.textContent));
   assert.strictEqual(await page.$eval('#loanBack', e => e.textContent), 'Restituito');
   await page.click('#loanCancel').catch(() => page.keyboard.press('Escape')); await wait(200);

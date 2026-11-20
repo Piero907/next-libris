@@ -27,13 +27,13 @@ for (let k = 0; k < 14; k++) books.push(B({ id: 'x' + k, t: 'Libro di prova ' + 
   // il tasto Copertine resta raggiungibile
   const hit = await page.evaluate(() => { const r = document.querySelector('#btnView').getBoundingClientRect(); const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return e && (e.id || e.closest('button').id); });
   assert.strictEqual(hit, 'btnView');
-  // un libro sotto la barra: toccandolo si apre e la barra scorre via
+  // un libro sotto la barra: toccandolo si apre la sua pagina (a tutto schermo); chiusa con ‹, la barra torna ferma
   await page.$eval('#list .row[data-id="x6"]', e => e.scrollIntoView({ block: 'center' })); await wait(200);
   await page.click('#list .row[data-id="x6"] .sum'); await wait(300);
-  s = await st(); console.log('[2 scheda aperta]', s); assert.strictEqual(s.pos, 'static');
-  const top = await page.$eval('#list .row[data-id="x6"]', e => Math.round(e.getBoundingClientRect().top)); console.log('[2 scheda in vista a]', top); assert(top >= 0 && top < 700);
+  assert(await page.$eval('#list .row[data-id="x6"]', e => e.classList.contains('cv-full') && Math.round(e.getBoundingClientRect().top) <= 0), 'pagina del libro aperta a tutto schermo');
+
   // chiusa: la barra torna ferma
-  await page.click('#list .row[data-id="x6"] .chev-btn'); await wait(300);
+  await page.evaluate(() => document.querySelector('#list .row[data-id="x6"] .cv-back').click()); await wait(400);
   s = await st(); console.log('[3 scheda chiusa]', s); assert.strictEqual(s.pos, 'sticky');
   const rowTop = await page.$eval('#list .row[data-id="x6"]', e => Math.round(e.getBoundingClientRect().top)), barBottom = await page.$eval('#stick', e => Math.round(e.getBoundingClientRect().bottom));
   console.log('[3 riga / barra]', rowTop, barBottom); assert(rowTop >= barBottom - 1, 'la riga chiusa non resta sotto la barra');

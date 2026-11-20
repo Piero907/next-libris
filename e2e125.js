@@ -133,7 +133,7 @@ const base = 'http://localhost:' + CFG.port(8325);
   const noSide = async (pg, s, what) => { const d = await pg.$eval(s, x => x.scrollWidth - x.clientWidth); assert(d <= 0, 'niente scorrimento di lato: ' + what + ' (' + d + ')'); };
   const y = new Date().getFullYear(), today = new Date().toISOString().slice(0, 10);
   const A = await phone('A', 'uA', 360);
-  await A.evaluate(() => window.NLCard && window.NLCard.set('d')); await wait(300);
+  
   const toast = () => A.$eval('#toastTxt', x => x.textContent);
   const isOpen = (id) => A.evaluate((id) => !!document.querySelector('.row.open[data-id="' + id + '"]'), id);
   await A.add({ id: 'a1', t: 'Palomar', a: 'Italo Calvino', rs: 'ok', rd: today, pg: '120', gen: 'Romanzo', ts: 5, qs: [{ x: 'Prima citazione', pg: '33', d: 20 }, { x: 'Seconda citazione', d: 19 }, { x: 'Terza citazione', d: 18 }] });

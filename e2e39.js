@@ -22,12 +22,13 @@ const books = [B({ id: 'arau', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', e
   await page.evaluate(() => window.scrollTo(0, 0)); await wait(200);
   await page.screenshot({ path: CFG.OUT + '/kb_top.png' });
   // Cerca sul web in alto, niente «Prezzo dal web» in basso
-  const top = await page.$eval('.row[data-id="arau"] .acts-main', e => e.textContent); console.log('[tasti in alto]', top); assert(top.includes('Cerca sul web'));
+  assert(await page.$('.row[data-id="arau"] .cv-popi[data-act="websearch"]'), '«Cerca sul web» nel ⋯ della pagina del libro');
   const tail = await page.$eval('.row[data-id="arau"] .tail', e => e.textContent); console.log('[in basso]', tail); assert(!tail.includes('Prezzo dal web') && !tail.includes('Cerca sul web'));
   await page.evaluate(() => document.querySelector('.row[data-id="arau"] [data-act="websearch"]').click());
   const u = decodeURIComponent((await page.evaluate(() => window.__opened[0])).replace(/\+/g, ' ')); console.log('[web]', u); assert(u.includes('La casa di Araucaíma Álvaro Mutis libro'));
   // il costo: tocco il campo, la tastiera rimpicciolisce lo schermo
   await page.evaluate(() => window.scrollTo(0, 0));
+  await H.matita(page, 'arau', 'Costo');   // pagina del libro: i campi si aprono con la matita
   await page.focus('.row[data-id="arau"] [data-k="c"]');
   assert(await page.evaluate(() => document.body.classList.contains('typing'))); assert.strictEqual(await page.$eval('#gAdd', e => getComputedStyle(e).display), 'none');
   await page.setViewport({ width: 412, height: 430, deviceScaleFactor: 2, isMobile: true, hasTouch: true }); await wait(900);
@@ -37,7 +38,7 @@ const books = [B({ id: 'arau', t: 'La casa di Araucaíma', a: 'Álvaro Mutis', e
   await page.screenshot({ path: CFG.OUT + '/kb_field.png' });
   // fuori dal campo la barra torna
   await page.evaluate(() => document.activeElement.blur()); await wait(300);
-  assert(!(await page.evaluate(() => document.body.classList.contains('typing')))); assert.notStrictEqual(await page.$eval('#gAdd', e => getComputedStyle(e).display), 'none');
+  assert(!(await page.evaluate(() => document.body.classList.contains('typing'))));   // («+ Aggiungi» sulla pagina del libro non c'è comunque)
   // da un campo all'altro non lampeggia
   await page.focus('.row[data-id="arau"] [data-k="y"]'); await page.focus('.row[data-id="arau"] [data-k="c"]'); await wait(200);
   assert(await page.evaluate(() => document.body.classList.contains('typing')));

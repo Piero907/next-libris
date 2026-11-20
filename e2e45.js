@@ -58,8 +58,9 @@ let descNet = 'ok', descHits = 0, lookHits = 0;
   // 3) aprendo il riquadro: «Descrizione non disponibile», nessuna richiesta; quella arrivata con la prima ricerca c'è
   const id = b.id;
   await page.evaluate(i => document.querySelector('.row[data-id="' + i + '"] [data-act="toggle"]').click(), id); await wait(250);
-  await page.evaluate(i => document.querySelector('details.desc:not(.quotes)[data-id="' + i + '"] > summary').click(), id); await wait(600);
-  assert.strictEqual(await page.$eval('details.desc:not(.quotes)[data-id="' + id + '"] .desc-b', e => e.textContent.trim()), 'Descrizione non disponibile.'); assert.strictEqual(descHits, 0);
+  assert(!(await page.$('details.desc:not(.quotes)[data-id="' + id + '"]')), 'pagina del libro: se la descrizione non c\'è, il riquadro non compare');
+  assert.strictEqual(descHits, 0);
+  await page.evaluate(() => { const b = document.querySelector('.row.open.cv-full .cv-back'); if (b) b.click(); }); await wait(300);
   // 4) giro 11B: libro nuovo senza descrizione, apro il riquadro: una ricerca, la descrizione arriva e resta nel libro
   descHits = 0;
   await page.evaluate(() => window.__app.addIsbn('9788806219352'));

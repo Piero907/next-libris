@@ -112,7 +112,7 @@ const base = 'http://localhost:' + CFG.port(8322);
   const noSide = async (pg, s, what) => { const d = await pg.$eval(s, x => x.scrollWidth - x.clientWidth); assert(d <= 0, 'niente scorrimento di lato: ' + what + ' (' + d + ')'); };
   const y = new Date().getFullYear(), today = new Date().toISOString().slice(0, 10);
   const A = await phone('A', 'uA', 360);
-  await A.evaluate(() => window.NLCard && window.NLCard.set('d')); await wait(300);
+  
   await A.add({ id: 'a1', t: 'Palomar', a: 'Italo Calvino', i: '9788804668022', p: 'Bruno', pd: today, sx: '00000001-0000-0000-0000-000000000000', rs: 'ok', rd: today, pg: '120', gen: 'Romanzo', qs: [{ x: 'Leggere il mondo come un libro', pg: '33', d: 20 }] });
   await A.add({ id: 'a2', t: 'Il nome della rosa', a: 'Umberto Eco', rs: 'ok', rd: '2020-05-01', pg: '500', gen: 'Romanzo', n: 'appunto di Anna', qs: [{ x: 'Stat rosa pristina nomine', d: 10 }] });
   await A.add({ id: 'a3', t: 'Baudolino', a: 'Umberto Eco', rs: 'da' });

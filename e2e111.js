@@ -112,7 +112,7 @@ const base = 'http://localhost:' + CFG.port(8311);
   const SHOTS = process.env.SCHERMATE;
   // ---- A: nei desideri di Bruno, icona «Desideri» in alto, «Desiderio di Bruno», regalo prenotato con o senza nome ----
   const A = await phone('A', 'uA');
-  await A.evaluate(() => window.NLCard && window.NLCard.set('d')); await wait(500);   // la scheda che vede Piero sul telefono: «Pagina del libro»
+  
   const rosa = Object.values(DB.rows).find(r => r.dati.i === '9788845292613').id;
   const lessico = Object.values(DB.rows).find(r => r.dati.t === 'Lessico famigliare').id;
   DB.pren['uB|' + lessico] = 'uC';                       // Carla ha già prenotato «Lessico famigliare» (nome visibile, di partenza)

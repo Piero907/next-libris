@@ -44,10 +44,10 @@ let hits = [];
   const open = async id => { await page.evaluate(i => document.querySelector('.row[data-id="' + i + '"] [data-act="toggle"]').click(), id); await wait(250); };
   // 1) autore compilato: nome toccabile + matita, nessun campo di testo
   await open('m1');
-  assert(await page.$('.row[data-id="m1"] .au-name') && await page.$('.row[data-id="m1"] .au-edit')); assert(!(await page.$('.row[data-id="m1"] textarea[data-k="a"]')));
+  assert(await page.$('.row[data-id="m1"] .cv-au .au-name') && await page.$('.row[data-id="m1"] .au-edit')); assert(!(await page.$('.row[data-id="m1"] textarea[data-k="a"]')));
   await page.screenshot({ path: CFG.OUT + '/au_card.png' });
   // 2) tocco sul nome: profilo da Wikipedia
-  await click('.row[data-id="m1"] .au-name');
+  await click('.row[data-id="m1"] .cv-au .au-name');
   await page.waitForFunction(() => /Maqroll/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 });
   console.log('[profilo]', await page.$eval('#auDesc', e => e.textContent), '|', await page.$eval('#auTxt', e => e.textContent.slice(0, 60)));
   assert.strictEqual(await page.$eval('#auMine', e => e.textContent), 'I suoi libri nella tua libreria (2)');
@@ -58,21 +58,22 @@ let hits = [];
   await click('#auMine'); await wait(300);
   assert(await page.$eval('#auSheet', e => e.hidden)); assert.deepStrictEqual((await page.$$eval('#list .row', e => e.map(r => r.dataset.id))).sort(), ['m1', 'm2']);
   await page.evaluate(() => window.__app && document.querySelector('#activeFlt .chip') && document.querySelector('#activeFlt .chip').click()); await wait(200);
-  // 3) matita: diventa modificabile, scrivo, uscendo torna il nome
+  // 3) matita della pagina del libro: l'autore diventa scrivibile al suo posto; di nuovo la matita, torna il nome da toccare
   await open('m1');
-  await click('.row[data-id="m1"] .au-edit'); await wait(150);
+  await H.matita(page, 'm1'); await page.focus('.row[data-id="m1"] [data-k="a"]'); await page.evaluate(() => { const e = document.activeElement; e.setSelectionRange(e.value.length, e.value.length); });
   const focused = await page.evaluate(() => document.activeElement && document.activeElement.dataset.k); assert.strictEqual(focused, 'a', 'cursore nel campo');
   await page.keyboard.type(' Jaramillo'); await page.evaluate(() => document.activeElement.blur()); await wait(400);
   const a = await page.evaluate(() => window.__app.state.books.find(b => b.id === 'm1').a); assert.strictEqual(a, 'Álvaro Mutis Jaramillo');
-  assert(await page.$('.row[data-id="m1"] .au-name'), 'torna il nome da toccare'); assert.strictEqual(await page.$eval('.row[data-id="m1"] .au-name', e => e.textContent), 'Álvaro Mutis Jaramillo');
+  await H.matita(page, 'm1');
+  assert(await page.$('.row[data-id="m1"] .cv-au .au-name'), 'torna il nome da toccare'); assert.strictEqual(await page.$eval('.row[data-id="m1"] .cv-au .au-name', e => e.textContent), 'Álvaro Mutis Jaramillo');
   // 4) due autori: ognuno si tocca; nome ambiguo -> voce dello scrittore
   await open('x');
-  assert.deepStrictEqual(await page.$$eval('.row[data-id="x"] .au-name', e => e.map(x => x.textContent)), ['Mario Rossi', 'Anna Bianchi']);
-  hits = []; await click('.row[data-id="x"] .au-name[data-n="Mario Rossi"]');
+  assert.deepStrictEqual(await page.$$eval('.row[data-id="x"] .cv-au .au-name', e => e.map(x => x.textContent)), ['Mario Rossi', 'Anna Bianchi']);
+  hits = []; await click('.row[data-id="x"] .cv-au .au-name[data-n="Mario Rossi"]');
   await page.waitForFunction(() => /gialli/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 }); console.log('[ambiguo]', hits.join(' | '));
   await click('#auClose');
   // sconosciuto: messaggio e Cerca sul web
-  await click('.row[data-id="x"] .au-name[data-n="Anna Bianchi"]');
+  await click('.row[data-id="x"] .cv-au .au-name[data-n="Anna Bianchi"]');
   await page.waitForFunction(() => /Non ho trovato/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 });
   assert(await page.$eval('#auWiki', e => e.hidden));
   await page.evaluate(() => history.back()); await wait(300); assert(await page.$eval('#auSheet', e => e.hidden), 'Indietro chiude');
@@ -80,7 +81,7 @@ let hits = [];
   await page.evaluate(() => history.back()); await wait(300); assert(!(await page.$('.row.open[data-id="x"]')), 'poi Indietro chiude la scheda');
   // 4b) fotografo: trovato, con la foto accanto al nome; toccandola si ingrandisce
   await open('sg');
-  await click('.row[data-id="sg"] .au-name');
+  await click('.row[data-id="sg"] .cv-au .au-name');
   await page.waitForFunction(() => /fotoreporter/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 });
   await page.waitForFunction(() => !document.querySelector('#auPic').hidden, { timeout: 5000 });
   console.log('[fotografo]', await page.$eval('#auDesc', e => e.textContent), '| foto:', await page.$eval('#auPic img', e => e.src.slice(-20)));
@@ -90,13 +91,13 @@ let hits = [];
   await click('#phClose'); await wait(200); assert(await page.$eval('#phView', e => e.hidden));
   await click('#auClose'); await wait(200);
   // senza foto (Mutis): nessun riquadro vuoto
-  await open('m2'); await click('.row[data-id="m2"] .au-name');
+  await open('m2'); await click('.row[data-id="m2"] .cv-au .au-name');
   await page.waitForFunction(() => /Maqroll/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 });
   assert(await page.$eval('#auPic', e => e.hidden), 'senza foto niente riquadro');
   await click('#auClose'); await wait(200);
   // 4c) omonimo: vince chi scrive
   await open('pr');
-  await click('.row[data-id="pr"] .au-name');
+  await click('.row[data-id="pr"] .cv-au .au-name');
   await page.waitForFunction(() => /storico della scienza/.test(document.querySelector('#auTxt').textContent), { timeout: 8000 });
   await click('#auClose'); await wait(200);
   // 5) autore vuoto: campo normale

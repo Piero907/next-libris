@@ -30,7 +30,7 @@ books.push(B({ id: 'z2', t: 'Baudolino', a: 'Umberto Eco, Altro Autore', e: 'Bom
   await page.evaluate(() => { window.__app.openState()['b0'] = true; window.__app.openState()['z1'] = true; window.__app.setTab('lib'); }); await wait(150);
   console.log('[1 b0]', await chips('b0'));
   console.log('[1 z1 (casa editrice da verificare)]', await chips('z1'));
-  assert.deepStrictEqual(await chips('b0'), ['a:Umberto Eco 3', 'e:Einaudi 8', 'gen:Narrativa 6', 'sh:Studio 5']);
+  assert.deepStrictEqual(await chips('b0'), ['gen:Narrativa 6', 'sh:Studio 5', 'a:Umberto Eco 3', 'e:Einaudi 8']);
   assert(!(await chips('z1')).some(c => c.startsWith('e:')), 'niente casa editrice da verificare');
   // 2) tocco sull'autore: filtro, anche con piu' autori
   await click('#list .row[data-id="b0"] .fchip[data-f="a"]'); await wait(200);
@@ -51,7 +51,7 @@ books.push(B({ id: 'z2', t: 'Baudolino', a: 'Umberto Eco, Altro Autore', e: 'Bom
   r = await rows(); console.log('[3 casa editrice]', r.length); assert.strictEqual(r.length, 8);
   await click('#activeFlt [data-clear="ed"]'); await wait(100);
   // 4) genere: niente freccia del browser; i suggerimenti compaiono e si scelgono
-  await page.evaluate(() => { window.__app.openState()['z2'] = true; window.__app.setTab('lib'); }); await wait(150);
+  await page.evaluate(() => { window.__app.openState()['z2'] = true; window.__app.setTab('lib'); }); await wait(150); await H.matita(page, 'z2', 'Genere');   // i campi si aprono con la matita
   assert.strictEqual(await page.$eval('#gen-z2', e => e.getAttribute('list')), null);
   await page.focus('#gen-z2'); await wait(100);
   const opts = await page.$$eval('#list .row[data-id="z2"] .sugg [data-v]', e => e.map(x => x.dataset.v));
@@ -69,7 +69,7 @@ books.push(B({ id: 'z2', t: 'Baudolino', a: 'Umberto Eco, Altro Autore', e: 'Bom
   console.log('[4 scaffale da tastiera]', await page.evaluate(() => window.__app.state.books.find(b => b.id === 'z2').sh));
   // 5) prestito: «a chi» suggerisce i nomi gia' usati
   await page.evaluate(() => { window.__app.openState()['b1'] = true; window.__app.setTab('lib'); }); await wait(100);
-  await click('#list .row[data-id="b1"] .top-acts [data-act="loan"]'); await wait(200);
+  await click('#list .row[data-id="b1"] .cv-loan button[data-act="loan"]'); await wait(200);
   assert.strictEqual(await page.$eval('#loanWho', e => e.getAttribute('list')), null);
   await page.focus('#loanWho'); await wait(100);
   const names = await page.$$eval('#loanWhoF .sugg [data-v]', e => e.map(x => x.dataset.v)); console.log('[5 nomi]', names);

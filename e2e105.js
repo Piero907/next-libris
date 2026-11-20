@@ -119,6 +119,7 @@ const base = 'http://localhost:' + CFG.port(8305);
   assert(await A.$eval('#ntSheet', x => x.hidden), 'finestra chiusa');
   const zeno = await A.evaluate(() => window.NL.books().find(b => b.sx === '5a000000-0000-0000-0000-00000000005a').id);
   assert(await A.$('.row.open[data-id="' + zeno + '"]'), 'si apre la scheda del libro prestato');
+  await A.evaluate(() => document.querySelector('.row.open.cv-full .cv-back').click()); await wait(400);   // la pagina del libro è a tutto schermo: prima si torna alla libreria
   // tocco su una richiesta d'amicizia: la finestra Amici
   await A.click('#btnBell'); await wait(400);
   assert.strictEqual(await A.$$eval('#ntBody .nt-new', x => x.length), 0, 'riaperta: nessuna più evidenziata');

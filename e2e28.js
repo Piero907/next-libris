@@ -42,7 +42,7 @@ const BOOKS = [
   let p = await open(BASE, {}, BOOKS);
   // 1) preferito: pulsante nella scheda, etichetta nella riga chiusa, filtro
   await tap(p, '#list .row[data-id="b1"] .sum'); await wait(150);
-  assert.strictEqual(await txt(p, '#list .row[data-id="b1"] .acts-main'), 'Prestato Desideri Lo consiglio Cerca sul web Elimina');
+  assert.deepStrictEqual(await p.$$eval('#list .row[data-id="b1"] .acts-main button', e => e.filter(b => b.getClientRects().length).map(b => b.dataset.act || 'matita')), ['lc', 'towish', 'share', 'matita', 'del']);   // pagina del libro: tasti tondi
   await tap(p, '#list .row[data-id="b1"] [data-act="lc"]'); await wait(150);
   assert((await books(p)).find(b => b.id === 'b1').fav === true);
   assert(await p.$('#list .row[data-id="b1"] [data-act="lc"].on'));

@@ -22,37 +22,34 @@ const server = H.serve(CFG.port(8139), ROOT);
   await p.setRequestInterception(true); p.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8139) + '') ? r.continue() : r.abort());
   await p.goto('http://localhost:' + CFG.port(8139) + '/?vista=elenco', { waitUntil: 'load' }); await new Promise(r => setTimeout(r, 400));
   const wait = H.wait;   // attesa «finché» (_harness.js)
+  // pagina del libro (20/11/2026: la scheda «Classica» non c'è più): tasti tondi sotto il titolo, riquadro Prestito, «Cerca sul web» e «Cerca di nuovo» nel ⋯
   async function card(id) {
-    await p.evaluate(id => { const s = document.querySelector('#list .row[data-id="' + id + '"] .sum'); if (s) s.click(); }, id); await wait(200);
+    await p.evaluate(() => { const b = document.querySelector('#list .row.open.cv-full .cv-back'); if (b) b.click(); }); await wait(300);
+    await p.evaluate(id => { const s = document.querySelector('#list .row[data-id="' + id + '"] .sum'); if (s) s.click(); }, id); await wait(300);
     return p.evaluate(id => {
       const r = document.querySelector('#list .row[data-id="' + id + '"]');
-      const lab = sel => [...r.querySelectorAll(sel)].map(b => (b.querySelector('.al') ? b.querySelector('.al').textContent : '[' + b.dataset.act + ']') + '|' + b.getAttribute('aria-label'));
-      return { main: lab('.acts-main button'), win: [...r.querySelectorAll('.acts-win button')].map(b => b.dataset.act + ':' + (b.querySelector('.al') ? 'testo' : 'icona')),
-        tail: lab('.foot .tail button'), thumb: (r.querySelector('.thumb.add') || {}).textContent || '', flags: r.querySelector('.card-top .flags').innerText,
-        over: r.scrollWidth - r.clientWidth, topOver: [...r.querySelectorAll('.card-top button')].some(b => b.getBoundingClientRect().right > r.getBoundingClientRect().right + 1) };
+      const vis = b => b.getClientRects().length > 0;
+      const lab = sel => [...r.querySelectorAll(sel)].filter(vis).map(b => b.getAttribute('aria-label') || b.textContent.trim());
+      return { page: r.classList.contains('cv-full'), main: lab('.acts-main button'), loan: lab('.cv-loan button'), more: [...r.querySelectorAll('.cv-popi, .cv-pop button')].map(b => b.dataset.act), back: lab('.cv-back'),
+        over: r.scrollWidth - r.clientWidth, out: [...r.querySelectorAll('.acts-main button')].filter(vis).some(b => b.getBoundingClientRect().right > innerWidth + 1) };
     }, id);
   }
   let c = await card('b1'); console.log('[libro]', JSON.stringify(c));
-  assert.deepStrictEqual(c.main, ['Presta, vendi o regala|Presta, vendi o regala il libro', 'Desideri|Sposta nei Desideri', 'Lo consiglio|Lo consiglio: gli amici lo vedono nel tuo profilo', 'Cerca sul web|Cerca questo libro su Google: prezzo, recensioni, dove comprarlo', 'Elimina|Elimina il libro']);
-  assert.deepStrictEqual(c.win, ['toggle:icona']);
-  // «Elimina» lontano dalla freccetta: almeno 60 px tra i due
-  const gap = await p.evaluate(() => { const r = document.querySelector('#list .row[data-id="b1"]'), d = r.querySelector('[data-act="del"]').getBoundingClientRect(), t = r.querySelector('[data-act="toggle"]').getBoundingClientRect(); return Math.hypot((t.left + t.right) / 2 - (d.left + d.right) / 2, (t.top + t.bottom) / 2 - (d.top + d.bottom) / 2); });
-  console.log('[distanza Elimina-freccetta]', Math.round(gap), 'px'); assert(gap >= 60);
-  assert.deepStrictEqual(c.tail, ['Condividi|Manda questo libro a un amico']);
-  assert.strictEqual(c.thumb, 'Copertina'); assert(c.over <= 0 && !c.topOver, 'niente esce dalla scheda');
-  c = await card('b2'); console.log('[prestato]', JSON.stringify(c));
-  assert(c.main[0].startsWith('Prestato|Prestato a Marco')); assert(c.flags.includes('Prestato a Marco')); assert(c.tail.length === 1);
-  c = await card('b5'); console.log('[venduto]', JSON.stringify(c.main));
-  assert(c.main[0].startsWith('Venduto|'));
-  c = await card('b4'); console.log('[non trovato]', JSON.stringify(c.tail));
-  assert.deepStrictEqual(c.tail.map(x => x.split('|')[0]), ['Condividi', 'Cerca di nuovo']);
-  assert(c.over <= 0);
+  const TONDI = ['Lo consiglio: gli amici lo vedono nel tuo profilo', 'Sposta nei Desideri', 'Manda questo libro a un amico', 'Modifica i dati del libro', 'Elimina il libro'];
+  assert(c.page && c.back.length === 1, 'pagina a tutto schermo con ‹');
+  assert.deepStrictEqual(c.main, TONDI, 'tasti tondi: stella, desideri, condividi, matita, elimina');
+  assert.deepStrictEqual(c.loan, ['Presta, vendi o regala il libro']); assert.deepStrictEqual(c.more, ['websearch'], '«Cerca sul web» nel ⋯');
+  assert(c.over <= 0 && !c.out, 'niente esce dalla pagina');
+  c = await card('b2'); console.log('[prestato]', JSON.stringify(c.loan));
+  assert(c.loan.length === 2 && /^È tornato/.test(c.loan[0]) && /^Prestato a Marco/.test(c.loan[1])); assert.deepStrictEqual(c.main, TONDI);
+  c = await card('b5'); console.log('[venduto]', JSON.stringify(c.loan));
+  assert(/^Venduto/.test(c.loan[0]));
+  c = await card('b4'); console.log('[non trovato]', JSON.stringify(c.more));
+  assert.deepStrictEqual(c.more, ['lookup', 'websearch'], '«Cerca di nuovo» e «Cerca sul web» nel ⋯'); assert(c.over <= 0);
+  await p.evaluate(() => { const b = document.querySelector('#list .row.open.cv-full .cv-back'); if (b) b.click(); }); await wait(300);
   await p.evaluate(() => window.__app.setTab('wish')); await wait(200);
   c = await card('b3'); console.log('[desideri]', JSON.stringify(c.main));
-  assert.deepStrictEqual(c.main, ['Presta, vendi o regala|Presta, vendi o regala il libro', 'Libreria|Sposta in Libreria (l\'ho comprato)', 'Cerca sul web|Cerca questo libro su Google: prezzo, recensioni, dove comprarlo', 'Elimina|Elimina il libro']);
-  // stesso stile per tutte le azioni con scritta
-  const st = await p.evaluate(() => [...document.querySelectorAll('#list .ico.act, #list .row .ico.act')].map(b => { const s = getComputedStyle(b); return [s.height, s.borderRadius, s.fontSize, s.fontWeight].join(' '); }));
-  console.log('[stile]', [...new Set(st)]); assert.strictEqual(new Set(st).size, 1);
+  assert.deepStrictEqual(c.main, ['Sposta in Libreria (l\'ho comprato)', 'Manda questo libro a un amico', 'Modifica i dati del libro', 'Elimina il libro']);
   assert.deepStrictEqual(errors, []);
   console.log('e2e26 OK');
   await browser.close(); server.close();

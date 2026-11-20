@@ -154,4 +154,9 @@ const AZIONI = { stats: 'NL.openStats()', export: 'NL.openExport()', scan: 'NL.s
   fri: 'NLAmici.open()', menu: 'NL.openMenu(true)' };
 function fai(p, cosa) { if (!AZIONI[cosa]) throw new Error('azione sconosciuta: ' + cosa); return p.evaluate('void window.' + AZIONI[cosa]); }
 const prestiti = (p) => p.evaluate(() => String(window.NL.loans()));   // quanti libri in prestito (prima: il numero sul tasto «Prestati»)
-module.exports = { serve, wait, sleep, MIME, CFG, csp, aggiungi, fai, prestiti };
+// pagina del libro (20/11/2026: la scheda «Classica» a campi non c'è più): la matita rende scrivibili i dati al loro posto; un altro tocco = fatto
+async function matita(p, id, ...vuoti) {   // vuoti: «Genere», «Scaffale», «Serie o collana», «Nota», «Costo»: i dati vuoti si aprono con «+ …»
+  await p.evaluate((id) => { const b = document.querySelector('.row[data-id="' + id + '"] .cv-editb'); if (!b) throw new Error('manca la matita di ' + id); b.click(); }, id); await wait(300);
+  for (const v of vuoti) { await p.evaluate((id, v) => { const b = [...document.querySelectorAll('.row[data-id="' + id + '"] .cv-add')].find(x => x.textContent.trim() === '+ ' + v); if (b) b.click(); }, id, v); await wait(150); }
+}
+module.exports = { serve, wait, sleep, MIME, CFG, csp, aggiungi, fai, prestiti, matita };

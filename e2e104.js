@@ -119,7 +119,9 @@ const base = 'http://localhost:' + CFG.port(8304);
     page.add = (o) => page.evaluate((o) => { const b = window.NL.clean(o); window.NL.books().unshift(b); window.NL.save(); window.NL.refresh(); return b.id; }, o);
     page.titles = () => page.evaluate(() => window.NL.books().map(b => b.t + (b.w ? ' (D)' : '')).sort());
     page.saved = () => page.evaluate(() => JSON.parse(localStorage.getItem('prova:catalogo-libri-v2') || '{}').books.map(b => b.t + (b.w ? ' (D)' : '')).sort());
-    page.openRow = (id) => page.evaluate((id) => document.querySelector('[data-id="' + id + '"] .sum').click(), id);
+    // la pagina del libro è a tutto schermo: prima di aprirne un'altra si chiude quella aperta, come fa chi usa l'app
+    page.closePages = async () => { for (let k = 0; k < 4; k++) { const n = await page.evaluate(() => { const b = document.querySelector('.row.open.cv-full [data-act="toggle"]'); if (b) b.click(); return !!b; }); if (!n) break; await wait(350); } };
+    page.openRow = async (id) => { await page.closePages(); await page.evaluate((id) => document.querySelector('[data-id="' + id + '"] .sum').click(), id); };
     return page;
   }
   // ---- B: due libri, sincronizzati ----
@@ -153,7 +155,7 @@ const base = 'http://localhost:' + CFG.port(8304);
   t = await A.$eval('[data-id="' + bDue + '"] .cv-guest', x => x.innerText.replace(/\s+/g, ' ')); assert(/Me lo presti\?/.test(t), 'azioni sulla scheda');
   assert(await A.$eval('[data-id="' + bDue + '"] .acts-main .g-wish', x => x.classList.contains('on')), 'già nei tuoi desideri: icona accesa in alto');
   assert(!(await A.$('[data-id="' + bDue + '"] .cv-editb')) || await A.$eval('[data-id="' + bDue + '"] .cv-editb', x => getComputedStyle(x).display === 'none'), 'niente matita');
-  await A.evaluate(() => window.NLCard && window.NLCard.set('d')); await wait(500);
+  
   // libro dell'amico senza titolo: la stessa pagina degli altri, niente campi da riempire (Piero, 19/11/2026)
   await A.openRow(bVuoto); await wait(500);
   t = await A.$eval('[data-id="' + bVuoto + '"]', x => x.innerText.replace(/\s+/g, ' '));
@@ -165,13 +167,14 @@ const base = 'http://localhost:' + CFG.port(8304);
   await A.screenshot({ path: CFG.OUT + '/amici-libro-senza-titolo.png' });
   await A.openRow(bDue); await wait(500);
   await A.evaluate((id) => document.querySelector('[data-id="' + id + '"]').scrollIntoView(), bDue); await A.screenshot({ path: CFG.OUT + '/amici-libreria-amico.png' });
-  await A.evaluate(() => window.NLCard && window.NLCard.set('attuale')); await wait(300);
+  
   await A.click('[data-id="' + bDue + '"] .cv-guest [data-g="ask"]'); await wait(700);
   assert.strictEqual(DB.rq.length, 1, 'richiesta mandata'); assert(/Richiesta mandata/.test(await A.$eval('[data-id="' + bDue + '"] .cv-guest', x => x.innerText)));
   await A.evaluate(() => window.NLSocial.run(false)); await wait(400);
   assert.strictEqual(DB.libriPosts, posts0, 'nessuna sincronizzazione mentre guarda la libreria di Bruno');
   assert.deepStrictEqual(await A.saved(), mineBefore, 'i suoi libri salvati non cambiano');
   // un altro libro di B nei desideri di A (dalla sua libreria)
+  await A.closePages();
   await A.click('#guestBar [data-g="notmine"]'); await wait(300);
   const gatt = await A.evaluate(() => window.NL.books().find(b => /Gattopardo/.test(b.t)).id);
   await A.openRow(gatt); await wait(400);

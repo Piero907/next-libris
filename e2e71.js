@@ -1,6 +1,6 @@
 const CFG = require("./_config");
 const H = require('./_harness');
-// modulo «Scheda aperta del libro» (schede.js/.css): Classica e D, pagina del libro (A, B, C tolte);
+// modulo «Pagina del libro» (schede.js/.css): la scheda aperta è sempre la pagina del libro (la «Classica» e la scelta tra le due tolte il 20/11/2026);
 // scelta in Opzioni › Aspetto, salvata; i campi spostati si modificano e si salvano come prima.
 // D: in alto icone su una riga (preferito, desideri, condividi, elimina), in fondo Presta e Cerca sul web con la scritta; autore che apre la sua finestra; lettura modificabile; etichette = filtri
 const puppeteer = require('puppeteer-core');
@@ -21,22 +21,22 @@ const books = [
   page.on('request', r => r.url().startsWith('http://localhost:' + CFG.port(8191)) ? r.continue() : r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }));
   const wait = H.wait;   // attesa «finché» (_harness.js)
   await page.goto('http://localhost:' + CFG.port(8191) + '/?vista=elenco', { waitUntil: 'load' });
-  await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9 })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
+  await page.evaluate(b => { const o = Storage.prototype.setItem; localStorage.setItem('catalogo-libri-v2', JSON.stringify({ books: b, updated: Date.now() })); localStorage.setItem('catalogo-libri-card', JSON.stringify({ v: 'attuale' })); localStorage.setItem('catalogo-libri-set', JSON.stringify({ swiped: true, name: 'P', selTip: 1, lastBackup: Date.now(), donUntil: Date.now() + 9e9, instSnooze: Date.now() + 9e9 })); Storage.prototype.setItem = function (k, v) { if (/^catalogo-libri-v2$/.test(k)) return; return o.call(this, k, v); }; }, books);
   await page.reload({ waitUntil: 'load' }); await wait(800);
   const card = () => '#list .row[data-id="r1"]';
   const open = async () => { if (!(await page.$(card() + '.open'))) { await page.evaluate(s => document.querySelector(s + ' .sum').click(), card()); await wait(400); } };
-  const pick = async v => { await page.evaluate(v => window.NLCard.set(v), v); await wait(350); };   // la scelta non e' piu' nelle Opzioni: si cambia solo nelle prove
+  // una scelta salvata dalle versioni vecchie non conta e viene cancellata
   const book = () => page.evaluate(() => window.__app.state.books.find(b => b.id === 'r1'));
   // nelle Opzioni non c'e' piu' la scelta della scheda: la pagina del libro e' quella dell'app (su localhost parte la classica, per le prove vecchie)
   await page.evaluate(() => window.__app.openOptions('look')); await wait(250);
   assert(await page.evaluate(() => !document.querySelector('#optCard') && !/Scheda aperta del libro/.test(document.querySelector('#optSheet').innerText)), 'sezione tolta');
   await page.evaluate(() => window.__app.closeOptions()); await wait(300);
-  assert.strictEqual(await page.evaluate(() => window.NLCard.get()), 'attuale');
+  assert(await page.evaluate(() => !window.NLCard && document.documentElement.dataset.card === 'd' && localStorage.getItem('catalogo-libri-card') === null), 'niente più scelta della scheda');
   await open();
-  const h0 = await page.$eval(card(), e => Math.round(e.getBoundingClientRect().height));
-  assert(await page.$eval(card(), e => !e.querySelector('.cv-secs, .cv-tabs, .cv-page')));
+
+
   // D: pagina del libro; Modifica mostra i campi, Fatto torna alla pagina
-  await pick('d'); await open();
+  await open();
   const d = await page.evaluate(s => { const e = document.querySelector(s); const p = e.querySelector('.cv-page'); return { page: p ? p.innerText.replace(/\s+/g, ' ') : '', headHidden: getComputedStyle(e.querySelector('.head')).display === 'none' }; }, card());
   console.log('[D]', JSON.stringify(d)); assert(/Il nome della rosa/.test(d.page) && /Bompiani\s*(· )?2012\s*(· )?624 pagine/.test(d.page) && d.headHidden);
   // in alto solo preferito, condividi, elimina; sotto, con la scritta: presta, desideri, cerca sul web

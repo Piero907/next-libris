@@ -52,7 +52,7 @@ let net = 'ok', hits = [];
   await wait(1200);
   const book = id => page.evaluate(i => { const b = window.__app.state.books.find(x => x.id === i); return b && JSON.parse(JSON.stringify(b)); }, id);
   const open = async id => { if (!await page.$('.row.open[data-id="' + id + '"]')) await page.evaluate(i => document.querySelector('.row[data-id="' + i + '"] [data-act="toggle"]').click(), id); await wait(250); };
-  const sumTap = id => page.evaluate(i => document.querySelector('details.desc:not(.quotes)[data-id="' + i + '"] > summary').click(), id);
+  const sumTap = id => page.evaluate(i => { const d = document.querySelector('details.desc:not(.quotes)[data-id="' + i + '"]'); if (!d.open) d.querySelector('summary').click(); }, id);   // nella pagina del libro la descrizione salvata è già aperta
   const body = id => page.$eval('details.desc:not(.quotes)[data-id="' + id + '"] .desc-b', e => e.textContent.replace(/\s+/g, ' ').trim());
   const doneD = id => page.waitForFunction(i => { const d = document.querySelector('details.desc:not(.quotes)[data-id="' + i + '"] .desc-b'); return d && !d.querySelector('.desc-wait') && d.textContent.trim(); }, { timeout: 15000 }, id);
 
