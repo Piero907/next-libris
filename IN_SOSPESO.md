@@ -93,6 +93,11 @@ Il 17/11/2026 sera Piero ha confermato **tutto il resto** (vera 103 e 102, «Acc
 
 ## D. Wikipedia e Wikidata
 
+### 42. Idee con i dati pubblici della rete (20/11/2026)
+
+**Richiesta di Piero:** «salviamole perché piano piano le implementeremo». Elenco completo, fonti e domande aperte nel documento del progetto claude.ai `claude/idee-dati-pubblici.md` (11 idee: biblioteca che ha il libro con SBN + Anagrafe delle biblioteche, «Leggilo gratis», audiolibri, biblioteche vicine, premi letterari, prossimo della serie, luoghi dei libri, titolo originale e traduttore, anniversari degli autori, Wikiquote, sfide di lettura). **In corso: «Leggilo gratis»** (tela, ramo `tela-leggilo-gratis`, modulo `gratis.js`/`gratis.css`, prova e2e140; si toglie con `togli_modulo.py gratis`).
+
+
 Le quattro voci usano la stessa fonte: conviene farle insieme o almeno con la stessa base (una ricerca su Wikidata per autore e per opera, salvata una volta sola nel telefono). Wikidata **non** serve per cercare per ISBN: le edizioni italiane ci sono poco, e SBN, Google Libri e Open Library le coprono già meglio.
 
 ### 10. Dall'autore: le sue opere e «Suggerisci» (chiesto il 16/11/2026)
