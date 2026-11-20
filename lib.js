@@ -474,7 +474,7 @@
       var seen = {};
       it.forEach(function (c) { seen[c.id] = 1; });
       return it.concat(parseGoogle(await getJson(f, base, opts)).filter(function (c) { return !seen[c.id]; }));
-    } catch (e) { throw { code: e && e.status === 429 ? 'rate' : 'network' }; }
+    } catch (e) { throw { code: e && e.status === 429 ? 'rate' : e && e.status === 403 ? 'nokey' : 'network' }; }   // 403 = API prestata tolta (20/11/2026)
   }
 
   /* ---------- lettura della copertina (OCR) ---------- */

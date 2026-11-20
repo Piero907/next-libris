@@ -60,7 +60,7 @@ function whereTxt() { return tab === 'wish' ? 'ai Desideri' : 'alla Libreria'; }
 async function searchTitle(text) {
   var my = ++titleSeq;
   titleText = text; titleCands = [];
-  $('#isbnErr').hidden = true;
+  $('#isbnErr').hidden = true; $('#isbnKey').hidden = true;
   $('#isbnResBox').hidden = false;
   $('#isbnResMsg').textContent = 'Cerco «' + text + '»…';
   $('#isbnRes').innerHTML = '';
@@ -70,7 +70,13 @@ async function searchTitle(text) {
   try { res = await L.searchText(text, lookupOpts()); }
   catch (e) {
     if (my !== titleSeq) return;
-    $('#isbnResMsg').textContent = e && e.code === 'rate' ? 'Google Libri è al limite di richieste: riprova tra poco, oppure aggiungi solo il titolo e completalo dopo.' : 'Non riesco a cercare: controlla la connessione. Puoi aggiungere solo il titolo e completarlo dopo.';
+    /* 20/11/2026 (Piero): senza API, o con l'API prestata tolta, non è «Google al limite»: si spiega come averne una */
+    var noKey = !settings.gbKey || /^prestata/i.test(settings.gbKey) && e && e.code === 'nokey';
+    $('#isbnResMsg').textContent = e && e.code === 'nokey' ? 'L’API Google Libri che ti avevano prestato non è più disponibile. Puoi crearne una tua: è gratis e bastano pochi minuti. Intanto aggiungi solo il titolo e completalo dopo.'
+      : e && e.code === 'rate' && !settings.gbKey ? 'Senza un’API Google Libri, Google limita la ricerca per titolo. Puoi crearne una tua (è gratis) o chiederla in prestito a un amico. Intanto aggiungi solo il titolo e completalo dopo.'
+      : e && e.code === 'rate' ? 'Google Libri è al limite di richieste: riprova tra poco, oppure aggiungi solo il titolo e completalo dopo.'
+      : 'Non riesco a cercare: controlla la connessione. Puoi aggiungere solo il titolo e completarlo dopo.';
+    $('#isbnKey').hidden = !(e && (e.code === 'nokey' || (e.code === 'rate' && noKey)));
     asIs.hidden = false; return;
   }
   if (my !== titleSeq || $('#isbnSheet').hidden) return;
@@ -126,6 +132,7 @@ function addTitleAsIs() {
 }
 $('#isbnRes').addEventListener('click', function (e) { var b = e.target.closest('[data-i]'); if (b) pickTitle(+b.dataset.i); });
 $('#isbnAsIs').addEventListener('click', addTitleAsIs);
+$('#isbnKey').addEventListener('click', function () { $('#isbnSheet').hidden = true; if (window.NLRicerche && window.NLRicerche.guide) window.NLRicerche.guide(); else if (NL.openOptions) NL.openOptions('search'); });
 $('#isbnText').addEventListener('keydown', function (e) {
   if (e.key === 'Enter' && !e.shiftKey && looksLikeTitle(e.target.value)) { e.preventDefault(); submitIsbn(); }
 });
