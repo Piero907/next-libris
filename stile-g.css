@@ -270,3 +270,12 @@ html.g-look:has(#wrap:not([hidden])) .g-tabs{z-index:61}
 /* ---------- G21. spazio sotto ordine e gruppi (Piero, 20/11/2026: libreria di un amico senza gruppi, copertine attaccate) ---------- */
 html.g-look #sortBar{margin-bottom:14px!important}
 html.g-look #stick > .chips:not([hidden]){margin-bottom:14px!important;margin-top:0!important}
+
+/* G22 · Indice: puntini come nell'indice di un libro (Piero, 20/11/2026): partono subito dopo il titolo della voce e arrivano alla ›,
+   sulla riga del titolo; il sottotitolo va sotto, senza spostare i puntini. Puntini in b::before (b::after è il pallino di Account) */
+html.g-look .drawer .dopt::after{display:none!important}
+html.g-look .drawer .dopt>span:has(>b){flex:1 1 auto!important;min-width:0;max-width:none!important}
+html.g-look .drawer .dopt:not(.dset-t)>span:has(>b)>b{display:flex!important;align-items:baseline;gap:8px}
+html.g-look .drawer .dopt:not(.dset-t)>span:has(>b)>b::before{content:"";order:2;flex:1;min-width:16px;border-bottom:1.5px dotted color-mix(in srgb,var(--muted) 55%,transparent);transform:translateY(-4px)}
+html.g-look .drawer .dopt>.n{align-self:flex-start;padding-top:0;line-height:1.3;font-size:15.5px}
+html.g-look #drawerOpts>.ddon .don-menu>span:has(>b)>b::before{display:none}
