@@ -157,7 +157,8 @@ Estate    #3F86A3  #DDB46A  #CF7584   fondo #0F2230
 - Niente testo che tocca i bordi dei riquadri: sempre il margine interno.
 - Titoli e etichette lunghi vanno a capo bene (meglio titolo + sottotitolo + › che una riga lunghissima); niente segnaposto tagliati a 360 px.
 - Peso visivo leggero: niente riquadri o pulsanti pieni dove basta poco (bordi sottili, `--muted`, pulsanti piccoli).
-- Si prova alle misure dei telefoni, del tablet e del PC, in chiaro e in scuro; niente scorrimento di lato.
+- **Sempre, a ogni modifica di una schermata** (Piero, 21/11/2026): schermate a 360, 375, 390, 412 scuro, 430, 768 e 1280 px e con le linguette a sinistra, guardate e corrette **prima** di pubblicare; niente scorrimento di lato, niente fuori dallo schermo o sotto i segnalibri. Modello: `schermate_suggerimenti.js`.
+- Le pagine e i fogli a griglia hanno `grid-template-columns: minmax(0,1fr)`: altrimenti una riga che scorre di lato (scaffali, pillole) allarga tutta la pagina.
 - Si rispetta «riduci movimento».
 
 Le regole sui **testi** dell'app (parole, nomi, tono) stanno in `claude/regole-di-lavoro.md`; il **funzionamento della ricerca** dei libri sta in `claude/ricerca-libri.md`. Qui c'è solo l'aspetto.

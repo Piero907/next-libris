@@ -313,7 +313,7 @@ SQL in `supabase/` del ramo `prove` (migrazioni 001-033). Ogni funzione è `secu
 - **GitHub Actions:** il giro completo gira da solo a ogni push (`prove.yml`); risultato con `gh api repos/Piero907/next-libris/actions/runs?per_page=3` e file «esito-prove». Prima di rifare prove qui, guardare l'esito di Actions.
 - **Descrizione di ogni prova:** tabella in `README.md` (porta e cosa controlla). Comandi: `node esegui.js eNN …`; `--veloce` (libreria + gruppo FUMO: e2e, 5, 6, 7, 10, 15, 56, 62); prove sensibili ai tempi in `DA_SOLE`.
 - **Aiutanti:** `_harness.js` (`H.serve`, `H.wait`, `H.fai(p, 'menu'|'add'|'lib'|…)`, `H.aggiungi`, `H.matita`, `H.prestiti`), `_config.js` (porte).
-- **Controlli grafici:** `ispeziona.js` con `PASSI=./passi_finestre.js` (tutte le finestre a 1280, 768, 390), `schermate_restyle.js`, `schermate_telefoni.js`, `schermate_amici*.js`; e2e137 (misure dei telefoni).
+- **Controlli grafici:** `ispeziona.js` con `PASSI=./passi_finestre.js` (tutte le finestre a 1280, 768, 390), `schermate_restyle.js`, `schermate_telefoni.js`, `schermate_amici*.js`, **`schermate_suggerimenti.js`** (pagina Suggerimenti e anteprima a tutte le misure, con controlli automatici: modello per il controllo alle varie misure, obbligatorio a ogni modifica di schermata); e2e137 (misure dei telefoni).
 - **Pubblicazione:** `pubblica_prova.py` (lista `MODULES`), `nuova_versione.py`, `pubblica_vera.py`; `togli_modulo.py`.
 - **Logica pura:** `test_lib.js`, `test_sbn.js`, `test_order.js`, `test_new.js`.
 
