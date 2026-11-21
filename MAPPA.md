@@ -43,7 +43,7 @@
 | Elemento | Codice | Aspetto | Prove |
 |---|---|---|---|
 | Schermata d'apertura (splash) | `#splash`, `app-avvio.js` | `style.css` | 30, 32 |
-| **Installazione obbligatoria sui telefoni** («Installa Next Libris» / «Mettila sul tuo iPhone» / «Fatto!», invito, «Fai il backup») | `app-avvio.js` `iosGate()`, `gatePhone()` (lato corto < 600), `gatePaint()`, `gateInvite()`, `gateIc()`; `#iosGate.wc` | `style.css` (`#iosGate`), grafica `wc` di `guida.css` | **142**, 22 |
+| **Installazione obbligatoria sui telefoni** («Installa Next Libris» (Android e iPhone, dal 21/11/2026) / «Fatto!», invito, «Fai il backup») | `app-avvio.js` `iosGate()`, `gatePhone()` (lato corto < 600), `gatePaint()`, `gateInvite()`, `gateIc()`; `#iosGate.wc` | `style.css` (`#iosGate`), grafica `wc` di `guida.css` | **142**, 22 |
 | Riquadro «Installa» in cima (tablet/PC), finestra «Come installarla» | `#instCard`, `#instSheet`, `updateInstallUi()`, `openInstallHelp()`, `doInstall()` | — | 22, 116 |
 | Aggiornamento disponibile, «Aggiorna adesso» | `checkVersion()`, `updateNow()` (app-filtri), `#verBox`/`#verUpdate`; `sw.js` | — | 19, 33 |
 | «Cosa c'è di nuovo» dopo un aggiornamento | `#wnSheet`, `checkWhatsNew()` (app-scheda) | — | 70 |

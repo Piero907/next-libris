@@ -41,7 +41,7 @@ La scheda 4 «Installa l'app» è stata tolta il 20/11/2026 (vera 115): sui tele
 - **Nome**: Come ti chiami? È il nome con cui gli amici ti troveranno. [campo] [Continua] (obbligatorio, vedi `claude/amici-chat-avvisi.md`).
 
 ## Prima installa, poi il benvenuto (scelte di Piero del 20/11/2026, **vera 115**)
-- **Installazione obbligatoria solo sui telefoni** (Android e iPhone, non tablet né PC: lato corto sotto 600 px): nel browser c'è solo la schermata «Installa Next Libris» / «Mettila sul tuo iPhone», con la grafica verde delle schede; **niente «Continua nel browser»**. Su Android il tasto «Installa» (o i passi del menu), poi «Fatto! Aprila dall'icona». Nelle app che aprono i link dentro di sé: passi per aprirla nel browser e «Copia il link».
+- **Installazione obbligatoria solo sui telefoni** (Android e iPhone, non tablet né PC: lato corto sotto 600 px): nel browser c'è solo la schermata «Installa Next Libris» (anche su iPhone: «Mettila» non va bene, Piero 21/11/2026), con la grafica verde delle schede; **niente «Continua nel browser»**. Su Android il tasto «Installa» (o i passi del menu), poi «Fatto! Aprila dall'icona». Nelle app che aprono i link dentro di sé: passi per aprirla nel browser e «Copia il link».
 - **Invito su iPhone:** l'app installata non riceve il link (dati separati da Safari): la schermata dice «Ti ha invitato Anna R. Nell'app installata cerca «Anna R.» in Amici». Su Android l'invito passa da solo.
 - **Chi ha già libri nel browser su iPhone:** la schermata lo dice e offre «Fai il backup» (con l'account tornano da soli).
 - **Percorso dei primi passi** con la stessa grafica delle schede (puntini, «Passo N di 3», disegno, righe, tasto largo, «Più tardi»).

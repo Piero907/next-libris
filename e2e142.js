@@ -19,7 +19,7 @@ const BOOKS = { books: [{ id: 'b1', t: 'Il barone rampante', a: 'Italo Calvino',
   async function page(o) {
     const ctx = await browser.createBrowserContext(); const p = await ctx.newPage();
     if (o.ua) await p.setUserAgent(UA[o.ua]);
-    await p.setViewport({ width: o.w || 390, height: o.h || 844, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+    await p.setViewport({ width: o.w || 390, height: o.h || 844, deviceScaleFactor: process.env.SCHERMATE ? 2 : 1, isMobile: true, hasTouch: true });
     p.on('pageerror', e => errors.push(e.message));
     await p.setRequestInterception(true);
     p.on('request', r => { const u = r.url(); if (u.startsWith('http://localhost') || u.startsWith('data:')) return r.continue(); r.respond({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: '{}' }); });
@@ -48,14 +48,16 @@ const BOOKS = { books: [{ id: 'b1', t: 'Il barone rampante', a: 'Italo Calvino',
   // 2) iPhone con il link d'invito: passi di Safari e il nome da cercare
   p = await page({ ua: 'ios', q: '?amico=Anna%20R.&guida=1' });
   g = await gate(p);
-  assert(g && g.h === 'Mettila sul tuo iPhone' && !g.web && /Aggiungi alla schermata Home/.test(g.t), 'iPhone: ' + JSON.stringify(g));
+  assert(g && g.h === 'Installa Next Libris' && !g.web && /Aggiungi alla schermata Home/.test(g.t), 'iPhone: ' + JSON.stringify(g));
   assert(/Ti ha invitato Anna R\. Nell'app installata cerca «Anna R\.» in Amici/.test(g.t.replace(/\s+/g, ' ')), 'invito su iPhone: ' + g.t);
   assert(!g.bk, 'senza libri niente backup');
+  if (process.env.SCHERMATE) await p.screenshot({ path: process.env.SCHERMATE + '/ios-invito.png' });
   await p.browserContext().close();
 
   // 3) iPhone con libri nel browser: «Fai il backup»
   p = await page({ ua: 'ios', seed: BOOKS });
   g = await gate(p); assert(g && g.bk && /Hai 2 libri in questo browser/.test(g.t), 'iPhone con libri: ' + g.t);
+  if (process.env.SCHERMATE) await p.screenshot({ path: process.env.SCHERMATE + '/ios-libri.png' });
   await p.browserContext().close();
 
   // 4) telefono basso: tutto nello schermo
