@@ -41,7 +41,7 @@ const OL = { 'Giovanni Verga': [{ key: '/works/OL1W', title: 'I Malavoglia', lan
 const stat = { wd: 0, ws: 0, ol: 0, ll: 0, rai: 0, other: [] };
 // Liber Liber (ricerca delle pagine) e RaiPlay Sound (elenco degli audiolibri e scheda di ognuno)
 const LL = { 'I Malavoglia': [{ title: 'I Malavoglia', url: 'https://liberliber.it/autori/autori-v/giovanni-verga/i-malavoglia/' }, { title: 'I Malavoglia', url: 'https://liberliber.it/autori/autori-x/altro/i-malavoglia/' }] };
-const RAI = { '/audiolibri/ilbaronerampante': 'Di Italo Calvino', '/audiolibri/cecita': 'Di Giovanni Rossi', '/audiolibri/imalavoglia': 'Di Giovanni Verga' };
+const RAI = { '/audiolibri/delittoecastigo': 'Di Fëdor Dostoevskji', '/audiolibri/ilbaronerampante': 'Di Italo Calvino', '/audiolibri/cecita': 'Di Giovanni Rossi', '/audiolibri/imalavoglia': 'Di Giovanni Verga' };
 function fake(u) {
   const url = new URL(u);
   if (url.host === 'query.wikidata.org') {
@@ -54,7 +54,7 @@ function fake(u) {
   if (url.host === 'liberliber.it' && url.pathname === '/wp-json/wp/v2/search') { stat.ll++; return (LL[url.searchParams.get('search')] || []).map(x => Object.assign({ subtype: 'page' }, x)); }
   if (url.host === 'www.raiplaysound.it') {
     stat.rai++;
-    if (url.pathname === '/programmi/adaltavoce/audiolibri.json') return { block: { cards: [['Il barone rampante', '/audiolibri/ilbaronerampante'], ['Cecità', '/audiolibri/cecita'], ['I Malavoglia', '/audiolibri/imalavoglia']].map(x => ({ title: x[0], path_id: x[1] + '.json' })) } };
+    if (url.pathname === '/programmi/adaltavoce/audiolibri.json') return { block: { cards: [['Delitto e castigo', '/audiolibri/delittoecastigo'], ['Il barone rampante', '/audiolibri/ilbaronerampante'], ['Cecità', '/audiolibri/cecita'], ['I Malavoglia', '/audiolibri/imalavoglia']].map(x => ({ title: x[0], path_id: x[1] + '.json' })) } };
     const k = url.pathname.replace(/\.json$/, ''); if (RAI[k]) return { podcast_info: { title: 'x', author: RAI[k] } };
   }
   return null;
@@ -88,6 +88,11 @@ function fake(u) {
   console.log('dati', d, JSON.stringify(stat));
   const av = await p.evaluate(() => NL.books().map(b => b.t + ' → ' + JSON.stringify(NLGratis.avail(b))).join('\n'));
   console.log(av);
+  // nomi un po' diversi: titolo senza articolo, cognome traslitterato in un altro modo
+  const k7 = await p.evaluate(() => JSON.stringify(NLGratis.avail({ id: 'x', t: 'Malavoglia', a: 'Giovanni Verga' })));
+  assert(/it\.wikisource\.org\/wiki\/I_Malavoglia/.test(k7), '«Malavoglia» trova «I Malavoglia»: ' + k7);
+  const w6 = await p.evaluate(() => { const v = NLGratis.avail(NL.get('w6')); return v && !v.pd && v.au[0].u; });
+  assert.strictEqual(w6, 'https://www.raiplaysound.it/audiolibri/delittoecastigo', '«Dostoevskji» = «Dostoevskij» per «Ad alta voce»');
   // 1) pagina del libro
   await p.evaluate(() => NL.openCard('k1')); await H.wait(900);
   assert(await p.$('.cv-page .gr-row'), 'riga «Leggilo gratis» nella pagina del libro');
