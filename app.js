@@ -564,6 +564,7 @@ function loadAll() {
     settings.grp = GRP_TXT[s.grp] ? s.grp : '';                                        // raggruppa per (copertine ed elenco, 17/11/2026)
     settings.grpOpen = {};                                                            // gruppi aperti (chiusi di partenza)
     if (s.grpOpen && typeof s.grpOpen === 'object') Object.keys(s.grpOpen).slice(0, 400).forEach(function (k) { if (typeof k === 'string' && k.length < 200) settings.grpOpen[k] = 1; });
+    settings.gLeft = !!s.gLeft;                                                     // «Nastro e linguette a sinistra»: prima non si ricaricava all'apertura (21/11/2026)
     settings.grpExp = s.grpExp ? 1 : 0; 
     settings.auInv = s.auInv === 0 ? 0 : 1;                                          // autori nei gruppi «Neruda, Pablo» (1, predefinito) o come sono scritti (0) (17/11/2026 notte)
     settings.auPa = {};                                                              // paese dell'autore corretto a mano: codice di due lettere (giro 2, 18/11/2026)
