@@ -32,7 +32,7 @@
 | Moduli (`NOME.js` + `NOME.css`, agganciati a `window.NL`) | `layout` (+, Per te, icone dell'Indice, avvisi in cima) · `schede` (pagina del libro) · `social` (account) · `profilo` · `amici` · `notifiche` (campanella) · `chat` · `ricerche` (archivio comune, guida dell'API) · `push` · `guida` (schede di benvenuto, percorso, libreria di esempio) · `wrap` (stagione in libri) · `admin` (solo per gli amministratori, caricato da `chat.js`) · `gratis` («Leggilo gratis», si toglie con `togli_modulo.py gratis`) |
 | CSS | `style.css` (base) → CSS dei moduli → `stile-c.css` (pezzi di base) → `stile-g.css` (G1-G28, vince su tutto) |
 | Automazioni | `.github/workflows/prove.yml` (giro completo delle prove a ogni push di `prova` e `prove`; uguale nei due rami), `.github/workflows/tieni-attivo.yml` (`tieni_attivo()` nei due database ogni 2 giorni; parte solo da `main`) |
-| Altri | `sw.js` (copia offline, `SHELL`), `manifest.json`, `version.json`, `privacy.html`, `REGISTRO_MODIFICHE.md` (mostrato in «Novità delle versioni»), `LEGGIMI.txt`, `indirizzo.js` + `trasloco.html/js` (vecchio indirizzo: «Ci siamo spostati»), `vendor/` (ZXing, Tesseract, font, bandiere), `icons/` |
+| Altri | `sw.js` (copia offline, `SHELL`), `manifest.json`, `version.json`, `privacy.html`, `MARCHIO-E-DIRITTI.md` (cosa si può fare con nome, logo e codice; dal 21/11/2026), `REGISTRO_MODIFICHE.md` (mostrato in «Novità delle versioni»), `LEGGIMI.txt`, `indirizzo.js` + `trasloco.html/js` (vecchio indirizzo: «Ci siamo spostati»), `vendor/` (ZXing, Tesseract, font, bandiere), `icons/` |
 
 **Aggiungere un modulo:** `NOME.js`/`.css`, una riga in `index.html` e una in `SHELL` di `sw.js` con `// modulo:`, il nome in `MODULES` di `pubblica_prova.py`. Si toglie con `python3 togli_modulo.py NOME`.
 
@@ -237,7 +237,7 @@
 | **Impostazioni** › Account e sincronizzazione · Amici e privacy · Notifiche · Ricerca dei libri · Aggiunta dei libri · Aspetto | `social.js` (`#goAcc`), `amici.js` `paintSet()` (`#goFriOpt`), `push.js` (`#goPush`), `index.html` (`#setList`) | `#accSheet`, Amici e privacy, sezione push, `#optSheet` sezioni search/cards/look |
 | **Info e aiuto** › Come si usa · Guarda una libreria di esempio · Condivisione · Installazione · Privacy · Contatti | `guida.js` `menu()` (`#goGuida`, `#goEsempio`), `index.html` (`#infoList`) | schede di benvenuto, libreria di esempio, `#optSheet` sezioni share/app/privacy/contact |
 | Amministrazione (solo amministratori) | `admin.js` `menuItem()` (`#goAdmin`) | `#adSheet` |
-| Versione, «Novità delle versioni» | `#verBox`, `#verLog` → `openLog()` (`#logSheet`) | registro da `REGISTRO_MODIFICHE.md` |
+| Versione, «Novità delle versioni», riga «© 2026 Next Libris · nome, logo e aspetto riservati» (dal 21/11/2026, prova 119.2) | `#verBox`, `#verLog` → `openLog()` (`#logSheet`), `.ver-c` in `index.html` | registro da `REGISTRO_MODIFICHE.md`; aspetto `.ver-c` in `style.css` |
 
 ## 15. Finestre delle impostazioni
 
