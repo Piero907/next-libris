@@ -78,7 +78,7 @@ const DAY = 864e5;
   await click('#donRowOpen'); await wait(200); await page.evaluate(() => document.querySelector('.don-amt[data-amt="2"]').click());
   const tgt = new Promise(r => browser.once('targetcreated', t => r(t)));
   await click('#donGo'); const t = await tgt; await wait(300);
-  const url = t.url(); console.log('[paypal]', url); assert.strictEqual(url, 'https://www.paypal.me/PieroRagusa907/2EUR');
+  const url = t.url(); console.log('[paypal]', url); assert(/^https:\/\/www\.paypal\.(me|com\/paypalme)\/PieroRagusa907\/2EUR$/.test(url), url);   // con la rete vera (GitHub Actions) paypal.me porta a paypal.com/paypalme
   try { const pp = await t.page(); if (pp) await pp.close(); } catch (e) {}
   v = await vis(); console.log('[dopo PayPal]', JSON.stringify(v.set), await toastTxt());
   assert(!v.sheet && (v.set.donGo > 0 || v.set.donUntil > Date.now() + 9 * DAY));   // se il browser ha gia' segnalato il ritorno, vale come ritorno veloce

@@ -128,6 +128,8 @@ const sleep = H.wait;   // attesa «finché» (_harness.js)
     await pg.evaluate(() => document.querySelector('#photoCam').click());
     await pg.waitForFunction(() => { const v = document.querySelector('#snapVideo'); return !document.querySelector('#snap').hidden && v.videoWidth > 0; }, { timeout: 10000 });
     await sleep(1800);
+    /* su GitHub Actions la prima misura della luce arriva più tardi: si aspetta che ci sia (21/11/2026) */
+    await pg.waitForFunction(() => { const i = window.__app.snapInfo(); return i && i.lum != null; }, { timeout: 10000 }).catch(() => {});
     const info = await pg.evaluate(() => window.__app.snapInfo());
     await pg.tap('#snapVideo'); await sleep(150);
     const tap = await pg.evaluate(() => ({ taps: window.__app.snapInfo().taps, ring: !document.querySelector('#snapFocus').hidden }));
