@@ -1,6 +1,6 @@
 # Next Libris — mappa dell'app (elemento → codice, aspetto, prove)
 
-**Aggiornata il 21/11/2026 sulla vera 118** (pagina Suggerimenti, migrazione 033). Prima: **vera 117** (commit f22476d: «Leggilo gratis» e «Ascoltalo gratis», autore sottolineato, «Installa Next Libris» anche su iPhone). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
+**Aggiornata il 21/11/2026 sulla vera 119** (pagina Suggerimenti, migrazione 033; 119: scaffali dentro lo schermo, `settings.gLeft` ricaricato). Prima: **vera 117** (commit f22476d: «Leggilo gratis» e «Ascoltalo gratis», autore sottolineato, «Installa Next Libris» anche su iPhone). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
 
 **A cosa serve:** prima di una modifica, dice **dove mettere le mani** (file, funzione, id, regola CSS) e **quali prove rifare**. Non sostituisce la lettura del codice: prima di modificare si controlla sempre il codice vero (`grep -n "nome" *.js`).
 
