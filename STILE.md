@@ -30,7 +30,7 @@
 - Sono **sette**, in quest'ordine: **Indice · Libri · Desideri · Per te · Amici · Chat · Tu** (Chat aggiunta dopo Amici il 20/11/2026; **Indice in cima**, con l'icona delle tre righe, scelta di Piero del 20/11/2026). Il segnalibro Indice apre l'Indice con le Impostazioni aperte e resta acceso lui (anche con una finestra aperta dall'Indice); un altro tocco lo richiude. «Tu» si accende solo per il profilo. Ognuno ha l'icona e la scritta verticale e sta su una fascia con il taglio delle pagine.
 - **Forma da segnalibro**: **lato dritto contro la pagina, parte tonda verso il bordo dello schermo** (raggio 12 solo su quel lato). Quello attivo è pieno `--accent` e più lungo, gli altri sono `--accent-soft` e più corti (`stile-g.css` G15).
 - Sul segnalibro **Chat** c'è il numero dei messaggi da leggere, in un pallino rosso `--bad` (`.g-tn`, G18).
-- **Sempre visibili, in ogni schermata** (Piero, 20/11/2026): Libreria, Desideri, Per te, Amici, Chat e **conversazione aperta**, profili, pagina del libro, Indice, la **«stagione in libri»** e tutte le **finestre dal basso** (Statistiche, Suggerimenti, Dai tuoi libri al cinema, Aspetto, «+», Titolo o ISBN…). Le finestre e le pagine si aprono **accanto** ai segnalibri, mai sopra (`stile-g.css` G16 e G19).
+- **Sempre visibili, in ogni schermata** (Piero, 20/11/2026): Libreria, Desideri, Per te, Amici, Chat e **conversazione aperta**, profili, pagina del libro, Indice, la **«stagione in libri»** e tutte le **finestre dal basso** (Statistiche, Dai tuoi libri al cinema, Aspetto, «+», Titolo o ISBN…). Le finestre e le pagine si aprono **accanto** ai segnalibri, mai sopra (`stile-g.css` G16 e G19).
 - Con una finestra dal basso aperta **resta acceso il segnalibro da cui si è partiti** (`lastTab`). Se si tocca un altro segnalibro, la finestra o la pagina aperta si chiude (`closeAll`, anche la stagione in libri).
 - **Lato**: a destra di partenza. In Indice › Aspetto c'è **«Nastro e linguette a sinistra»** (`settings.gLeft`, classe `html.g-left`): segnalibri sul bordo sinistro, sempre dritti verso la pagina e tondi verso il bordo; nastro a sinistra con il titolo accanto; pagine e finestre a destra dei segnalibri.
 - Restano a tutto schermo, senza segnalibri: fotocamera, ritaglio della foto e anteprima dell'immagine da condividere. Le copertine e le foto ingrandite hanno i segnalibri sopra, e toccandone uno si chiudono.
@@ -45,10 +45,19 @@
 - Sezioni con l'**etichetta maiuscola spaziata e la linea** («IN LETTURA 1 ——», 11,5/700, `--muted`), tutte allo stesso margine.
 
 ### Pagine intere
-- Libro, profilo, amici, chat, Per te, Indice: fondo carta, accanto ai segnalibri. **Titolo 26/800** e **tasto tondo 38** (‹ o ×) uguali dappertutto, tranne l'Indice.
+- Libro, profilo, amici, chat, Per te, **Suggerimenti**, Indice: fondo carta, accanto ai segnalibri. **Titolo 26/800** e **tasto tondo 38** (‹ o ×) uguali dappertutto, tranne l'Indice.
 - **I tuoi amici**: l'elenco scorre **dentro il suo riquadro** (altezza massima `min(330px, 46vh)`), non la pagina, così «Aggiungi un amico» resta a portata (Piero, 20/11/2026; `stile-g.css` G23).
 - **Profilo**: **niente foto**. Il nome sta dentro l'**ex libris ovale** (bordo doppio `--accent`, «EX LIBRIS» sopra, «Su Next Libris da…» sotto). Le iniziali colorate restano solo negli elenchi. «I tuoi numeri» ha lo stesso margine delle altre sezioni.
 - **Pagina del libro**: copertina al centro, titolo, autore con bandiera (nome in `--accent` 700, **sottolineato** con linea `--accent` al 55 %, spessore 2, distanza 4, perché si capisca che si tocca: Piero, 21/11/2026; `stile-c.css`), pillole, tasti tondi, poi Lettura, Descrizione, Dal libro, Citazioni, Prestito, Nota, Vedi tutti i libri di. **Tutti i titoletti in grassetto** 16/700, senza linea.
+
+### Suggerimenti (pagina intera di Per te, Piero 21/11/2026: tela A «Scaffali»)
+- Pagina intera accanto ai segnalibri, con **Per te acceso**. In cima **tasto tondo ‹ 38** (torna a Per te) e titolo **26/800** sulla stessa riga; sotto la frase 14 `--muted` «Scelti per te dai tuoi libri, dai tuoi amici e da fonti gratuite.».
+- Etichetta **«COSA LEGGERE DOPO»** con la linea (11,5/700 maiuscola spaziata), poi la **scheda grande**: riquadro `--surface` raggio 20 con `--c-sh`, copertina 96×144 (raggio 8), titolo 19/800, autore e pagine `--muted`, i perché con il pallino `--accent`, tasti «Inizio questo» (pieno, largo) e «Un altro» (secondario) sulla stessa riga, sotto «1 di N libri da leggere» 12,5 `--muted` al centro.
+- **Scaffali** uno sotto l'altro (28 px tra uno e l'altro): titolo 17/700 Bricolage, sottotitolo 13 `--muted`, poi una **riga di copertine che scorre di lato** (dentro la riga, mai la pagina). Ogni libro: copertina **112×168** raggio 8 con ombra leggera, titolo 13/700 su due righe al massimo, sotto il perché 12 `--muted` (per gli amici `--accent` 600, es. «Marta ★★★★★ · ce l'ha»). Segno «Gratis» in alto a sinistra sulla copertina (pillola `--warn-bg`, 10/700).
+- **Copertina disegnata** quando manca l'immagine: colore dal titolo (`hsl(--h 30% 33%)`), costa più scura a sinistra, titolo bianco Bricolage 13/800 e autore 10 in basso.
+- **Senza amici**: al posto degli scaffali degli amici un riquadro come una riga dell'Indice (quadratino 38 `--accent-soft` con l'icona degli amici, «Con gli amici i suggerimenti migliorano» 15/700, «Aggiungi un amico» `--accent` 600, ›), raggio 20 con `--c-sh`.
+- In fondo, al centro, 12,5 `--muted`: «Ultima ricerca in rete: … · Cerca di nuovo» e «Impostazioni dei suggerimenti» (link grigio).
+- **Anteprima del libro** (finestra dal basso `#sgPrev`): copertina 84×126 a sinistra, titolo 19/800, autore 14 e «editore · anno · pagine» 13 `--muted`; etichetta «PERCHÉ TE LO PROPONGO» e i perché col pallino; per ogni amico che ce l'ha un riquadro `--accent-soft` raggio 14 «Ce l'ha Marta» `--accent` 600 con «Me lo presti?» (secondario, alto 36) o «Adesso è in prestito» `--muted`, sotto il link «Apri la libreria di Marta ›»; in fondo «+ Desideri» (pieno, largo) e «Non mi interessa» (secondario). `stile-g.css` G28.
 
 ### Indice (il Menu)
 - Titolo «Indice» con **la sola freccia ‹, senza cerchio**.
@@ -172,5 +181,6 @@ Le regole sui **testi** dell'app (parole, nomi, tono) stanno in `claude/regole-d
 - 20/11/2026: avviso del libro nella sua pagina, con il tasto al centro; segnalibro Indice in cima e via ≡ dalla testatina (112.5); tutto nella **vera 113**.
 - 20/11/2026: pillole BETA e prova, tasti dell'amicizia pieni, «Vedi tutti i libri di» dentro la pagina; **vera 114**.
 - 20/11/2026: schermata d'installazione dei telefoni e percorso con la grafica delle schede; **vera 115**.
+- 21/11/2026: **pagina Suggerimenti** con scaffali e anteprima del libro (tela https://claude.ai/artifact/99xqkz1vihWMwtS3w5N1xb, scelta A); **vera 118**.
 
 Tele di design: stile attuale https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu · proposte A-G https://claude.ai/artifact/Tqa6XajvQCK2CVZdSSSimq · schede di benvenuto https://claude.ai/artifact/3K32364B9GUREgviZATvHJ.

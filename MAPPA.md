@@ -1,6 +1,6 @@
 # Next Libris — mappa dell'app (elemento → codice, aspetto, prove)
 
-**Aggiornata il 21/11/2026 sulla vera 117** (commit f22476d: «Leggilo gratis» e «Ascoltalo gratis», autore sottolineato, «Installa Next Libris» anche su iPhone). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
+**Aggiornata il 21/11/2026 sulla vera 118** (pagina Suggerimenti, migrazione 033). Prima: **vera 117** (commit f22476d: «Leggilo gratis» e «Ascoltalo gratis», autore sottolineato, «Installa Next Libris» anche su iPhone). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
 
 **A cosa serve:** prima di una modifica, dice **dove mettere le mani** (file, funzione, id, regola CSS) e **quali prove rifare**. Non sostituisce la lettura del codice: prima di modificare si controlla sempre il codice vero (`grep -n "nome" *.js`).
 
@@ -20,7 +20,7 @@
 | `app-aggiungi.js` (2) | aggiunta dei libri: codici a barre (ZXing), `addIsbn`, `doLookup`, foto e OCR (`processPhoto`), `startScan`/`onScanned`, «Ce l'ho già?» (`onCheck`), prezzo (`askPrice`), torcia |
 | `app-vista.js` (3) | filtri visibili (`visible`), doppioni, selezione multipla (`startSel`, `openBulk`, numerazione), conferma (`askConfirm`), fotocamera dell'app (`snap…`), editor delle foto (`ped…`), luce e obiettivi |
 | `app-scheda.js` (4) | autore (`openAuthor`), novità delle versioni (`openLog`, `checkWhatsNew`), Sostieni (`openDon`, `donPaint`), descrizione (`loadDesc`), serie, citazioni (`openQuote`, `quotesHTML`) |
-| `app-per-te.js` (5) | Novità dei tuoi autori (`runNews`), Suggerimenti / Da scoprire (`runSugg`, `renderNext`), riquadro «Hai finito un libro» (`nxBoxPaint`), tutte le citazioni (`openAllQuotes`) |
+| `app-per-te.js` (5) | Novità dei tuoi autori (`runNews`), **pagina Suggerimenti** (`openSugg`, `renderSugg`, `renderNext`, scaffali `sgShelf`, amici `loadSgf`/`sgFriItems`/`sgSimilar`, anteprima `sgPrevOpen`, Google `runSugg`/`findSugg`), riquadro «Hai finito un libro» (`nxBoxPaint`), tutte le citazioni (`openAllQuotes`) |
 | `app-elenco.js` (6) | righe e copertine (`rowHTML`, `coverHTML`, `renderList`), sezioni In lettura, gruppi (`groupBy`, `renderGroups`), foto degli autori (`auf…`), barra che resta in alto (`updateStick`) |
 | `app-finestre.js` (7) | azioni sulle righe (`delBook`, `retryRow`), **Titolo o ISBN** (`openIsbnSheet`, `searchTitle`, `rankCands`, `olWhy`), scelta e a mano (`openPick`, `openManual`), esportazione, **backup** (`backup`, `restore`, `checkBackupNag`), IndexedDB, copertine (`findCover`, `openCover`) |
 | `app-filtri.js` (8) | Filtri (`renderDrawer`), **Indice** (`openDrawer`, `closeDrawer`, `paintMenuHome`, `setsOpen`, `infoOpen`, `fromMenu`, `menuReopen`), Aspetto (`applyLook`), versione (`checkVersion`), **Opzioni** (`openOptions(sec)`), suggerimenti nei campi, copie (`openDup`), colonne (`applyCols`) |
@@ -30,7 +30,7 @@
 | `lib.js` | logica pura, senza DOM: ISBN, `lookupIsbn`, `searchText`, parser (Google, Open Library, SBN `sbnRec`/`parseSbnList`, Crossref), CSV/XLSX, doppioni, condivisione, `computeStats`, descrizioni, serie. Provata da `test_lib.js`, `test_sbn.js`, `test_order.js` |
 | `stile-g.js` | segnalibri `#gTabs` (`TABS`, `tabs()`, `closeAll()`, `current()`, `paintTabs()`), «+ Aggiungi» `#gAdd`, testatina/nastro/frase (`paintHead`), titolo «Indice», «Nastro e linguette a sinistra» (`side`), colore della barra di stato |
 | Moduli (`NOME.js` + `NOME.css`, agganciati a `window.NL`) | `layout` (+, Per te, icone dell'Indice, avvisi in cima) · `schede` (pagina del libro) · `social` (account) · `profilo` · `amici` · `notifiche` (campanella) · `chat` · `ricerche` (archivio comune, guida dell'API) · `push` · `guida` (schede di benvenuto, percorso, libreria di esempio) · `wrap` (stagione in libri) · `admin` (solo per gli amministratori, caricato da `chat.js`) · `gratis` («Leggilo gratis», si toglie con `togli_modulo.py gratis`) |
-| CSS | `style.css` (base) → CSS dei moduli → `stile-c.css` (pezzi di base) → `stile-g.css` (G1-G27, vince su tutto) |
+| CSS | `style.css` (base) → CSS dei moduli → `stile-c.css` (pezzi di base) → `stile-g.css` (G1-G28, vince su tutto) |
 | Automazioni | `.github/workflows/prove.yml` (giro completo delle prove a ogni push di `prova` e `prove`; uguale nei due rami), `.github/workflows/tieni-attivo.yml` (`tieni_attivo()` nei due database ogni 2 giorni; parte solo da `main`) |
 | Altri | `sw.js` (copia offline, `SHELL`), `manifest.json`, `version.json`, `privacy.html`, `REGISTRO_MODIFICHE.md` (mostrato in «Novità delle versioni»), `LEGGIMI.txt`, `indirizzo.js` + `trasloco.html/js` (vecchio indirizzo: «Ci siamo spostati»), `vendor/` (ZXing, Tesseract, font, bandiere), `icons/` |
 
@@ -164,7 +164,9 @@
 | Elemento | Codice | Aspetto | Prove |
 |---|---|---|---|
 | **Pagina Per te** (stagione, Suggerimenti, Cinema, Citazioni, Statistiche, Backup) | `layout.js` `build()` (`#layYou`, `#layYouList`, `#layYouSeason`), `youItems()`, `paintYou()`, `act('you')` | `layout.css`, `C` (Per te) | 65, 116, 121 |
-| Suggerimenti (Cosa leggere dopo / Da scoprire) | `#suggSheet`; `openSugg()`, `renderNext()`, `renderDisc()`, `runSugg()`, `autoSugg()` (app-per-te) | — | 63, 116 |
+| **Suggerimenti** (pagina intera dal 21/11/2026: Cosa leggere dopo + scaffali Piace ai tuoi amici, Lettori come te, Leggilo gratis, Manca alla tua serie, Altri libri dei tuoi autori, Novità nei tuoi generi; riquadro «Con gli amici…») | `#suggSheet` (`#sgNextCard`, `#sgShelves`, `#sgFoot`); `openSugg(from)`, `closeSugg()`, `renderSugg()`, `renderNext()`, `sgShelf()`, `sgGratis()` (usa `NLGratis.free()`), `loadSgf()` (rpc `suggerimenti_amici`, chiave `catalogo-libri-sugg-amici`, 6 ore), `runSugg()`/`autoSugg()` (Google, `catalogo-libri-sugg`) (app-per-te) | `stile-g.css` G28 | 63, 116, **145** |
+| Anteprima del libro suggerito | `#sgPrev`; `sgPrevOpen()`, `sgPrevPaint()`, `suggPick()` (+ Desideri / Non mi interessa), `sgAsk()` (`chiedi_prestito`) (app-per-te) | `stile-g.css` G28 | 63, 145 |
+| Caselle dei suggerimenti (cerca da solo, altre lingue) | `#sgAuto`, `#sgLang` in Indice › Ricerca dei libri (`index.html`, sezione `search`) | — | 63 |
 | Novità dei tuoi autori | `#newsSheet`; `openNews()`, `runNews()`, `autoNews()` (app-per-te) | — | 35 |
 | «Classici da leggere gratis» (riga in Per te e finestra; segno «Gratis» sulle copertine dei Desideri) | `gratis.js` `youRow()`, `openAll()`, `mineFree()`, `otherWorks()`, `tags()` | `gratis.css` | 140 |
 | Dai tuoi libri al cinema | `#filmSheet`; `openFilms()`, `filmPaintAll()` (app-wiki) | `C` | 121, 132 |
@@ -297,6 +299,7 @@ SQL in `supabase/` del ramo `prove` (migrazioni 001-031). Ogni funzione è `secu
 | Chat | `chat`, `chat_membri`, `messaggi`, `blocchi`, `segnalazioni`, `sospesi` | `chat_*`, `gruppo_*`, `blocca`, `segnala`, `consiglia`, `chat_avvisa` | 023, 024, 028 |
 | Amministrazione | `amministratori` | `admin_*`, `e_admin` | 023, 025, 029 |
 | Errori dei telefoni e database attivo | `errori` (30 giorni), `battito` | `errori_manda` (anon), `tieni_attivo` (anon), `errori_pulizia` (cron errori-pulizia) | 032 (prova e vera) |
+| Suggerimenti dagli amici | — (legge `libri`, `profili`, `amicizie`) | `suggerimenti_amici` (solo lettura: libri con 4-5 libricini o «Lo consiglio» degli amici che mostrano la libreria, che non hai; libri in comune come `amici_numeri`) | 033 (prova e vera) |
 
 - **Funzioni Edge:** `libri` (v4 vera, **v5 prova**: API prestata e catalogo SBN, `supabase/funzioni/libri/index.ts`) e `push` (`supabase/funzioni/push`).
 - **Vault:** `sbn_worker`, `sbn_firma`, `push_url`, `push_segreto`, `push_vapid_*`.

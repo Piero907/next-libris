@@ -84,7 +84,7 @@ let wiki = 0;
   assert(await p.evaluate(() => document.getElementById('donSheet').hidden), '× chiude la birra');
   const xs = await p.evaluate(() => Object.fromEntries(['statsSheet', 'logSheet', 'allqSheet', 'exportSheet', 'suggSheet', 'layYou', 'instSheet', 'confirmSheet', 'loanSheet', 'optSheet'].map(id => { const s = document.getElementById(id); return [id, s ? s.querySelectorAll('.sheet-in > .sh-x').length + '/' + [...s.querySelectorAll('button')].filter(b => b.textContent.trim() === '×').length : '-']; })));
   console.log('[3 ×]', JSON.stringify(xs));
-  ['statsSheet', 'logSheet', 'allqSheet', 'exportSheet', 'suggSheet', 'layYou', 'instSheet'].forEach(k => assert.strictEqual(xs[k], '1/1', k));
+  ['statsSheet', 'logSheet', 'allqSheet', 'exportSheet', 'layYou', 'instSheet'].forEach(k => assert.strictEqual(xs[k], '1/1', k));   // Suggerimenti: pagina intera con ‹ (21/11/2026)
   assert.strictEqual(xs.confirmSheet, '0/0', 'le richieste con Annulla restano senza ×'); assert.strictEqual(xs.optSheet, '0/1', 'Opzioni aveva già la sua ×');
   if (!(await p.evaluate(() => document.getElementById('drawer').classList.contains('open')))) { await H.fai(p, 'menu'); await wait(450); } await p.click('#goStats');   // Indice aperto (se lo è già, resta aperto: il segnalibro lo richiuderebbe) await wait(500);
   const sx = await p.evaluate(() => { const x = document.querySelector('#statsSheet .sh-x').getBoundingClientRect(), s = document.querySelector('#statsSheet .sheet-in').getBoundingClientRect(); return { right: Math.round(s.right - x.right), top: Math.round(x.top - s.top) }; });

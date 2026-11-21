@@ -1,8 +1,8 @@
 const CFG = require("./_config");
 const H = require('./_harness');
-// Suggerimenti: «Cosa leggere dopo» (seguito della serie, perché, Inizio questo, Un altro, niente libri prestati),
-// riquadro in cima all'elenco dopo aver finito un libro, «Da scoprire» (autori, generi, serie; solo italiano o tutte le lingue;
-// + Desideri, No grazie), ricerca automatica una volta a settimana
+// Suggerimenti (pagina intera dal 21/11/2026): «Cosa leggere dopo» (seguito della serie, perché, Inizio questo, Un altro, niente libri prestati),
+// riquadro in cima all'elenco dopo aver finito un libro, scaffali (autori, generi, serie; solo italiano o tutte le lingue),
+// anteprima con + Desideri e Non mi interessa, riquadro «Con gli amici…» senza account, ricerca automatica una volta a settimana
 const puppeteer = require('puppeteer-core');
 const http = require('http'), fs = require('fs'), path = require('path');
 const assert = require('assert');
@@ -60,58 +60,69 @@ const Y = new Date().getFullYear();
   box = await txt('#nxBoxCard'); assert(!/Il ladro di merendine/.test(box), 'Un altro cambia libro');
   await page.click('#nxBoxX'); await wait(150);
   assert(await hid('#nxBox'), '× nasconde'); assert.strictEqual(await page.evaluate(() => window.__app.settings.nxSeen), 'b2');
-  // 3) dal menu: Suggerimenti › Cosa leggere dopo
+  // 3) dal menu: Suggerimenti, pagina intera (21/11/2026): in cima «Cosa leggere dopo», poi gli scaffali
   await page.evaluate(() => window.__app.openDrawer('opt')); await wait(350);
   assert(/Suggerimenti/.test(await txt('#goSugg')));
-  await page.click('#goSugg'); await wait(450);
-  assert(!(await hid('#suggSheet')) && !(await hid('#sgNext')) && (await hid('#sgDisc')) && (await hid('#sgAgain')));
+  await page.click('#goSugg'); await wait(1600);   // la prima volta cerca da sola anche in rete
+  assert(!(await hid('#suggSheet')));
   let card = await txt('#sgNextCard'); console.log('[3 leggi dopo]', card);
   assert(/Il ladro di merendine/.test(card) && /vol\. 3 di «Montalbano», hai letto il 2/.test(card) && /Camilleri/.test(card));
-  assert(/1 di 3/.test(await txt('#sgNextMsg')));
+  assert(/1 di 3 libri da leggere/.test(card));
   await page.screenshot({ path: CFG.OUT + '/sugg_next.png' });
   await page.click('#sgNextCard [data-act="nxother"]'); await wait(150);
-  assert(/2 di 3/.test(await txt('#sgNextMsg')));
+  assert(/2 di 3/.test(await txt('#sgNextCard')));
   const id2 = await page.$eval('#sgNextCard [data-act="nxstart"]', e => e.dataset.id);
   await page.click('#sgNextCard [data-act="nxstart"]'); await wait(250);
   assert.strictEqual(await page.evaluate(id => window.__app.state.books.find(b => b.id === id).rs, id2), 'in');
   assert(/Buona lettura/.test(await txt('#toast')));
-  assert(/di 2/.test(await txt('#sgNextMsg')), 'il libro iniziato esce dalla lista');
+  assert(/di 2/.test(await txt('#sgNextCard')), 'il libro iniziato esce dalla lista');
   // annulla: torna da leggere
   await page.click('#toast button'); await wait(200);
   assert.strictEqual(await page.evaluate(id => window.__app.state.books.find(b => b.id === id).rs, id2), 'da');
-  // 4) Da scoprire: cerca da sola la prima volta, solo in italiano
-  await page.click('#sgTabDisc'); await wait(1500);
-  assert(!(await hid('#sgDisc')) && !(await hid('#sgAgain')));
-  const li = await page.$$eval('#sgList li', e => e.map(x => x.innerText.replace(/\s+/g, ' ')));
-  console.log('[4 da scoprire]\n  ' + li.join('\n  ')); console.log('  richieste:', gq.length, gq.map(u => u.replace(/.*q=([^&]*).*/, '$1')).join(' | '));
+  // 4) scaffali: altri libri dei tuoi autori, novità dei tuoi generi, serie; solo in italiano. Senza account: il riquadro degli amici
+  const shelf = k => page.$eval('[data-shelf="' + k + '"]', e => e.innerText.replace(/\s+/g, ' ')).catch(() => '');
+  console.log('[4 scaffali]', await page.$$eval('#sgShelves [data-shelf]', e => e.map(x => x.dataset.shelf).join(',')));
+  console.log('  richieste:', gq.length, gq.map(u => u.replace(/.*q=([^&]*).*/, '$1')).join(' | '));
   assert(gq.length >= 2 && gq.every(u => /langRestrict=it/.test(u)), 'solo italiano');
   assert(gq.some(u => /subject:"mystery"/.test(u)), 'genere Gialli cercato come mystery');
-  const all = li.join('\n');
-  assert(/Il birraio di Preston/.test(all) && /Di Andrea Camilleri, che ti piace/.test(all));
-  assert(/Un giallo nuovissimo/.test(all) && /genere che hai di più: Gialli/.test(all));
-  assert(/Montalbano, vol\. 5/.test(all) && /Manca alla serie «Montalbano»/.test(all));
+  assert(/Il birraio di Preston/.test(await shelf('autori')) && /Ti piace Andrea Camilleri/.test(await shelf('autori')));
+  assert(/Un giallo nuovissimo/.test(await shelf('nuovi')) && /Uscito da poco · Gialli/.test(await shelf('nuovi')));
+  assert(/Montalbano, vol\. 5/.test(await shelf('serie')) && /Vol\. 5: ne hai/.test(await shelf('serie')));
+  const all = await txt('#sgShelves');
   assert(!/The Shape of Water|brand new mystery/.test(all), 'niente inglese'); assert(!/forma dell'acqua/i.test(all), 'niente libri che ho già');
+  assert(/Con gli amici i suggerimenti migliorano/.test(all) && /Aggiungi un amico/.test(all), 'senza amici: il riquadro');
+  assert(await page.evaluate(() => { const e = document.querySelector('#suggSheet .sheet-in'); return e.scrollWidth - e.clientWidth <= 0; }), 'niente scorrimento di lato');
   await page.screenshot({ path: CFG.OUT + '/sugg_disc.png' });
-  // + Desideri e No, grazie
+  // anteprima, + Desideri e Non mi interessa
+  const open = async re => { await page.evaluate(r => [...document.querySelectorAll('#sgShelves [data-sg]')].find(c => new RegExp(r).test(c.innerText)).click(), re); await wait(200); };
   const nW = await page.evaluate(() => window.__app.state.books.filter(b => b.w).length);
-  await page.evaluate(() => [...document.querySelectorAll('#sgList li')].find(l => /birraio/.test(l.innerText)).querySelector('[data-act="sgwish"]').click()); await wait(200);
+  await open('birraio');
+  assert(!(await hid('#sgPrev'))); const pv = await txt('#sgPrev'); console.log('[anteprima]', pv);
+  assert(/Perché te lo propongo/i.test(pv) && /Di Andrea Camilleri, che ti piace/.test(pv) && /Sellerio · 1995/.test(pv));
+  await page.screenshot({ path: CFG.OUT + '/sugg_prev.png' });
+  await page.click('#sgPrev [data-act="sgwish"]'); await wait(200);
+  assert(await hid('#sgPrev'), 'l\'anteprima si chiude');
   const wb = await page.evaluate(() => window.__app.state.books.filter(b => b.w));
   assert.strictEqual(wb.length, nW + 1); assert(wb.some(b => b.t === 'Il birraio di Preston' && b.a === 'Andrea Camilleri' && b.i === '9788838912344'));
-  assert(!/birraio/.test(await txt('#sgList')), 'sparisce dalla lista');
-  await page.evaluate(() => [...document.querySelectorAll('#sgList li')].find(l => /vol\. 5/.test(l.innerText)).querySelector('[data-act="sgwish"]').click()); await wait(200);
+  assert(!/birraio/.test(await txt('#sgShelves')), 'sparisce dagli scaffali');
+  await open('vol\\. 5'); await page.click('#sgPrev [data-act="sgwish"]'); await wait(200);
   assert(await page.evaluate(() => window.__app.state.books.some(b => b.w && b.se === 'Montalbano' && b.sn === '5')), 'volume della serie nei Desideri');
-  await page.evaluate(() => [...document.querySelectorAll('#sgList li')].find(l => /nuovissimo/.test(l.innerText)).querySelector('[data-act="sghide"]').click()); await wait(200);
-  assert(!/nuovissimo/.test(await txt('#sgList')));
+  await open('nuovissimo'); await page.click('#sgPrev [data-act="sghide"]'); await wait(200);
+  assert(!/nuovissimo/.test(await txt('#sgShelves')));
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('catalogo-libri-sugg')));
   assert(saved.hide.length === 1 && saved.at > 0);
-  // 5) anche altre lingue: nuova ricerca senza langRestrict
+  // 5) anche altre lingue (in Indice › Ricerca dei libri): alla prossima apertura cerca senza langRestrict
   gq.length = 0;
-  await page.click('#sgLang'); await wait(1500);
-  assert(gq.length >= 2 && gq.every(u => !/langRestrict/.test(u)), 'tutte le lingue');
-  const all2 = await txt('#sgList'); console.log('[5 altre lingue]', all2.slice(0, 160));
-  assert(/The Shape of Water/.test(all2) && !/nuovissimo/.test(all2), 'inglese sì, scartato resta scartato');
+  await page.click('#sgFoot [data-act="sgopts"]'); await wait(400);
+  assert(!(await hid('#optSheet')) && (await hid('#suggSheet')), 'dal piede alle impostazioni');
+  await page.click('#sgLang'); await wait(200);
   assert.strictEqual(await page.evaluate(() => window.__app.settings.suggLang), 'all');
-  await page.click('#sgLang'); await wait(1500);
+  await page.keyboard.press('Escape'); await wait(500);
+  await page.evaluate(() => { if (window.__app.closeDrawer) window.__app.closeDrawer(); window.__app.openSugg(); }); await wait(1600);
+  assert(gq.length >= 2 && gq.every(u => !/langRestrict/.test(u)), 'tutte le lingue');
+  const all2 = await txt('#sgShelves'); console.log('[5 altre lingue]', all2.slice(0, 160));
+  assert(/The Shape of Water/.test(all2) && !/nuovissimo/.test(all2), 'inglese sì, scartato resta scartato');
+  await page.evaluate(() => { window.__app.settings.suggLang = 'it'; });
   // 6) chiusura con Esc; ricerca automatica: non prima di una settimana
   await page.keyboard.press('Escape'); await wait(200); assert(await hid('#suggSheet'));
   gq.length = 0;
