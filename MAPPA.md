@@ -32,7 +32,7 @@
 | Moduli (`NOME.js` + `NOME.css`, agganciati a `window.NL`) | `layout` (+, Per te, icone dell'Indice, avvisi in cima) · `schede` (pagina del libro) · `social` (account) · `profilo` · `amici` · `notifiche` (campanella) · `chat` · `ricerche` (archivio comune, guida dell'API) · `push` · `guida` (schede di benvenuto, percorso, libreria di esempio) · `wrap` (stagione in libri) · `admin` (solo per gli amministratori, caricato da `chat.js`) · `gratis` («Leggilo gratis», si toglie con `togli_modulo.py gratis`) |
 | CSS | `style.css` (base) → CSS dei moduli → `stile-c.css` (pezzi di base) → `stile-g.css` (G1-G28, vince su tutto) |
 | Automazioni | `.github/workflows/prove.yml` (giro completo delle prove a ogni push di `prova` e `prove`; uguale nei due rami), `.github/workflows/tieni-attivo.yml` (`tieni_attivo()` nei due database ogni 2 giorni; parte solo da `main`) |
-| Altri | `sw.js` (copia offline, `SHELL`), `manifest.json`, `version.json`, `privacy.html`, `MARCHIO-E-DIRITTI.md` (cosa si può fare con nome, logo e codice; dal 21/11/2026), `REGISTRO_MODIFICHE.md` (mostrato in «Novità delle versioni»), `LEGGIMI.txt`, `indirizzo.js` + `trasloco.html/js` (vecchio indirizzo: «Ci siamo spostati»), `vendor/` (ZXing, Tesseract, font, bandiere), `icons/` |
+| Altri | `sw.js` (copia offline, `SHELL`), `manifest.json`, `version.json`, `privacy.html`, `MARCHIO-E-DIRITTI.md` (cosa si può fare con nome, logo e codice; dal 21/11/2026), `REGISTRO_MODIFICHE.md` (mostrato in «Novità delle versioni»), `LEGGIMI.txt`, `indirizzo.js` + `trasloco.html/js` (indirizzi vecchi: piero907.github.io → «Ci siamo spostati»; nextlibris.github.io → nextlibris.app dalla 120), `vendor/` (ZXing, Tesseract, font, bandiere), `icons/` |
 
 **Aggiungere un modulo:** `NOME.js`/`.css`, una riga in `index.html` e una in `SHELL` di `sw.js` con `// modulo:`, il nome in `MODULES` di `pubblica_prova.py`. Si toglie con `python3 togli_modulo.py NOME`.
 
@@ -48,7 +48,7 @@
 | Aggiornamento disponibile, «Aggiorna adesso» | `checkVersion()`, `updateNow()` (app-filtri), `#verBox`/`#verUpdate`; `sw.js` | — | 19, 33 |
 | «Cosa c'è di nuovo» dopo un aggiornamento | `#wnSheet`, `checkWhatsNew()` (app-scheda) | — | 70 |
 | Copia di prova separata dalla vera | `COPIA`/`PROVA` in `app.js` (dall'indirizzo), chiavi `prova:` | pillola «prova» G26 | 62, 73 |
-| Vecchio indirizzo | `indirizzo.js`, `trasloco.html`, `trasloco.js` | — | 113 |
+| Indirizzi vecchi (nextlibris.app dalla 120: l'app installata a nextlibris.github.io passa al nuovo quando risponde) | `indirizzo.js`, `trasloco.html`, `trasloco.js`; `APP_URL` in app-avvio.js | — | 113, **146** |
 
 ## 2. Benvenuto, accesso, nome, percorso
 

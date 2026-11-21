@@ -20,7 +20,7 @@ const TOLLERANZA = 120;                                    // secondi: una firma
 /* Passaggio dalla versione 111: fino a questa data rispondono ancora anche le richieste senza firma che arrivano dall'app
    (come prima), così chi non ha ancora l'app aggiornata non resta senza SBN. Dopo, solo richieste firmate: non serve rifare niente. */
 const VECCHIO_FINO = Date.parse('2026-11-27T00:00:00Z');
-const ORIGINI_AMMESSE = ['https://nextlibris.github.io', 'https://piero907.github.io'];
+const ORIGINI_AMMESSE = ['https://nextlibris.app', 'https://nextlibris.github.io', 'https://piero907.github.io'];   // nextlibris.app dalla 120 (21/11/2026)
 const SBN = 'https://opac.sbn.it/opacmobilegw/';
 
 let IMPORTATE = null;

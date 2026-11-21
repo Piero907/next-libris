@@ -25,7 +25,7 @@ const V = 'http://127.0.0.1:' + PV, N = 'http://127.0.0.1:' + PN;
   const src = fs.readFileSync(path.join(ROOT, 'trasloco.js'), 'utf8');
   assert.ok(!/postMessage|indexedDB|localStorage/.test(src), 'trasloco.js non tocca piu\' i dati');
   const html = fs.readFileSync(path.join(ROOT, 'trasloco.html'), 'utf8');
-  assert.ok(/Ci siamo spostati/.test(html) && /nextlibris\.github\.io/.test(html), 'testo della pagina');
+  assert.ok(/Ci siamo spostati/.test(html) && /nextlibris\.app/.test(html), 'testo della pagina');
   const browser = await puppeteer.launch({ executablePath: CFG.CHROME, headless: 'new', args: ['--no-sandbox'] });
   const errors = [];
   const page = await browser.newPage();

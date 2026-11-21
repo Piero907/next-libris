@@ -1,5 +1,5 @@
 # uso: APP_DIR=… SITO_DIR=… ATTRIBUZIONE="…" python3 pubblica_vera.py "nota"
-# Dalla versione 100 (17/11/2026) la versione vera sta su https://nextlibris.github.io/ (repository nextlibris/nextlibris.github.io).
+# Dalla versione 100 (17/11/2026) la versione vera sta nel repository nextlibris/nextlibris.github.io; dalla 120 (21/11/2026) all'indirizzo https://nextlibris.app/ (file CNAME del sito).
 # Il codice resta in Piero907/next-libris (ramo main, servito ancora al vecchio indirizzo, dove indirizzo.js mostra solo il trasloco):
 # questo script copia l'app (APP_DIR, altrimenti ../next-libris) nel sito (SITO_DIR, altrimenti ../nextlibris.github.io), poi commit e push.
 # Toglie dal sito i file dell'app che non ci sono piu' (moduli tolti), lascia stare README.md, .nojekyll e .git.
@@ -13,7 +13,7 @@ FILES = ['index.html', 'app.js', 'app-aggiungi.js', 'app-vista.js', 'app-scheda.
          'privacy.html', 'indirizzo.js', 'avvio.js', 'trasloco.html', 'trasloco.js']
 MODULES = ['wrap', 'layout', 'schede', 'social', 'profilo', 'amici', 'notifiche', 'ricerche', 'push', 'guida', 'chat', 'admin', 'gratis']   # .js e .css, se ci sono nell'app
 DIRS = ['icons', 'vendor']
-TENERE = {'.git', '.nojekyll', 'README.md'}
+TENERE = {'.git', '.nojekyll', 'README.md', 'CNAME'}   # CNAME: dominio nextlibris.app (dalla 120), sta solo nel sito
 copia = [f for f in FILES if os.path.exists(os.path.join(APP, f))]
 copia += [m + e for m in MODULES for e in ('.js', '.css') if os.path.exists(os.path.join(APP, m + e))]
 for x in os.listdir(DST):   # via quello che non c'e' piu'

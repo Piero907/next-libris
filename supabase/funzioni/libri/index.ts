@@ -15,7 +15,7 @@
 const URL_DB = Deno.env.get("SUPABASE_URL")!;
 const SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || (() => { try { return JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}").default || ""; } catch { return ""; } })();
 const ANON = Deno.env.get("SUPABASE_ANON_KEY") || "";
-const ORIGINI = ["https://nextlibris.github.io", "https://piero907.github.io"];
+const ORIGINI = ["https://nextlibris.app", "https://nextlibris.github.io", "https://piero907.github.io"];   // nextlibris.app dalla 120 (21/11/2026)
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const VISTI = new Map<string, { uid: string; fino: number }>();   // accesso già controllato (5 minuti), per non chiederlo a ogni ricerca
 
