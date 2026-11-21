@@ -1,6 +1,6 @@
 # Next Libris — mappa dell'app (elemento → codice, aspetto, prove)
 
-**Aggiornata il 21/11/2026 sul ramo `prova` dopo la 115.3** (commit 82de146: errori dei telefoni, GitHub Actions). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
+**Aggiornata il 21/11/2026 sulla vera 116** (commit c98840e: ricerca per titolo, errori dei telefoni, GitHub Actions). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
 
 **A cosa serve:** prima di una modifica, dice **dove mettere le mani** (file, funzione, id, regola CSS) e **quali prove rifare**. Non sostituisce la lettura del codice: prima di modificare si controlla sempre il codice vero (`grep -n "nome" *.js`).
 
@@ -294,7 +294,7 @@ SQL in `supabase/` del ramo `prove` (migrazioni 001-031). Ogni funzione è `secu
 | Ricerche e archivio comune | `ricerche`, `ricerche_utenti`, `archivio`, `archivio_proposte` | `conta_ricerche`, `archivia`, `da_archivio`, `proponi_archivio`, `sbn_conta` | 012, 029, 031 |
 | Chat | `chat`, `chat_membri`, `messaggi`, `blocchi`, `segnalazioni`, `sospesi` | `chat_*`, `gruppo_*`, `blocca`, `segnala`, `consiglia`, `chat_avvisa` | 023, 024, 028 |
 | Amministrazione | `amministratori` | `admin_*`, `e_admin` | 023, 025, 029 |
-| Errori dei telefoni e database attivo | `errori` (30 giorni), `battito` | `errori_manda` (anon), `tieni_attivo` (anon), `errori_pulizia` (cron errori-pulizia) | 032 (per ora solo nella prova) |
+| Errori dei telefoni e database attivo | `errori` (30 giorni), `battito` | `errori_manda` (anon), `tieni_attivo` (anon), `errori_pulizia` (cron errori-pulizia) | 032 (prova e vera) |
 
 - **Funzioni Edge:** `libri` (v4 vera, **v5 prova**: API prestata e catalogo SBN, `supabase/funzioni/libri/index.ts`) e `push` (`supabase/funzioni/push`).
 - **Vault:** `sbn_worker`, `sbn_firma`, `push_url`, `push_segreto`, `push_vapid_*`.
