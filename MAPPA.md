@@ -1,6 +1,6 @@
 # Next Libris — mappa dell'app (elemento → codice, aspetto, prove)
 
-**Aggiornata il 21/11/2026 sulla vera 116** (commit c98840e: ricerca per titolo, errori dei telefoni, GitHub Actions). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
+**Aggiornata il 21/11/2026 sulla vera 117** (commit f22476d: «Leggilo gratis» e «Ascoltalo gratis», autore sottolineato, «Installa Next Libris» anche su iPhone). Copia uguale nel progetto claude.ai: `claude/mappa-app.md`.
 
 **A cosa serve:** prima di una modifica, dice **dove mettere le mani** (file, funzione, id, regola CSS) e **quali prove rifare**. Non sostituisce la lettura del codice: prima di modificare si controlla sempre il codice vero (`grep -n "nome" *.js`).
 
@@ -29,7 +29,7 @@
 | `app-avvio.js` (11) | eventi, chiusura delle finestre (`sheetCloser`, trascinamento), installazione (`updateInstallUi`, `doInstall`), **schermata d'installazione dei telefoni** (`iosGate`, `gatePhone`, `gatePaint`, `gateInvite`), `window.NL` (riga ~895), avvio |
 | `lib.js` | logica pura, senza DOM: ISBN, `lookupIsbn`, `searchText`, parser (Google, Open Library, SBN `sbnRec`/`parseSbnList`, Crossref), CSV/XLSX, doppioni, condivisione, `computeStats`, descrizioni, serie. Provata da `test_lib.js`, `test_sbn.js`, `test_order.js` |
 | `stile-g.js` | segnalibri `#gTabs` (`TABS`, `tabs()`, `closeAll()`, `current()`, `paintTabs()`), «+ Aggiungi» `#gAdd`, testatina/nastro/frase (`paintHead`), titolo «Indice», «Nastro e linguette a sinistra» (`side`), colore della barra di stato |
-| Moduli (`NOME.js` + `NOME.css`, agganciati a `window.NL`) | `layout` (+, Per te, icone dell'Indice, avvisi in cima) · `schede` (pagina del libro) · `social` (account) · `profilo` · `amici` · `notifiche` (campanella) · `chat` · `ricerche` (archivio comune, guida dell'API) · `push` · `guida` (schede di benvenuto, percorso, libreria di esempio) · `wrap` (stagione in libri) · `admin` (solo per gli amministratori, caricato da `chat.js`) |
+| Moduli (`NOME.js` + `NOME.css`, agganciati a `window.NL`) | `layout` (+, Per te, icone dell'Indice, avvisi in cima) · `schede` (pagina del libro) · `social` (account) · `profilo` · `amici` · `notifiche` (campanella) · `chat` · `ricerche` (archivio comune, guida dell'API) · `push` · `guida` (schede di benvenuto, percorso, libreria di esempio) · `wrap` (stagione in libri) · `admin` (solo per gli amministratori, caricato da `chat.js`) · `gratis` («Leggilo gratis», si toglie con `togli_modulo.py gratis`) |
 | CSS | `style.css` (base) → CSS dei moduli → `stile-c.css` (pezzi di base) → `stile-g.css` (G1-G27, vince su tutto) |
 | Automazioni | `.github/workflows/prove.yml` (giro completo delle prove a ogni push di `prova` e `prove`; uguale nei due rami), `.github/workflows/tieni-attivo.yml` (`tieni_attivo()` nei due database ogni 2 giorni; parte solo da `main`) |
 | Altri | `sw.js` (copia offline, `SHELL`), `manifest.json`, `version.json`, `privacy.html`, `REGISTRO_MODIFICHE.md` (mostrato in «Novità delle versioni»), `LEGGIMI.txt`, `indirizzo.js` + `trasloco.html/js` (vecchio indirizzo: «Ci siamo spostati»), `vendor/` (ZXing, Tesseract, font, bandiere), `icons/` |
@@ -131,7 +131,8 @@
 |---|---|---|---|
 | Pagina intera (uguale per tutti i libri), ‹ e ⋯ | `schede.js` `doD()` (disegno), `dActs()`, `cPage()`, `decorate()`; apertura `NL.openCard`, `showBook()` (app.js) | `schede.css`, `C` (pagina del libro), G13, G20 | **71**, 26, 66, 141 |
 | Copertina, ingrandita | `openCover()`, `lbButtons()` (app-finestre), `#lightbox` | `C` | 8, 71 |
-| Autore con bandiera e paese; profilo dell'autore | `wdFlagImg()` (app-wiki); `#auSheet`, `openAuthor()`, `editAuthor()` (app-scheda) | `C` | 49, 121 |
+| Autore con bandiera e paese (nome **sottolineato**); profilo dell'autore | `wdFlagImg()` (app-wiki); `#auSheet`, `openAuthor()`, `editAuthor()` (app-scheda) | `C` (`.cv-au .au-name`) | 49, 121 |
+| **Leggilo gratis / Ascoltalo gratis** (riga sotto i tasti tondi, finestra con In italiano, lingua originale, Da ascoltare, Altre fonti) | `gratis.js` `pageRow()`, `avail()`, `openFor()`, `also()`; ricerche `loop()`, `deaths()`, `details()` (Wikidata, Wikisource, Open Library), `raiList()`/`raiAuthors()` («Ad alta voce»), `llFind()` (Liber Liber); dati `catalogo-libri-gratis` (v2) | `gratis.css` | **140** |
 | Pillole dei dati, «da verificare» | `schede.js` `verifyK()`, `put()` | `C` | 120 |
 | Tasti tondi (Lo consiglio, desideri, condividi, matita, elimina) | `schede.js` `dActs()`; `toggleFav()`, `openShare()` (app-strumenti), `delBook()` (app-finestre) | `C` (tasti tondi) | 26, 125 |
 | **Matita = modifica nel posto**, «+ Genere»… | `schede.js` `editPage()`, `fld()`, `box()` | `C` (modifica) | 71, 54 |
@@ -165,6 +166,7 @@
 | **Pagina Per te** (stagione, Suggerimenti, Cinema, Citazioni, Statistiche, Backup) | `layout.js` `build()` (`#layYou`, `#layYouList`, `#layYouSeason`), `youItems()`, `paintYou()`, `act('you')` | `layout.css`, `C` (Per te) | 65, 116, 121 |
 | Suggerimenti (Cosa leggere dopo / Da scoprire) | `#suggSheet`; `openSugg()`, `renderNext()`, `renderDisc()`, `runSugg()`, `autoSugg()` (app-per-te) | — | 63, 116 |
 | Novità dei tuoi autori | `#newsSheet`; `openNews()`, `runNews()`, `autoNews()` (app-per-te) | — | 35 |
+| «Classici da leggere gratis» (riga in Per te e finestra; segno «Gratis» sulle copertine dei Desideri) | `gratis.js` `youRow()`, `openAll()`, `mineFree()`, `otherWorks()`, `tags()` | `gratis.css` | 140 |
 | Dai tuoi libri al cinema | `#filmSheet`; `openFilms()`, `filmPaintAll()` (app-wiki) | `C` | 121, 132 |
 | Statistiche | `#statsSheet`; `openStats()`, `barsHTML()`, `goalHTML()` (app-strumenti); `lib.js` `computeStats()`; paesi `wdStatsHTML()` (app-wiki) | `style.css` | 37, 54, 57, 65 |
 | **Stagione in libri** (schermate a storia) | `wrap.js` `open()`, `build()`, `slides()`, `paint()`, `go()`, `pickQ()`; `#wrap`; invito `#wrapAsk` `paintAsk()`; voce dell'Indice `#goWrap`; opzione «Riepilogo di ogni stagione» `paintOption()` | `wrap.css`, G19 | 64, 134 |
