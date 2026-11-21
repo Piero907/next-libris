@@ -105,6 +105,7 @@ const WORKS = {
         asked.types.push(ts.join());
         return json(r, { results: { bindings: ts.filter(t => t === 'Q777').map(t => v({ t: E + t, cls: E + 'Q11424' })) } });
       }
+      if (q.indexOf('wdt:P570') > 0) { asked.deaths = (asked.deaths || 0) + 1; return json(r, { results: { bindings: [] } }); }   // date di morte di «Leggilo gratis» (gratis.js): una domanda per tutti gli autori insieme, non per autore (21/11/2026)
       if (id === 'Q7243' && !asked.fail) { asked.fail = 1; return json(r, {}, 502); }          // il servizio vero ogni tanto risponde 502: si riprova da solo
       asked[works ? 'works' : 'info']++;
       return json(r, { results: { bindings: (works ? WORKS : INFO)[id] || [] } });
