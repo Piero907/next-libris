@@ -48,7 +48,7 @@
 - Libro, profilo, amici, chat, Per te, Indice: fondo carta, accanto ai segnalibri. **Titolo 26/800** e **tasto tondo 38** (‹ o ×) uguali dappertutto, tranne l'Indice.
 - **I tuoi amici**: l'elenco scorre **dentro il suo riquadro** (altezza massima `min(330px, 46vh)`), non la pagina, così «Aggiungi un amico» resta a portata (Piero, 20/11/2026; `stile-g.css` G23).
 - **Profilo**: **niente foto**. Il nome sta dentro l'**ex libris ovale** (bordo doppio `--accent`, «EX LIBRIS» sopra, «Su Next Libris da…» sotto). Le iniziali colorate restano solo negli elenchi. «I tuoi numeri» ha lo stesso margine delle altre sezioni.
-- **Pagina del libro**: copertina al centro, titolo, autore con bandiera, pillole, tasti tondi, poi Lettura, Descrizione, Dal libro, Citazioni, Prestito, Nota, Vedi tutti i libri di. **Tutti i titoletti in grassetto** 16/700, senza linea.
+- **Pagina del libro**: copertina al centro, titolo, autore con bandiera (nome in `--accent` 700, **sottolineato** con linea `--accent` al 55 %, spessore 2, distanza 4, perché si capisca che si tocca: Piero, 21/11/2026; `stile-c.css`), pillole, tasti tondi, poi Lettura, Descrizione, Dal libro, Citazioni, Prestito, Nota, Vedi tutti i libri di. **Tutti i titoletti in grassetto** 16/700, senza linea.
 
 ### Indice (il Menu)
 - Titolo «Indice» con **la sola freccia ‹, senza cerchio**.
