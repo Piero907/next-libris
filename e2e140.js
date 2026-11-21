@@ -21,7 +21,7 @@ const Q = { 'Giovanni Verga': 'Q271814', 'Italo Calvino': 'Q173481', 'Charles Di
 const DIED = { Q271814: 1922, Q173481: 1985, Q5686: 1870, Q12807: 2016, Q311145: 1928, Q236631: 1991, Q36322: 1817, Q327016: 1972, Q34460: 2010, Q991: 1881 };
 const r = (k, v, x) => Object.assign({ k: { value: k }, v: { value: v } }, x ? { x: { value: x } } : {});
 const DET = {
-  Q271814: [r('l', '1924'), r('g', '39173'), r('c', 'it'), r('s', 'https://it.wikisource.org/wiki/Autore:Giovanni_Verga'), r('s', 'https://en.wikisource.org/wiki/Author:Giovanni_Verga'),
+  Q271814: [r('b', 'v/giovanni-verga'), r('m', '41870'), r('m', '1200'), r('l', '1924'), r('g', '39173'), r('c', 'it'), r('s', 'https://it.wikisource.org/wiki/Autore:Giovanni_Verga'), r('s', 'https://en.wikisource.org/wiki/Author:Giovanni_Verga'),
     r('w', 'I Malavoglia', 'I Malavoglia'), r('w', 'Mastro Don Gesualdo', 'Mastro-don Gesualdo'), r('w', 'Vita dei campi', 'Vita dei campi'), r('w', 'Novelle rusticane', ''), r('w', 'Eva', ''), r('w', 'Storia di una capinera', ''), r('w', 'Rosso Malpelo', ''), r('e', 'L\'amante di Gramigna', '37979')],
   Q5686: [r('l', '87'), r('g', '37'), r('c', 'en'), r('s', 'https://en.wikisource.org/wiki/Author:Charles_Dickens'), r('s', 'https://it.wikisource.org/wiki/Autore:Charles_Dickens'),
     r('w', 'Canto di Natale', 'A Christmas Carol'), r('w', 'Oliver Twist', 'Oliver Twist'), r('w', 'David Copperfield', 'David Copperfield'), r('w', 'Grandi speranze', 'Great Expectations'), r('e', 'Canto di Natale', '46')],
@@ -38,7 +38,10 @@ const WS = {
 };
 const OL = { 'Giovanni Verga': [{ key: '/works/OL1W', title: 'I Malavoglia', language: ['ita', 'eng'] }, { key: '/works/OL2W', title: 'Mastro-don Gesualdo', language: ['ita'] }],
   'Charles Dickens': [{ key: '/works/OL3W', title: 'A Christmas Carol', language: ['eng', 'ita'] }], 'Jane Austen': [{ key: '/works/OL4W', title: 'Pride and Prejudice', language: ['eng'] }], 'Italo Svevo': [] };
-const stat = { wd: 0, ws: 0, ol: 0, other: [] };
+const stat = { wd: 0, ws: 0, ol: 0, ll: 0, rai: 0, other: [] };
+// Liber Liber (ricerca delle pagine) e RaiPlay Sound (elenco degli audiolibri e scheda di ognuno)
+const LL = { 'I Malavoglia': [{ title: 'I Malavoglia', url: 'https://liberliber.it/autori/autori-v/giovanni-verga/i-malavoglia/' }, { title: 'I Malavoglia', url: 'https://liberliber.it/autori/autori-x/altro/i-malavoglia/' }] };
+const RAI = { '/audiolibri/ilbaronerampante': 'Di Italo Calvino', '/audiolibri/cecita': 'Di Giovanni Rossi', '/audiolibri/imalavoglia': 'Di Giovanni Verga' };
 function fake(u) {
   const url = new URL(u);
   if (url.host === 'query.wikidata.org') {
@@ -48,6 +51,12 @@ function fake(u) {
   }
   if (/wikisource\.org$/.test(url.host)) { stat.ws++; const t = url.searchParams.get('titles').replace(/_/g, ' '), k = url.host.split('.')[0] + '|' + t; return { query: { pages: { 1: { title: t, links: (WS[k] || []).map(x => ({ ns: 0, title: x })) } } } }; }
   if (url.host === 'openlibrary.org') { stat.ol++; return { docs: OL[url.searchParams.get('author')] || [] }; }
+  if (url.host === 'liberliber.it' && url.pathname === '/wp-json/wp/v2/search') { stat.ll++; return (LL[url.searchParams.get('search')] || []).map(x => Object.assign({ subtype: 'page' }, x)); }
+  if (url.host === 'www.raiplaysound.it') {
+    stat.rai++;
+    if (url.pathname === '/programmi/adaltavoce/audiolibri.json') return { block: { cards: [['Il barone rampante', '/audiolibri/ilbaronerampante'], ['Cecità', '/audiolibri/cecita'], ['I Malavoglia', '/audiolibri/imalavoglia']].map(x => ({ title: x[0], path_id: x[1] + '.json' })) } };
+    const k = url.pathname.replace(/\.json$/, ''); if (RAI[k]) return { podcast_info: { title: 'x', author: RAI[k] } };
+  }
   return null;
 }
 (async () => {
@@ -84,7 +93,14 @@ function fake(u) {
   assert(await p.$('.cv-page .gr-row'), 'riga «Leggilo gratis» nella pagina del libro');
   await shot(p, '1-pagina-malavoglia');
   await p.evaluate(() => document.querySelector('.cv-page .gr-row').click()); await H.wait(500);
-  assert(await p.evaluate(() => !document.getElementById('grSheet').hidden && document.querySelector('#grBody').textContent.includes('In italiano') && document.querySelector('#grBody').textContent.includes('Cerca anche su')), 'finestra aperta');
+  assert(await p.evaluate(() => !document.getElementById('grSheet').hidden && document.querySelector('#grBody').textContent.includes('In italiano') && document.querySelector('#grBody').textContent.includes('Altre fonti')), 'finestra aperta');
+  await H.wait(600);   // Liber Liber: l'opera precisa arriva dopo e ridisegna la finestra
+  const links = await p.evaluate(() => [...document.querySelectorAll('#grBody a')].map(a => a.href));
+  console.log('link', links);
+  assert(links.includes('https://liberliber.it/autori/autori-v/giovanni-verga/i-malavoglia/'), 'Liber Liber: l\'opera precisa, dell\'autore giusto');
+  assert(links.includes('https://biblioteche.medialibrary.it/search?idcrea=1200&c=open'), 'MLOL: risorse libere dell\'autore (codice più vecchio)');
+  assert(links.includes('https://www.raiplaysound.it/audiolibri/imalavoglia'), '«Ad alta voce» tra gli audiolibri');
+  assert(!links.some(u => /bibliotecaitaliana|www\.medialibrary\.it\/$|programmi\/adaltavoce$|\?s=/.test(u)), 'niente link generici');
   await shot(p, '2-finestra-malavoglia');
   await p.evaluate(() => document.querySelector('#grSheet .sheet-in').scrollTo(0, 9999)); await H.wait(200); await shot(p, '2b-finestra-malavoglia-fondo');
   await p.goBack(); await H.wait(500);
@@ -92,7 +108,11 @@ function fake(u) {
   // un libro non di pubblico dominio: niente riga
   await p.evaluate(() => { document.querySelector('.row.open .chev-btn') && document.querySelector('.row.open .chev-btn').click(); }); await H.wait(500);
   await p.evaluate(() => NL.openCard('k2')); await H.wait(800);
-  assert(!(await p.$('.cv-page .gr-row')), 'Calvino: niente riga');
+  assert.strictEqual(await p.evaluate(() => { const r = document.querySelector('.cv-page .gr-row'); return r && r.querySelector('b').textContent; }), 'Ascoltalo gratis', 'Calvino (moderno): «Ascoltalo gratis» da «Ad alta voce»');
+  await p.evaluate(() => document.querySelector('.cv-page .gr-row').click()); await H.wait(500);
+  assert(await p.evaluate(() => document.getElementById('grH').textContent === 'Ascoltalo gratis' && !document.querySelector('#grBody').textContent.includes('Altre fonti')), 'finestra solo da ascoltare');
+  await shot(p, '1c-ascoltalo-calvino');
+  await p.goBack(); await H.wait(400);
   await p.evaluate(() => { document.querySelector('.row.open .chev-btn') && document.querySelector('.row.open .chev-btn').click(); }); await H.wait(500);
   await p.evaluate(() => NL.openCard('k3')); await H.wait(800);
   await p.evaluate(() => document.querySelector('.cv-page .gr-row').click()); await H.wait(500);
@@ -102,7 +122,9 @@ function fake(u) {
   // 4) Desideri
   await p.evaluate(() => { NL.setTab('wish'); window.scrollTo(0, 0); }); await H.wait(900);
   const tags = await p.evaluate(() => [...document.querySelectorAll('#list .cover .gr-tag')].map(t => t.closest('.cover').querySelector('.cap').textContent));
-  console.log('Gratis su', tags); assert.deepStrictEqual(tags.sort(), ['Delitto e castigo', 'Mastro-don Gesualdo', 'Orgoglio e pregiudizio', 'Una vita'].sort().filter(t => t !== 'Delitto e castigo'));
+  console.log('Gratis su', tags);
+  assert(!(await p.evaluate(() => { NL.openCard('w5'); return new Promise(ok => setTimeout(() => ok(!!document.querySelector('.cv-page .gr-row')), 800)); })), 'Cecità: titolo uguale ma autore diverso, niente riga');
+  await p.evaluate(() => { document.querySelector('.cv-back') && document.querySelector('.cv-back').click(); }); await H.wait(600); assert.deepStrictEqual(tags.sort(), ['Delitto e castigo', 'Mastro-don Gesualdo', 'Orgoglio e pregiudizio', 'Una vita'].sort().filter(t => t !== 'Delitto e castigo'));
   await shot(p, '4-desideri');
   // 5) Per te
   await p.evaluate(() => document.querySelector('#gTabs [data-g="you"]').click()); await H.wait(900);
