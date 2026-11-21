@@ -1,6 +1,6 @@
 # Next Libris — lo stile grafico dell'app (documento fisso)
 
-**Aggiornato il 20/11/2026, vera 115.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali. Indice di tutti i documenti: `claude/00-indice.md`.
+**Aggiornato il 21/11/2026, vera 118.** Questo è il riferimento unico per l'**aspetto** dell'app: colori, caratteri, misure, spazi, forme e disposizione delle schermate. Non contiene il funzionamento (ricerche, dati, server) né le regole sui testi. Vale per ogni schermata e finestra, quelle di oggi e quelle future. La stessa copia sta nel progetto Claude (`claude/stile-base.md`) e nel ramo `prove` del repository (`STILE.md`). Le due copie devono restare uguali. Indice di tutti i documenti: `claude/00-indice.md`.
 
 **Come si lavora sull'aspetto** (regole di Piero):
 1. Ogni modifica di aspetto si mostra **prima nella tela di design** con le schermate vere dell'app (tela https://claude.ai/artifact/11Dj482XSn4QbSUrk1Fneu).

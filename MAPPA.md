@@ -286,7 +286,7 @@
 
 ## 19. Server (Supabase, uguale nelle due copie)
 
-SQL in `supabase/` del ramo `prove` (migrazioni 001-031). Ogni funzione è `security definer` con `set search_path = ''`.
+SQL in `supabase/` del ramo `prove` (migrazioni 001-033). Ogni funzione è `security definer` con `set search_path = ''`.
 
 | Area | Tabelle | Funzioni principali | Migrazioni |
 |---|---|---|---|
@@ -305,7 +305,7 @@ SQL in `supabase/` del ramo `prove` (migrazioni 001-031). Ogni funzione è `secu
 - **Vault:** `sbn_worker`, `sbn_firma`, `push_url`, `push_segreto`, `push_vapid_*`.
 - **Cron:** push-attese, desideri-riassunto (17 UTC), chat-pulizia (notte), errori-pulizia (notte, 032).
 - **Leggere gli errori:** `select giorno, versione, dove, messaggio, telefono, app, volte from public.errori order by ultima desc limit 50;` (solo dal database, con il connettore Supabase).
-- **Prove SQL:** `supabase/prova_*.sql` (sicurezza, tetti, amici, notifiche, ricerche, SBN…).
+- **Prove SQL:** `supabase/prova_*.sql` (sicurezza, tetti, amici, notifiche, ricerche, SBN, `prova_suggerimenti_amici.sql`…).
 - **Worker SBN:** `cloudflare-sbn-worker.js` (ramo `prove`), prova `test_worker.mjs`.
 
 ## 20. Prove e strumenti (ramo `prove`)
@@ -327,7 +327,7 @@ SQL in `supabase/` del ramo `prove` (migrazioni 001-031). Ogni funzione è `secu
 | Ricerca per ISBN / titolo, API, SBN | 3, 4, 21, 23, 106, 107, 109, 127, 133, **143** |
 | Pagina del libro | 26, 34, 35, 45, 49, 54, 71, 75, 141 |
 | Citazioni e foto | 36, 37, 38, 42, 43 |
-| Per te, statistiche, stagione in libri | 63, 64, 121, 134 |
+| Per te, Suggerimenti, statistiche, stagione in libri | 63, 64, 121, 134, 145 |
 | Profilo | 122, 125, 126, 134 |
 | Amici e libreria dell'amico | 102, 103, 104, 110, 111, 120, 136 |
 | Chat | 128, 129, 130 |
