@@ -44,9 +44,16 @@ Tutte le scelte qui sotto sono di Piero e **già chieste: non richiedere**.
 
 **Dopo:** «cerca tra i tuoi amici chi può prestarti l'API» più in vista.
 
+### Pubblicare il worker (dal 21/11/2026)
+- **Lo pubblica Claude** con il connettore **«cloudflare»** (server `mcp.cloudflare.com`, collegato da Piero il 21/11/2026 con i permessi `user-details.read` e `workers-scripts.write` sull'account del worker). Piero non deve più incollarlo a mano.
+- Worker **`sbn-libri`** (l'unico dell'account). Impostazioni da tenere uguali: `compatibility_date` **2026-11-13**, nessun flag, nessun binding, log attivi (observability).
+- Come: `PUT /accounts/{account}/workers/scripts/sbn-libri` con FormData: `metadata` = `{"main_module":"worker.js","compatibility_date":"2026-11-13"}` e il file `worker.js` (`application/javascript+module`) = `cloudflare-sbn-worker.js` del ramo `prove`. Prima la prova `test_worker.mjs`; dopo, controllo che il codice online abbia la stessa impronta SHA-256 del file (senza l'a capo finale) e una ricerca vera dall'app di prova.
+- Controllo del 21/11/2026: il codice online è **identico** a `cloudflare-sbn-worker.js` (stessa impronta).
+- Il vecchio connettore «Cloudflare Developer Platform» (solo lettura) non serve più.
+
 ### Chiavi di firma
 - Le chiavi private stanno **solo nel Vault** (`sbn_firma`) di ogni copia; i file usati per crearle sono stati cancellati. Chi ha ancora la 111 con un worker prestato passa comunque dal worker della casa (il vecchio `?da=&isbn=` va lì).
-- **Per cambiarle:** generare una coppia nuova (P-256; privata in PKCS8 base64 nel Vault, pubblica in SPKI base64 in `CHIAVI` del worker) e far incollare di nuovo il worker a Piero.
+- **Per cambiarle:** generare una coppia nuova (P-256; privata in PKCS8 base64 nel Vault, pubblica in SPKI base64 in `CHIAVI` del worker) e pubblicare di nuovo il worker (vedi «Pubblicare il worker» qui sotto).
 
 ## Creare l'API
 - Guida passo passo in Indice › Ricerca dei libri e nella finestra «Crea la tua API» (5 passi). Il passo 4 (R3, testo approvato): «Limita la chiave: in «Restrizioni API» scegli solo **Books API**. La fatturazione non va attivata (di partenza è già spenta, non devi fare niente): così non si paga mai niente, qualunque cosa succeda.»
